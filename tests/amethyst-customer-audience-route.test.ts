@@ -37,6 +37,7 @@ function makeAdminClient({
   })
   const insertSelect = vi.fn().mockReturnValue({ single: insertSingle })
   const insert = vi.fn().mockReturnValue({ select: insertSelect })
+  const audienceChangeLogInsert = vi.fn().mockResolvedValue({ error: null })
 
   const subscriptionMaybeSingle = vi.fn((targetRepId: string) =>
     Promise.resolve({
@@ -46,17 +47,8 @@ function makeAdminClient({
       error: null,
     }),
   )
-  const subscriptionLimit = vi.fn((targetRepId: string) => ({
-    maybeSingle: () => subscriptionMaybeSingle(targetRepId),
-  }))
-  const subscriptionOrder = vi.fn((targetRepId: string) => ({
-    limit: () => subscriptionLimit(targetRepId),
-  }))
-  const subscriptionIn = vi.fn((targetRepId: string) => ({
-    order: () => subscriptionOrder(targetRepId),
-  }))
   const subscriptionEq = vi.fn((_column: string, targetRepId: string) => ({
-    in: () => subscriptionIn(targetRepId),
+    maybeSingle: () => subscriptionMaybeSingle(targetRepId),
   }))
 
   const launchMaybeSingle = vi.fn((targetRepId: string) =>
@@ -67,20 +59,8 @@ function makeAdminClient({
       error: null,
     }),
   )
-  const launchLimit = vi.fn((targetRepId: string) => ({
-    maybeSingle: () => launchMaybeSingle(targetRepId),
-  }))
-  const launchOrder = vi.fn((targetRepId: string) => ({
-    limit: () => launchLimit(targetRepId),
-  }))
-  const launchStatusEq = vi.fn((targetRepId: string) => ({
-    order: () => launchOrder(targetRepId),
-  }))
-  const launchStageEq = vi.fn((targetRepId: string) => ({
-    eq: () => launchStatusEq(targetRepId),
-  }))
   const launchRepEq = vi.fn((_column: string, targetRepId: string) => ({
-    eq: () => launchStageEq(targetRepId),
+    maybeSingle: () => launchMaybeSingle(targetRepId),
   }))
 
   const from = vi.fn((table: string) => {
@@ -96,9 +76,25 @@ function makeAdminClient({
       }
     }
 
+    if (table === 'customer_audience_change_log') {
+      return {
+        insert: audienceChangeLogInsert,
+      }
+    }
+
     if (table === 'subscriptions') {
       return {
         select: vi.fn(() => ({ eq: subscriptionEq })),
+      }
+    }
+
+    if (table === 'workspace_trials') {
+      return {
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+          })),
+        })),
       }
     }
 
@@ -121,6 +117,7 @@ function makeAdminClient({
       insert,
       insertSelect,
       insertSingle,
+      audienceChangeLogInsert,
     },
   }
 }

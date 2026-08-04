@@ -62,7 +62,6 @@ import {
   HelpCircle,
   Images,
   LogOut,
-  MessagesSquare,
   RadioTower,
   Search,
   Settings2,
@@ -150,11 +149,10 @@ const SECONDARY_WORKSPACE_SECTIONS = [
     comingSoon: true,
   },
   {
-    key: 'messages',
-    label: 'Messages',
-    shortLabel: 'Messages',
-    icon: MessagesSquare,
-    comingSoon: true,
+    key: 'customer-list',
+    label: 'Customer List',
+    shortLabel: 'Customers',
+    icon: Users,
   },
   {
     key: 'site-settings',
@@ -1528,6 +1526,22 @@ export function getSiteSettingsDraft(
     homepageMediaSlots: homepageMediaSlots.map((slot) => ({ ...slot })),
   }
 }
+
+export type CustomerProfileInput = {
+  name: string
+  email: string
+  phone: string
+  address: string
+  birthday: string
+  favoriteGemOrStone: string
+  favoriteMaterial: string
+  favoriteCut: string
+  favoriteCollection: string
+  notes: string
+  tags: string
+}
+
+type CustomerProfile = CustomerAudienceMember & Partial<CustomerProfileInput>
 
 const PUBLIC_SITE_MEDIA_MIME_TYPES = new Set([
   'image/jpeg',
@@ -5261,7 +5275,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       )
     }
 
-    if (canRenderWorkspaceSections && activeSection === 'messages') {
+    if (canRenderWorkspaceSections && activeSection === 'customer-list') {
       return (
         <div className={styles.workspaceSectionStack}>
           <MessagesCenterCard
@@ -5299,6 +5313,28 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               setEmailComposer((current) => ({ ...current, body: value }))
             }
             onSendEmail={handleSendEmail}
+            onCreate={async (profile) => {
+              const response = await fetch('/api/nic-nac/customer-audience', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(profile),
+              })
+              const payload = await response.json().catch(() => null) as { error?: string } | null
+              if (!response.ok) throw new Error(payload?.error || 'Unable to add this customer.')
+              await loadAudience()
+            }}
+            onUpdate={async (audienceId, profile) => {
+              const response = await fetch('/api/nic-nac/customer-audience', {
+                method: 'PATCH',
+                credentials: 'include',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ audienceId, ...profile }),
+              })
+              const payload = await response.json().catch(() => null) as { error?: string } | null
+              if (!response.ok) throw new Error(payload?.error || 'Unable to update this customer.')
+              await loadAudience()
+            }}
           />
         </div>
       )
@@ -10019,6 +10055,8 @@ export function CustomerRosterCard({
   onComposerSubjectChange,
   onComposerBodyChange,
   onSendEmail,
+  onCreate,
+  onUpdate,
 }: {
   state: AudienceState
   activeFilter: RosterFilter
@@ -10044,7 +10082,82 @@ export function CustomerRosterCard({
   onComposerSubjectChange?: (value: string) => void
   onComposerBodyChange?: (value: string) => void
   onSendEmail?: () => void
+  onCreate?: (profile: CustomerProfileInput) => Promise<void> | void
+  onUpdate?: (
+    audienceId: string,
+    profile: CustomerProfileInput,
+  ) => Promise<void> | void
 }) {
+  const emptyProfile = (): CustomerProfileInput => ({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    birthday: '',
+    favoriteGemOrStone: '',
+    favoriteMaterial: '',
+    favoriteCut: '',
+    favoriteCollection: '',
+    notes: '',
+    tags: '',
+  })
+  const profileFromCustomer = (customer: CustomerProfile): CustomerProfileInput => ({
+    ...emptyProfile(),
+    name: customer.name ?? '',
+    email: customer.email ?? '',
+    phone: customer.phone ?? '',
+    address: customer.address ?? '',
+    birthday: customer.birthday ?? '',
+    favoriteGemOrStone: customer.favoriteGemOrStone ?? '',
+    favoriteMaterial: customer.favoriteMaterial ?? '',
+    favoriteCut: customer.favoriteCut ?? '',
+    favoriteCollection: customer.favoriteCollection ?? '',
+    notes: customer.notes ?? '',
+    tags: customer.tags ?? '',
+  })
+  const [editor, setEditor] = useState<{
+    audienceId: string | null
+    profile: CustomerProfileInput
+    pending: boolean
+    error: string | null
+  } | null>(null)
+
+  const openCreate = () =>
+    setEditor({ audienceId: null, profile: emptyProfile(), pending: false, error: null })
+  const openEdit = (customer: CustomerProfile) =>
+    setEditor({
+      audienceId: customer.id,
+      profile: profileFromCustomer(customer),
+      pending: false,
+      error: null,
+    })
+  const updateEditorField = (field: keyof CustomerProfileInput, value: string) =>
+    setEditor((current) =>
+      current ? { ...current, profile: { ...current.profile, [field]: value } } : current,
+    )
+  const saveEditor = async () => {
+    if (!editor) return
+    if (!editor.profile.name.trim()) {
+      setEditor((current) => current ? { ...current, error: 'A name is needed to save this customer.' } : current)
+      return
+    }
+    setEditor((current) => current ? { ...current, pending: true, error: null } : current)
+    try {
+      if (editor.audienceId) {
+        await onUpdate?.(editor.audienceId, editor.profile)
+      } else {
+        await onCreate?.(editor.profile)
+      }
+      setEditor(null)
+    } catch (error) {
+      setEditor((current) => current ? {
+        ...current,
+        pending: false,
+        error: error instanceof Error ? error.message : 'Unable to save this customer.',
+      } : current)
+    }
+  }
+
   if (state.status === 'error') {
     return (
       <div className={styles.rosterFallback}>
@@ -10075,6 +10188,15 @@ export function CustomerRosterCard({
 
   return (
     <div className={styles.rosterCard}>
+      <div className={styles.rosterHeadingRow}>
+        <div>
+          <h2 className={styles.rosterHeading}>Customer List</h2>
+          <p className={styles.rosterIntro}>Keep the details your customers choose to share in one place.</p>
+        </div>
+        <button type="button" className={styles.bulkActionButton} onClick={openCreate} disabled={!onCreate}>
+          Add customer
+        </button>
+      </div>
       <div className={styles.metricGrid}>
         <div className={styles.metricBlock}>
           <span className={styles.metricLabel}>Total</span>
@@ -10214,6 +10336,14 @@ export function CustomerRosterCard({
                 </div>
               </div>
               <div className={styles.actionRow}>
+                <button
+                  type="button"
+                  className={styles.helperButton}
+                  disabled={!onUpdate}
+                  onClick={() => openEdit(customer as CustomerProfile)}
+                >
+                  Edit details
+                </button>
                 {getCustomerActions(customer).map((action) => {
                   const actionKey = `${customer.id}:${action.channel}`
                   return (
@@ -10329,6 +10459,48 @@ export function CustomerRosterCard({
           })
         )}
       </div>
+      {editor ? (
+        <section className={styles.customerEditor} aria-label={editor.audienceId ? 'Edit customer' : 'Add customer'}>
+          <div className={styles.rosterHeadingRow}>
+            <div>
+              <h3 className={styles.editorHeading}>{editor.audienceId ? 'Edit customer' : 'Add customer'}</h3>
+              <p className={styles.rosterIntro}>Profile details are editable. Email and SMS consent remain customer-controlled.</p>
+            </div>
+            <button type="button" className={styles.helperButton} onClick={() => setEditor(null)} disabled={editor.pending}>Close</button>
+          </div>
+          <div className={styles.customerEditorGrid}>
+            {([
+              ['name', 'Name'], ['email', 'Email'], ['phone', 'Phone'], ['address', 'Address'],
+              ['birthday', 'Birthday'], ['favoriteGemOrStone', 'Favorite gem or stone'],
+              ['favoriteMaterial', 'Favorite material'], ['favoriteCut', 'Favorite cut'],
+              ['favoriteCollection', 'Favorite collection'], ['tags', 'Tags'],
+            ] as [keyof CustomerProfileInput, string][]).map(([field, label]) => (
+              <label key={field} className={styles.sortField}>
+                <span className={styles.sortLabel}>{label}</span>
+                <input
+                  className={styles.searchInput}
+                  type={field === 'email' ? 'email' : 'text'}
+                  inputMode={field === 'birthday' ? 'numeric' : undefined}
+                  placeholder={field === 'birthday' ? 'MM-DD' : undefined}
+                  value={editor.profile[field]}
+                  onChange={(event) => updateEditorField(field, event.target.value)}
+                />
+              </label>
+            ))}
+            <label className={styles.sortFieldWide}>
+              <span className={styles.sortLabel}>Notes</span>
+              <textarea className={styles.emailComposerTextarea} value={editor.profile.notes} onChange={(event) => updateEditorField('notes', event.target.value)} />
+            </label>
+          </div>
+          {editor.error ? <div className={styles.actionError}>{editor.error}</div> : null}
+          <div className={styles.actionRow}>
+            <button type="button" className={styles.actionButton} onClick={saveEditor} disabled={editor.pending || (!onCreate && !editor.audienceId) || (!onUpdate && Boolean(editor.audienceId))}>
+              {editor.pending ? 'Saving...' : 'Save customer'}
+            </button>
+            <button type="button" className={styles.helperButton} onClick={() => setEditor(null)} disabled={editor.pending}>Cancel</button>
+          </div>
+        </section>
+      ) : null}
     </div>
   )
 }

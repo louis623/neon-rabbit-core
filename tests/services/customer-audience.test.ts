@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  createCustomerAudienceContact,
   getCustomerAudienceMember,
   unsubscribeCustomerAudienceByPhone,
   unsubscribeCustomerAudienceByContact,
   unsubscribeCustomerAudienceMember,
+  updateCustomerAudienceContact,
 } from '@/lib/services/customer-audience'
 
 type AudienceRow = {
@@ -13,6 +15,15 @@ type AudienceRow = {
   name?: string
   phone: string | null
   email: string | null
+  address?: string | null
+  birthday_month?: number | null
+  birthday_day?: number | null
+  favorite_gem_or_stone?: string | null
+  favorite_material?: string | null
+  favorite_cut?: string | null
+  favorite_collection?: string | null
+  notes?: string | null
+  tags?: string[] | null
   sms_consent?: boolean
   email_consent?: boolean
   marketing_consent?: boolean
@@ -303,5 +314,222 @@ describe('customer audience unsubscribe services', () => {
       ['id', 'aud-1'],
       ['rep_id', 'rep-preview'],
     ])
+  })
+})
+
+function makeProfileSupabase() {
+  const audienceInserts: Array<Record<string, unknown>> = []
+  const audienceUpdates: Array<Record<string, unknown>> = []
+  const changeLogs: Array<Record<string, unknown>> = []
+  const filters: Array<[string, unknown]> = []
+  const storedRow: AudienceRow = {
+    id: 'aud-profile-1',
+    rep_id: 'rep-1',
+    name: 'Jamie Lane',
+    phone: '+15555550101',
+    email: 'jamie@example.com',
+    address: '101 Sparkle Way',
+    birthday_month: 10,
+    birthday_day: 12,
+    favorite_gem_or_stone: 'Moonstone',
+    favorite_material: 'Gold',
+    favorite_cut: 'Oval',
+    favorite_collection: 'Simply Studs',
+    notes: 'Local pickup',
+    tags: ['VIP'],
+    sms_consent: false,
+    email_consent: false,
+    marketing_consent: false,
+    consent_date: null,
+    sms_opted_out_at: null,
+    email_opted_out_at: null,
+    stop_keyword_received_at: null,
+    created_at: '2026-08-04T12:00:00Z',
+  }
+
+  const client = {
+    from(table: string) {
+      if (table === 'customer_audience_change_log') {
+        return {
+          insert(values: Record<string, unknown>) {
+            changeLogs.push(values)
+            return Promise.resolve({ error: null })
+          },
+        }
+      }
+
+      if (table !== 'customer_audience') {
+        throw new Error(`Unexpected table ${table}`)
+      }
+
+      return {
+        insert(values: Record<string, unknown>) {
+          audienceInserts.push(values)
+          return {
+            select() {
+              return {
+                single() {
+                  return Promise.resolve({
+                    data: { ...storedRow, ...values },
+                    error: null,
+                  })
+                },
+              }
+            },
+          }
+        },
+        update(values: Record<string, unknown>) {
+          audienceUpdates.push(values)
+          const chain = {
+            eq(column: string, value: unknown) {
+              filters.push([column, value])
+              return chain
+            },
+            select() {
+              return {
+                maybeSingle() {
+                  return Promise.resolve({
+                    data: { ...storedRow, ...values },
+                    error: null,
+                  })
+                },
+              }
+            },
+          }
+          return chain
+        },
+      }
+    },
+  }
+
+  return { client: client as never, audienceInserts, audienceUpdates, changeLogs, filters }
+}
+
+describe('customer audience contact profile services', () => {
+  it('creates a manual contact without manufacturing consent and records the profile audit', async () => {
+    const { client, audienceInserts, changeLogs } = makeProfileSupabase()
+
+    const customer = await createCustomerAudienceContact(
+      client,
+      'rep-1',
+      {
+        name: ' Jamie Lane ',
+        email: ' JAMIE@EXAMPLE.COM ',
+        phone: ' (555) 555-0101 ',
+        address: ' 101 Sparkle Way ',
+        birthday: '10-12',
+        favoriteGemOrStone: ' Moonstone ',
+        favoriteMaterial: ' Gold ',
+        favoriteCut: ' Oval ',
+        favoriteCollection: ' Simply Studs ',
+        notes: ' Local pickup ',
+        tags: [' VIP ', 'VIP', ' local '],
+      },
+      { actorKind: 'nic_nac', actorRepId: 'rep-1', nicNacRunId: 'run-1' },
+    )
+
+    expect(audienceInserts).toEqual([
+      expect.objectContaining({
+        rep_id: 'rep-1',
+        name: 'Jamie Lane',
+        email: 'jamie@example.com',
+        phone: '(555) 555-0101',
+        birthday_month: 10,
+        birthday_day: 12,
+        tags: ['VIP', 'local'],
+        sms_consent: false,
+        email_consent: false,
+        marketing_consent: false,
+      }),
+    ])
+    expect(customer).toMatchObject({
+      name: 'Jamie Lane',
+      birthday: '10-12',
+      favoriteGemOrStone: 'Moonstone',
+      tags: ['VIP', 'local'],
+      smsConsent: false,
+      emailConsent: false,
+    })
+    expect(changeLogs).toEqual([
+      expect.objectContaining({
+        audience_id: 'aud-profile-1',
+        rep_id: 'rep-1',
+        actor_kind: 'nic_nac',
+        actor_rep_id: 'rep-1',
+        nic_nac_run_id: 'run-1',
+        action: 'created',
+      }),
+    ])
+  })
+
+  it('updates a rep-owned profile with id and rep guards but never writes consent columns', async () => {
+    const { client, audienceUpdates, changeLogs, filters } = makeProfileSupabase()
+
+    await updateCustomerAudienceContact(
+      client,
+      'rep-1',
+      {
+        audienceId: ' aud-profile-1 ',
+        name: 'Jamie Lane',
+        email: null,
+        phone: null,
+        birthday: null,
+        tags: [],
+      },
+      { actorKind: 'rep', actorRepId: 'rep-1' },
+    )
+
+    expect(filters).toEqual([
+      ['id', 'aud-profile-1'],
+      ['rep_id', 'rep-1'],
+    ])
+    expect(audienceUpdates[0]).toMatchObject({
+      name: 'Jamie Lane',
+      email: null,
+      phone: null,
+      birthday_month: null,
+      birthday_day: null,
+      tags: [],
+    })
+    expect(audienceUpdates[0]).not.toHaveProperty('sms_consent')
+    expect(audienceUpdates[0]).not.toHaveProperty('email_consent')
+    expect(audienceUpdates[0]).not.toHaveProperty('marketing_consent')
+    expect(changeLogs[0]).toMatchObject({ action: 'profile_updated' })
+  })
+
+  it('preserves omitted profile fields during a partial update', async () => {
+    const { client, audienceUpdates } = makeProfileSupabase()
+
+    await updateCustomerAudienceContact(client, 'rep-1', {
+      audienceId: 'aud-profile-1',
+      favoriteMaterial: 'Silver',
+    })
+
+    expect(audienceUpdates).toEqual([
+      { favorite_material: 'Silver' },
+    ])
+  })
+
+  it('requires at least one profile field for a contact update', async () => {
+    const { client, audienceUpdates } = makeProfileSupabase()
+
+    await expect(
+      updateCustomerAudienceContact(client, 'rep-1', {
+        audienceId: 'aud-profile-1',
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT' })
+    expect(audienceUpdates).toEqual([])
+  })
+
+  it('rejects invalid birthdays before a profile write', async () => {
+    const { client, audienceInserts } = makeProfileSupabase()
+
+    await expect(
+      createCustomerAudienceContact(client, 'rep-1', {
+        name: 'Jamie Lane',
+        birthday: '02-30',
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT' })
+    expect(audienceInserts).toEqual([])
   })
 })

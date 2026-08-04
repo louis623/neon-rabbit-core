@@ -45,17 +45,23 @@ function makeTargetedAdminClient() {
     data: { id: 'subscription-1', status: 'active' },
     error: null,
   })
-  const subscriptionLimit = vi.fn().mockReturnValue({
+  const subscriptionEq = vi.fn().mockReturnValue({
     maybeSingle: subscriptionMaybeSingle,
   })
-  const subscriptionOrder = vi.fn().mockReturnValue({ limit: subscriptionLimit })
-  const subscriptionIn = vi.fn().mockReturnValue({ order: subscriptionOrder })
-  const subscriptionEq = vi.fn().mockReturnValue({ in: subscriptionIn })
   const selectSubscription = vi.fn().mockReturnValue({ eq: subscriptionEq })
 
   const from = vi.fn((table: string) => {
     if (table === 'reps') return { select: selectRep }
     if (table === 'subscriptions') return { select: selectSubscription }
+    if (table === 'workspace_trials') {
+      return {
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+          })),
+        })),
+      }
+    }
     throw new Error(`Unexpected table ${table}`)
   })
 

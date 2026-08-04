@@ -1391,6 +1391,11 @@ function Signup({ repName, businessName }) {
     smsConsent: false,
     emailConsent: false,
     marketingConsent: false,
+    birthday: "",
+    favoriteGemOrStone: "",
+    favoriteMaterial: "",
+    favoriteCut: "",
+    favoriteCollection: "",
   });
   const [submitState, setSubmitState] = useState({ status: "idle", message: "" });
   const signupTitle = CONTENT.signupTitle || "Never miss a show.";
@@ -1421,6 +1426,11 @@ function Signup({ repName, businessName }) {
           smsConsent: form.smsConsent,
           emailConsent: form.emailConsent,
           marketingConsent: form.marketingConsent,
+          birthday: form.birthday,
+          favoriteGemOrStone: form.favoriteGemOrStone,
+          favoriteMaterial: form.favoriteMaterial,
+          favoriteCut: form.favoriteCut,
+          favoriteCollection: form.favoriteCollection,
         }),
       });
 
@@ -1441,6 +1451,11 @@ function Signup({ repName, businessName }) {
         smsConsent: false,
         emailConsent: false,
         marketingConsent: false,
+        birthday: "",
+        favoriteGemOrStone: "",
+        favoriteMaterial: "",
+        favoriteCut: "",
+        favoriteCollection: "",
       });
       setSubmitState({
         status: "success",
@@ -1497,6 +1512,40 @@ function Signup({ repName, businessName }) {
                 <input type="checkbox" checked={form.marketingConsent} onChange={(e) => updateField("marketingConsent", e.target.checked)} />
                 <span>I also want promotional drops, launches, and special offers.</span>
               </label>
+            </div>
+            <div className="hp-signup-preferences">
+              <div className="hp-signup-preferences-heading">
+                <strong>Make it a little more personal</strong>
+                <span>Optional</span>
+              </div>
+              <p className="hp-signup-preferences-copy">Share only what you&apos;d like. These details help your rep send more thoughtful promotional and gift ideas.</p>
+              <div className="hp-signup-row">
+                <div className="hp-signup-field">
+                  <label className="hp-signup-label" htmlFor="hp-birthday">Birthday <span className="hp-signup-label-aux">(month and day, optional)</span></label>
+                  <input id="hp-birthday" className="hp-signup-input" type="text" inputMode="numeric" pattern="[0-1][0-9]-[0-3][0-9]" placeholder="MM-DD" value={form.birthday} onChange={(e) => updateField("birthday", e.target.value)} />
+                  <span className="hp-signup-field-note">Only for birthday promotions and gift ideas. It will not be used for anything else.</span>
+                </div>
+                <div className="hp-signup-field">
+                  <label className="hp-signup-label" htmlFor="hp-favorite-collection">Favorite collection <span className="hp-signup-label-aux">(optional)</span></label>
+                  <input id="hp-favorite-collection" className="hp-signup-input" type="text" placeholder="A collection you love" value={form.favoriteCollection} onChange={(e) => updateField("favoriteCollection", e.target.value)} />
+                </div>
+              </div>
+              <div className="hp-signup-row">
+                <div className="hp-signup-field">
+                  <label className="hp-signup-label" htmlFor="hp-favorite-gem">Favorite gem or stone <span className="hp-signup-label-aux">(optional)</span></label>
+                  <input id="hp-favorite-gem" className="hp-signup-input" type="text" placeholder="For example, turquoise or opal" value={form.favoriteGemOrStone} onChange={(e) => updateField("favoriteGemOrStone", e.target.value)} />
+                </div>
+                <div className="hp-signup-field">
+                  <label className="hp-signup-label" htmlFor="hp-favorite-material">Favorite material <span className="hp-signup-label-aux">(optional)</span></label>
+                  <input id="hp-favorite-material" className="hp-signup-input" type="text" placeholder="For example, gold or silver" value={form.favoriteMaterial} onChange={(e) => updateField("favoriteMaterial", e.target.value)} />
+                </div>
+              </div>
+              <div className="hp-signup-row">
+                <div className="hp-signup-field">
+                  <label className="hp-signup-label" htmlFor="hp-favorite-cut">Favorite cut <span className="hp-signup-label-aux">(optional)</span></label>
+                  <input id="hp-favorite-cut" className="hp-signup-input" type="text" placeholder="If you have one" value={form.favoriteCut} onChange={(e) => updateField("favoriteCut", e.target.value)} />
+                </div>
+              </div>
             </div>
             <div className="hp-signup-actions">
               <button type="submit" className="hp-signup-submit">

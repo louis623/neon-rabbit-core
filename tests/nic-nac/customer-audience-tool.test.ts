@@ -1,9 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const getCustomerAudienceMock = vi.fn()
+const createCustomerAudienceContactMock = vi.fn()
+const updateCustomerAudienceContactMock = vi.fn()
 
 vi.mock('@/lib/services/customer-audience', () => ({
   getCustomerAudience: (...args: unknown[]) => getCustomerAudienceMock(...args),
+  createCustomerAudienceContact: (...args: unknown[]) =>
+    createCustomerAudienceContactMock(...args),
+  updateCustomerAudienceContact: (...args: unknown[]) =>
+    updateCustomerAudienceContactMock(...args),
 }))
 
 import { buildAllTools } from '@/lib/nic-nac/tools'
@@ -12,6 +18,7 @@ import {
   inputSchema,
   makeCustomerAudienceTool,
 } from '@/lib/nic-nac/tools/get-customer-audience'
+import { makeManageCustomerContactTool } from '@/lib/nic-nac/tools/manage-customer-contact'
 import { NIC_NAC_SYSTEM_PROMPT } from '@/lib/nic-nac/system-prompt'
 
 interface ToolDef {
@@ -30,6 +37,8 @@ function makeCtx() {
 describe('get_customer_audience', () => {
   beforeEach(() => {
     getCustomerAudienceMock.mockReset()
+    createCustomerAudienceContactMock.mockReset()
+    updateCustomerAudienceContactMock.mockReset()
   })
 
   it('returns the rep audience summary and recent customers', async () => {
@@ -133,5 +142,37 @@ describe('get_customer_audience', () => {
     })
 
     expect(result.success).toBe(false)
+  })
+
+  it('approval-gates a Nic-Nac profile update without accepting consent fields', async () => {
+    updateCustomerAudienceContactMock.mockResolvedValueOnce({
+      id: 'aud-1',
+      name: 'Jamie Lane',
+      favoriteMaterial: 'silver',
+    })
+    const tool = makeManageCustomerContactTool(makeCtx()) as unknown as ToolDef & {
+      needsApproval?: boolean
+    }
+
+    expect(tool.needsApproval).toBe(true)
+    const result = await tool.execute({
+      action: 'update',
+      audienceId: '11111111-1111-4111-8111-111111111111',
+      favoriteMaterial: 'silver',
+    })
+
+    expect(updateCustomerAudienceContactMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({
+        audienceId: '11111111-1111-4111-8111-111111111111',
+        favoriteMaterial: 'silver',
+      }),
+      expect.objectContaining({ actorKind: 'nic_nac', nicNacConversationId: 'conv-1' }),
+    )
+    expect(result).toEqual({
+      action: 'updated',
+      customer: expect.objectContaining({ id: 'aud-1' }),
+    })
   })
 })

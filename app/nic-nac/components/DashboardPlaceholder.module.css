@@ -2449,6 +2449,53 @@
   position: relative;
 }
 
+.rosterHeadingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rosterHeading,
+.editorHeading {
+  margin: 0;
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-serif), 'Playfair Display', Georgia, serif;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.editorHeading {
+  font-size: 18px;
+}
+
+.rosterIntro {
+  max-width: 620px;
+  margin: 5px 0 0;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.customerEditor {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(238, 44, 155, 0.24);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 246, 250, 0.9), rgba(255, 255, 255, 0.76));
+  padding: 16px;
+}
+
+.customerEditorGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .calendarCard {
   min-height: 120px;
   margin-top: 4px;
@@ -5861,6 +5908,10 @@
   }
 
   .customerRow {
+    grid-template-columns: 1fr;
+  }
+
+  .customerEditorGrid {
     grid-template-columns: 1fr;
   }
 

@@ -43,6 +43,12 @@ async function parseSignupPayload(
       marketingConsent: readBoolean(
         body?.marketingConsent ?? body?.marketing_consent,
       ),
+      address: readString(body?.address),
+      birthday: readString(body?.birthday),
+      favoriteGemOrStone: readString(body?.favoriteGemOrStone),
+      favoriteMaterial: readString(body?.favoriteMaterial),
+      favoriteCut: readString(body?.favoriteCut),
+      favoriteCollection: readString(body?.favoriteCollection),
     }
   }
 
@@ -62,6 +68,12 @@ async function parseSignupPayload(
     marketingConsent: readBoolean(
       formData.get('marketing_consent') ?? formData.get('marketingConsent'),
     ),
+    address: readString(formData.get('address')),
+    birthday: readString(formData.get('birthday')),
+    favoriteGemOrStone: readString(formData.get('favoriteGemOrStone')),
+    favoriteMaterial: readString(formData.get('favoriteMaterial')),
+    favoriteCut: readString(formData.get('favoriteCut')),
+    favoriteCollection: readString(formData.get('favoriteCollection')),
   }
 }
 

@@ -355,6 +355,14 @@ export interface CustomerAudienceSignupInput {
   smsConsent: boolean
   emailConsent: boolean
   marketingConsent: boolean
+  address?: string
+  birthday?: string
+  favoriteGemOrStone?: string
+  favoriteMaterial?: string
+  favoriteCut?: string
+  favoriteCollection?: string
+  notes?: string
+  tags?: string[]
 }
 
 export interface CustomerAudienceSignupResult {
@@ -387,6 +395,15 @@ export interface CustomerAudienceMember {
   name: string
   phone: string | null
   email: string | null
+  address?: string | null
+  /** Month/day only (`MM-DD`); birthdays are never stored with a year. */
+  birthday?: string | null
+  favoriteGemOrStone?: string | null
+  favoriteMaterial?: string | null
+  favoriteCut?: string | null
+  favoriteCollection?: string | null
+  notes?: string | null
+  tags?: string[]
   smsConsent: boolean
   emailConsent: boolean
   marketingConsent: boolean
@@ -412,6 +429,57 @@ export interface CustomerAudienceSummary {
 export interface CustomerAudienceResult {
   summary: CustomerAudienceSummary
   customers: CustomerAudienceMember[]
+}
+
+/**
+ * Editable rep-owned contact information. Consent and opt-out fields are
+ * deliberately absent: they can only change through the dedicated consent
+ * and unsubscribe flows.
+ */
+export interface CustomerAudienceProfileInput {
+  name: string
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  /** Month/day only (`MM-DD`); a birth year is never accepted or stored. */
+  birthday?: string | null
+  favoriteGemOrStone?: string | null
+  favoriteMaterial?: string | null
+  favoriteCut?: string | null
+  favoriteCollection?: string | null
+  notes?: string | null
+  tags?: string[]
+}
+
+export interface CustomerAudienceContactCreateInput
+  extends CustomerAudienceProfileInput {}
+
+export interface CustomerAudienceContactUpdateInput {
+  audienceId: string
+  name?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  birthday?: string | null
+  favoriteGemOrStone?: string | null
+  favoriteMaterial?: string | null
+  favoriteCut?: string | null
+  favoriteCollection?: string | null
+  notes?: string | null
+  tags?: string[]
+}
+
+export type CustomerAudienceChangeActorKind =
+  | 'customer'
+  | 'rep'
+  | 'nic_nac'
+  | 'system'
+
+export interface CustomerAudienceChangeContext {
+  actorKind: CustomerAudienceChangeActorKind
+  actorRepId?: string | null
+  nicNacConversationId?: string | null
+  nicNacRunId?: string | null
 }
 
 export type WalletTransactionType =

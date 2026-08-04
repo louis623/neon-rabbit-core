@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const getAuthenticatedNicNacContextMock = vi.fn()
 const getCustomerAudienceMock = vi.fn()
 const unsubscribeCustomerAudienceMemberMock = vi.fn()
+const createCustomerAudienceContactMock = vi.fn()
+const updateCustomerAudienceContactMock = vi.fn()
 
 vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
@@ -16,9 +18,13 @@ vi.mock('@/lib/services/customer-audience', () => ({
   getCustomerAudience: (...args: unknown[]) => getCustomerAudienceMock(...args),
   unsubscribeCustomerAudienceMember: (...args: unknown[]) =>
     unsubscribeCustomerAudienceMemberMock(...args),
+  createCustomerAudienceContact: (...args: unknown[]) =>
+    createCustomerAudienceContactMock(...args),
+  updateCustomerAudienceContact: (...args: unknown[]) =>
+    updateCustomerAudienceContactMock(...args),
 }))
 
-import { GET, POST } from '@/app/api/nic-nac/customer-audience/route'
+import { GET, PATCH, POST } from '@/app/api/nic-nac/customer-audience/route'
 import { AuthError } from '@/lib/nic-nac/auth'
 
 describe('GET /api/nic-nac/customer-audience', () => {
@@ -26,6 +32,8 @@ describe('GET /api/nic-nac/customer-audience', () => {
     getAuthenticatedNicNacContextMock.mockReset()
     getCustomerAudienceMock.mockReset()
     unsubscribeCustomerAudienceMemberMock.mockReset()
+    createCustomerAudienceContactMock.mockReset()
+    updateCustomerAudienceContactMock.mockReset()
   })
 
   it('returns the authenticated rep audience summary', async () => {
@@ -165,5 +173,77 @@ describe('GET /api/nic-nac/customer-audience', () => {
         emailUpdatedCount: 0,
       },
     })
+  })
+
+  it('creates a manual contact without accepting consent fields', async () => {
+    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      supabase: { marker: 'supabase' },
+    })
+    createCustomerAudienceContactMock.mockResolvedValueOnce({
+      id: 'aud-new',
+      name: 'Taylor Brooks',
+      smsConsent: false,
+      emailConsent: false,
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/nic-nac/customer-audience', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Taylor Brooks',
+          favoriteGemOrStone: 'opal',
+          smsConsent: true,
+          emailConsent: true,
+        }),
+      }),
+    )
+
+    expect(createCustomerAudienceContactMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+      expect.objectContaining({
+        name: 'Taylor Brooks',
+        favoriteGemOrStone: 'opal',
+      }),
+      { actorKind: 'rep', actorRepId: 'rep-1' },
+    )
+    expect(createCustomerAudienceContactMock.mock.calls[0][2]).not.toHaveProperty(
+      'smsConsent',
+    )
+    expect(response.status).toBe(201)
+  })
+
+  it('patches only profile fields submitted by the authenticated rep', async () => {
+    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      supabase: { marker: 'supabase' },
+    })
+    updateCustomerAudienceContactMock.mockResolvedValueOnce({
+      id: 'aud-1',
+      name: 'Jamie Lane',
+      favoriteMaterial: 'silver',
+    })
+
+    const response = await PATCH(
+      new Request('http://localhost/api/nic-nac/customer-audience', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          audienceId: 'aud-1',
+          favoriteMaterial: 'silver',
+          smsConsent: true,
+        }),
+      }),
+    )
+
+    expect(updateCustomerAudienceContactMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+      { audienceId: 'aud-1', favoriteMaterial: 'silver' },
+      { actorKind: 'rep', actorRepId: 'rep-1' },
+    )
+    expect(response.status).toBe(200)
   })
 })

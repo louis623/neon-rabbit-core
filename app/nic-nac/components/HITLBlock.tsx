@@ -60,6 +60,11 @@ export const APPROVAL_COPY: Record<
     confirm: 'Save show reminder',
     cancel: 'Cancel',
   },
+  manage_customer_contact: {
+    title: 'Save this customer contact change?',
+    confirm: 'Save customer',
+    cancel: 'Cancel',
+  },
 }
 
 const FALLBACK_COPY = {

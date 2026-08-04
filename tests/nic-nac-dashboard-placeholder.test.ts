@@ -761,7 +761,7 @@ describe('DashboardPlaceholder', () => {
     )
     expect(getInitialWorkspaceSection('?section=team-management')).toBe('more')
     expect(getInitialWorkspaceSection('?section=collection-intake')).toBe('more')
-    expect(getInitialWorkspaceSection('?section=messages')).toBe('more')
+    expect(getInitialWorkspaceSection('?section=customer-list')).toBe('customer-list')
     expect(getInitialWorkspaceSection('?section=unknown')).toBe('home')
     expect(getInitialWorkspaceSection('?onboarding=self-serve-started')).toBe(
       'home',
@@ -797,7 +797,7 @@ describe('DashboardPlaceholder', () => {
     expect(isComingSoonWorkspaceSection('business-tools')).toBe(false)
     expect(isComingSoonWorkspaceSection('team-management')).toBe(true)
     expect(isComingSoonWorkspaceSection('collection-intake')).toBe(true)
-    expect(isComingSoonWorkspaceSection('messages')).toBe(true)
+    expect(isComingSoonWorkspaceSection('customer-list')).toBe(false)
     expect(isComingSoonWorkspaceSection('jewelry-library')).toBe(false)
     expect(isComingSoonWorkspaceSection('recipes')).toBe(false)
     expect(resolveWorkspaceSectionForAccess('recipes', true, false)).toBe(
@@ -811,7 +811,7 @@ describe('DashboardPlaceholder', () => {
     )
     expect(resolveWorkspaceSectionForAccess('team-management', true)).toBe('more')
     expect(resolveWorkspaceSectionForAccess('collection-intake', true)).toBe('more')
-    expect(resolveWorkspaceSectionForAccess('messages', true)).toBe('more')
+    expect(resolveWorkspaceSectionForAccess('customer-list', true)).toBe('customer-list')
   })
 
   it('only shows Recipes for Heather BlingKitchen workspaces', () => {
@@ -2029,6 +2029,8 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(html).toContain('Filter roster')
+    expect(html).toContain('Customer List')
+    expect(html).toContain('Add customer')
     expect(html).toContain('Search customers')
     expect(html).toContain('Sort roster')
     expect(html).toContain('Newest first')
@@ -2043,6 +2045,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Joined 2026-05-05')
     expect(html).toContain('Unsubscribe SMS')
     expect(html).toContain('Unsubscribe email')
+    expect(html).toContain('Edit details')
     expect(html).toContain('Email customer')
     expect(html).toContain('Open signup form')
     expect(html).toContain('Copy signup link')

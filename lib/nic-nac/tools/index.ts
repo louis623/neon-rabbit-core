@@ -58,6 +58,7 @@ import { getNotificationPreferencesTool } from './get-notification-preferences'
 import { setNotificationPreferencesTool } from './set-notification-preferences'
 import { setShowReminderOverrideTool } from './set-show-reminder-override'
 import { customerAudienceTool } from './get-customer-audience'
+import { manageCustomerContactTool } from './manage-customer-contact'
 import { getHelpResourcesTool } from './get-help-resources'
 import { submitSupportReportTool } from './submit-support-report'
 import { getRequiredSetupStateTool } from './get-required-setup-state'
@@ -114,6 +115,7 @@ const REGISTRY: ToolDefinition[] = [
   setNotificationPreferencesTool,
   setShowReminderOverrideTool,
   customerAudienceTool,
+  manageCustomerContactTool,
   getHelpResourcesTool,
   submitSupportReportTool,
   getRequiredSetupStateTool,
@@ -194,10 +196,12 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
     'set_notification_preferences',
     'set_show_reminder_override',
     'get_customer_audience',
+    'manage_customer_contact',
   ],
   audience: [
     'prepare_calendar_work',
     'get_customer_audience',
+    'manage_customer_contact',
     'get_notification_preferences',
     'set_notification_preferences',
     'set_show_reminder_override',

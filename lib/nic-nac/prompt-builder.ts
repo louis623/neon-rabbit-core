@@ -142,6 +142,10 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
   audience: `Audience tools:
 - get_customer_audience pulls the rep's customer/subscriber list and reachability summary from the opt-in table.
 - Use it for customer list, subscriber roster, SMS opt-ins, email opt-ins, and who can receive texts or emails right now.
+- manage_customer_contact creates a rep-owned customer contact or updates the profile fields of one identified customer. It always requires the approval dialog before it writes.
+- Before updating an existing customer, use get_customer_audience to identify the right record. If more than one customer could match, ask the rep which one they mean; never guess.
+- Profile fields such as birthday, address, favorite gem or stone, material, cut, collection, tags, and notes are optional. Never invent missing details.
+- A contact record is not an opt-in. Only the customer-facing signup flow captures SMS/email consent. You must never create, restore, or alter SMS/email/marketing consent with this tool.
 - Do not claim the rep can message everyone unless the tool result says they are reachable for that channel.`,
 
   resources: `Help/resource tools:

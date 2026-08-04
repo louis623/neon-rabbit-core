@@ -5,8 +5,10 @@ import {
 } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
 import {
+  createCustomerAudienceContact,
   getCustomerAudience,
   unsubscribeCustomerAudienceMember,
+  updateCustomerAudienceContact,
 } from '@/lib/services/customer-audience'
 
 export const runtime = 'nodejs'
@@ -40,6 +42,61 @@ function readBoolean(value: unknown) {
     )
   }
   return false
+}
+
+function readString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function readTags(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.filter((tag): tag is string => typeof tag === 'string')
+  }
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+  }
+  return []
+}
+
+function readContactProfile(body: Record<string, unknown>) {
+  return {
+    name: readString(body.name),
+    email: readString(body.email),
+    phone: readString(body.phone),
+    address: readString(body.address),
+    birthday: readString(body.birthday),
+    favoriteGemOrStone: readString(body.favoriteGemOrStone),
+    favoriteMaterial: readString(body.favoriteMaterial),
+    favoriteCut: readString(body.favoriteCut),
+    favoriteCollection: readString(body.favoriteCollection),
+    notes: readString(body.notes),
+    tags: readTags(body.tags),
+  }
+}
+
+function readContactProfilePatch(body: Record<string, unknown>) {
+  const fields = [
+    'name',
+    'email',
+    'phone',
+    'address',
+    'birthday',
+    'favoriteGemOrStone',
+    'favoriteMaterial',
+    'favoriteCut',
+    'favoriteCollection',
+    'notes',
+    'tags',
+  ] as const
+  const patch: Record<string, unknown> = {}
+  for (const field of fields) {
+    if (!Object.prototype.hasOwnProperty.call(body, field)) continue
+    patch[field] = field === 'tags' ? readTags(body[field]) : readString(body[field])
+  }
+  return patch
 }
 
 export async function GET(request: Request) {
@@ -79,11 +136,21 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const body = (await request.json()) as Record<string, unknown>
     const { repId, supabase } = await getPaidNicNacContext()
+
+    if (!readString(body.audienceId)) {
+      const customer = await createCustomerAudienceContact(
+        supabase,
+        repId,
+        readContactProfile(body),
+        { actorKind: 'rep', actorRepId: repId },
+      )
+      return NextResponse.json({ ok: true, customer }, { status: 201 })
+    }
+
     const result = await unsubscribeCustomerAudienceMember(supabase, repId, {
-      audienceId:
-        typeof body?.audienceId === 'string' ? body.audienceId.trim() : '',
+      audienceId: readString(body.audienceId),
       unsubscribeSms: readBoolean(body?.unsubscribeSms),
       unsubscribeEmail: readBoolean(body?.unsubscribeEmail),
     })
@@ -104,6 +171,43 @@ export async function POST(request: Request) {
           code: err.code,
           error: err.userMessage,
         },
+        { status: err.statusCode },
+      )
+    }
+
+    throw err
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const body = (await request.json()) as Record<string, unknown>
+    const audienceId = readString(body.audienceId)
+    const { repId, supabase } = await getPaidNicNacContext()
+    const customer = await updateCustomerAudienceContact(
+      supabase,
+      repId,
+      { audienceId, ...readContactProfilePatch(body) },
+      { actorKind: 'rep', actorRepId: repId },
+    )
+
+    if (!customer) {
+      return NextResponse.json({ error: 'Customer record not found.' }, { status: 404 })
+    }
+
+    return NextResponse.json({ ok: true, customer })
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      return NextResponse.json({ error: 'Invalid request payload.' }, { status: 400 })
+    }
+
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: 'unauthenticated' }, { status: 401 })
+    }
+
+    if (err instanceof ServiceError) {
+      return NextResponse.json(
+        { code: err.code, error: err.userMessage },
         { status: err.statusCode },
       )
     }
