@@ -4595,7 +4595,6 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
 
 .sparkle-landing-v2 .sl2-workspace-proof__shots {
   display: grid;
-  gap: 16px;
   min-width: 0;
 }
 
@@ -4609,11 +4608,6 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   max-width: 100%;
   object-fit: cover;
   width: 100%;
-}
-
-.sparkle-landing-v2 .sl2-workspace-proof__shots img:last-child {
-  justify-self: end;
-  max-width: min(72vw, 280px);
 }
 
 .sparkle-landing-v2 .sl2-pricing {
@@ -5279,19 +5273,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   }
 
   .sparkle-landing-v2 .sl2-workspace-proof__shots {
-    align-items: end;
-    grid-template-columns: minmax(0, 1fr) 180px;
-  }
-
-  .sparkle-landing-v2 .sl2-workspace-proof__shots img:first-child {
-    grid-column: 1 / -1;
-  }
-
-  .sparkle-landing-v2 .sl2-workspace-proof__shots img:last-child {
-    grid-column: 2;
-    margin-top: -238px;
-    max-width: 180px;
-    z-index: 2;
+    align-self: center;
   }
 
   .sparkle-landing-v2 .sl2-pricing {

@@ -60,10 +60,12 @@ function WorkspaceProof() {
       </div>
       <div
         className="sl2-workspace-proof__shots"
-        aria-label="Real Sparkle Suite workspace previews"
+        aria-label="Real Sparkle Suite Nic-Nac workspace preview"
       >
-        <img src={assets.workspaceDesktop.src} alt={assets.workspaceDesktop.alt} />
-        <img src={assets.workspaceMobile.src} alt={assets.workspaceMobile.alt} />
+        <img
+          src={assets.nicNacWorkspaceProof.src}
+          alt={assets.nicNacWorkspaceProof.alt}
+        />
       </div>
     </section>
   )

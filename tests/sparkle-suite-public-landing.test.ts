@@ -69,14 +69,6 @@ describe('Sparkle Suite public landing page', () => {
         src: '/sparkle-suite/landing/nic-nac-workspace-proof.png',
         alt: 'Sparkle Suite Nic-Nac workspace preview on desktop.',
       },
-      workspaceDesktop: {
-        src: '/sparkle-suite/landing/workspace-proof-desktop.png',
-        alt: 'Sparkle Suite workspace setup checklist preview.',
-      },
-      workspaceMobile: {
-        src: '/sparkle-suite/landing/workspace-proof-mobile.png',
-        alt: 'Sparkle Suite mobile workspace setup preview.',
-      },
     })
 
     expect(sparkleSuitePublicLandingContent.pricing).toMatchObject({
@@ -154,7 +146,7 @@ describe('Sparkle Suite public landing page', () => {
     expect(html).toContain('Sparkle Suite Standard')
     expect(html).not.toContain('aria-label="Included in Sparkle Suite"')
     expect(html).toContain('Real Sparkle Suite product previews')
-    expect(html).toContain('Real Sparkle Suite workspace previews')
+    expect(html).toContain('Real Sparkle Suite Nic-Nac workspace preview')
     expect(html).toContain('$49.99')
     expect(html).toContain('$74.99/month')
     expect(html).toContain('$124.98')

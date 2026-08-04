@@ -34,14 +34,6 @@ export const sparkleSuitePublicLandingContent = {
       src: '/sparkle-suite/landing/nic-nac-workspace-proof.png',
       alt: 'Sparkle Suite Nic-Nac workspace preview on desktop.',
     },
-    workspaceDesktop: {
-      src: '/sparkle-suite/landing/workspace-proof-desktop.png',
-      alt: 'Sparkle Suite workspace setup checklist preview.',
-    },
-    workspaceMobile: {
-      src: '/sparkle-suite/landing/workspace-proof-mobile.png',
-      alt: 'Sparkle Suite mobile workspace setup preview.',
-    },
   },
   pricing: {
     eyebrow: 'Pricing',
