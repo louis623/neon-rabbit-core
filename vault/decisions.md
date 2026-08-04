@@ -12,8 +12,8 @@ Only an authenticated Control Center operator can remove a waitlist record. The 
 **Waitlist removal is not account or consent management**
 Deleting a waitlist record does not create, activate, or delete an account, and it does not change marketing consent elsewhere. Those flows retain their own explicit controls and audit rules.
 
-**Historical launch records survive source deletion**
-Some older waitlist entries are linked to historical launch-build records. Removing the waitlist source must not delete that history or fail because its foreign-key link is cleared. The database records `source_removed_at` on the build before the waitlist deletion, allowing the build to remain a valid archived record.
+**Historical launch and agreement records survive source deletion**
+Some older waitlist entries are linked to historical launch-build and signed-agreement records. Removing the waitlist source must not delete that history or fail because its foreign-key link is cleared. The database records `source_removed_at` on each record before the waitlist deletion, allowing the historical records to remain valid archives.
 
 ---
 

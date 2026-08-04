@@ -8,8 +8,8 @@ Running log of significant work sessions. Most recent first.
 
 - Added the operator-only **Remove** control to each Customer Waitlist entry in Control Center.
 - Updated the interaction to the requested two-click confirmation: **Delete Jane Doe?** followed by **Delete Jane Doe**. Any failure is shown inside the dialog.
-- Production logs showed that the initial delete request was reaching the database but failed because the foreign key's `ON DELETE SET NULL` action violated a stale launch-build source constraint. Applied migration `20260804250000_ss_archive_launch_build_sources.sql` to preserve the linked historical build with `source_removed_at` before allowing the waitlist deletion.
-- A rollback-only linked-production test created a synthetic waitlist/build pair, deleted the synthetic row, asserted that the build persisted with its waitlist link removed and an archive timestamp present, and rolled all test data back. The known reviewer-token limitation remains in effect; do not use Louis's account for a destructive smoke action.
+- Production logs showed that the initial delete request was reaching the database but failed because the foreign key's `ON DELETE SET NULL` action violated stale source constraints on both the linked launch build and agreement document. Applied migrations `20260804250000_ss_archive_launch_build_sources.sql` and `20260804260000_ss_archive_waitlist_agreement_sources.sql` to preserve those records with `source_removed_at` before allowing the waitlist deletion.
+- A rollback-only linked-production test created a synthetic waitlist/build/agreement trio, deleted the synthetic row, asserted that both history records persisted with their waitlist links removed and archive timestamps present, and rolled all test data back. The known reviewer-token limitation remains in effect; do not use Louis's account for a destructive smoke action.
 
 ---
 

@@ -3,8 +3,8 @@
 ## August 4 Control Center Waitlist Removal Checkpoint
 
 - Control Center operators can permanently remove a Customer Waitlist entry from both the visible list and `public.sparkle_suite_waitlist`. The confirmation is intentionally a clear second click: `Delete Jane Doe?` followed by an explicit `Delete Jane Doe` action. Errors remain visible in the dialog instead of appearing off-screen in the manual-entry form.
-- The initial delete attempt exposed a historical schema conflict: deleting a waitlist source correctly set an old linked launch build's source field to null, but that build had an outdated constraint forbidding an archived source. Migration `20260804250000_ss_archive_launch_build_sources.sql` now timestamps the source removal before deletion and allows that preserved historical build to remain valid. It does not delete a customer account, create account state, or change marketing consent.
-- Focused waitlist/auth tests passed (13 tests), and a rollback-only linked-production test created a synthetic waitlist/build pair, deleted the synthetic waitlist row, asserted that the historical build was preserved and unlinked, then rolled back all test data. No real waitlist entry was removed by Codex.
+- The initial delete attempt exposed historical schema conflicts: deleting a waitlist source correctly clears the links on its old launch-build and agreement-document records, but both carried outdated constraints forbidding an archived source. Migrations `20260804250000_ss_archive_launch_build_sources.sql` and `20260804260000_ss_archive_waitlist_agreement_sources.sql` now timestamp source removal before deletion and allow those preserved historical records to remain valid. This does not delete a customer account, create account state, or change marketing consent.
+- Focused waitlist/auth tests passed (13 tests), and a rollback-only linked-production test created a synthetic waitlist/build/agreement trio, deleted the synthetic waitlist row, asserted both historical records were preserved and unlinked, then rolled back all test data. No real waitlist entry was removed by Codex.
 
 **Last updated:** August 4, 2026
 
