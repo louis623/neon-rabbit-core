@@ -9,6 +9,7 @@ export const sparkleSuitePublicLandingContent = {
   brand: 'Sparkle Suite',
   sections: [
     { id: 'hero', label: 'Hero' },
+    { id: 'customer-site-proof', label: 'Customer site proof' },
     { id: 'workspace-proof', label: 'Workspace proof' },
     { id: 'pricing', label: 'Pricing' },
   ],
@@ -25,6 +26,12 @@ export const sparkleSuitePublicLandingContent = {
     body:
       'Instead of chasing show details across scattered tools, reps get one workspace for Live queue, Trade board, Live event calendar, email and SMS updates, customer-site customizations, and Nic-Nac, the built-in assistant for live-show support.',
   },
+  customerSiteProof: {
+    eyebrow: 'Customer-facing site',
+    heading: 'Make the customer side feel like you.',
+    body:
+      'Choose a look that fits your brand, then give customers one polished place to find your show, queue, trade board, and updates.',
+  },
   assets: {
     tradeBoardDesktopProof: {
       src: '/sparkle-suite/landing/trade-board-desktop-proof.png',
@@ -33,6 +40,18 @@ export const sparkleSuitePublicLandingContent = {
     nicNacWorkspaceProof: {
       src: '/sparkle-suite/landing/nic-nac-workspace-proof.png',
       alt: 'Sparkle Suite Nic-Nac workspace preview on desktop.',
+    },
+    customerSiteVioletProof: {
+      src: '/sparkle-suite/landing/customer-site-violet-proof.png',
+      alt: 'Violet customer-facing Sparkle Suite site preview.',
+    },
+    customerSiteNightProof: {
+      src: '/sparkle-suite/landing/customer-site-night-proof.png',
+      alt: 'Dark customer-facing Sparkle Suite site preview.',
+    },
+    customerSiteBlushProof: {
+      src: '/sparkle-suite/landing/customer-site-blush-proof.png',
+      alt: 'Blush customer-facing Sparkle Suite site preview.',
     },
   },
   pricing: {

@@ -54,8 +54,14 @@ describe('Sparkle Suite public landing page', () => {
         'Instead of chasing show details across scattered tools, reps get one workspace for Live queue, Trade board, Live event calendar, email and SMS updates, customer-site customizations, and Nic-Nac, the built-in assistant for live-show support.',
     })
 
+    expect(sparkleSuitePublicLandingContent.customerSiteProof).toMatchObject({
+      eyebrow: 'Customer-facing site',
+      heading: 'Make the customer side feel like you.',
+    })
+
     expect(sparkleSuitePublicLandingContent.sections.map((section) => section.id)).toEqual([
       'hero',
+      'customer-site-proof',
       'workspace-proof',
       'pricing',
     ])
@@ -68,6 +74,18 @@ describe('Sparkle Suite public landing page', () => {
       nicNacWorkspaceProof: {
         src: '/sparkle-suite/landing/nic-nac-workspace-proof.png',
         alt: 'Sparkle Suite Nic-Nac workspace preview on desktop.',
+      },
+      customerSiteVioletProof: {
+        src: '/sparkle-suite/landing/customer-site-violet-proof.png',
+        alt: 'Violet customer-facing Sparkle Suite site preview.',
+      },
+      customerSiteNightProof: {
+        src: '/sparkle-suite/landing/customer-site-night-proof.png',
+        alt: 'Dark customer-facing Sparkle Suite site preview.',
+      },
+      customerSiteBlushProof: {
+        src: '/sparkle-suite/landing/customer-site-blush-proof.png',
+        alt: 'Blush customer-facing Sparkle Suite site preview.',
       },
     })
 

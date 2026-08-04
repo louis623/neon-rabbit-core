@@ -66,6 +66,40 @@ function WorkspaceProof() {
   )
 }
 
+function CustomerSiteProof() {
+  const { customerSiteProof, assets } = sparkleSuitePublicLandingContent
+
+  return (
+    <section className="sl2-customer-site-proof" id="customer-site-proof">
+      <div className="sl2-customer-site-proof__copy">
+        <span className="sl2-eyebrow">{customerSiteProof.eyebrow}</span>
+        <h2>{customerSiteProof.heading}</h2>
+        <p>{customerSiteProof.body}</p>
+      </div>
+      <div
+        className="sl2-customer-site-proof__deck"
+        aria-label="Three customer-facing Sparkle Suite site style previews"
+      >
+        <img
+          className="sl2-customer-site-proof__card sl2-customer-site-proof__card--violet"
+          src={assets.customerSiteVioletProof.src}
+          alt={assets.customerSiteVioletProof.alt}
+        />
+        <img
+          className="sl2-customer-site-proof__card sl2-customer-site-proof__card--night"
+          src={assets.customerSiteNightProof.src}
+          alt={assets.customerSiteNightProof.alt}
+        />
+        <img
+          className="sl2-customer-site-proof__card sl2-customer-site-proof__card--blush"
+          src={assets.customerSiteBlushProof.src}
+          alt={assets.customerSiteBlushProof.alt}
+        />
+      </div>
+    </section>
+  )
+}
+
 function PricingSection() {
   const { pricing } = sparkleSuitePublicLandingContent
   const firstCheckoutPrice = pricing.standard.firstCheckout.split(' first checkout')[0]
@@ -121,6 +155,7 @@ export function SparkleSuitePublicLanding() {
       <div className="sl2-shell">
         <SparkleSuitePublicHeader homeHref="#top" />
         <ProductHero />
+        <CustomerSiteProof />
         <WorkspaceProof />
         <PricingSection />
         <SparkleSuitePublicFooter />

@@ -4572,6 +4572,66 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   padding: 44px 0;
 }
 
+.sparkle-landing-v2 .sl2-customer-site-proof {
+  border-top: 1px solid rgba(64, 41, 36, 0.12);
+  display: grid;
+  gap: 24px;
+  padding: 44px 0;
+}
+
+.sparkle-landing-v2 .sl2-customer-site-proof__copy {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.sparkle-landing-v2 .sl2-customer-site-proof h2 {
+  font-size: clamp(2.2rem, 11vw, 4rem);
+  line-height: 0.98;
+  max-width: 11ch;
+}
+
+.sparkle-landing-v2 .sl2-customer-site-proof p {
+  color: #775d57;
+  font-size: 16px;
+  line-height: 1.62;
+  max-width: 42rem;
+}
+
+.sparkle-landing-v2 .sl2-customer-site-proof__deck {
+  min-height: min(62vw, 310px);
+  position: relative;
+}
+
+.sparkle-landing-v2 .sl2-customer-site-proof__card {
+  background: #ffffff;
+  border: 1px solid rgba(64, 41, 36, 0.14);
+  border-radius: 18px;
+  box-shadow: 0 22px 52px rgba(64, 41, 36, 0.16);
+  display: block;
+  height: auto;
+  position: absolute;
+  width: min(82%, 560px);
+}
+
+.sparkle-landing-v2 .sl2-customer-site-proof__card--violet {
+  left: 0;
+  top: 8%;
+  transform: rotate(-4deg);
+}
+
+.sparkle-landing-v2 .sl2-customer-site-proof__card--night {
+  left: 9%;
+  top: 2%;
+  transform: rotate(1deg);
+}
+
+.sparkle-landing-v2 .sl2-customer-site-proof__card--blush {
+  right: 0;
+  top: 13%;
+  transform: rotate(4deg);
+}
+
 .sparkle-landing-v2 .sl2-workspace-proof h2,
 .sparkle-landing-v2 .sl2-pricing h2 {
   font-size: clamp(2.2rem, 11vw, 4rem);
@@ -5234,6 +5294,7 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   }
 
   .sparkle-landing-v2 .sl2-hero,
+  .sparkle-landing-v2 .sl2-customer-site-proof,
   .sparkle-landing-v2 .sl2-workspace-proof {
     grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
     align-items: center;
@@ -5256,6 +5317,19 @@ html[data-control-center-theme="dark"] .control-center-surface .text-fuchsia-700
   .sparkle-landing-v2 .sl2-workspace-proof {
     min-height: 680px;
     padding: 76px 0;
+  }
+
+  .sparkle-landing-v2 .sl2-customer-site-proof {
+    min-height: 620px;
+    padding: 76px 0;
+  }
+
+  .sparkle-landing-v2 .sl2-customer-site-proof__deck {
+    min-height: 390px;
+  }
+
+  .sparkle-landing-v2 .sl2-customer-site-proof__card {
+    width: min(82%, 560px);
   }
 
   .sparkle-landing-v2 .sl2-workspace-proof__shots {
