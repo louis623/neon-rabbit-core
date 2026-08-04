@@ -42,6 +42,10 @@ export function readPublicSiteSlugFromUrl(url: URL) {
   const firstSegment = url.pathname.split('/').filter(Boolean)[0]
   if (!firstSegment) return null
 
+  // API paths are not customer-site slugs. On a custom domain, treating
+  // `/api/...` as a slug would hide the host-based customer target.
+  if (firstSegment.toLowerCase() === 'api') return null
+
   let decodedSegment = ''
   try {
     decodedSegment = decodeURIComponent(firstSegment).trim().toLowerCase()

@@ -66,6 +66,20 @@ describe('Amethyst request rep target', () => {
     ).toBeNull()
   })
 
+  it('uses the custom-domain target for API routes instead of treating api as a public slug', () => {
+    expect(
+      resolveAmethystRequestTarget(
+        new Request('https://sparklebysasha.example/api/amethyst/homepage-template'),
+      ),
+    ).toEqual({
+      customDomain: 'sparklebysasha.example',
+      publicSiteSlug: null,
+      repId: null,
+      source: 'custom-domain',
+      targeted: true,
+    })
+  })
+
   it('ignores the canonical Sparkle Suite platform host so slug pages do not become custom-domain lookups', () => {
     expect(
       resolveAmethystRequestRepId(
