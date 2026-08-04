@@ -1,5 +1,15 @@
 # Project State
 
+## August 4 Customer-Site Brand Assets Checkpoint
+
+- Bri's Glowtique now has the approved stable dark-and-white cursive `B` monogram on `brisglowtique.com` through the request-aware `/icon` route. The favicon is intentionally independent of a skin change.
+- Customer-domain `/opengraph-image` now creates a 1200x630 share preview using the live customer-site business name, tagline, custom domain, and active appearance-preset palette. Bri's current card follows Emerald Garden; future skin changes update the card palette without replacing the approved mark.
+- Reusable project guidance lives in `.agents/skills/sparkle-suite-customer-site-brand-assets/`. The standard keeps generic Sparkle Suite public assets on platform domains and applies rep assets only after validated custom-domain resolution.
+
+**Last updated:** August 4, 2026
+
+---
+
 ## August 4 Customer List and Import Checkpoint
 
 - Tools now presents **Customer List** as a working, standalone customer-profile tool. **Messages** remains a separate, disabled `Coming soon` communications tool; the roster must never replace or imply that future communications work.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Customer-Site Brand Assets"
+  short_description: "Create stable marks and skin-aware share cards."
+  default_prompt: "Use $sparkle-suite-customer-site-brand-assets to create or update a customer-site favicon and social share image."
