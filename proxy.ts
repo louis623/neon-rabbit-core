@@ -4,10 +4,10 @@ import type { NextRequest } from 'next/server'
 import { isAmethystPlatformHost, normalizeAmethystCustomDomainCandidate } from '@/lib/amethyst/host-routing'
 
 const CUSTOMER_SITE_ROUTES: Record<string, string> = {
-  '/': '/amethyst/Homepage.html',
-  '/trade': '/amethyst/Trade.html',
-  '/join': '/amethyst/Join.html',
-  '/in-the-pantry': '/amethyst/Pantry.html',
+  '/': '/customer-site/home',
+  '/trade': '/customer-site/trade',
+  '/join': '/customer-site/join',
+  '/in-the-pantry': '/customer-site/in-the-pantry',
 }
 
 export function proxy(request: NextRequest) {
@@ -21,7 +21,6 @@ export function proxy(request: NextRequest) {
 
   const url = request.nextUrl.clone()
   url.pathname = publicAssetPath
-  url.searchParams.set('__sparkle_customer_site_path', request.nextUrl.pathname)
 
   return NextResponse.rewrite(url)
 }

@@ -6,10 +6,10 @@ import { proxy } from '@/proxy'
 
 describe('custom-domain customer site proxy', () => {
   it.each([
-    ['/', '/amethyst/Homepage.html'],
-    ['/trade', '/amethyst/Trade.html'],
-    ['/join', '/amethyst/Join.html'],
-    ['/in-the-pantry', '/amethyst/Pantry.html'],
+    ['/', '/customer-site/home'],
+    ['/trade', '/customer-site/trade'],
+    ['/join', '/customer-site/join'],
+    ['/in-the-pantry', '/customer-site/in-the-pantry'],
   ])('rewrites %s to its customer-site asset on a custom domain', (path, assetPath) => {
     const response = proxy(
       new NextRequest(`https://brisglowtique.com${path}`, {
@@ -18,11 +18,9 @@ describe('custom-domain customer site proxy', () => {
     )
 
     expect(isRewrite(response)).toBe(true)
-    expect(getRewrittenUrl(response)).toBe(
-      `https://brisglowtique.com${assetPath}?__sparkle_customer_site_path=${encodeURIComponent(path)}`,
-    )
+    expect(getRewrittenUrl(response)).toBe(`https://brisglowtique.com${assetPath}`)
     expect(response.headers.get('x-middleware-rewrite')).toBe(
-      `https://brisglowtique.com${assetPath}?__sparkle_customer_site_path=${encodeURIComponent(path)}`,
+      `https://brisglowtique.com${assetPath}`,
     )
   })
 

@@ -17,7 +17,6 @@ import {
 } from '@/lib/amethyst/preview-template-data'
 import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
 import { getPublicRepName } from '@/lib/amethyst/public-rep-name'
-import { resolveAmethystRequestCustomDomainHost } from '@/lib/amethyst/host-routing'
 
 interface RenderAmethystPublicAssetResponseOptions {
   repIdOverride?: string | null
@@ -219,22 +218,6 @@ function normalizeCanonicalPath(path: string | null | undefined) {
   return cleaned.startsWith('/') ? cleaned : `/${cleaned}`
 }
 
-const CUSTOMER_SITE_CANONICAL_PATHS = new Set([
-  '/',
-  '/trade',
-  '/join',
-  '/in-the-pantry',
-])
-
-function getCustomDomainCanonicalPath(request: Request) {
-  if (!resolveAmethystRequestCustomDomainHost(request)) return null
-
-  const path = new URL(request.url).searchParams.get(
-    '__sparkle_customer_site_path',
-  )
-  return path && CUSTOMER_SITE_CANONICAL_PATHS.has(path) ? path : null
-}
-
 function applyCanonicalPathOverride(
   metadata: ReturnType<typeof buildAmethystPublicMetadata>,
   origin: string,
@@ -377,13 +360,11 @@ function rewriteAmethystPublicHtml(
   templateData?: AmethystPreviewTemplateData | null,
   options: RenderAmethystPublicAssetResponseOptions = {},
 ) {
-  const canonicalPathOverride =
-    options.canonicalPathOverride ?? getCustomDomainCanonicalPath(request)
   const metadataBlock = renderMetadataBlock(
     page,
     origin,
     templateData,
-    canonicalPathOverride,
+    options.canonicalPathOverride,
   )
   const rewritten = html.replace(
     /<title>[\s\S]*?<meta name="twitter:image" content="[^"]+" \/>\r?\n?/,
@@ -397,7 +378,7 @@ function rewriteAmethystPublicHtml(
     page,
     origin,
     templateData,
-    canonicalPathOverride,
+    options.canonicalPathOverride,
   )
 }
 
