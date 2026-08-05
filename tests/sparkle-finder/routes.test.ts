@@ -751,6 +751,17 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Marketplace");
   });
 
+  it("explains the pre-onboarding Rep Directory without inventing live reps", () => {
+    const emptyDirectory = renderToStaticMarkup(renderRepsPageContent());
+    const emptySearch = renderToStaticMarkup(renderRepsPageContent({ query: "Taylor" }));
+
+    expect(emptyDirectory).toContain("The Rep Directory is opening soon.");
+    expect(emptyDirectory).toContain("Sparkle Suite is welcoming its first reps this week.");
+    expect(emptyDirectory).not.toContain("No reps match that search.");
+    expect(emptySearch).toContain("No reps match that search.");
+    expect(emptySearch).not.toContain("The Rep Directory is opening soon.");
+  });
+
   it("renders favorite reps dashboards for free and Silver customers", () => {
     const freeMarkup = renderToStaticMarkup(renderFavoritesPageContent(getLocalDevAuthState("free")));
     const silverMarkup = renderToStaticMarkup(renderFavoritesPageContent(getLocalDevAuthState("silver")));

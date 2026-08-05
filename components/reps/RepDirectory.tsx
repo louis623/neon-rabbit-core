@@ -45,8 +45,19 @@ export function RepDirectory({ cards, query = "" }: RepDirectoryProps) {
           ))}
         </div>
       ) : (
-        <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 text-sm font-semibold text-[var(--sparkle-ink-muted)] shadow-[var(--sparkle-shadow-sm)]">
-          No reps match that search.
+        <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
+          {query ? (
+            <p className="text-sm font-semibold text-[var(--sparkle-ink-muted)]">No reps match that search.</p>
+          ) : (
+            <>
+              <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+                The Rep Directory is opening soon.
+              </h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+                Sparkle Suite is welcoming its first reps this week. Their profiles and live show times will appear here as they are onboarded.
+              </p>
+            </>
+          )}
         </div>
       )}
 
