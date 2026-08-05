@@ -1,5 +1,14 @@
 # Project State
 
+## August 4 Customer-Site Empty Media States
+
+- Every standard customer-facing homepage now preserves the full designed card for an unused Showcase video or About image/video slot and labels it **Coming soon**. Empty media can no longer collapse or leave controls floating over adjacent content.
+- TikTok embeds continue to render inline when a valid video ID is present. The fallback is intentionally a non-interactive placeholder, including for an invalid or absent video value, rather than a fake playable control.
+
+**Last updated:** August 4, 2026
+
+---
+
 ## August 4 Bri's Glowtique Footer Cleanup
 
 - Bri's public customer-site footer no longer shows a Contact link. FAQ remains visible only as a non-interactive `FAQ · Coming soon` label until a real customer FAQ exists; it does not lead visitors to a placeholder or signup section.

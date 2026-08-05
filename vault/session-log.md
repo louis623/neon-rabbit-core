@@ -4,6 +4,13 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 4, 2026 - Customer-Site Media Placeholder Reliability
+
+- Fixed the Bri's Glowtique preview overlap: an absent Showcase TikTok URL had returned its fallback content without the video-card wrapper, allowing its old visual elements to float into the adjacent explainer card.
+- Empty Showcase and About media placements now retain their normal card dimensions and render the consistent non-interactive **Coming soon** state across standard customer-facing sites. Valid TikTok/video and photo media still render in place.
+
+---
+
 ## August 4, 2026 - Bri's Customer-Site Footer Cleanup
 
 - Removed Contact from the standard customer-site footer after review because there is no supported contact experience in this launch surface.

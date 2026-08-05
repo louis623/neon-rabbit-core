@@ -1,5 +1,12 @@
 # Decision Log
 
+## August 4, 2026 - Empty Customer-Site Media Is an Honest, Sized State
+
+**Never collapse an unconfigured public media placement**
+The Showcase video and About media slots retain their intended layout even without configured content and visibly say **Coming soon**. A missing or invalid TikTok URL must not leave a detached play treatment, imply a working video, or overrun neighboring content.
+
+---
+
 All key architectural, tooling, and operational decisions — logged with date and rationale.
 
 ---

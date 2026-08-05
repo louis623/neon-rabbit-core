@@ -684,7 +684,16 @@ function TikTokEmbed({ className = "", videoUrl, title, children }) {
     };
   }, [videoId]);
 
-  if (!videoId) return children || null;
+  if (!videoId) {
+    return (
+      <div
+        className={`ss-tiktok-embed ss-tiktok-embed-fallback ${className}`}
+        data-tiktok-embed="false"
+      >
+        <span className="ss-tiktok-embed-coming-soon">Coming soon</span>
+      </div>
+    );
+  }
 
   const toggleMute = () => {
     const nextMuted = !muted;
@@ -721,6 +730,7 @@ function TikTokEmbed({ className = "", videoUrl, title, children }) {
 function AboutMediaCard({ index, fallbackCaption }) {
   const slot = getAboutMediaSlot(index);
   const videoId = getTikTokVideoId(slot?.href);
+  const hasImage = Boolean(slot?.mediaUrl);
   const className = "hp-about-media-card slot";
   const content = (
     <>
@@ -735,6 +745,17 @@ function AboutMediaCard({ index, fallbackCaption }) {
         title={slot?.caption || "TikTok video"}
         videoUrl={slot.href}
       />
+    );
+  }
+
+  if (!hasImage) {
+    return (
+      <div
+        className={`${className} hp-about-media-empty`}
+        data-slot={`about media ${index + 1}`}
+      >
+        <span className="hp-media-coming-soon">Coming soon</span>
+      </div>
     );
   }
 
