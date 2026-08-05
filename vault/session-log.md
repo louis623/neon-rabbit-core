@@ -4,6 +4,13 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 4, 2026 - Bri's Customer-Site Footer Cleanup
+
+- Removed Contact from the standard customer-site footer after review because there is no supported contact experience in this launch surface.
+- Replaced the live FAQ link with the non-interactive label **FAQ · Coming soon** on Homepage, Trade Board, and Join. The old placeholder links could falsely imply a working FAQ/contact feature.
+
+---
+
 ## August 4, 2026 - Customer Waitlist Removal Repair
 
 - Added the operator-only **Remove** control to each Customer Waitlist entry in Control Center.

@@ -4,6 +4,13 @@ All key architectural, tooling, and operational decisions — logged with date a
 
 ---
 
+## August 4, 2026 - Customer-Site Footer Feature Honesty
+
+**Do not link to unfinished customer-facing destinations**
+Standard customer-site footers omit Contact until there is a supported contact experience. FAQ is shown only as a clearly non-interactive **Coming soon** label until the feature is implemented. This keeps customer navigation honest without removing the visible product direction.
+
+---
+
 ## August 4, 2026 - Waitlist Removal Safety
 
 **Waitlist removal is permanent but deliberately hard to trigger**

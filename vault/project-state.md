@@ -1,5 +1,14 @@
 # Project State
 
+## August 4 Bri's Glowtique Footer Cleanup
+
+- Bri's public customer-site footer no longer shows a Contact link. FAQ remains visible only as a non-interactive `FAQ · Coming soon` label until a real customer FAQ exists; it does not lead visitors to a placeholder or signup section.
+- The same footer contract applies to the standard Amethyst Homepage, Trade Board, and Join pages. The Mile High Fizz hybrid's distinct curated footer remains unchanged.
+
+**Last updated:** August 4, 2026
+
+---
+
 ## August 4 Control Center Waitlist Removal Checkpoint
 
 - Control Center operators can permanently remove a Customer Waitlist entry from both the visible list and `public.sparkle_suite_waitlist`. The confirmation is intentionally a clear second click: `Delete Jane Doe?` followed by an explicit `Delete Jane Doe` action. Errors remain visible in the dialog instead of appearing off-screen in the manual-entry form.

@@ -466,12 +466,14 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    const footerLabels = ['Home', 'Trade Board', 'Join Team', 'FAQ', 'Contact']
+    const footerLabels = ['Home', 'Trade Board', 'Join Team']
 
     for (const source of [homepage, trade, join]) {
       for (const label of footerLabels) {
         expect(source).toContain(`>${label}</a>`)
       }
+      expect(source).toContain('FAQ · Coming soon')
+      expect(source).not.toContain('>Contact</a>')
       expect(source).not.toContain('>Shop Now</a>')
       expect(source).not.toContain('Bomb Party Catalog')
       expect(source).not.toContain('Pre-orders</a>')

@@ -1621,10 +1621,7 @@ function Footer({ businessName }) {
                 <li key={link.label}><a {...linkProps(link.href)}>{link.label}</a></li>
               ))
             ) : (
-              <>
-                <li><a {...linkProps(CONTENT.footerLinks?.faq || "#signup")}>FAQ</a></li>
-                <li><a {...linkProps(CONTENT.footerLinks?.contact || "#signup")}>Contact</a></li>
-              </>
+              <li><span className="hp-footer-coming-soon">FAQ · Coming soon</span></li>
             )}
           </ul>
         </div>
