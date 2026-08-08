@@ -17,12 +17,17 @@ export interface CustomerSiteBrandAssetContext {
   customDomain: string
   mark: string
   markAssetPath: string | null
+  markFontFamily: string
   palette: CustomerSiteSharePalette
   preset: AmethystAppearancePresetId
   tagline: string
 }
 
 const BRI_CUSTOM_DOMAINS = new Set(['brisglowtique.com', 'www.brisglowtique.com'])
+const BLING_KITCHEN_CUSTOM_DOMAINS = new Set([
+  'theblingkitchen.com',
+  'www.theblingkitchen.com',
+])
 
 const SHARE_BACKGROUNDS: Partial<Record<AmethystAppearancePresetId, string>> = {
   amethyst: '#2b155c',
@@ -66,6 +71,15 @@ function getCustomerSiteMarkAssetPath(customDomain: string) {
     : null
 }
 
+export function getCustomerSiteMarkFontFamily(customDomain: string) {
+  // BlingKitchen's header wordmark uses Playfair Display. Keep that same
+  // distinctive letterform in its compact B mark rather than introducing a
+  // second logo style for the favicon and share card.
+  return BLING_KITCHEN_CUSTOM_DOMAINS.has(customDomain)
+    ? '"Playfair Display", Georgia, serif'
+    : 'Georgia, serif'
+}
+
 /**
  * Resolves customer-site branding only on a custom customer domain. Platform
  * URLs keep the Sparkle Suite application icon and social card unchanged.
@@ -89,6 +103,7 @@ export async function getCustomerSiteBrandAssetContext(
     customDomain,
     mark: getCustomerSiteMark(businessName, templateData.homepage.repName),
     markAssetPath: getCustomerSiteMarkAssetPath(customDomain),
+    markFontFamily: getCustomerSiteMarkFontFamily(customDomain),
     palette: getCustomerSiteSharePalette(preset),
     preset,
     tagline,

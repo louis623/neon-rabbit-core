@@ -83,7 +83,7 @@ export default async function Image() {
               {markSrc ? (
                 <img alt={`${brand.businessName} monogram`} height={252} src={markSrc} width={252} />
               ) : (
-                <div style={{ alignItems: 'center', background: '#1d1719', color: '#fff', display: 'flex', fontFamily: 'Georgia, serif', fontSize: 190, fontStyle: 'italic', height: 252, justifyContent: 'center', width: 252 }}>
+                <div style={{ alignItems: 'center', background: `linear-gradient(135deg, ${brand.palette.background}, ${brand.palette.accent})`, color: brand.palette.foreground, display: 'flex', fontFamily: brand.markFontFamily, fontSize: 190, fontWeight: 800, height: 252, justifyContent: 'center', width: 252 }}>
                   {brand.mark}
                 </div>
               )}

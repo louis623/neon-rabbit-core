@@ -41,6 +41,38 @@ export default async function Icon() {
     )
   }
 
+  if (brand) {
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            alignItems: 'center',
+            background: `linear-gradient(135deg, ${brand.palette.background}, ${brand.palette.accent})`,
+            color: brand.palette.foreground,
+            display: 'flex',
+            height: '100%',
+            justifyContent: 'center',
+            width: '100%',
+          }}
+        >
+          <span
+            style={{
+              display: 'flex',
+              fontFamily: brand.markFontFamily,
+              fontSize: 150,
+              fontWeight: 800,
+              lineHeight: 1,
+              transform: 'translateY(-4px)',
+            }}
+          >
+            {brand.mark}
+          </span>
+        </div>
+      ),
+      { ...size },
+    )
+  }
+
   return new ImageResponse(
     (
       <div
