@@ -244,13 +244,17 @@ function renderMetadataBlock(
   templateData?: AmethystPreviewTemplateData | null,
   canonicalPathOverride?: string | null,
 ) {
+  const faviconTag = `<link rel="icon" type="image/png" href="${escapeHtmlAttribute(
+    new URL('/icon', origin).toString(),
+  )}" />`
+
   if (!templateData) {
     const metadata = applyCanonicalPathOverride(
       buildAmethystPublicMetadata(page, { origin }),
       origin,
       canonicalPathOverride,
     )
-    return buildMetadataTagsFromPublicMetadata(metadata).map(renderMetaTag).join('\n')
+    return `${buildMetadataTagsFromPublicMetadata(metadata).map(renderMetaTag).join('\n')}\n${faviconTag}`
   }
 
   const pageText = buildTargetedPageText(page, templateData)
@@ -272,7 +276,7 @@ function renderMetadataBlock(
     },
   }
 
-  return buildMetadataTagsFromPublicMetadata(metadata).map(renderMetaTag).join('\n')
+  return `${buildMetadataTagsFromPublicMetadata(metadata).map(renderMetaTag).join('\n')}\n${faviconTag}`
 }
 
 function injectAmethystJsonLd(

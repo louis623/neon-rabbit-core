@@ -34,6 +34,9 @@ describe('Amethyst static asset route', () => {
     expect(html).toContain(
       '<meta name="twitter:image" content="https://sparklebysasha.example/opengraph-image" />',
     )
+    expect(html).toContain(
+      '<link rel="icon" type="image/png" href="https://sparklebysasha.example/icon" />',
+    )
   })
 
   it('keeps local and preview Amethyst HTML on the default Sparkle Suite canonical origin', async () => {
