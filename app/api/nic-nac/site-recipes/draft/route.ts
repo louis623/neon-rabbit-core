@@ -30,7 +30,7 @@ function modelDraftErrorResponse(error: unknown) {
     {
       code: 'MODEL_UNAVAILABLE',
       error:
-        'Nic-Nac can save the uploaded photos, but the recipe builder needs the OpenAI billing/quota issue cleared before it can read recipe-card images.',
+        'The uploaded photos are saved, but recipe photo reading is temporarily unavailable. Please try again later.',
     },
     { status: 503 },
   )
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
     if (!images.some((image) => image.role === 'recipe_card')) {
       return NextResponse.json(
-        { error: 'Upload at least one readable recipe-card photo first.' },
+        { error: 'Upload at least one readable recipe-source photo first.' },
         { status: 400 },
       )
     }

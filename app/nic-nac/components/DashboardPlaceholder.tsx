@@ -3822,7 +3822,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         error: null,
         helperMessage:
           field === 'recipeCardImageUrls'
-            ? 'Recipe-card photo uploaded. Nic-Nac can use it to build the draft.'
+            ? 'Recipe-source photo uploaded. Read and format it when you are ready.'
             : 'Food photo uploaded. Save the recipe to publish it.',
       })
     } catch (error) {
@@ -3841,7 +3841,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     if (!recipeDraft.title.trim()) {
       setRecipeActionState({
         pendingKey: null,
-        error: 'Recipe title is required before Nic-Nac can build the draft.',
+        error: 'Recipe title is required before the recipe can be formatted.',
         helperMessage: null,
       })
       return
@@ -3850,7 +3850,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     if (recipeDraft.recipeCardImageUrls.length === 0) {
       setRecipeActionState({
         pendingKey: null,
-        error: 'Upload at least one readable recipe-card photo first.',
+        error: 'Upload at least one readable recipe-source photo first.',
         helperMessage: null,
       })
       return
@@ -3914,8 +3914,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         error: null,
         helperMessage:
           draft.warnings && draft.warnings.length > 0
-            ? `Recipe draft built. Check: ${draft.warnings.join(' ')}`
-            : 'Recipe draft built. Review it, then save when it looks right.',
+            ? `Recipe formatted. Check: ${draft.warnings.join(' ')}`
+            : 'Recipe formatted. Review it, then save when it looks right.',
       })
     } catch (error) {
       setRecipeActionState({
@@ -3923,7 +3923,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         error:
           error instanceof Error
             ? error.message
-            : 'Unable to build this recipe draft.',
+            : 'Unable to format this recipe.',
         helperMessage: null,
       })
     }
@@ -7796,7 +7796,7 @@ export function RecipesCard({
         <div>
           <div className={styles.cardTitle}>Recipes</div>
           <div className={styles.cardSubtitle}>
-            Add a title, upload food photos and recipe-card photos, then let Nic-Nac draft the Pantry recipe.
+            Upload the two customer-facing food photos, then add recipe-source photos to read and format before you review and save.
           </div>
         </div>
         <div className={styles.siteSettingsSaveActions}>
@@ -7816,8 +7816,8 @@ export function RecipesCard({
               disabled={Boolean(pendingKey)}
             >
               {pendingKey === 'build-draft'
-                ? 'Building recipe...'
-                : 'Build recipe with Nic-Nac'}
+                ? 'Reading recipe photos...'
+                : 'Read and format recipe'}
             </button>
           ) : null}
         </div>
@@ -7833,17 +7833,7 @@ export function RecipesCard({
       <div className={styles.recipeEditorLayout}>
         <div className={styles.siteSettingsSection}>
           <div className={styles.calendarHeader}>
-            <select
-              className={styles.recipeModeSelect}
-              value={editorMode}
-              aria-label="Recipe editor mode"
-              onChange={(event) =>
-                handleEditorModeChange(event.target.value as RecipeEditorMode)
-              }
-            >
-              <option value="builder">New Recipe Builder</option>
-              <option value="manual">Manual Edit Recipes</option>
-            </select>
+            <span className={styles.rosterTag}>Recipe editor</span>
             <span className={styles.rosterTag}>
               {draft.isVisible ? 'Visible in Pantry' : 'Hidden draft'}
             </span>
@@ -7874,7 +7864,7 @@ export function RecipesCard({
                     onDraftChange?.({ category: event.target.value })
                   }
                 >
-                  <option value="">Let Nic-Nac choose</option>
+                  <option value="">Choose a category</option>
                   {BLING_KITCHEN_RECIPE_CATEGORIES.map((category) => (
                     <option value={category} key={category}>
                       {category}
@@ -7909,7 +7899,7 @@ export function RecipesCard({
 
             <div className={styles.recipeBuilderImageGrid}>
               <RecipeImageField
-                label="Food photo for Pantry card"
+                label="Outside food photo for Pantry card"
                 field="imageUrl"
                 imageUrl={draft.imageUrl}
                 imageAlt={draft.imageAlt || draft.title}
@@ -7918,7 +7908,7 @@ export function RecipesCard({
                 onUploadImage={onUploadImage}
               />
               <RecipeImageField
-                label="Food photo for recipe view"
+                label="Inside food photo for recipe view"
                 field="modalImageUrl"
                 imageUrl={draft.modalImageUrl}
                 imageAlt={draft.imageAlt || draft.title}
@@ -8222,13 +8212,13 @@ function RecipeCardSourceUploader({
     <div className={styles.recipeSourcePanel}>
       <div className={styles.calendarHeader}>
         <div>
-          <div className={styles.walletSettingsTitle}>Recipe-card photos</div>
+          <div className={styles.walletSettingsTitle}>Recipe-source photos</div>
           <div className={styles.siteSettingsPreviewNote}>
-            Upload the card or paper with the ingredients and directions.
+            Upload every card or page with ingredients, instructions, or Heather's tip. You can add multiple photos; they are read to format the recipe and are never shown to customers.
           </div>
         </div>
         <label className={styles.recipeUploadButton}>
-          {isUploading ? 'Uploading...' : 'Upload recipe card'}
+          {isUploading ? 'Uploading...' : 'Upload recipe source'}
           <input
             type="file"
             accept="image/*"
@@ -8259,7 +8249,7 @@ function RecipeCardSourceUploader({
         </div>
       ) : (
         <div className={styles.recipeEditorImageEmpty}>
-          No recipe-card photos uploaded yet.
+          No recipe-source photos uploaded yet.
         </div>
       )}
     </div>

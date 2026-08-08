@@ -2247,7 +2247,7 @@ describe('DashboardPlaceholder', () => {
     ).toBe('Saving recipe changes...')
   })
 
-  it('renders the Recipes manager with an image-first builder and mode selector', () => {
+  it('renders the Recipes manager with presentation and multi-photo recipe sources', () => {
     const html = renderToStaticMarkup(
       createElement(RecipesCard, {
         state: RECIPES_READY_STATE,
@@ -2268,20 +2268,18 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Pantry order')
     expect(html).not.toContain('Add recipe')
     expect(html).toContain('Bling Kitchen Chicken Dip')
-    expect(html).toContain('New Recipe Builder')
-    expect(html).toContain('Manual Edit Recipes')
+    expect(html).toContain('Recipe editor')
     expect(html).toContain('Category')
-    expect(html).toContain('Let Nic-Nac choose')
+    expect(html).toContain('Choose a category')
     expect(html).toContain('Drinks &amp; Extras')
     expect(html).toContain('Prep time')
     expect(html).toContain('Servings')
-    expect(html).toContain('Food photo for Pantry card')
-    expect(html).toContain('Food photo for recipe view')
+    expect(html).toContain('Outside food photo for Pantry card')
+    expect(html).toContain('Inside food photo for recipe view')
     expect(html).toContain('Uploaded to Sparkle storage')
-    expect(html).toContain('Recipe-card photos')
-    expect(html).toContain('Upload recipe card')
-    expect(html).toContain('Build recipe with Nic-Nac')
-    expect(html.match(/Build recipe with Nic-Nac/g)).toHaveLength(1)
+    expect(html).toContain('Recipe-source photos')
+    expect(html).toContain('Upload recipe source')
+    expect(html).toContain('Read and format recipe')
     expect(html).toContain('Recipe Preview')
     expect(html).not.toContain('Advanced edit')
     expect(html).toContain('Visible in Pantry')
@@ -2299,7 +2297,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('data-testid="recipes-save-status"')
   })
 
-  it('renders Manual Edit Recipes with a saved recipe picker and compact edit fields', () => {
+  it('renders the saved recipe editor with compact edit fields', () => {
     const html = renderToStaticMarkup(
       createElement(RecipesCard, {
         state: RECIPES_READY_STATE,
@@ -2313,7 +2311,7 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('Manual Edit Recipes')
+    expect(html).toContain('Recipe editor')
     expect(html).toContain('Recipe to edit')
     expect(html).toContain('New manual recipe')
     expect(html).toContain('Bling Kitchen Chicken Dip')
