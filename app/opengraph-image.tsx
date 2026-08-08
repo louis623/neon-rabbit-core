@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { getCustomerSiteBrandAssetContext } from '@/lib/amethyst/customer-site-brand-assets'
+import { getCustomerSiteBrandImageFonts } from '@/lib/amethyst/customer-site-brand-fonts'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -20,6 +21,7 @@ export const contentType = 'image/png'
 
 export default async function Image() {
   const brand = await getCustomerSiteBrandAssetContext(await headers())
+  const fonts = await getCustomerSiteBrandImageFonts(brand)
   if (brand) {
     const markSrc = brand.markAssetPath
       ? `data:image/png;base64,${await readFile(
@@ -91,7 +93,7 @@ export default async function Image() {
           </div>
         </div>
       ),
-      { ...size },
+      { ...size, fonts },
     )
   }
 
@@ -262,6 +264,7 @@ export default async function Image() {
     ),
     {
       ...size,
+      fonts,
     },
   )
 }

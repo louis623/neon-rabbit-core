@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { getCustomerSiteBrandAssetContext } from '@/lib/amethyst/customer-site-brand-assets'
+import { getCustomerSiteBrandImageFonts } from '@/lib/amethyst/customer-site-brand-fonts'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -17,6 +18,7 @@ export const contentType = 'image/png'
 
 export default async function Icon() {
   const brand = await getCustomerSiteBrandAssetContext(await headers())
+  const fonts = await getCustomerSiteBrandImageFonts(brand)
   if (brand?.markAssetPath) {
     const markData = await readFile(
       join(process.cwd(), 'public', brand.markAssetPath),
@@ -37,7 +39,7 @@ export default async function Icon() {
       >
         <img alt={`${brand.businessName} monogram`} height={192} src={markSrc} width={192} />
       </div>,
-      { ...size },
+      { ...size, fonts },
     )
   }
 
@@ -69,7 +71,7 @@ export default async function Icon() {
           </span>
         </div>
       ),
-      { ...size },
+      { ...size, fonts },
     )
   }
 
@@ -115,6 +117,7 @@ export default async function Icon() {
     ),
     {
       ...size,
+      fonts,
     },
   )
 }
