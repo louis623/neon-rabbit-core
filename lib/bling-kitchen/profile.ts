@@ -12,7 +12,7 @@ export const BLING_KITCHEN_PROFILE = {
   legalBusinessName: 'The Bling Kitchen',
   teamName: 'Opal Sparkling Gems',
   publicSiteSlug: 'blingkitchen',
-  futureCustomDomain: 'blingkitchen.com',
+  futureCustomDomain: 'theblingkitchen.com',
   sourceSite: 'https://theblingkitchen.com/',
   shopUrl: 'https://www.bombparty.com/blingkitchen/parties',
   joinPackUrl: 'https://www.bombparty.com/blingkitchen/packs',
