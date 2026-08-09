@@ -3688,3 +3688,26 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Focused landing tests passed on each landing change (22 tests), and each production build passed. Local desktop screenshots were inspected for the relevant layout iterations.
 - Commits through this session's latest pushed landing adjustment: 3881da55 fix: reveal customer site proof heroes.
 - Production release verification must continue to use the exact live domain and both aliases. Authenticated reviewer smoke remains blocked by the known too-short reviewer token; do not bypass it with Louis's personal account.
+
+---
+
+# August 8, 2026 - Customer Operations, Domains, and Heather Onboarding
+
+## Completed
+
+- Added the Control Center Customer Waitlist: landing-page signups and manual records are combined with operator notes, an account-activated tracker, and a clear two-click delete. Delete now removes the selected waitlist row from Supabase while preserving/unlinking historical launch-build and agreement records. The earlier failure came from archived-source constraints on those historical records; two migrations corrected the valid archival state. No real row was removed during implementation.
+- Added Customer List as a separate working Tools item while restoring Messages as its own `Coming soon` item. Customer List supports editable profile data and CSV/XLSX import, matches only within the authenticated rep by email/phone, preserves omitted values, skips ambiguous matches, and never creates email/SMS marketing consent.
+- Corrected Bri's custom-domain routing after an initial wrong-tenant result: `brisglowtique.com` is now scoped to Brianna's real public site. Added the reusable per-domain favicon/social-preview approach and Bri's approved dark-background white cursive `B` mark. Customer-site footer Contact was removed and FAQ is an honest non-interactive `Coming soon` label.
+- Repaired standard customer-site empty media cards. Unused TikTok/video/image slots retain their designed dimensions and display `Coming soon` rather than collapsing or bleeding into the adjacent content.
+- Connected `theblingkitchen.com` to Heather's public BlingKitchen site and applied her purple `B` customer-site brand asset treatment.
+- Simplified Heather's Pantry recipe intake and released `e70a6029 feat: simplify BlingKitchen recipe intake`. The editor presents a direct tool, removes the `Let Nic-Nac choose` category, collects an outside and inside customer-facing food photo, accepts multiple private recipe-source photos, and offers `Read and format recipe` before Heather reviews/saves the result. The UI copy explicitly says source photos are private.
+- Updated Heather's unlisted welcome page with that exact recipe workflow and republished it at `https://heather-blingkitchen-welcome.louis526569.chatgpt.site`. Located the existing Heather welcome draft in the Chrome Gmail session signed in as `louis@neonrabbit.net`, updated its customer-site/welcome links and Pantry explanation, and saved it without sending. Credentials remain represented only by a placeholder.
+
+## Validation and operational lessons
+
+- The focused `tests/nic-nac-dashboard-placeholder.test.ts` suite passed 101 tests and the production build passed for `e70a6029`. The exact production deployment is `dpl_BEsTfA2TMeCzvdQT5kCzDPrtzZ4x`; both Sparkle Suite production domains and `theblingkitchen.com` resolve to it.
+- Inspect layered/empty media in a rendered desktop view before release. A component can be technically present but still look merged when an empty card loses its reserved surface.
+- Domain routing must be verified against the rep's actual content after DNS attachment, not just DNS/alias readiness. An apparently successful custom-domain attach can expose a prior tenant mapping.
+- For customer imports, duplicate prevention must be rep-scoped and conservative. Match certain email/phone identifiers; never guess across ambiguous identities, and never treat profile import as marketing consent.
+- Use the Chrome Gmail session only after confirming the active account in the visible UI. The separate Gmail connector remained attached to a different account and was not used for Heather's draft.
+- The known reviewer-token length defect still blocks authenticated synthetic browser smoke. Record it, use the non-personal/production-safe checks available, and do not bypass it through Louis's personal admin account.

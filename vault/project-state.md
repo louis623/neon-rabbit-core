@@ -1,5 +1,22 @@
 # Project State
 
+## August 8 Customer Onboarding, Domains, and Recipe Intake Checkpoint
+
+- The active implementation line is `codex/nic-nac-trade-hardening`. Recent application checkpoint `e70a6029 feat: simplify BlingKitchen recipe intake` is deployed to production as `dpl_BEsTfA2TMeCzvdQT5kCzDPrtzZ4x`; both Sparkle Suite production domains and `theblingkitchen.com` resolve to that exact release.
+- Heather's BlingKitchen recipe editor is a direct, image-first workflow: there is no Nic-Nac choice in the visible editor and no `Let Nic-Nac choose` category option. Heather adds two customer-facing food photos (outside Pantry card and inside recipe view) plus one or more private recipe-source photos containing ingredients, directions, and her tip; the tool reads and formats a draft for review before saving. Source photos are private and not customer-facing.
+- Heather's domain `theblingkitchen.com` now routes to her customer-facing Sparkle Suite site. Her purple customer-site favicon/social identity uses the current BlingKitchen header-mark style and follows the reusable customer-site brand-asset pattern.
+- Brianna's `brisglowtique.com` routes to Bri's Glowtique, not a demo/Sasha tenant. It uses the approved stable dark-background, white cursive `B` favicon and request-aware social preview. Her footer removes Contact and renders FAQ as non-interactive `FAQ · Coming soon`.
+- Standard customer-site unused video/image placements now retain their intended card footprint and say `Coming soon`; this prevents a blank TikTok/media card from visually merging with adjacent content. The footer cleanup and empty-media treatment apply across standard customer-facing sites.
+- Control Center now has a Customer Waitlist surface that combines landing-page signups and manual records, supports private notes, an account-activated tracker, and a deliberate two-click permanent delete. Historical linked launch/agreement records are preserved and unlinked before a waitlist row is removed. No real waitlist entries were deleted during development.
+- Customer List is distinct from Messages: Customer List is a working editable contact roster/import tool; Messages remains a separate `Coming soon` communication tool. CSV/XLSX imports are rep-scoped, profile-only, and duplicate-aware by email/phone; they do not create marketing consent and skip ambiguous matches.
+- Heather's standalone onboarding welcome page was updated and republished at `https://heather-blingkitchen-welcome.louis526569.chatgpt.site`. The related Gmail draft was updated in the Chrome session signed in as `louis@neonrabbit.net`, left unsent, and retains only a temporary-password placeholder. Never put credentials in this vault.
+
+**Verification and limits:** focused dashboard test `tests/nic-nac-dashboard-placeholder.test.ts` passed (101 tests) and the Sparkle Suite production build passed for `e70a6029`. The welcome-site build/publish succeeded separately. The authenticated reviewer-browser path remains blocked by the known too-short reviewer-token configuration; do not bypass it with Louis's account.
+
+**Last updated:** August 8, 2026
+
+---
+
 ## August 4 Customer-Site Empty Media States
 
 - Every standard customer-facing homepage now preserves the full designed card for an unused Showcase video or About image/video slot and labels it **Coming soon**. Empty media can no longer collapse or leave controls floating over adjacent content.
