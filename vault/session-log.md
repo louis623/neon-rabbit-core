@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 9, 2026 - Brittany / Britt With Bling Beta Welcome and Billing Link
+
+- Published a detailed, standalone welcome guide for Brittany at `https://brittwithbling-beta-welcome.louis526569.chatgpt.site`. It uses plain language and covers the private workspace, Nic-Nac, Calendar, Trade Board, customer-facing site, Customer List, Help & Resources, Team Management beta boundaries, feedback expectations, and the Stripe-only billing path.
+- Created an unsent Gmail draft for Brittany's exact existing Sparkle Suite account email. It links to the guide and live Sparkle Suite sign-in, leaves private sign-in details to a separate handoff, and does not contain credentials or payment data.
+- Verified Stripe's exact active grandfathered $39/month subscription and matching historical payments for Brittany's existing account email. Linked only the confirmed Stripe customer and subscription IDs to Brittany's exact active `Britt with Bling` rep/subscription rows. No Stripe customer, subscription, payment, invoice, or other provider object was created or changed.
+- The Stripe customer record's legacy display name differs from the Sparkle Suite rep name, but its email and active $39/month subscription match Brittany's active account. Preserve this verified linkage; do not rename or otherwise modify the Stripe provider record unless Louis explicitly authorizes an identity correction.
+- The reviewer-browser path remains blocked by the known too-short reviewer-token configuration. It was not bypassed with Louis's personal account.
+
+---
+
 ## August 4, 2026 - Customer-Site Media Placeholder Reliability
 
 - Fixed the Bri's Glowtique preview overlap: an absent Showcase TikTok URL had returned its fallback content without the video-card wrapper, allowing its old visual elements to float into the adjacent explainer card.
