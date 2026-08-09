@@ -32,20 +32,25 @@ type RepReferralStatusRow = {
   reward_status: string | null
 }
 
-const BRIANNA_WILLIAMS_REP_ID = '2b5a27c5-9c05-4014-8d0b-754e19815bf6'
-const BRIANNA_WILLIAMS_EMAIL = 'williams.brianna19@yahoo.com'
-const BRIANNA_WILLIAMS_GRANDFATHERED_PAYMENT_LINK =
+const GRANDFATHERED_PAYMENT_LINK_ACCOUNTS = {
+  '2b5a27c5-9c05-4014-8d0b-754e19815bf6': 'williams.brianna19@yahoo.com',
+  '9a971c05-3631-443e-bcb8-4e9a26e15885': 'blingkitchen19@gmail.com',
+} as const
+const GRANDFATHERED_SPARKLE_SUITE_PAYMENT_LINK =
   'https://buy.stripe.com/eVq00l4TT7Xu0nX7sod7q02'
 
 function getGrandfatheredCheckout(
   repId: string,
   stripeCustomerId: string | null,
 ): AccountBillingGrandfatheredCheckout | null {
-  if (repId !== BRIANNA_WILLIAMS_REP_ID || stripeCustomerId) return null
+  const email = GRANDFATHERED_PAYMENT_LINK_ACCOUNTS[
+    repId as keyof typeof GRANDFATHERED_PAYMENT_LINK_ACCOUNTS
+  ]
+  if (!email || stripeCustomerId) return null
 
-  const url = new URL(BRIANNA_WILLIAMS_GRANDFATHERED_PAYMENT_LINK)
-  url.searchParams.set('client_reference_id', BRIANNA_WILLIAMS_REP_ID)
-  url.searchParams.set('locked_prefilled_email', BRIANNA_WILLIAMS_EMAIL)
+  const url = new URL(GRANDFATHERED_SPARKLE_SUITE_PAYMENT_LINK)
+  url.searchParams.set('client_reference_id', repId)
+  url.searchParams.set('locked_prefilled_email', email)
 
   return {
     href: url.toString(),

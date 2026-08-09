@@ -15,16 +15,24 @@ import {
   processReferralPaidSubscriptionInvoice,
 } from '@/lib/services/sparkle-suite-referral-rewards'
 
-const BRIANNA_WILLIAMS_REP_ID = '2b5a27c5-9c05-4014-8d0b-754e19815bf6'
-const BRIANNA_WILLIAMS_EMAIL = 'williams.brianna19@yahoo.com'
+const GRANDFATHERED_PAYMENT_LINK_ACCOUNTS = {
+  '2b5a27c5-9c05-4014-8d0b-754e19815bf6': 'williams.brianna19@yahoo.com',
+  '9a971c05-3631-443e-bcb8-4e9a26e15885': 'blingkitchen19@gmail.com',
+} as const
 
 function getGrandfatheredPaymentLinkRepId(
   session: Stripe.Checkout.Session,
 ): string | null {
-  if (session.client_reference_id !== BRIANNA_WILLIAMS_REP_ID) return null
+  const repId = session.client_reference_id
+  const expectedEmail = repId
+    ? GRANDFATHERED_PAYMENT_LINK_ACCOUNTS[
+        repId as keyof typeof GRANDFATHERED_PAYMENT_LINK_ACCOUNTS
+      ]
+    : null
+  if (!repId || !expectedEmail) return null
 
   const email = session.customer_details?.email?.trim().toLowerCase()
-  return email === BRIANNA_WILLIAMS_EMAIL ? BRIANNA_WILLIAMS_REP_ID : null
+  return email === expectedEmail ? repId : null
 }
 
 export const dynamic = 'force-dynamic'
