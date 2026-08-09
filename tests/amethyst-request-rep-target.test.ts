@@ -66,6 +66,16 @@ describe('Amethyst request rep target', () => {
     ).toBeNull()
   })
 
+  it('uses the proxy-preserved custom domain after a customer-site rewrite', () => {
+    expect(
+      resolveAmethystRequestRepId(
+        new Request('https://www.yoursparklesuite.com/customer-site/join', {
+          headers: { 'x-sparkle-customer-domain': 'theblingkitchen.com' },
+        }),
+      ),
+    ).toBe('theblingkitchen.com')
+  })
+
   it('uses the custom-domain target for API routes instead of treating api as a public slug', () => {
     expect(
       resolveAmethystRequestTarget(

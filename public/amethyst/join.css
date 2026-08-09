@@ -303,12 +303,13 @@ body.joinpage .hp-saturate {
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--hp-primary), var(--hp-accent));
+  background: var(--hp-card-accent);
   margin: 18px 0 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
+  color: var(--hp-action-fg);
   font-family: var(--hp-display-font);
   font-weight: 600;
   font-size: 32px;
@@ -379,15 +380,16 @@ body.joinpage .hp-saturate {
   align-items: center;
   justify-content: center;
   color: var(--fg);
+  color: var(--hp-card-fg);
   text-decoration: none;
   transition: all var(--dur-fast) var(--ease);
   font-size: 13px;
   font-weight: 700;
 }
 .jp-team-social:hover {
-  background: var(--hp-primary);
-  color: white;
-  border-color: var(--hp-primary);
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
+  border-color: var(--hp-card-accent);
   transform: translateY(-2px);
 }
 
@@ -429,8 +431,8 @@ body.joinpage .hp-saturate {
   line-height: 1.5;
 }
 .jp-spot-btn {
-  background: linear-gradient(90deg, var(--hp-primary), var(--hp-accent));
-  color: white;
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
   border: 0;
   padding: 12px 22px;
   border-radius: 999px;
@@ -484,11 +486,12 @@ body.joinpage .hp-saturate {
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--hp-primary), var(--hp-accent));
+  background: var(--hp-card-accent);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
+  color: var(--hp-action-fg);
   margin-bottom: 18px;
   box-shadow: 0 12px 24px rgba(72,13,223,0.2);
 }
@@ -604,6 +607,7 @@ body.joinpage .hp-saturate {
     radial-gradient(circle at 20% 20%, rgba(255,255,255,0.18), transparent 50%),
     linear-gradient(135deg, var(--hp-primary), var(--hp-accent));
   color: white;
+  color: var(--hp-final-fg);
   border-radius: var(--r-2xl, 24px);
   padding: 56px 48px;
   text-align: center;
@@ -626,7 +630,7 @@ body.joinpage .hp-saturate {
   width: 64px;
   height: 64px;
   border-radius: 18px;
-  background: rgba(255,255,255,0.2);
+  background: var(--hp-card-accent);
   border: 1px solid rgba(255,255,255,0.3);
   display: inline-flex;
   align-items: center;
@@ -634,6 +638,7 @@ body.joinpage .hp-saturate {
   margin: 0 auto 22px;
   position: relative;
   z-index: 1;
+  color: var(--hp-final-icon-fg);
 }
 .jp-final-title {
   font-family: var(--hp-display-font);
@@ -647,11 +652,12 @@ body.joinpage .hp-saturate {
   position: relative;
   z-index: 1;
   overflow: visible;
+  color: var(--hp-final-fg);
 }
 .jp-final-sub {
   font-size: 17px;
   line-height: 1.55;
-  color: rgba(255,255,255,0.9);
+  color: var(--hp-final-muted);
   margin: 0 auto 28px;
   max-width: 56ch;
   position: relative;
@@ -662,7 +668,7 @@ body.joinpage .hp-saturate {
   max-width: 56ch;
   font-size: 13px;
   line-height: 1.55;
-  color: rgba(255,255,255,0.8);
+  color: var(--hp-final-muted);
   position: relative;
   z-index: 1;
 }
@@ -671,8 +677,8 @@ body.joinpage .hp-saturate {
   text-underline-offset: 2px;
 }
 .jp-final-btn {
-  background: white;
-  color: var(--hp-primary);
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
   border: 0;
   padding: 16px 32px;
   border-radius: 999px;
@@ -728,7 +734,7 @@ body.mile-high-fizz-join {
     radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--mhf-primary) 18%, transparent), transparent 30%),
     radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--mhf-accent) 18%, transparent), transparent 30%),
     var(--mhf-soft-gradient);
-  color: var(--fg);
+  color: var(--hp-card-fg);
 }
 
 body.mile-high-fizz-join::before {
@@ -772,6 +778,7 @@ body.mile-high-fizz-join::before {
 .mhf-join-content {
   position: relative;
   z-index: 1;
+  color: var(--hp-final-icon-fg);
 }
 
 body.mile-high-fizz-join .hp-sticky-stack {
@@ -782,7 +789,7 @@ body.mile-high-fizz-join .hp-sticky-stack {
 
 body.mile-high-fizz-join .hp-header {
   background: #050505;
-  color: white;
+  color: var(--hp-action-fg);
 }
 
 body.mile-high-fizz-join .hp-brand-name {
@@ -805,7 +812,7 @@ body.mile-high-fizz-join .hp-header-link {
 
 body.mile-high-fizz-join .hp-header-link[aria-current="page"],
 body.mile-high-fizz-join .hp-header-link:hover {
-  color: white;
+  color: var(--hp-action-fg);
 }
 
 body.mile-high-fizz-join .hp-header-link::after {
@@ -823,19 +830,19 @@ body.mile-high-fizz-join .hp-shop-btn {
 
 body.mile-high-fizz-join .hp-ticker {
   background: #280d48;
-  color: white;
+  color: var(--hp-final-fg);
   border: 0;
 }
 
 body.mile-high-fizz-join .hp-ticker-row {
   background: linear-gradient(90deg, #2b0d45, #42136b, #2b0d45);
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  color: white;
+  color: var(--hp-action-fg);
 }
 
 body.mile-high-fizz-join .hp-ticker-row.reverse {
   background: linear-gradient(90deg, #38bdf8, #60a5fa, #ec4899);
-  color: white;
+  color: var(--hp-action-fg);
 }
 
 body.mile-high-fizz-join .hp-ticker-label {
@@ -845,7 +852,7 @@ body.mile-high-fizz-join .hp-ticker-label {
 
 body.mile-high-fizz-join .hp-ticker-row.reverse .hp-ticker-label {
   background: linear-gradient(90deg, #38bdf8 0%, #38bdf8 70%, rgba(56, 189, 248, 0) 100%);
-  color: white;
+  color: var(--hp-final-fg);
 }
 
 body.mile-high-fizz-join .hp-ticker-item,

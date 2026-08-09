@@ -74,6 +74,7 @@ export function getAmethystCustomDomainCandidates(
 export function resolveAmethystRequestCustomDomainHost(request: Request) {
   const requestUrl = new URL(request.url)
   const candidates = [
+    request.headers.get('x-sparkle-customer-domain'),
     request.headers.get('host'),
     request.headers.get('x-forwarded-host'),
     requestUrl.host,

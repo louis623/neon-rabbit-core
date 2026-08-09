@@ -11,20 +11,27 @@ const CUSTOMER_SITE_ROUTES: Record<string, string> = {
 }
 
 export function proxy(request: NextRequest) {
+  const headers = new Headers(request.headers)
+  // Only this proxy may introduce the internal tenant handoff header.
+  headers.delete('x-sparkle-customer-domain')
   const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host')
-  if (!normalizeAmethystCustomDomainCandidate(host) || isAmethystPlatformHost(host)) {
-    return NextResponse.next()
+  const customerDomain = normalizeAmethystCustomDomainCandidate(host)
+  if (!customerDomain || isAmethystPlatformHost(host)) {
+    return NextResponse.next({ request: { headers } })
   }
 
   const publicAssetPath = CUSTOMER_SITE_ROUTES[request.nextUrl.pathname]
-  if (!publicAssetPath) return NextResponse.next()
+  if (!publicAssetPath) return NextResponse.next({ request: { headers } })
 
   const url = request.nextUrl.clone()
   url.pathname = publicAssetPath
 
-  return NextResponse.rewrite(url)
+  // Rewrites replace the host with the platform route. Preserve the verified
+  // original custom domain so server-rendered metadata uses the same tenant.
+  headers.set('x-sparkle-customer-domain', customerDomain)
+  return NextResponse.rewrite(url, { request: { headers } })
 }
 
 export const config = {
-  matcher: ['/', '/trade', '/join', '/in-the-pantry'],
+  matcher: ['/', '/trade', '/join', '/in-the-pantry', '/api/:path*'],
 }

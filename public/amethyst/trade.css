@@ -731,9 +731,9 @@ body.britt-with-bling-trade .hp-footer {
   color: var(--hp-primary);
 }
 .tp-filter-pill.active {
-  background: var(--hp-primary);
-  color: white;
-  border-color: var(--hp-primary);
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
+  border-color: var(--hp-card-accent);
 }
 
 body.bg-black-velvet .tp-filter-pill.active {
@@ -839,8 +839,8 @@ body.bg-quartz-paper .tp-filter-pill.active .count {
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 11px 14px;
-  background: white;
-  color: var(--fg);
+  background: var(--hp-field-bg);
+  color: var(--hp-field-fg);
   font: inherit;
 }
 .tp-filter-search:focus {
@@ -869,9 +869,9 @@ body.bg-quartz-paper .tp-filter-pill.active .count {
   cursor: pointer;
 }
 .tp-filter-chip.active {
-  background: color-mix(in oklab, var(--hp-primary) 16%, white);
-  color: var(--hp-primary);
-  border-color: color-mix(in oklab, var(--hp-primary) 40%, var(--border));
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
+  border-color: var(--hp-card-accent);
 }
 
 /* Dropdown style */
@@ -1295,8 +1295,8 @@ body.bg-quartz-paper .tp-filter-pill.active .count {
   justify-content: center;
   gap: 8px;
   padding: 16px 28px;
-  background: linear-gradient(95deg, var(--hp-primary), var(--hp-accent));
-  color: white;
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
   border: 0;
   border-radius: 14px;
   font-size: 15px;
@@ -1465,8 +1465,8 @@ body.bg-quartz-paper .tp-filter-pill.active .count {
   justify-content: center;
   gap: 8px;
   padding: 14px 24px;
-  background: linear-gradient(95deg, var(--hp-primary), var(--hp-accent));
-  color: white;
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
   border: 0;
   border-radius: 12px;
   font-size: 14px;
@@ -1498,7 +1498,7 @@ body.bg-quartz-paper .tp-filter-pill.active .count {
 .tp-sheet-success-icon {
   width: 64px; height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--hp-primary), var(--hp-accent));
+  background: var(--hp-card-accent);
   margin: 0 auto 18px;
   display: grid; place-items: center;
   color: white;
@@ -1728,7 +1728,7 @@ body.mile-high-fizz-trade .hp-sticky-stack {
 
 body.mile-high-fizz-trade .hp-header {
   background: #050505;
-  color: white;
+  color: var(--hp-action-fg);
 }
 
 body.mile-high-fizz-trade .hp-header-brand {

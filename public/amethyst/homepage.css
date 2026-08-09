@@ -32,6 +32,10 @@
   --hp-card-fg: var(--fg);
   --hp-card-muted: var(--fg-muted);
   --hp-card-accent: var(--hp-primary);
+  --hp-final-fg: #ffffff;
+  --hp-final-muted: rgba(255, 255, 255, 0.88);
+  --hp-final-icon-fg: #ffffff;
+  --hp-action-fg: #ffffff;
 }
 
 /*
@@ -44,73 +48,122 @@ body.fx-holographic {
   --hp-card-fg: #2a1f40;
   --hp-card-muted: #5c576a;
   --hp-card-accent: #5c0eff;
+  --hp-final-fg: #2a1f40;
+  --hp-final-muted: #5c576a;
+  --hp-final-icon-fg: #ffffff;
 }
 
 body.surface-glass {
   --hp-card-fg: #2a1f40;
   --hp-card-muted: #5c576a;
   --hp-card-accent: #5c0eff;
+  --hp-final-fg: #2a1f40;
+  --hp-final-muted: #5c576a;
+  --hp-final-icon-fg: #ffffff;
 }
 
 body.surface-warm-paper {
   --hp-card-fg: #402924;
   --hp-card-muted: #775d57;
   --hp-card-accent: #ee2c9b;
+  --hp-final-fg: #402924;
+  --hp-final-muted: #775d57;
+  --hp-final-icon-fg: #170b12;
 }
 
 body.surface-dark-metallic {
   --hp-card-fg: #f9f3ec;
   --hp-card-muted: #d7c3b9;
   --hp-card-accent: #d4af37;
+  --hp-final-fg: #f9f3ec;
+  --hp-final-muted: #d7c3b9;
+  --hp-final-icon-fg: #080808;
 }
 
 body.surface-silver-pearl {
   --hp-card-fg: #171421;
   --hp-card-muted: #4b465d;
   --hp-card-accent: #7c3aed;
+  --hp-final-fg: #171421;
+  --hp-final-muted: #4b465d;
+  --hp-final-icon-fg: #ffffff;
 }
 
 body.surface-frosted-opal {
   --hp-card-fg: #1e1b4b;
   --hp-card-muted: #514b70;
   --hp-card-accent: #ec4899;
+  --hp-final-fg: #1e1b4b;
+  --hp-final-muted: #514b70;
+  --hp-final-icon-fg: #170b2a;
 }
 
 body.surface-spa-ivory {
   --hp-card-fg: #193f34;
   --hp-card-muted: #526f65;
   --hp-card-accent: #047857;
+  --hp-final-fg: #193f34;
+  --hp-final-muted: #526f65;
+  --hp-final-icon-fg: #ffffff;
 }
 
 body.surface-pearl-rose {
   --hp-card-fg: #2b1717;
   --hp-card-muted: #7e5457;
   --hp-card-accent: #e04f73;
+  --hp-final-fg: #2b1717;
+  --hp-final-muted: #7e5457;
+  --hp-final-icon-fg: #1d0b10;
 }
 
 body.surface-blush-shell {
   --hp-card-fg: #2b1717;
   --hp-card-muted: #7e5457;
   --hp-card-accent: #b91c1c;
+  --hp-final-fg: #2b1717;
+  --hp-final-muted: #7e5457;
+  --hp-final-icon-fg: #ffffff;
 }
 
 body.surface-sunlit-pearl {
   --hp-card-fg: #2d1607;
   --hp-card-muted: #7a4a32;
   --hp-card-accent: #a54206;
+  --hp-final-fg: #2d1607;
+  --hp-final-muted: #7a4a32;
+  --hp-final-icon-fg: #ffffff;
 }
 
 body.surface-plush-orchid {
   --hp-card-fg: #2b1336;
   --hp-card-muted: #6b3b76;
   --hp-card-accent: #7e22ce;
+  --hp-final-fg: #2b1336;
+  --hp-final-muted: #6b3b76;
+  --hp-final-icon-fg: #ffffff;
 }
 
 body.surface-pink-quartz {
   --hp-card-fg: #34113c;
   --hp-card-muted: #70467a;
   --hp-card-accent: #9d2dac;
+  --hp-final-fg: #34113c;
+  --hp-final-muted: #70467a;
+  --hp-final-icon-fg: #ffffff;
 }
+
+/* Button-energy presets set the readable foreground for shared customer actions. */
+body.btn-calm { --hp-action-fg: #ffffff; }
+body.btn-suite-lift { --hp-action-fg: #170b12; }
+body.btn-diamond-lift { --hp-action-fg: #080808; }
+body.btn-moonstone-lift { --hp-action-fg: #ffffff; }
+body.btn-alpine-pop { --hp-action-fg: #170b2a; }
+body.btn-garden-lift { --hp-action-fg: #ffffff; }
+body.btn-rose-gold-lift { --hp-action-fg: #1d0b10; }
+body.btn-garnet-lift { --hp-action-fg: #ffffff; }
+body.btn-amber-pop { --hp-action-fg: #ffffff; }
+body.btn-velvet-lift { --hp-action-fg: #ffffff; }
+body.btn-quartz-pop { --hp-action-fg: #ffffff; }
 
 body.bling-kitchen {
   --bk-ink: #20172b;
@@ -871,8 +924,8 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   gap: 7px;
   min-height: 44px;
   padding: 10px 18px;
-  background: linear-gradient(135deg, var(--hp-primary), var(--hp-accent));
-  color: white;
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
   border-radius: 999px;
   font-size: 13px;
   font-weight: 800;
@@ -2889,8 +2942,8 @@ body.bg-quartz-paper .hp-step-num {
   justify-content: center;
   gap: 10px;
   padding: 14px 32px;
-  background: var(--hp-primary);
-  color: white;
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
   border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
@@ -3077,8 +3130,8 @@ body.bg-quartz-paper .hp-step-num {
   gap: 10px;
   padding: 14px 26px;
   border-radius: 999px;
-  background: white;
-  color: var(--fg);
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -3092,8 +3145,8 @@ body.bg-quartz-paper .hp-step-num {
 }
 .hp-btn-primary:hover { transform: translateY(-1px); }
 .hp-btn-primary.solid {
-  background: var(--hp-primary);
-  color: white;
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
 }
 .hp-btn-primary.solid-light {
   background: var(--fg);
@@ -6127,8 +6180,8 @@ body.surface-spa-ivory .jp-faq-note {
 body.surface-spa-ivory .hp-step-num,
 body.surface-spa-ivory .jp-benefit-icon,
 body.surface-spa-ivory .jp-final-icon {
-  background: linear-gradient(135deg, #e5d3b3, #f5c08a);
-  color: #ffffff;
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
 }
 
 body.surface-spa-ivory .hp-event-name,
@@ -6166,6 +6219,14 @@ body.btn-garden-lift .jp-spot-btn:hover,
 body.btn-garden-lift .jp-final-btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 20px 44px rgba(4, 120, 87, 0.2);
+}
+
+/* Keep homepage actions readable even when a skin supplies a bright accent. */
+.hp-shop-btn,
+.hp-btn-primary,
+.hp-signup-submit {
+  background: var(--hp-card-accent);
+  color: var(--hp-action-fg);
 }
 
 body.champagne-botanical .tp-card.unicorn,

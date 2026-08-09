@@ -402,6 +402,7 @@ export async function renderAmethystPublicAssetResponse(
     const templateScriptPage = AMETHYST_TEMPLATE_SCRIPT_PAGES[assetPath]
     const requestUrl = new URL(request.url)
     const repId = options.repIdOverride?.trim() || resolveAmethystRequestRepId(request)
+    const resolvedOptions = repId ? { ...options, repIdOverride: repId } : options
     const templateData =
       page && contentType.startsWith('text/html') && repId
         ? await loadAmethystPreviewTemplateData({
@@ -420,14 +421,14 @@ export async function renderAmethystPublicAssetResponse(
           request,
           requestUrl,
           templateData,
-          options,
+          resolvedOptions,
         )
       } else if (templateScriptPage) {
         responseBody = rewriteTemplateScriptTarget(
           html,
           templateScriptPage,
           requestUrl,
-          options,
+          resolvedOptions,
         )
       }
     }

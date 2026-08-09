@@ -22,6 +22,7 @@ describe('custom-domain customer site proxy', () => {
     expect(response.headers.get('x-middleware-rewrite')).toBe(
       `https://brisglowtique.com${assetPath}`,
     )
+    expect(response.headers.get('x-sparkle-customer-domain')).toBeNull()
   })
 
   it('leaves the Sparkle Suite platform host alone', () => {
@@ -32,6 +33,19 @@ describe('custom-domain customer site proxy', () => {
     )
 
     expect(isRewrite(response)).toBe(false)
+  })
+
+  it('removes a caller-supplied internal tenant header before platform routing', () => {
+    const response = proxy(
+      new NextRequest('https://www.yoursparklesuite.com/api/amethyst/join-template', {
+        headers: {
+          host: 'www.yoursparklesuite.com',
+          'x-sparkle-customer-domain': 'theblingkitchen.com',
+        },
+      }),
+    )
+
+    expect(response.headers.get('x-middleware-rewrite')).toBeNull()
   })
 
   it('leaves non-customer-site routes alone', () => {

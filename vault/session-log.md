@@ -3711,3 +3711,21 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - For customer imports, duplicate prevention must be rep-scoped and conservative. Match certain email/phone identifiers; never guess across ambiguous identities, and never treat profile import as marketing consent.
 - Use the Chrome Gmail session only after confirming the active account in the visible UI. The separate Gmail connector remained attached to a different account and was not used for Heather's draft.
 - The known reviewer-token length defect still blocks authenticated synthetic browser smoke. Record it, use the non-personal/production-safe checks available, and do not bypass it through Louis's personal admin account.
+
+---
+
+# August 9, 2026 - Customer-site readability and custom-domain rendering repair
+
+## Completed
+
+- Replaced the customer-site's hard-coded light foreground assumptions with per-skin semantic foreground tokens across all 11 selectable appearance presets. Join final-card copy, icon tiles, shared customer actions, Trade request actions, active filters, and the expanded Trade collection search now remain readable on their rendered surfaces.
+- Added a regression contract that requires every skin to supply card/final/action foreground tokens and verifies that the shared Homepage, Join, and Trade controls consume them.
+- Added the missing Fontshare families for the configured Boska, Switzer, Melodrama, Sharpie, and Ranade typography choices.
+- Repaired custom-domain server rendering: the proxy now carries the verified original customer domain through the internal rewrite, server metadata/template bootstraps use that resolved tenant, and caller-supplied internal routing headers are stripped before routing. This corrects the observed `theblingkitchen.com` Sasha/default HTML fallback while retaining the existing Heather tenant data.
+
+## Validation
+
+- Focused contrast and custom-domain tests passed: 5 files, 35 tests.
+- `npm run qa:amethyst` template tests passed (73 tests); its local URL link probes were skipped/fail-soft because no local server was running.
+- `npm run build` passed the active-branch guard, TypeScript validation, and production compilation.
+- Authenticated reviewer-browser smoke remains blocked by the known too-short reviewer-token configuration. It was not bypassed with Louis's personal account.
