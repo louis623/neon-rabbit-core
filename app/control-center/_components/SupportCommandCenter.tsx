@@ -3,6 +3,8 @@ import Link from 'next/link'
 
 import { ControlCenterThemeToggle } from '@/app/internal/prelaunch/intake/_components/ControlCenterThemeToggle'
 import { CustomerWaitlistPanel } from '@/app/control-center/_components/CustomerWaitlistPanel'
+import { BugHuntPanel } from '@/app/control-center/_components/BugHuntPanel'
+import type { BugHuntItem } from '@/lib/control-center/bug-hunt'
 import type { CustomerWaitlistLead } from '@/lib/prelaunch/customer-waitlist'
 
 export type SupportReportRecord = {
@@ -60,6 +62,7 @@ interface SupportCommandCenterProps {
   reports: SupportReportRecord[]
   customers: OperatorCustomerRecord[]
   waitlist: CustomerWaitlistLead[]
+  bugHuntItems: BugHuntItem[]
 }
 
 const CUSTOMER_DATABASE_KEYS = ['milehighfizz', 'brittwithbling', 'blingkitchen']
@@ -372,6 +375,7 @@ export function SupportCommandCenter({
   customers,
   reports,
   waitlist,
+  bugHuntItems,
 }: SupportCommandCenterProps) {
   const activeReport = reports[0] ?? null
   const activeSnapshot = activeReport?.client_snapshot ?? null
@@ -421,6 +425,15 @@ export function SupportCommandCenter({
                 Trouble Tickets
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
                   {openReports.length}
+                </span>
+              </a>
+              <a
+                className="mt-1 flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
+                href="#bug-hunt-updates"
+              >
+                Bug Hunt and Updates
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                  {bugHuntItems.filter((item) => item.status !== 'complete').length}
                 </span>
               </a>
               <a
@@ -657,6 +670,8 @@ export function SupportCommandCenter({
             </section>
 
             <CustomerWaitlistPanel initialLeads={waitlist} />
+
+            <BugHuntPanel initialItems={bugHuntItems} />
 
             <details
               className="group/database scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm"

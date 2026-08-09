@@ -1,0 +1,5 @@
+-- Remote-only migration witness.
+-- The linked production database recorded this unrelated mobile-gaming migration
+-- on 2026-08-05. It is intentionally a no-op in the Sparkle Suite source tree
+-- so local and remote migration histories remain aligned without recreating
+-- out-of-scope schema.

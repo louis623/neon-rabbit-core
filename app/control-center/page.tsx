@@ -8,6 +8,7 @@ import {
 import { listOperatorCustomerProfiles } from '@/lib/services/client-account-profiles'
 import { listOperatorSupportReports } from '@/lib/services/support-reports'
 import { loadCustomerWaitlist } from '@/lib/prelaunch/customer-waitlist'
+import { loadBugHuntItems } from '@/lib/control-center/bug-hunt'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AuthError,
@@ -46,7 +47,7 @@ export default async function SparkleSuiteControlCenterPage() {
   }
 
   const admin = createAdminClient()
-  const [reports, customers, waitlist] = await Promise.all([
+  const [reports, customers, waitlist, bugHuntItems] = await Promise.all([
     listOperatorSupportReports(admin, {
       limit: 50,
     }),
@@ -54,6 +55,7 @@ export default async function SparkleSuiteControlCenterPage() {
       limit: 200,
     }),
     loadCustomerWaitlist(admin),
+    loadBugHuntItems(admin),
   ])
 
   return (
@@ -61,6 +63,7 @@ export default async function SparkleSuiteControlCenterPage() {
       customers={customers as unknown as OperatorCustomerRecord[]}
       reports={reports as unknown as SupportReportRecord[]}
       waitlist={waitlist}
+      bugHuntItems={bugHuntItems}
     />
   )
 }
