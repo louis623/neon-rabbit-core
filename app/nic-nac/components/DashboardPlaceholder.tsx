@@ -86,6 +86,10 @@ const CollectionIntakeTool = dynamic(() =>
   import('./CollectionIntakeTool').then((module) => module.CollectionIntakeTool),
 )
 
+// Texting and email updates are not launched yet. Keep the wallet implementation
+// intact for that release, but do not expose prepaid SMS spend or recharge controls.
+const CUSTOMER_MESSAGING_LAUNCHED = false
+
 export {
   buildCustomerSparkleSiteHref,
   buildCustomerTradeBoardHref,
@@ -2996,10 +3000,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         if ((error as { name?: string }).name === 'AbortError') return
         setAudienceState({ status: 'error' })
       }),
-      loadWallet(signal).catch((error) => {
-        if ((error as { name?: string }).name === 'AbortError') return
-        setWalletState({ status: 'error' })
-      }),
+      ...(CUSTOMER_MESSAGING_LAUNCHED
+        ? [
+            loadWallet(signal).catch((error) => {
+              if ((error as { name?: string }).name === 'AbortError') return
+              setWalletState({ status: 'error' })
+            }),
+          ]
+        : []),
       loadCalendar(signal).catch((error) => {
         if ((error as { name?: string }).name === 'AbortError') return
         setCalendarState({ status: 'error' })
@@ -5578,15 +5586,17 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           ) : null}
           {canRenderWorkspaceSections ? (
             <>
-              <WalletSummaryCard
-                state={walletState}
-                actionState={walletActionState}
-                autoRechargeDraft={autoRechargeDraft}
-                onAutoRechargeDraftChange={handleAutoRechargeDraftChange}
-                onSaveAutoRechargeSettings={handleSaveAutoRechargeSettings}
-                onLoadWallet={handleWalletLoad}
-                statusMessage={walletActionState.helperMessage}
-              />
+              {CUSTOMER_MESSAGING_LAUNCHED ? (
+                <WalletSummaryCard
+                  state={walletState}
+                  actionState={walletActionState}
+                  autoRechargeDraft={autoRechargeDraft}
+                  onAutoRechargeDraftChange={handleAutoRechargeDraftChange}
+                  onSaveAutoRechargeSettings={handleSaveAutoRechargeSettings}
+                  onLoadWallet={handleWalletLoad}
+                  statusMessage={walletActionState.helperMessage}
+                />
+              ) : null}
               <SiteAnalyticsCard state={analyticsState} />
             </>
           ) : null}

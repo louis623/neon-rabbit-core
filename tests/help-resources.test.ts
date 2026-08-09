@@ -18,7 +18,7 @@ describe('help resources', () => {
       'Add jewelry to your Trade Board',
       'Handle trade requests',
       'Manage customers and updates',
-      'Billing, SMS wallet, and account basics',
+      'Billing and account basics',
       'Share your referral code',
       'Fix something or ask for help',
     ])

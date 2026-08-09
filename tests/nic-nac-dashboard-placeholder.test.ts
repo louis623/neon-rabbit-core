@@ -550,6 +550,19 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Understand the Chrome extension and Live Queue')
   })
 
+  it('keeps the SMS wallet out of Account until customer messaging launches', () => {
+    const html = renderToStaticMarkup(
+      createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
+        reviewWorkspaceMode: true,
+        initialSectionOverride: 'account',
+      }),
+    )
+
+    expect(html).toContain('Billing')
+    expect(html).not.toContain('SMS Wallet')
+    expect(html).not.toContain('Monitor text balance, reloads, and auto-recharge')
+  })
+
   it('treats a rep-targeted customer site as live even without a vanity slug', () => {
     const html = renderToStaticMarkup(
       createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
