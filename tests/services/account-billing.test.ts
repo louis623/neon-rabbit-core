@@ -245,7 +245,7 @@ describe('account billing service', () => {
     expect(result.checkoutMode).toBe('standard')
   })
 
-  it('returns each approved grandfathered checkout only before a Stripe customer exists', async () => {
+  it('returns Brianna\'s approved grandfathered checkout only before a Stripe customer exists', async () => {
     vi.mocked(stripeEnabled).mockReturnValue(false)
 
     const subscriptionsChain = makeSelectSingle({ data: null, error: null })
@@ -277,11 +277,7 @@ describe('account billing service', () => {
       stripeCustomerId: null,
     })
 
-    expect(heather.grandfatheredCheckout).toEqual({
-      href: 'https://buy.stripe.com/eVq00l4TT7Xu0nX7sod7q02?client_reference_id=9a971c05-3631-443e-bcb8-4e9a26e15885&locked_prefilled_email=blingkitchen19%40gmail.com',
-      monthlyAmountCents: 3900,
-      buildFeeCents: 0,
-    })
+    expect(heather.grandfatheredCheckout).toBeNull()
   })
 
   it('returns the rep referral code, public link, and referral status counts', async () => {

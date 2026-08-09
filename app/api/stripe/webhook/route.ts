@@ -17,7 +17,6 @@ import {
 
 const GRANDFATHERED_PAYMENT_LINK_ACCOUNTS = {
   '2b5a27c5-9c05-4014-8d0b-754e19815bf6': 'williams.brianna19@yahoo.com',
-  '9a971c05-3631-443e-bcb8-4e9a26e15885': 'blingkitchen19@gmail.com',
 } as const
 
 function getGrandfatheredPaymentLinkRepId(
