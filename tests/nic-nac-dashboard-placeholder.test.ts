@@ -2554,7 +2554,7 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('function handleSaveSiteSettings()')
   })
 
-  it('renders the account billing card with monthly status, payment method, and invoice history', () => {
+  it('routes active account billing to Stripe without duplicating billing details', () => {
     const html = renderToStaticMarkup(
       createElement(AccountBillingCard, {
         state: ACCOUNT_BILLING_READY_STATE,
@@ -2562,16 +2562,16 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('Build fee + monthly plan')
+    expect(html).toContain('Billing, payment methods, invoices, and cancellations are managed in Stripe.')
     expect(html).toContain('Account')
-    expect(html).toContain('cancel anytime')
     expect(html).toContain('Active')
-    expect(html).toContain('Scheduled to end')
-    expect(html).toContain('visa ending in 4242')
-    expect(html).toContain('Expires 12/2028')
-    expect(html).toContain('Billing history')
-    expect(html).toContain('$99.00')
-    expect(html).toContain('Manage billing and cancel')
+    expect(html).toContain('Stripe Billing and Payments')
+    expect(html).not.toContain('Scheduled to end')
+    expect(html).not.toContain('visa ending in 4242')
+    expect(html).not.toContain('Expires 12/2028')
+    expect(html).not.toContain('Billing history')
+    expect(html).not.toContain('$99.00')
+    expect(html).not.toContain('Manage billing and cancel')
     expect(html).toContain('Opened Stripe billing portal.')
   })
 

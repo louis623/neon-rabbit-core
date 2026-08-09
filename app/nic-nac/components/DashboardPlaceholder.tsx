@@ -1798,13 +1798,6 @@ export function getSiteSettingsManualSaveStatusText({
   return statusMessage ?? 'No unsaved changes.'
 }
 
-export function formatAccountBillingAmount(amountCents: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amountCents / 100)
-}
-
 export function formatAccountBillingDate(value: string | null) {
   if (!value) return 'Not set'
   return value.slice(0, 10)
@@ -9350,17 +9343,6 @@ export function AccountBillingCard({
     : summary.subscription
     ? subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)
     : 'Not active yet'
-  const nextBillingDate = formatAccountBillingDate(
-    summary.subscription?.currentPeriodEnd ?? null,
-  )
-  const subscriptionDetail = summary.subscription
-    ? summary.subscription.cancelAtPeriodEnd
-      ? `Scheduled to end ${formatAccountBillingDate(summary.subscription.currentPeriodEnd)}`
-      : `Renews through ${formatAccountBillingDate(summary.subscription.currentPeriodEnd)}`
-    : 'Monthly billing is available when you are ready.'
-  const paymentMethodLabel = summary.paymentMethod
-    ? `${summary.paymentMethod.brand} ending in ${summary.paymentMethod.last4}`
-    : 'No card on file yet.'
   const checkoutReview = getSparkleSuiteCheckoutReview(summary.checkoutMode)
 
   return (
@@ -9371,7 +9353,9 @@ export function AccountBillingCard({
           <div className={styles.accountMuted}>
             {grandfatheredCheckout
               ? '$39/month grandfathered plan - no build fee'
-              : 'Build fee + monthly plan - cancel anytime'}
+              : summary.canStartSubscription
+                ? 'Build fee + monthly plan - cancel anytime'
+                : 'Billing, payment methods, invoices, and cancellations are managed in Stripe.'}
           </div>
         </div>
         <span className={styles.accountStatusBadge}>{subscriptionTitle}</span>
@@ -9414,66 +9398,6 @@ export function AccountBillingCard({
             Stripe Billing and Payments
           </a>
         </section>
-      ) : null}
-
-      {!summary.canStartSubscription && !grandfatheredCheckout ? (
-        <>
-          <div className={styles.accountDetailList}>
-            <div className={styles.accountDetailRow}>
-              <div className={styles.walletTransactionCopy}>
-                <span className={styles.walletTransactionTitle}>Subscription</span>
-                <span className={styles.walletTransactionDate}>{subscriptionDetail}</span>
-              </div>
-              <span className={styles.accountDetailValue}>{nextBillingDate}</span>
-            </div>
-            <div className={styles.accountDetailRow}>
-              <div className={styles.walletTransactionCopy}>
-                <span className={styles.walletTransactionTitle}>Payment method</span>
-                <span className={styles.walletTransactionDate}>
-                  {summary.paymentMethod
-                    ? `Expires ${String(summary.paymentMethod.expMonth).padStart(2, '0')}/${summary.paymentMethod.expYear}`
-                    : 'Add or update your card in Stripe.'}
-                </span>
-              </div>
-              <span className={styles.accountDetailValue}>{paymentMethodLabel}</span>
-            </div>
-          </div>
-
-          <div className={styles.siteSettingsSection}>
-            <div className={styles.walletSettingsTitle}>Billing history</div>
-            <div className={styles.walletTransactionList}>
-              {summary.invoices.length === 0 ? (
-                <div className={styles.emptyState}>
-                  Billing history will appear after your first Stripe invoice.
-                </div>
-              ) : (
-                summary.invoices.map((invoice) => (
-                  <div key={invoice.id} className={styles.walletTransactionRow}>
-                    <div className={styles.walletTransactionCopy}>
-                      <span className={styles.walletTransactionTitle}>
-                        {formatAccountBillingAmount(invoice.amountPaidCents)}
-                      </span>
-                      <span className={styles.walletTransactionDate}>
-                        {formatAccountBillingDate(invoice.createdAt)} -{' '}
-                        {invoice.status ?? 'unknown'}
-                      </span>
-                    </div>
-                    {invoice.hostedInvoiceUrl ? (
-                      <a
-                        className={styles.helperLink}
-                        href={invoice.hostedInvoiceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        View invoice
-                      </a>
-                    ) : null}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </>
       ) : null}
 
       {actionState?.error ? (
@@ -9584,7 +9508,7 @@ export function AccountBillingCard({
           >
             {actionState?.pendingAction === 'manage'
               ? 'Opening portal...'
-              : 'Manage billing and cancel'}
+              : 'Stripe Billing and Payments'}
           </button>
         ) : null}
       </div>
