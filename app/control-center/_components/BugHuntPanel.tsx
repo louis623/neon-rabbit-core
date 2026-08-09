@@ -1,6 +1,7 @@
 'use client'
 
 import { type FormEvent, useEffect, useMemo, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 
 import {
   BUG_HUNT_ITEM_TYPES,
@@ -64,17 +65,20 @@ export function BugHuntPanel({ initialItems }: { initialItems: BugHuntItem[] }) 
   }
 
   return (
-    <section className="scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm" id="bug-hunt-updates">
-      <div className="flex flex-col gap-3 border-b border-slate-200 px-4 py-4 md:flex-row md:items-end md:justify-between">
+    <details className="group/bug-hunt control-center-panel scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm" id="bug-hunt-updates">
+      <summary aria-label="Expand Bug Hunt and Updates" className="control-center-summary flex cursor-pointer list-none flex-col gap-3 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Bug Hunt and Updates</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">Bug Hunt and Updates</h2>
+            <ChevronDown aria-hidden="true" className="h-5 w-5 text-slate-500 transition group-open/bug-hunt:rotate-180" />
+          </div>
           <p className="mt-1 text-sm text-slate-600">Private operator backlog for bugs, improvements, content work, research, and operational follow-ups.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <button className="text-xs font-semibold uppercase tracking-wide text-sky-700 underline underline-offset-4" onClick={() => setArchiveOpen(true)} type="button">Completed archive ({archivedItems.length})</button>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{openItems.length} open</p>
         </div>
-      </div>
+      </summary>
       <div className="grid gap-5 p-4 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div>
           <label className="block text-xs font-bold uppercase tracking-wide text-slate-500" htmlFor="bug-hunt-search">Search tasks</label>
@@ -139,6 +143,6 @@ export function BugHuntPanel({ initialItems }: { initialItems: BugHuntItem[] }) 
           </div>
         </div>
       </div> : null}
-    </section>
+    </details>
   )
 }

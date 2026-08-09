@@ -515,8 +515,18 @@ export function SupportCommandCenter({
               </div>
             </section>
 
-            <section className="scroll-mt-6" id="support-tickets">
-              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)]">
+            <details className="group/support control-center-panel scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm" id="support-tickets">
+              <summary aria-label="Expand Trouble Tickets" className="control-center-summary flex cursor-pointer list-none flex-col gap-3 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold">Trouble Tickets</h2>
+                    <ChevronDown aria-hidden="true" className="h-5 w-5 text-slate-500 transition group-open/support:rotate-180" />
+                  </div>
+                  <p className="mt-1 text-sm text-slate-600">Review reported issues, account details, and audit guidance.</p>
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{openReports.length} open</p>
+              </summary>
+              <div className="grid gap-5 border-t border-slate-200 p-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)]">
                 <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
                   <div className="border-b border-slate-200 px-4 py-3">
                     <h2 className="text-lg font-semibold">Support Inbox</h2>
@@ -667,19 +677,19 @@ export function SupportCommandCenter({
                   </article>
                 </section>
               </div>
-            </section>
+            </details>
 
             <CustomerWaitlistPanel initialLeads={waitlist} />
 
             <BugHuntPanel initialItems={bugHuntItems} />
 
             <details
-              className="group/database scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm"
+              className="group/database control-center-panel scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm"
               id="customer-database"
             >
               <summary
                 aria-label="Expand Customer Database"
-                className="flex cursor-pointer list-none flex-col gap-2 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between"
+                className="control-center-summary flex cursor-pointer list-none flex-col gap-2 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between"
               >
                 <div>
                   <div className="flex items-center gap-2">
@@ -713,12 +723,12 @@ export function SupportCommandCenter({
             </details>
 
             <details
-              className="group/database scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm"
+              className="group/database control-center-panel scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm"
               id="demo-database"
             >
               <summary
                 aria-label="Expand Demo Database"
-                className="flex cursor-pointer list-none flex-col gap-2 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between"
+                className="control-center-summary flex cursor-pointer list-none flex-col gap-2 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between"
               >
                 <div>
                   <div className="flex items-center gap-2">

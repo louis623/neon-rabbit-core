@@ -81,15 +81,51 @@ a {
 }
 
 .control-center-surface {
+  background: #eef4fb;
+  color: #0f172a;
   transition:
     background-color 180ms ease,
     color 180ms ease;
 }
 
+.control-center-surface .control-center-panel {
+  border-color: #c5d2e1;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 8%);
+}
+
+.control-center-surface .control-center-summary {
+  background: #f8fbff;
+  color: #0f172a;
+}
+
+.control-center-surface .control-center-summary:hover {
+  background: #edf5ff;
+}
+
+.control-center-surface .control-center-summary:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: -3px;
+}
+
 html[data-control-center-theme="dark"] .control-center-surface {
-  background: #07111f;
-  color: #e5edf7;
+  background: #06101d;
+  color: #f1f5f9;
   color-scheme: dark;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .control-center-panel {
+  background-color: #101d30;
+  border-color: #49617d;
+  box-shadow: 0 10px 26px rgb(0 0 0 / 24%);
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .control-center-summary {
+  background-color: #172841;
+  color: #f8fafc;
+}
+
+html[data-control-center-theme="dark"] .control-center-surface .control-center-summary:hover {
+  background-color: #1c3150;
 }
 
 html[data-control-center-theme="dark"] .control-center-surface .bg-white {
@@ -106,7 +142,7 @@ html[data-control-center-theme="dark"] .control-center-surface .bg-slate-100 {
 
 html[data-control-center-theme="dark"] .control-center-surface .border-slate-200,
 html[data-control-center-theme="dark"] .control-center-surface .border-slate-300 {
-  border-color: #334155;
+  border-color: #49617d;
 }
 
 html[data-control-center-theme="dark"] .control-center-surface .text-slate-950,

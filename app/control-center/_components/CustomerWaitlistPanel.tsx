@@ -1,6 +1,7 @@
 'use client'
 
 import { FormEvent, useMemo, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 
 import type { CustomerWaitlistLead } from '@/lib/prelaunch/customer-waitlist'
 
@@ -101,10 +102,13 @@ export function CustomerWaitlistPanel({
   }
 
   return (
-    <section className="scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm" id="customer-waitlist">
-      <div className="flex flex-col gap-3 border-b border-slate-200 px-4 py-4 md:flex-row md:items-end md:justify-between">
+    <details className="group/waitlist control-center-panel scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm" id="customer-waitlist">
+      <summary aria-label="Expand Customer Waitlist" className="control-center-summary flex cursor-pointer list-none flex-col gap-3 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Customer Waitlist</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">Customer Waitlist</h2>
+            <ChevronDown aria-hidden="true" className="h-5 w-5 text-slate-500 transition group-open/waitlist:rotate-180" />
+          </div>
           <p className="mt-1 text-sm text-slate-600">
             Landing-page signups and manual prospects in one private operator list.
           </p>
@@ -112,7 +116,7 @@ export function CustomerWaitlistPanel({
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
           {leads.filter((lead) => !lead.accountActivatedAt).length} awaiting account
         </p>
-      </div>
+      </summary>
 
       <div className="grid gap-5 p-4 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
@@ -261,6 +265,6 @@ export function CustomerWaitlistPanel({
           </div>
         </div>
       ) : null}
-    </section>
+    </details>
   )
 }
