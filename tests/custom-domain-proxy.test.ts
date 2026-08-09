@@ -18,9 +18,11 @@ describe('custom-domain customer site proxy', () => {
     )
 
     expect(isRewrite(response)).toBe(true)
-    expect(getRewrittenUrl(response)).toBe(`https://brisglowtique.com${assetPath}`)
+    expect(getRewrittenUrl(response)).toBe(
+      `https://brisglowtique.com${assetPath}?c=brisglowtique.com`,
+    )
     expect(response.headers.get('x-middleware-rewrite')).toBe(
-      `https://brisglowtique.com${assetPath}`,
+      `https://brisglowtique.com${assetPath}?c=brisglowtique.com`,
     )
     expect(response.headers.get('x-sparkle-customer-domain')).toBeNull()
   })

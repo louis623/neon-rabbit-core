@@ -25,6 +25,10 @@ export function proxy(request: NextRequest) {
 
   const url = request.nextUrl.clone()
   url.pathname = publicAssetPath
+  // The rewrite request header is not retained by Vercel's internal route
+  // boundary. Carry the already-normalized tenant in the internal rewrite URL
+  // as well; this is never exposed in the canonical customer URL.
+  url.searchParams.set('c', customerDomain)
 
   // Rewrites replace the host with the platform route. Preserve the verified
   // original custom domain so server-rendered metadata uses the same tenant.
