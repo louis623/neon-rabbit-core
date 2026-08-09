@@ -17,6 +17,7 @@ function label(value: string) {
 export function BugHuntPanel({ initialItems }: { initialItems: BugHuntItem[] }) {
   const [items, setItems] = useState(initialItems)
   const [filter, setFilter] = useState('')
+  const [archiveOpen, setArchiveOpen] = useState(false)
   const [form, setForm] = useState({ title: '', itemType: 'bug' as BugHuntItemType, owner: '', details: '' })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -28,11 +29,12 @@ export function BugHuntPanel({ initialItems }: { initialItems: BugHuntItem[] }) 
   }, [])
 
   const openItems = items.filter((item) => item.status !== 'complete')
+  const archivedItems = items.filter((item) => item.status === 'complete')
   const visibleItems = useMemo(() => {
     const query = filter.trim().toLowerCase()
-    if (!query) return items
-    return items.filter((item) => [item.title, item.details, item.owner, item.itemType, item.status].join(' ').toLowerCase().includes(query))
-  }, [filter, items])
+    if (!query) return openItems
+    return openItems.filter((item) => [item.title, item.details, item.owner, item.itemType, item.status].join(' ').toLowerCase().includes(query))
+  }, [filter, openItems])
 
   const replaceItem = (updated: BugHuntItem) => setItems((current) => current.map((item) => item.id === updated.id ? updated : item))
 
@@ -104,6 +106,36 @@ export function BugHuntPanel({ initialItems }: { initialItems: BugHuntItem[] }) 
           {message ? <p className="mt-3 text-sm text-slate-700" role="status">{message}</p> : null}
         </form>
       </div>
+      <div className="border-t border-slate-200 px-4 py-3">
+        <button className="text-sm font-semibold text-sky-700 underline underline-offset-4" onClick={() => setArchiveOpen(true)} type="button">
+          View completed task archive ({archivedItems.length})
+        </button>
+      </div>
+      {archiveOpen ? <div aria-labelledby="completed-task-archive-title" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="dialog">
+        <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl">
+          <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-950" id="completed-task-archive-title">Completed task archive</h3>
+              <p className="mt-1 text-sm text-slate-600">Completed tasks are kept here until you reactivate them.</p>
+            </div>
+            <button aria-label="Close completed task archive" className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700" onClick={() => setArchiveOpen(false)} type="button">Close</button>
+          </div>
+          <div className="space-y-3 p-5">
+            {archivedItems.map((item) => <article className="rounded-md border border-slate-200 p-4" key={item.id}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div className="flex flex-wrap gap-2"><span className="rounded-full bg-sky-50 px-2 py-1 text-xs font-semibold text-sky-700">{label(item.itemType)}</span><span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">Completed</span></div>
+                  <h4 className="mt-2 text-base font-semibold text-slate-950">{item.title}</h4>
+                  {item.owner ? <p className="mt-1 text-sm text-slate-600">Owner: {item.owner}</p> : null}
+                  {item.details ? <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">{item.details}</p> : null}
+                </div>
+                <button className="shrink-0 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white" onClick={async () => { try { await updateItem(item.id, { status: 'open' }) } catch (error) { setMessage(error instanceof Error ? error.message : 'Unable to reactivate the task.') } }} type="button">Reactivate</button>
+              </div>
+            </article>)}
+            {archivedItems.length === 0 ? <p className="py-6 text-sm text-slate-500">No completed tasks are archived yet.</p> : null}
+          </div>
+        </div>
+      </div> : null}
     </section>
   )
 }
