@@ -70,7 +70,10 @@ export function BugHuntPanel({ initialItems }: { initialItems: BugHuntItem[] }) 
           <h2 className="text-lg font-semibold">Bug Hunt and Updates</h2>
           <p className="mt-1 text-sm text-slate-600">Private operator backlog for bugs, improvements, content work, research, and operational follow-ups.</p>
         </div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{openItems.length} open</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <button className="text-xs font-semibold uppercase tracking-wide text-sky-700 underline underline-offset-4" onClick={() => setArchiveOpen(true)} type="button">Completed archive ({archivedItems.length})</button>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{openItems.length} open</p>
+        </div>
       </div>
       <div className="grid gap-5 p-4 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div>
