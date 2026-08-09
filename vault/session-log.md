@@ -3729,3 +3729,27 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - `npm run qa:amethyst` template tests passed (73 tests); its local URL link probes were skipped/fail-soft because no local server was running.
 - `npm run build` passed the active-branch guard, TypeScript validation, and production compilation.
 - Authenticated reviewer-browser smoke remains blocked by the known too-short reviewer-token configuration. It was not bypassed with Louis's personal account.
+
+---
+
+# August 9, 2026 - Control Center and Stripe Billing Completion
+
+## Completed
+
+- Added the private Control Center **Bug Hunt and Updates** tracker and loaded the Heather onboarding follow-ups. It supports task status, ownership, notes, and type. Completion archives a task instead of deleting it; the archive is visible at the bottom of the panel and can restore a task to active work.
+- Decoupled Control Center access from a signed-in Sparkle Suite rep account. Operators use its independent login/session, and protected Control Center API routes receive that session correctly. Legacy sessions refresh safely.
+- Improved Control Center readability in both color modes and added compact/collapsible section behavior so operators can work without multiple large panels open at once.
+- Audited all 11 customer-site appearance presets across Home, Trade, and Join. Released semantic foreground tokens and targeted fixes for contrast-sensitive Join cards, action/icon gradients, Trade controls, filters, and collection search. Added the missing configured Fontshare families.
+- Repaired custom-domain server rendering by forwarding a validated original customer host through the internal proxy rewrite. `theblingkitchen.com` now renders Heather/BlingKitchen in SSR metadata and template bootstrap instead of Sasha/default content.
+- Inspected the authorized Stripe dashboard and verified Heather M. Daugherty's exact existing Stripe customer, active grandfathered $39/month subscription, and successful payments. Linked only that verified customer/subscription to Heather's exact Sparkle Suite account. No payment, subscription, or Stripe provider object was created or changed.
+- Corrected the earlier payment-link misstep: Heather has no grandfathered checkout fallback. Her active account uses the Stripe Customer Portal via the shared **Stripe Billing and Payments** action.
+- Made the shared workspace billing contract explicit for every current and future account: Sparkle Suite does not show subscription/card details, invoices, billing history, cancellation controls, SMS wallet, or auto-recharge. Stripe owns those operations; paid accounts receive the portal action and unpaid accounts receive Stripe Checkout.
+- Hid the SMS/mobile wallet and stopped its workspace fetch until the texting/email product actually launches. Messages remains a distinct `Coming soon` tool.
+
+## Verification and lessons
+
+- Control Center work was released through commits `45041527`, `83cf5aa5`, `3b6d72db`, `726ba2c9`, `2acbe2de`, `706fd5cf`, and `ce700836`.
+- Customer-site contrast/domain work released through `d55d6e51` and `c418025b`; billing/workspace releases were `e11a741b`, `4112ff50`, `071de686`, and `3f82e581`. Current production deployment is `dpl_2irAn65qi1Jg8JNFoWWQyhXfEX7A` from `3f82e581`.
+- Focused suites passed for the relevant changes, including 128 billing/workspace tests for the final Stripe-only Account view. Each release passed `npm run build` and live alias checks for `www.yoursparklesuite.com`, the apex redirect, and `theblingkitchen.com`.
+- Do not infer or attach a Stripe payer from incomplete application data. Verify the exact customer/subscription in the authorized Stripe account first, then use identity-guarded production updates. Local sandbox Stripe credentials can point to a different account from the production payer account; never use that mismatch as proof that a live payer does not exist.
+- A visual reviewer smoke is still blocked by the known reviewer-token length configuration. Do not substitute Louis's personal account. Use focused tests, production health/alias checks, and an authorized external provider dashboard where applicable; record the visual limitation honestly.

@@ -1,5 +1,19 @@
 # Project State
 
+## August 9 Control Center, customer-site, and billing checkpoint
+
+- **Control Center:** It has its own operator sign-in/session, independent of whichever Sparkle Suite rep account is active in the browser. Its new **Bug Hunt and Updates** area is the private backlog for bugs, improvements, content work, research, and operational follow-ups. A task marked completed moves to a bottom-of-page archive and can be restored to active work; it is not deleted. The Control Center was also updated for stronger light/dark readability and collapsible/compact section handling.
+- **Customer-site quality:** The 11 selectable skins now use semantic foreground tokens on local surfaces. This fixes high-risk customer-visible contrast defects in Join final cards, icon tiles, shared actions, Trade request controls, active filters, and the expanded Trade collection search. Heather's custom-domain SSR now preserves the original validated host through the proxy rewrite, so `theblingkitchen.com` renders Heather/BlingKitchen rather than default Sasha/demo content.
+- **Heather billing:** Heather's verified existing Stripe customer and active $39/month grandfathered subscription are linked to her exact Sparkle Suite rep/subscription rows. Do not use a checkout/payment-link fallback for her. Her account opens the Stripe Billing Portal when she chooses **Stripe Billing and Payments**.
+- **Workspace billing contract:** For every current and future account, Sparkle Suite presents billing as a Stripe handoff. The Account UI must not duplicate card details, payment methods, invoices, billing history, cancellation controls, SMS wallet, or recharge controls. Existing active customers receive the Stripe portal action; accounts that still need to subscribe receive Stripe Checkout.
+- **Messaging launch gate:** The SMS/mobile wallet is hidden and its workspace fetch is disabled until the customer texting/email product is actually launched. Messages remains a separate `Coming soon` tool; the wallet implementation is preserved but must not be re-exposed early.
+
+**Latest production application release:** `3f82e581 fix: keep workspace billing in Stripe`, deployment `dpl_2irAn65qi1Jg8JNFoWWQyhXfEX7A`. Both Sparkle Suite aliases and Heather's custom domain were checked after release. The synthetic reviewer-browser route remains blocked by the known too-short reviewer-token configuration; do not bypass it with Louis's personal account.
+
+**Last updated:** August 9, 2026
+
+---
+
 ## August 8 Customer Onboarding, Domains, and Recipe Intake Checkpoint
 
 - The active implementation line is `codex/nic-nac-trade-hardening`. Recent application checkpoint `e70a6029 feat: simplify BlingKitchen recipe intake` is deployed to production as `dpl_BEsTfA2TMeCzvdQT5kCzDPrtzZ4x`; both Sparkle Suite production domains and `theblingkitchen.com` resolve to that exact release.

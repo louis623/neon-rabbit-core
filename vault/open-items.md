@@ -309,6 +309,7 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Tools and Integrations
 
+- [ ] **Launch customer messaging deliberately before re-enabling the SMS wallet** - Messages remains `Coming soon`; before exposing email/text actions or any SMS wallet/recharge UI, confirm provider readiness, consent/opt-out handling, support workflow, safe reviewer smoke, and user-facing copy.
 - [ ] **Google Meet transcription tool** — select a tool
 - [ ] **Cal.com intake form** — add "biggest current challenge" question
 
