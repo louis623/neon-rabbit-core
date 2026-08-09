@@ -119,7 +119,10 @@ export const controlCenterSessionCookie = {
   name: CONTROL_CENTER_SESSION_COOKIE,
   options: {
     httpOnly: true,
-    path: '/control-center',
+    // The Control Center UI lives at /control-center while its mutations use
+    // /api/control-center. The cookie must reach both paths without replacing
+    // the separate Sparkle Suite authentication cookie.
+    path: '/',
     sameSite: 'lax' as const,
     secure: process.env.NODE_ENV === 'production',
   },
