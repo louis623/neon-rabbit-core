@@ -9,7 +9,7 @@ import {
   type BugHuntStatus,
 } from '@/lib/control-center/bug-hunt'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { AuthError, getAuthenticatedOperator, OperatorAuthError } from '@/lib/supabase/operator-auth'
+import { AuthError, getControlCenterAccess, OperatorAuthError } from '@/lib/supabase/operator-auth'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -35,7 +35,7 @@ function errorResponse(error: unknown) {
 
 export async function POST(request: Request) {
   try {
-    await getAuthenticatedOperator()
+    await getControlCenterAccess()
     const body = (await request.json()) as Record<string, unknown>
     const title = text(body.title, 240)
     const itemType = text(body.itemType, 30)
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    await getAuthenticatedOperator()
+    await getControlCenterAccess()
     const body = (await request.json()) as Record<string, unknown>
     const id = text(body.id, 80)
     if (!id) return NextResponse.json({ error: 'A task is required.' }, { status: 400 })
