@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 9, 2026 - Brittany Team Management and Start Strong Release
+
+- Reopened Team Management from its deliberate August 2 `Coming soon` hold. The pre-existing entitlement-backed control plane remains the source of truth: private invite creation, progress, participant-to-lead questions, lead replies, archive access, and the separate public Join Team-card manager.
+- Built and published the public-but-unlisted, no-index Britt With Bling Start Strong Site at `https://brittwithbling-start-strong.louis526569.chatgpt.site`. It has no general sign-in gate; each participant must arrive through the existing high-entropy private invite URL.
+- Added narrowly allowlisted cross-origin support to the three invite-token API routes. Only the published Start Strong Site origin receives CORS permission for onboarding-state reads and progress/message POSTs; arbitrary origins do not.
+- Released exact application commit `20929d4b` to Vercel production deployment `dpl_7sQSTTFE8MF112p1yv3J5fcwZ8J1`. Vercel verified both `www.yoursparklesuite.com` and `yoursparklesuite.com` on that deployment. Focused Team Management/onboarding verification passed 116 tests and `npm run build` passed.
+- Verified the live Team Management route responds and the Start Strong-origin OPTIONS preflight returns the strict expected headers. The public Site initially returned a 500 during edge rollout; its corrected second version was rebuilt, republished, and later returned HTTP 200. No participant, progress, or message record was created for this release. The existing reviewer-browser path remains blocked by the too-short reviewer-token configuration and was not bypassed with Louis's account.
+
+---
+
 ## August 9, 2026 - Brittany / Britt With Bling Beta Welcome and Billing Link
 
 - Published a detailed, standalone welcome guide for Brittany at `https://brittwithbling-beta-welcome.louis526569.chatgpt.site`. It uses plain language and covers the private workspace, Nic-Nac, Calendar, Trade Board, customer-facing site, Customer List, Help & Resources, Team Management beta boundaries, feedback expectations, and the Stripe-only billing path.

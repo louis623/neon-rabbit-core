@@ -15,6 +15,8 @@ future work.
 
 - [ ] **Complete landing-page acceptance review** - after the latest Vercel deployment for 3881da55, review the exact live root on desktop and mobile. Confirm the customer-site screenshot deck shows readable hero content from all three cards and that Nic-Nac proof appears only in the Rep Workspace section, not over the Trade Board hero.
 
+- [ ] **Run first Brittany Team Management invite acceptance smoke** - Team Management is live for entitled accounts and the public-but-unlisted Start Strong Site is deployed. Once the reviewer-token configuration is repaired or an explicitly authorized safe participant path is available, create one real test invite, verify personalized state, progress sync, participant question, Brittany reply, and invite archive. Do not create a fake Sparkle Suite rep account or use Louis's personal account for the state-changing path.
+
 - [x] **Simplify the shared beta workspace and add Live Queue guidance** -
   Jewelry Library now lives in Tools; Nic-Nac quick actions and preview
   controls were simplified; Team Management and Bulk Collection Intake are
