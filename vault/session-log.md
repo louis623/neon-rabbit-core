@@ -11,6 +11,7 @@ Running log of significant work sessions. Most recent first.
 - Added narrowly allowlisted cross-origin support to the three invite-token API routes. Only the published Start Strong Site origin receives CORS permission for onboarding-state reads and progress/message POSTs; arbitrary origins do not.
 - Released exact application commit `20929d4b` to Vercel production deployment `dpl_7sQSTTFE8MF112p1yv3J5fcwZ8J1`. Vercel verified both `www.yoursparklesuite.com` and `yoursparklesuite.com` on that deployment. Focused Team Management/onboarding verification passed 116 tests and `npm run build` passed.
 - Verified the live Team Management route responds and the Start Strong-origin OPTIONS preflight returns the strict expected headers. The public Site initially returned a 500 during edge rollout; its corrected second version was rebuilt, republished, and later returned HTTP 200. No participant, progress, or message record was created for this release. The existing reviewer-browser path remains blocked by the too-short reviewer-token configuration and was not bypassed with Louis's account.
+- Corrected the final invite generator fallback so newly created Team Management onboarding pages use the published Codex Site, not the legacy Vercel Start Strong URL. Commit `98d8fa8f` deployed Ready as `dpl_9RtuFE9aZeZVMBU9PLmnvRme4MGn`; both Sparkle Suite domains resolve to that exact deployment and the live Site-origin preflight passed.
 
 ---
 
