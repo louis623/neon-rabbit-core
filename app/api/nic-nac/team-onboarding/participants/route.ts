@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 
 const DEFAULT_ONBOARDING_BASE_URL =
   process.env.TEAM_ONBOARDING_BASE_URL ??
-  'https://britt-with-bling-start-strong.vercel.app'
+  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
 
 function serviceErrorResponse(error: ServiceError) {
   return NextResponse.json(

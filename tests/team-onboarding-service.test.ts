@@ -49,7 +49,7 @@ describe('team onboarding service', () => {
     const result = await createTeamOnboardingParticipant(supabase, 'rep-britt', {
       displayName: ' Lindsey ',
       contactEmail: ' lindsey@example.com ',
-      baseUrl: 'https://britt-with-bling-start-strong.vercel.app',
+      baseUrl: 'https://brittwithbling-start-strong.louis526569.chatgpt.site',
       tokenFactory: () => 'visible-token-for-lindsey',
     })
 
@@ -67,7 +67,7 @@ describe('team onboarding service', () => {
       'visible-token-for-lindsey',
     )
     expect(result.accessUrl).toBe(
-      'https://britt-with-bling-start-strong.vercel.app/?invite=visible-token-for-lindsey',
+      'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=visible-token-for-lindsey',
     )
     expect(result.participant.displayName).toBe('Lindsey')
   })

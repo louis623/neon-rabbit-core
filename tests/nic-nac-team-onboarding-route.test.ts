@@ -123,7 +123,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
         status: 'invited',
       },
       accessUrl:
-        'https://britt-with-bling-start-strong.vercel.app/?invite=visible-token',
+        'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=visible-token',
     })
 
     const response = await POST_PARTICIPANTS(
@@ -144,7 +144,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
       expect.objectContaining({
         displayName: 'Lindsey',
         contactEmail: 'lindsey@example.com',
-        baseUrl: 'https://britt-with-bling-start-strong.vercel.app',
+        baseUrl: 'https://brittwithbling-start-strong.louis526569.chatgpt.site',
       }),
     )
     expect(JSON.stringify(createTeamOnboardingParticipantMock.mock.calls)).not.toContain(
@@ -159,7 +159,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
         status: 'invited',
       },
       accessUrl:
-        'https://britt-with-bling-start-strong.vercel.app/?invite=visible-token',
+        'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=visible-token',
       delivery: 'copy_link',
     })
   })

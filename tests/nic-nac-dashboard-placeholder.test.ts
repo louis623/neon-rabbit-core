@@ -995,7 +995,7 @@ describe('DashboardPlaceholder', () => {
               contactEmail: 'lindsey@example.com',
               status: 'started',
               accessUrl:
-                'https://britt-with-bling-start-strong.vercel.app/?invite=token',
+                'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=token',
               progress: { completed: 3, needsHelp: 1, total: 8 },
               unreadMessageCount: 1,
               lastActivityAt: '2026-07-02T12:20:00.000Z',
