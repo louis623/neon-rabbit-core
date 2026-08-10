@@ -774,7 +774,7 @@ describe('DashboardPlaceholder', () => {
     expect(getInitialWorkspaceSection('?section=business-calculator')).toBe(
       'business-tools',
     )
-    expect(getInitialWorkspaceSection('?section=team-management')).toBe('more')
+    expect(getInitialWorkspaceSection('?section=team-management')).toBe('team-management')
     expect(getInitialWorkspaceSection('?section=collection-intake')).toBe('more')
     expect(getInitialWorkspaceSection('?section=customer-list')).toBe('customer-list')
     expect(getInitialWorkspaceSection('?section=messages')).toBe('more')
@@ -811,7 +811,7 @@ describe('DashboardPlaceholder', () => {
     expect(resolveWorkspaceSectionForAccess('trade-board', false)).toBe('trade-board')
     expect(resolveWorkspaceSectionForAccess('help-resources', false)).toBe('help-resources')
     expect(isComingSoonWorkspaceSection('business-tools')).toBe(false)
-    expect(isComingSoonWorkspaceSection('team-management')).toBe(true)
+    expect(isComingSoonWorkspaceSection('team-management')).toBe(false)
     expect(isComingSoonWorkspaceSection('collection-intake')).toBe(true)
     expect(isComingSoonWorkspaceSection('customer-list')).toBe(false)
     expect(isComingSoonWorkspaceSection('messages')).toBe(true)
@@ -826,7 +826,9 @@ describe('DashboardPlaceholder', () => {
     expect(resolveWorkspaceSectionForAccess('business-tools', true)).toBe(
       'business-tools',
     )
-    expect(resolveWorkspaceSectionForAccess('team-management', true)).toBe('more')
+    expect(resolveWorkspaceSectionForAccess('team-management', true)).toBe(
+      'team-management',
+    )
     expect(resolveWorkspaceSectionForAccess('collection-intake', true)).toBe('more')
     expect(resolveWorkspaceSectionForAccess('customer-list', true)).toBe('customer-list')
   })
