@@ -84,20 +84,7 @@ export function applyMileHighFizzHomepage(
       watch: MILE_HIGH_FIZZ_PROFILE.watchUrl,
       tiktok: MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
     },
-    socialLinks: [
-      { label: 'TikTok', shortLabel: 'TT', href: MILE_HIGH_FIZZ_PROFILE.tiktokUrl },
-      {
-        label: 'Facebook',
-        shortLabel: 'FB',
-        href: homepage.streamLinks.facebook || homepage.socialLinks[1]?.href || '#',
-      },
-      {
-        label: 'VIP Group',
-        shortLabel: 'VIP',
-        href: homepage.streamLinks.facebook || homepage.socialLinks[1]?.href || '#',
-      },
-      { label: 'Shop', shortLabel: 'BP', href: MILE_HIGH_FIZZ_PROFILE.shopUrl },
-    ],
+    socialLinks: homepage.socialLinks,
     footerLinks: {
       ...homepage.footerLinks,
       home: '/amethyst/Homepage.html',
@@ -167,12 +154,7 @@ export function applyMileHighFizzJoin(
       ...join.repSocialLinks,
       tiktok: MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
     },
-    socialLinks: [
-      { label: 'TikTok', shortLabel: 'TT', href: MILE_HIGH_FIZZ_PROFILE.tiktokUrl },
-      join.socialLinks[1],
-      join.socialLinks[2],
-      { label: 'Shop', shortLabel: 'BP', href: join.shopUrl },
-    ],
+    socialLinks: join.socialLinks,
     footerLinks: {
       ...join.footerLinks,
       home: '/amethyst/Homepage.html',

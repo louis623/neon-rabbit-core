@@ -406,20 +406,7 @@ export function applyBrittWithBlingHomepage(
       tiktok: BRITT_WITH_BLING_PROFILE.tiktokUrl,
       facebook: BRITT_WITH_BLING_PROFILE.facebookVipUrl,
     },
-    socialLinks: [
-      { label: 'TikTok', shortLabel: 'TT', href: BRITT_WITH_BLING_PROFILE.tiktokUrl },
-      {
-        label: 'VIP Group',
-        shortLabel: 'VIP',
-        href: BRITT_WITH_BLING_PROFILE.facebookVipUrl,
-      },
-      {
-        label: 'Facebook',
-        shortLabel: 'FB',
-        href: BRITT_WITH_BLING_PROFILE.facebookVipUrl,
-      },
-      { label: 'Shop', shortLabel: 'BP', href: BRITT_WITH_BLING_PROFILE.shopUrl },
-    ],
+    socialLinks: homepage.socialLinks,
     footerLinks: {
       ...homepage.footerLinks,
       home: '/amethyst/Homepage.html',
@@ -498,16 +485,7 @@ export function applyBrittWithBlingJoin(
       tiktok: BRITT_WITH_BLING_PROFILE.tiktokUrl,
       website: BRITT_WITH_BLING_PROFILE.shopUrl,
     },
-    socialLinks: [
-      { label: 'TikTok', shortLabel: 'TT', href: BRITT_WITH_BLING_PROFILE.tiktokUrl },
-      {
-        label: 'VIP Group',
-        shortLabel: 'VIP',
-        href: BRITT_WITH_BLING_PROFILE.facebookVipUrl,
-      },
-      join.socialLinks[2],
-      { label: 'Shop', shortLabel: 'BP', href: BRITT_WITH_BLING_PROFILE.shopUrl },
-    ],
+    socialLinks: join.socialLinks,
     footerLinks: {
       ...join.footerLinks,
       home: '/amethyst/Homepage.html',

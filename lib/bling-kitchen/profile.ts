@@ -107,12 +107,7 @@ export function applyBlingKitchenHomepage(
       tiktok: BLING_KITCHEN_PROFILE.tiktokUrl,
       facebook: BLING_KITCHEN_PROFILE.facebookVipUrl,
     },
-    socialLinks: [
-      { label: 'TikTok', shortLabel: 'TT', href: BLING_KITCHEN_PROFILE.tiktokUrl },
-      { label: 'VIP Group', shortLabel: 'VIP', href: BLING_KITCHEN_PROFILE.facebookVipUrl },
-      { label: 'Facebook', shortLabel: 'FB', href: BLING_KITCHEN_PROFILE.facebookVipUrl },
-      { label: 'Shop', shortLabel: 'BP', href: BLING_KITCHEN_PROFILE.shopUrl },
-    ],
+    socialLinks: homepage.socialLinks,
     footerLinks: {
       ...homepage.footerLinks,
       home: '/amethyst/Homepage.html',
@@ -143,12 +138,7 @@ export function applyBlingKitchenTrade(
     shopUrl: BLING_KITCHEN_PROFILE.shopUrl,
     footerTagline:
       'Serving sparkle from the heart of the home, with rep-reviewed trades from BlingKitchen.',
-    socialLinks: [
-      { label: 'TikTok', shortLabel: 'TT', href: BLING_KITCHEN_PROFILE.tiktokUrl },
-      { label: 'VIP Group', shortLabel: 'VIP', href: BLING_KITCHEN_PROFILE.facebookVipUrl },
-      { label: 'Facebook', shortLabel: 'FB', href: BLING_KITCHEN_PROFILE.facebookVipUrl },
-      { label: 'Shop', shortLabel: 'BP', href: BLING_KITCHEN_PROFILE.shopUrl },
-    ],
+    socialLinks: trade.socialLinks,
     footerLinks: {
       ...trade.footerLinks,
       home: '/amethyst/Homepage.html',
@@ -193,12 +183,7 @@ export function applyBlingKitchenJoin(
       tiktok: BLING_KITCHEN_PROFILE.tiktokUrl,
       website: BLING_KITCHEN_PROFILE.shopUrl,
     },
-    socialLinks: [
-      { label: 'TikTok', shortLabel: 'TT', href: BLING_KITCHEN_PROFILE.tiktokUrl },
-      { label: 'VIP Group', shortLabel: 'VIP', href: BLING_KITCHEN_PROFILE.facebookVipUrl },
-      join.socialLinks[2],
-      { label: 'Shop', shortLabel: 'BP', href: BLING_KITCHEN_PROFILE.shopUrl },
-    ],
+    socialLinks: join.socialLinks,
     footerLinks: {
       ...join.footerLinks,
       home: '/amethyst/Homepage.html',
