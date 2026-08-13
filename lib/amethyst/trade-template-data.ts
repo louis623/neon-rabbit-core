@@ -50,12 +50,7 @@ export interface AmethystTradeTemplateData {
     rarePieces: string
     responseTime: string
   }
-  socialLinks: [
-    AmethystTradeSocialLink,
-    AmethystTradeSocialLink,
-    AmethystTradeSocialLink,
-    AmethystTradeSocialLink,
-  ]
+  socialLinks: AmethystTradeSocialLink[]
   footerLinks: {
     home: string
     tradeBoard: string

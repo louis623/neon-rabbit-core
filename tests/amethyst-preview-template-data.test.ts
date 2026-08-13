@@ -189,6 +189,36 @@ describe('Amethyst preview template data', () => {
     expect(join.footerLinks.contact).toBe('mailto:demo@example.com')
   })
 
+  it('renders only saved social profiles and supports a Whatnot handle', () => {
+    const settings: SiteSettingsDashboardResult = {
+      ...demoSettings,
+      socialHandles: {
+        instagram: '@sparklesuitedemo',
+        whatnot: '@sparkle-demo',
+      },
+    }
+
+    const homepage = mapPreviewSettingsToHomepageTemplateData(settings)
+    const trade = mapPreviewSettingsToTradeTemplateData(settings)
+    const join = mapPreviewSettingsToJoinTemplateData(settings)
+    const expectedLinks = [
+      {
+        label: 'Instagram',
+        shortLabel: 'IG',
+        href: 'https://www.instagram.com/sparklesuitedemo',
+      },
+      {
+        label: 'Whatnot',
+        shortLabel: 'WN',
+        href: 'https://www.whatnot.com/user/sparkle-demo',
+      },
+    ]
+
+    expect(homepage.socialLinks).toEqual(expectedLinks)
+    expect(trade.socialLinks).toEqual(expectedLinks)
+    expect(join.socialLinks).toEqual(expectedLinks)
+  })
+
   it('uses the saved About narrative without adding default filler copy', () => {
     const homepage = mapPreviewSettingsToHomepageTemplateData({
       ...demoSettings,

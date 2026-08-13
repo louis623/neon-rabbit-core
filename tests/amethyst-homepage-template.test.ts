@@ -444,6 +444,17 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toContain('.hp-footer-social-logo-stroke')
   })
 
+  it('renders only configured customer social links in the homepage footer', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('Array.isArray(CONTENT.socialLinks)')
+    expect(jsx).toContain('CONTENT.socialLinks\n    : []')
+    expect(jsx).not.toContain('const defaultSocials = [')
+  })
+
   it('keeps the customer footer to two unlabeled navigation columns for launch', () => {
     const homepage = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),

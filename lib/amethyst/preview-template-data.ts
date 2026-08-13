@@ -95,6 +95,7 @@ function socialKeyForUrl(value: string) {
   if (normalized.includes('facebook.com') || normalized.includes('fb.com')) return 'facebook'
   if (normalized.includes('instagram.com')) return 'instagram'
   if (normalized.includes('youtube.com') || normalized.includes('youtu.be')) return 'youtube'
+  if (normalized.includes('whatnot.com')) return 'whatnot'
   return 'website'
 }
 
@@ -242,6 +243,7 @@ function normalizeSocialUrl(label: string, value: string | undefined) {
   if (label === 'tiktok') return `https://www.tiktok.com/@${handle}`
   if (label === 'instagram') return `https://www.instagram.com/${handle}`
   if (label === 'facebook') return `https://www.facebook.com/${handle}`
+  if (label === 'whatnot') return `https://www.whatnot.com/user/${handle}`
   return cleaned
 }
 
@@ -275,12 +277,12 @@ function buildSocialLinks(settings: SiteSettingsDashboardResult) {
       shortLabel: 'YT',
       href: normalizeSocialUrl('youtube', settings.socialHandles.youtube),
     },
-  ] satisfies [
-    { label: string; shortLabel: string; href: string },
-    { label: string; shortLabel: string; href: string },
-    { label: string; shortLabel: string; href: string },
-    { label: string; shortLabel: string; href: string },
-  ]
+    {
+      label: 'Whatnot',
+      shortLabel: 'WN',
+      href: normalizeSocialUrl('whatnot', settings.socialHandles.whatnot),
+    },
+  ].filter((link) => link.href !== '#')
 }
 
 function resolveShopUrl(extras: PreviewRepExtras) {

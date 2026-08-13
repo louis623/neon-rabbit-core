@@ -1184,6 +1184,7 @@ const SOCIAL_HANDLE_FIELDS = [
   { key: 'facebook', label: 'Facebook' },
   { key: 'tiktok', label: 'TikTok' },
   { key: 'youtube', label: 'YouTube' },
+  { key: 'whatnot', label: 'Whatnot' },
 ]
 
 const WORKSPACE_APPEARANCE_PRESET: SiteAppearancePreset =

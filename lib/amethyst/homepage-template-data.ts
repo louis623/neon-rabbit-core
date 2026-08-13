@@ -129,12 +129,7 @@ export interface AmethystHomepageTemplateData {
     tiktok: string
     facebook: string
   }
-  socialLinks: [
-    AmethystHomepageSocialLink,
-    AmethystHomepageSocialLink,
-    AmethystHomepageSocialLink,
-    AmethystHomepageSocialLink,
-  ]
+  socialLinks: AmethystHomepageSocialLink[]
   footerLinks: {
     home?: string
     tradeBoard: string
@@ -501,7 +496,6 @@ export function buildAmethystHomepageBootstrapScript(
     `  href('.hp-hero-ctas .hp-btn-outline', streamLinks.shop || '#');`,
     `  href('.hp-hero-ctas .hp-btn-watch', streamLinks.watch || streamLinks.tiktok || '#');`,
     `  href('.hp-signup-consent a', footerLinks.privacy || '#');`,
-    `  all('.hp-footer-socials a').forEach(function (node, index) { if (socialLinks[index]) node.setAttribute('href', socialLinks[index].href); });`,
     `  all('.hp-footer-col:nth-of-type(2) a').forEach(function (node) { var label = (node.textContent || '').trim(); var value = label === 'Home' ? (footerLinks.home || '/amethyst/Homepage.html') : label === 'Trade Board' ? (footerLinks.tradeBoard || '/amethyst/Trade.html') : label === 'In the Pantry' ? (content.pantryPageUrl || '') : label === 'Join Team' ? (footerLinks.joinTeam || '') : ''; if (value) node.setAttribute('href', value); if (!value) { var item = node.closest('li'); if (item) item.style.display = 'none'; } });`,
     `  [footerLinks.privacy, footerLinks.terms, footerLinks.accessibility].forEach(function (value, index) { var node = all('.legal-row a')[index]; if (node && value) node.setAttribute('href', value); });`,
     `  (content.aboutMediaSlots || []).forEach(function (slot, index) { var card = document.querySelector('[data-slot="about media ' + (index + 1) + '"]'); if (!card || !slot) return; var captionNode = card.querySelector('.hp-about-media-caption'); if (captionNode && slot.caption) captionNode.textContent = slot.caption; if (slot.mediaUrl) { card.style.backgroundImage = 'linear-gradient(rgba(14, 8, 32, 0.24), rgba(14, 8, 32, 0.52)), url("' + slot.mediaUrl + '")'; card.style.backgroundPosition = 'center'; card.style.backgroundSize = 'cover'; } });`,

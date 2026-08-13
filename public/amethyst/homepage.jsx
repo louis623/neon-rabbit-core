@@ -1590,16 +1590,10 @@ function Signup({ repName, businessName }) {
 // ============================================================
 function Footer({ businessName }) {
   const joinTeamHref = CONTENT.footerLinks?.joinTeam || "";
-  const defaultSocials = [
-    { label: "TikTok", shortLabel: "TT", href: getSocialHref("TT") },
-    { label: "Facebook", shortLabel: "FB", href: getSocialHref("FB") },
-    { label: "Instagram", shortLabel: "IG", href: getSocialHref("IG") },
-    { label: "YouTube", shortLabel: "YT", href: getSocialHref("YT") },
-  ];
-  const footerSocials = (Array.isArray(CONTENT.socialLinks) && CONTENT.socialLinks.length
+  const footerSocials = (Array.isArray(CONTENT.socialLinks)
     ? CONTENT.socialLinks
-    : defaultSocials
-  ).filter((social) => social?.href && social.href !== "#").slice(0, 4);
+    : []
+  ).filter((social) => social?.href && social.href !== "#");
   const mileHighFizzFooterLinks = [
     { label: "Watch Live", href: CONTENT.streamLinks?.tiktok || CONTENT.streamLinks?.watch || "#" },
     { label: "VIP Group", href: CONTENT.streamLinks?.facebook || getSocialHref("VIP") || getSocialHref("FB") },

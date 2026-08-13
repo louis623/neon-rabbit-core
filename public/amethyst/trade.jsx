@@ -170,7 +170,9 @@ function applyTargetedMetadata(pageTitle, description) {
 }
 
 const FOOTER_LINKS = CONTENT.footerLinks || {};
-const FOOTER_SOCIALS = CONTENT.socialLinks || [];
+const FOOTER_SOCIALS = Array.isArray(CONTENT.socialLinks)
+  ? CONTENT.socialLinks.filter((social) => social?.href && social.href !== "#")
+  : [];
 const HOME_HREF = FOOTER_LINKS.home || "/amethyst/Homepage.html";
 const TRADE_BOARD_HREF = FOOTER_LINKS.tradeBoard || "/amethyst/Trade.html";
 const PANTRY_HREF = CONTENT.pantryPageUrl || "";

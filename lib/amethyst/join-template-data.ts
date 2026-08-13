@@ -74,12 +74,7 @@ export interface AmethystJoinTemplateData {
     website?: string
     youtube?: string
   }
-  socialLinks: [
-    AmethystJoinSocialLink,
-    AmethystJoinSocialLink,
-    AmethystJoinSocialLink,
-    AmethystJoinSocialLink,
-  ]
+  socialLinks: AmethystJoinSocialLink[]
   footerLinks: {
     tradeBoard: string
     catalog: string

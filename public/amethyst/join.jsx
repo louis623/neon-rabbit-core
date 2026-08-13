@@ -297,7 +297,9 @@ const TEAM_MEMBERS = (CONTENT.teamMembers && CONTENT.teamMembers.length > 0
 }));
 
 const FOOTER_LINKS = CONTENT.footerLinks || {};
-const FOOTER_SOCIALS = CONTENT.socialLinks || [];
+const FOOTER_SOCIALS = Array.isArray(CONTENT.socialLinks)
+  ? CONTENT.socialLinks.filter((social) => social?.href && social.href !== "#")
+  : [];
 const FAQ_ANSWERS = CONTENT.faqAnswers || {};
 const REP_SOCIALS = CONTENT.repSocialLinks || {};
 const HOME_HREF = FOOTER_LINKS.home || "/amethyst/Homepage.html";
