@@ -4,6 +4,12 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 13, 2026 - Brittany New Rep Onboarding Naming Release
+
+- Renamed the active user-facing Team Management and private onboarding-site language from Start Strong to **New Rep Onboarding**. Existing private invite URLs remain unchanged, so no prior or future invite link is broken.
+- Published Site version 4 for `https://brittwithbling-start-strong.louis526569.chatgpt.site` and updated its site title to Britt With Bling New Rep Onboarding. The Site build passed.
+- Sparkle Suite commit `21012f73 feat: rename team onboarding links` passed the focused 116-test onboarding suite and production build. It is live in Vercel production as `dpl_ERSixRWrKpSfw74vgWp1AsAtRRwy`; both `www.yoursparklesuite.com` and the apex resolve there. Brittany's signed-in Team Management page was reloaded and visibly verified with the new label. The reviewer-token limitation remains unchanged and was not bypassed.
+
 ## August 9, 2026 - Brittany Team Management and Start Strong Release
 
 - Reopened Team Management from its deliberate August 2 `Coming soon` hold. The pre-existing entitlement-backed control plane remains the source of truth: private invite creation, progress, participant-to-lead questions, lead replies, archive access, and the separate public Join Team-card manager.
