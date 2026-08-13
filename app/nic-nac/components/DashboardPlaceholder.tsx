@@ -5012,9 +5012,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       return
     }
 
-    const subject = encodeURIComponent('Your Britt with Bling Start Strong link')
+    const subject = encodeURIComponent('Your Britt with Bling New Rep Onboarding link')
     const body = encodeURIComponent(
-      `Hi ${participant.displayName},\n\nHere is your Start Strong onboarding link:\n${participant.accessUrl}\n\nKeep this handy while you are on the team.`,
+      `Hi ${participant.displayName},\n\nHere is your New Rep Onboarding link:\n${participant.accessUrl}\n\nKeep this handy while you are on the team.`,
     )
     const recipient = participant.contactEmail
       ? encodeURIComponent(participant.contactEmail)
@@ -8784,7 +8784,7 @@ export function TeamManagementCard({
         <div>
           <div className={styles.cardTitle}>Team Management</div>
           <div className={styles.cardSubtitle}>
-            Create private Start Strong links, track onboarding progress, and
+            Create private New Rep Onboarding links, track onboarding progress, and
             answer new-rep questions from this workspace.
           </div>
         </div>
