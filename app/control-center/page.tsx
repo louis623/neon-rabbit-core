@@ -12,7 +12,7 @@ import { loadBugHuntItems } from '@/lib/control-center/bug-hunt'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AuthError,
-  getAuthenticatedOperator,
+  getControlCenterAccess,
   OperatorAuthError,
 } from '@/lib/supabase/operator-auth'
 
@@ -21,10 +21,10 @@ export const dynamic = 'force-dynamic'
 
 export default async function SparkleSuiteControlCenterPage() {
   try {
-    await getAuthenticatedOperator()
+    await getControlCenterAccess()
   } catch (error) {
     if (error instanceof AuthError) {
-      redirect('/login?redirect=%2Fcontrol-center')
+      redirect('/control-center/login')
     }
 
     if (error instanceof OperatorAuthError) {

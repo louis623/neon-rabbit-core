@@ -1,5 +1,20 @@
 import { AuthError, getAuthenticatedRep } from './auth'
 import { createAdminClient } from './admin'
+import { createClient } from '@supabase/supabase-js'
+import { createHmac, timingSafeEqual } from 'node:crypto'
+import { cookies } from 'next/headers'
+
+const CONTROL_CENTER_SESSION_COOKIE = 'sparkle_control_center_session'
+const CONTROL_CENTER_SESSION_MAX_AGE_SECONDS = 60 * 60 * 12
+
+type OperatorContext = Awaited<ReturnType<typeof getAuthenticatedRep>>
+
+type ControlCenterSession = {
+  authUserId: string
+  email: string
+  expiresAt: number
+  repId: string
+}
 
 export class OperatorAuthError extends Error {
   constructor(message: string) {
@@ -38,7 +53,7 @@ async function getDevBypassOperator() {
 }
 
 export async function getAuthenticatedOperator() {
-  let context: Awaited<ReturnType<typeof getAuthenticatedRep>>
+  let context: OperatorContext
 
   try {
     context = await getAuthenticatedRep()
@@ -57,6 +72,114 @@ export async function getAuthenticatedOperator() {
   }
 
   return context
+}
+
+function getControlCenterSessionSecret() {
+  return process.env.CONTROL_CENTER_SESSION_SECRET ?? null
+}
+
+function signControlCenterSession(payload: string, sessionSecret: string) {
+  return createHmac('sha256', sessionSecret).update(payload).digest('base64url')
+}
+
+function encodeControlCenterSession(session: ControlCenterSession, sessionSecret: string) {
+  const payload = Buffer.from(JSON.stringify(session)).toString('base64url')
+  return `${payload}.${signControlCenterSession(payload, sessionSecret)}`
+}
+
+function decodeControlCenterSession(value: string, sessionSecret: string) {
+  const [payload, signature] = value.split('.')
+  if (!payload || !signature) return null
+  const actual = Buffer.from(signature)
+  const expected = Buffer.from(signControlCenterSession(payload, sessionSecret))
+  if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) return null
+
+  try {
+    const session = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as Partial<ControlCenterSession>
+    if (
+      typeof session.authUserId !== 'string' ||
+      typeof session.email !== 'string' ||
+      typeof session.repId !== 'string' ||
+      typeof session.expiresAt !== 'number' ||
+      session.expiresAt <= Date.now()
+    ) return null
+    return session as ControlCenterSession
+  } catch {
+    return null
+  }
+}
+
+export async function authenticateControlCenterOperator(email: string, password: string): Promise<OperatorContext> {
+  const normalizedEmail = email.trim().toLowerCase()
+  if (!normalizedEmail || !password) throw new AuthError('Email and password are required.')
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false } },
+  )
+  const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
+  if (error || !data.user) throw new AuthError('That email or password is not valid.')
+
+  const authenticatedEmail = data.user.email?.trim().toLowerCase()
+  if (!authenticatedEmail || !getOperatorEmails().includes(authenticatedEmail)) {
+    throw new OperatorAuthError('This Sparkle Suite account is not an internal operator.')
+  }
+
+  const admin = createAdminClient()
+  const { data: rep, error: repError } = await admin
+    .from('reps')
+    .select('id, auth_user_id, email, display_name, business_name, stripe_customer_id, public_site_slug, time_zone')
+    .eq('auth_user_id', data.user.id)
+    .single()
+  if (repError || !rep) throw new AuthError('Operator account was not found.')
+
+  return { repId: rep.id as string, rep }
+}
+
+export function createControlCenterSessionValue(operator: OperatorContext) {
+  const sessionSecret = getControlCenterSessionSecret()
+  if (!sessionSecret) throw new Error('Control Center operator sessions are not configured.')
+  const expiresAt = Date.now() + CONTROL_CENTER_SESSION_MAX_AGE_SECONDS * 1000
+  return {
+    value: encodeControlCenterSession({
+      authUserId: operator.rep.auth_user_id,
+      email: operator.rep.email.trim().toLowerCase(),
+      expiresAt,
+      repId: operator.repId,
+    }, sessionSecret),
+    expiresAt,
+  }
+}
+
+export async function getControlCenterSession() {
+  const sessionSecret = getControlCenterSessionSecret()
+  if (!sessionSecret) return null
+  const value = (await cookies()).get(CONTROL_CENTER_SESSION_COOKIE)?.value
+  return value ? decodeControlCenterSession(value, sessionSecret) : null
+}
+
+export async function getControlCenterAccess() {
+  try {
+    const operator = await getAuthenticatedOperator()
+    return { method: 'sparkle_suite_operator' as const, operator }
+  } catch (error) {
+    if (!(error instanceof AuthError || error instanceof OperatorAuthError)) throw error
+    const session = await getControlCenterSession()
+    if (session) return { method: 'control_center_session' as const, operator: { repId: session.repId } }
+    throw error
+  }
+}
+
+export const controlCenterSessionCookie = {
+  maxAge: CONTROL_CENTER_SESSION_MAX_AGE_SECONDS,
+  name: CONTROL_CENTER_SESSION_COOKIE,
+  options: {
+    httpOnly: true,
+    path: '/',
+    sameSite: 'lax' as const,
+    secure: process.env.NODE_ENV === 'production',
+  },
 }
 
 export { AuthError }
