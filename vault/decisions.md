@@ -1,5 +1,15 @@
 # Decision Log
 
+## August 15, 2026 - Control Center uses normal Sparkle Suite authentication
+
+**One account session, plus an operator authorization check**
+Control Center must use the standard Sparkle Suite sign-in session. Access is granted only after the authenticated account is matched against the internal operator allowlist; an independent code or cookie is not an alternative authorization path.
+
+**Fail closed for both missing and insufficient identity**
+Unauthenticated visitors go to the normal sign-in route with a return path. Authenticated reps who are not operators see an explicit access-required response. Protected Control Center APIs use the same authenticated-operator guard, so page access and mutations have the same boundary.
+
+---
+
 ## August 15, 2026 - Customer social-profile and footer contract
 
 **Whatnot is a first-class optional social field**

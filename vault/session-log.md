@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 15, 2026 - Control Center unified Sparkle Suite sign-in
+
+- Removed the separate Control Center access-code path. `/control-center/login` now redirects to the standard Sparkle Suite sign-in with a safe return path, and all Control Center pages/API mutations require `getAuthenticatedOperator`.
+- Removed the legacy independent Control Center signed-cookie implementation and its two session routes. Bug Hunt and Customer Waitlist actions no longer accept either a code-based session or an unaffiliated login; the account-activation audit uses the authenticated operator's rep ID.
+- Commit `33aa9d3a fix: use Sparkle sign-in for Control Center` passed 16 focused Control Center/authentication tests and the production build. It is deployed as `dpl_5YBg4HtCJ8qkaE987oQhpUTJRVex`; Vercel confirmed both production Sparkle Suite aliases. A live unauthenticated request redirected to `/login?redirect=%2Fcontrol-center`, while a signed-in non-operator browser session displayed **Operator access required**.
+
+---
+
 ## August 15, 2026 - Customer social links and Whatnot release
 
 - Added **Whatnot** to the Workspace Customer-facing site setup social-handle fields. It accepts a simple Whatnot handle or a full canonical URL and publishes a valid Whatnot profile destination.

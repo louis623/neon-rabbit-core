@@ -1,5 +1,15 @@
 # Project State
 
+## August 15 Control Center unified sign-in checkpoint
+
+- **Control Center access:** The separate access-code/session mechanism has been removed. Control Center pages and mutations now require the normal Sparkle Suite authenticated session plus the internal operator allowlist. Unauthenticated visitors are sent to `/login?redirect=%2Fcontrol-center`; authenticated non-operators receive an explicit access-required response.
+- **No parallel authentication path:** The code-entry screen, independent signed cookie, session-refresh client call, and code-session API routes are deleted. Bug Hunt and Customer Waitlist mutations now use the same authenticated-operator guard as the rest of the protected operator surface.
+- **Release and verification:** commit `33aa9d3a fix: use Sparkle sign-in for Control Center` is deployed as `dpl_5YBg4HtCJ8qkaE987oQhpUTJRVex`. Vercel assigned both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` to that deployment. Focused Control Center authentication tests passed (16 tests) and the production build completed. Live checks confirmed the normal login redirect for an unauthenticated request and an access-required result for a non-operator signed-in session.
+
+**Last updated:** August 15, 2026
+
+---
+
 ## August 15 Customer Social Links and Whatnot checkpoint
 
 - **Optional social contract:** Whatnot is now a supported Customer-facing site setup social handle alongside the existing platforms. A rep may enter either a handle or a full canonical Whatnot URL; the published destination uses `https://www.whatnot.com/user/<handle>` when given a handle.
