@@ -1,5 +1,16 @@
 # Project State
 
+## August 15 Nic-Nac pasted About-copy execution repair
+
+- **Live evidence corrected the first repair:** Vercel logs for Heather's actual conversation showed the initial About request did expose `update_site_setting`, but the pasted multi-paragraph narrative turn was classified only as `show_memory` (because it mentioned live shows) plus the calendar baseline. The site tool was absent on that turn, so Nic-Nac's denial was accurate to its supplied tool set but still product-wrong.
+- **Final repair:** A substantive copy block following Nic-Nac's request for About text is now an app-owned site-edit continuation even when the block does not repeat "About" or "website." Its first model step is pinned to `update_site_setting`, preventing a text-only fallback or a calendar-tool detour.
+- **Release and verification:** commit `1de5b0c6 fix: apply Nic-Nac About copy submissions` is production deployment `dpl_DAYiJDsQxx5Kac4boiPyEcG1Wpyu`. Vercel assigned both production aliases; both domains returned 200 for `/nic-nac` and `/blingkitchen`. The exact three-message transcript runs through the real route test, exposes `update_site_setting`, and forces that tool. Five focused suites passed 110 tests.
+- **Verification limit:** The known too-short reviewer token still prevents a synthetic authenticated live chat replay. The customer Workspace was not used for a state-changing retest; Louis can now paste the copy again without a separate form.
+
+**Last updated:** August 15, 2026
+
+---
+
 ## August 15 Nic-Nac site-tool continuity repair
 
 - **Root cause:** Nic-Nac's turn router did not recognize natural About/website language as a customer-site request. After a draft, the rep's follow-up "I don't have an option to paste it there. You need to do that" also failed the site-work continuation check, so the model only received the always-present calendar tool pack and incorrectly claimed it could not edit the site.

@@ -1,5 +1,15 @@
 # Decision Log
 
+## August 15, 2026 - Pasted narrative is a durable site-edit continuation
+
+**The content itself can carry the handoff**
+When Nic-Nac explicitly asks a rep to send About text, a substantive prose block in the next turn is the requested site content even if it contains no site-related keyword. Route that state from conversation context, not incidental words inside the copy such as "live."
+
+**Pin the authorized mutation for completed content handoffs**
+After the requested About copy arrives, `update_site_setting` must be the first tool choice. Do not leave the model a generic required-tool choice that can select an unrelated calendar tool or return text without publishing.
+
+---
+
 ## August 15, 2026 - Nic-Nac must keep relevant tool capabilities across task changes
 
 **Natural customer-site language is a first-class site intent**

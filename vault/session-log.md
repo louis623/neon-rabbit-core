@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 15, 2026 - Nic-Nac pasted About-copy execution repair
+
+- Louis reported that the first routing release still denied Heather's submitted About copy. Inspected the exact live conversation logs rather than assuming the route tests represented the model input.
+- Live proof: the "send me the new About text" prompt had site tools, but the next long prose message routed only to show memory plus calendar because it mentioned live shows and did not repeat customer-site wording. The first repair had not modeled that copy-submission state.
+- Added a shared app-owned detection contract for a substantive narrative pasted after Nic-Nac requests About text. The router keeps the site intent, and the tool-choice policy pins the first step specifically to `update_site_setting`.
+- Added a real route replay of the exact conversation shape. It proves the route exposes `update_site_setting` and returns `{ type: 'tool', toolName: 'update_site_setting' }` on the pasted-copy turn. Updated the stale route smoke harness to mock the current generic Trade workflow context as well.
+- Released `1de5b0c6 fix: apply Nic-Nac About copy submissions` as production `dpl_DAYiJDsQxx5Kac4boiPyEcG1Wpyu`; both domains are assigned. 110 focused tests passed. Reviewer-auth remains blocked by the too-short token; no customer Workspace mutation was used as a workaround.
+
+---
+
 ## August 15, 2026 - Nic-Nac About narrative and multi-tool routing repair
 
 - Investigated Heather's report that Nic-Nac drafted an About narrative but then said it only had show/calendar tools and could not publish it.
