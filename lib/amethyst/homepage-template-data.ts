@@ -409,16 +409,23 @@ export function buildAmethystHomepageTweakDefaults(
   data: AmethystHomepageTemplateData,
   appearancePreset?: AmethystAppearancePresetId | string | null,
 ): AmethystHomepageTweakDefaults {
-  return applyAmethystAppearancePreset({
+  const presetDefaults = applyAmethystAppearancePreset({
     repName: getPublicRepName(data.repName),
     businessName: data.businessName,
     tagline: data.tagline,
     heroHeadline: data.heroHeadline,
     heroSub: redactPublicRepFullName(data.heroSub, data.repName),
-    heroMotion: data.heroMotion,
     tickerTopText: data.tickerTopText,
     ...lockedTweakDefaults,
   }, appearancePreset)
+
+  // Hero motion is a saved Site Settings choice. The selected skin supplies
+  // the other visual defaults, but must never overwrite a rep's saved motion
+  // while the public bootstrap is being assembled.
+  return {
+    ...presetDefaults,
+    heroMotion: data.heroMotion,
+  }
 }
 
 function safeScriptJson(value: unknown) {

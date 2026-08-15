@@ -335,7 +335,7 @@ describe('Amethyst homepage template data wiring', () => {
       defaultAmethystHomepageTemplateData.heroHeadline,
     )
     expect(defaults.heroSub).toBe(defaultAmethystHomepageTemplateData.heroSub)
-    expect(defaults.heroMotion).toBe('soft_glow')
+    expect(defaults.heroMotion).toBe('sparkle_rise')
     expect(defaults.tickerTopText).toBe(
       defaultAmethystHomepageTemplateData.tickerTopText,
     )
@@ -375,6 +375,43 @@ describe('Amethyst homepage template data wiring', () => {
     expect(html.indexOf('template-loader.js')).toBeLessThan(
       html.indexOf('homepage.jsx'),
     )
+  })
+
+  it('keeps the saved hero motion when a skin supplies its other visual defaults', () => {
+    expect(
+      buildAmethystHomepageTweakDefaults(
+        { ...defaultAmethystHomepageTemplateData, heroMotion: 'sparkle_rise' },
+        'sparkle_suite_morganite',
+      ).heroMotion,
+    ).toBe('sparkle_rise')
+    expect(
+      buildAmethystHomepageTweakDefaults(
+        { ...defaultAmethystHomepageTemplateData, heroMotion: 'soft_glow' },
+        'black_diamond',
+      ).heroMotion,
+    ).toBe('soft_glow')
+    expect(
+      buildAmethystHomepageTweakDefaults(
+        { ...defaultAmethystHomepageTemplateData, heroMotion: 'still' },
+        'rose_quartz',
+      ).heroMotion,
+    ).toBe('still')
+  })
+
+  it('serializes the saved hero motion into the public bootstrap for every skin', () => {
+    const sparkleRiseScript = buildAmethystHomepageBootstrapScript(
+      { ...defaultAmethystHomepageTemplateData, heroMotion: 'sparkle_rise' },
+      undefined,
+      'sparkle_suite_morganite',
+    )
+    const softGlowScript = buildAmethystHomepageBootstrapScript(
+      { ...defaultAmethystHomepageTemplateData, heroMotion: 'soft_glow' },
+      undefined,
+      'black_diamond',
+    )
+
+    expect(sparkleRiseScript).toContain('"heroMotion":"sparkle_rise"')
+    expect(softGlowScript).toContain('"heroMotion":"soft_glow"')
   })
 
   it('uses two clear optional About media slots instead of a tiny three-card gallery', () => {
