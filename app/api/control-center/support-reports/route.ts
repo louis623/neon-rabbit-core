@@ -8,7 +8,7 @@ import { resolveSupportReport } from '@/lib/services/support-lessons'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AuthError,
-  getAuthenticatedOperator,
+  getControlCenterAccess,
   OperatorAuthError,
 } from '@/lib/supabase/operator-auth'
 
@@ -56,7 +56,7 @@ function authErrorResponse(error: unknown) {
 
 export async function GET(request: Request) {
   try {
-    await getAuthenticatedOperator()
+    await getControlCenterAccess()
     const url = new URL(request.url)
     const query = querySchema.parse({
       status: url.searchParams.get('status') ?? undefined,
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const operator = await getAuthenticatedOperator()
+    const { operator } = await getControlCenterAccess()
     const body = patchSchema.parse(await request.json())
     const admin = createAdminClient()
 
@@ -102,7 +102,7 @@ export async function PATCH(request: Request) {
         fixOrWorkaround: resolvedBody.fixOrWorkaround,
         tags: resolvedBody.tags,
         approvedForReuse: resolvedBody.approvedForReuse,
-        createdBy: operator.rep.email,
+        createdBy: operator.email,
       })
 
       return NextResponse.json({

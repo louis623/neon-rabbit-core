@@ -4,7 +4,7 @@ import { runSparkleLabManualScan } from '@/lib/sparkle-lab/runner'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AuthError,
-  getAuthenticatedOperator,
+  getControlCenterAccess,
   OperatorAuthError,
 } from '@/lib/supabase/operator-auth'
 
@@ -17,7 +17,7 @@ type RequestBody = {
 
 export async function POST(request: Request) {
   try {
-    await getAuthenticatedOperator()
+    await getControlCenterAccess()
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: 'unauthenticated' }, { status: 401 })

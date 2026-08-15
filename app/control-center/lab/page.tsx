@@ -5,7 +5,7 @@ import { readSparkleLabControlCenterModel } from '@/lib/sparkle-lab/read-model'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AuthError,
-  getAuthenticatedOperator,
+  getControlCenterAccess,
   OperatorAuthError,
 } from '@/lib/supabase/operator-auth'
 
@@ -14,10 +14,10 @@ export const dynamic = 'force-dynamic'
 
 export default async function SparkleLabControlCenterPage() {
   try {
-    await getAuthenticatedOperator()
+    await getControlCenterAccess()
   } catch (error) {
     if (error instanceof AuthError) {
-      redirect('/login?redirect=%2Fcontrol-center%2Flab')
+      redirect('/control-center/login')
     }
 
     if (error instanceof OperatorAuthError) {
