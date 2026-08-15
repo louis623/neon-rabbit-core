@@ -1419,6 +1419,11 @@ function AboutSection({ repName }) {
           <div className="hp-about-copy">
             <div className="hp-section-eyebrow">About the rep</div>
             <h2 className="hp-section-title slot" data-slot="about headline">{aboutHeadline}</h2>
+            {CONTENT.aboutSubheading ? (
+              <div className="hp-section-eyebrow slot" data-slot="about subheading">
+                {CONTENT.aboutSubheading}
+              </div>
+            ) : null}
             <div className="hp-about-body">
               {visibleAboutParagraphs.map((paragraph, index) => (
                 <p className="slot" data-slot={`about paragraph ${index + 1}`} key={index}>

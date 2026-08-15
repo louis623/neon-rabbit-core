@@ -15,3 +15,21 @@ export function isAboutNarrativeCopySubmission(args: {
 
   return assistantAskedForAboutCopy && substantiveCopy
 }
+
+export function isAboutSectionCorrection(args: {
+  latestUserText: string
+  previousAssistantText: string
+}): boolean {
+  const latest = args.latestUserText.trim()
+  const previous = args.previousAssistantText
+  const assistantJustUpdatedAbout =
+    /\babout(?:\s+section)?\b/i.test(previous) &&
+    /\b(?:updated|saved|done|published)\b/i.test(previous)
+  const asksForTheMissingSection =
+    /\b(?:whole|full|all of (?:it|that)|rest of (?:it|that))\b/i.test(latest) &&
+    /\b(?:about|section|thing|copy|part)\b/i.test(latest)
+  const identifiesAnIncompleteSave =
+    /\b(?:only|just)\s+(?:added|updated|saved)\b[\s\S]{0,80}\b(?:part|body|section|copy)\b/i.test(latest)
+
+  return assistantJustUpdatedAbout && (asksForTheMissingSection || identifiesAnIncompleteSave)
+}

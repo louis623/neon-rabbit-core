@@ -25,6 +25,8 @@ type SiteSettingsRow = {
   show_join_page: boolean | null
   customer_site_template: string | null
   appearance_preset: string | null
+  about_heading: string | null
+  about_subheading: string | null
   about_narrative: string | null
   homepage_media_slots: unknown
 }
@@ -38,7 +40,7 @@ type RepProfileRow = {
 }
 
 const SITE_SETTINGS_SELECT =
-  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_headline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, about_narrative, homepage_media_slots'
+  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_headline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, about_heading, about_subheading, about_narrative, homepage_media_slots'
 const REP_PROFILE_SELECT =
   'display_name, business_name, email, phone, social_handles'
 
@@ -224,6 +226,8 @@ function buildDashboardResult(args: {
       args.siteSettings?.appearance_preset,
     ),
     socialHandles: normalizeSocialHandles(args.repProfile.social_handles),
+    aboutHeading: normalizeText(args.siteSettings?.about_heading),
+    aboutSubheading: normalizeText(args.siteSettings?.about_subheading),
     aboutNarrative: normalizeText(args.siteSettings?.about_narrative),
     homepageMediaSlots: normalizePublicSiteMediaSlots(
       args.siteSettings?.homepage_media_slots,
@@ -345,6 +349,12 @@ export async function updateSiteSettingsDashboard(
     siteSettingsPatch.appearance_preset = normalizeAmethystAppearancePreset(
       input.appearancePreset,
     )
+  }
+  if (input.aboutHeading !== undefined) {
+    siteSettingsPatch.about_heading = normalizeNullableText(input.aboutHeading.slice(0, 180))
+  }
+  if (input.aboutSubheading !== undefined) {
+    siteSettingsPatch.about_subheading = normalizeNullableText(input.aboutSubheading.slice(0, 240))
   }
   if (input.aboutNarrative !== undefined) {
     siteSettingsPatch.about_narrative = normalizeNullableText(

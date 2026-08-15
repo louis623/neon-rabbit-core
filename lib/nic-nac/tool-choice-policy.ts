@@ -1,4 +1,7 @@
-import { isAboutNarrativeCopySubmission } from '@/lib/nic-nac/site-editing-intent'
+import {
+  isAboutNarrativeCopySubmission,
+  isAboutSectionCorrection,
+} from '@/lib/nic-nac/site-editing-intent'
 
 type TradeBoardWorkflowForToolChoice = {
   status?: string
@@ -60,10 +63,14 @@ export function chooseNicNacToolChoiceForStep(args: {
   if (!args.requireToolCall) return 'auto'
   if (
     args.activeToolNames.includes('update_site_setting') &&
-    isAboutNarrativeCopySubmission({
+    (isAboutNarrativeCopySubmission({
       latestUserText: args.latestUserText ?? '',
       previousAssistantText: args.previousAssistantText ?? '',
-    })
+    }) ||
+      isAboutSectionCorrection({
+        latestUserText: args.latestUserText ?? '',
+        previousAssistantText: args.previousAssistantText ?? '',
+      }))
   ) {
     return { type: 'tool', toolName: 'update_site_setting' }
   }

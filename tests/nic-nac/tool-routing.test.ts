@@ -523,6 +523,32 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
+  it('keeps the site tool after Nic-Nac only saves part of an About section', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [{ type: 'text', text: "Update Heather's About section." }],
+      },
+      {
+        id: 'done',
+        role: 'assistant',
+        parts: [{ type: 'text', text: "Done — Heather's About section has been updated." }],
+      },
+      {
+        id: 'correction',
+        role: 'user',
+        parts: [{ type: 'text', text: 'No, you just added part of it. Add the whole thing.' }],
+      },
+    ]
+
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toContain('site')
+    expect(listToolNamesForIntents(intents)).toContain('update_site_setting')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
   it('keeps both site and calendar tools available when a rep changes topics in one turn', () => {
     const intents = getToolIntentsForText(
       'Update my About story and move Friday\'s show to 8pm Eastern.',

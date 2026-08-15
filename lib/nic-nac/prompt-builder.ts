@@ -120,7 +120,9 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
   site: `Site tools:
 - update_banner_text is for quick banner copy changes.
 - update_streaming_links replaces the full streaming-links map. If the rep gives only one link and you do not know the full set, ask for the full set.
-- update_site_setting patches broader public-site settings such as ticker, tagline, the About narrative, hero behavior, team name, join-page visibility, or social handles.
+- update_site_setting patches broader public-site settings such as ticker, tagline, the About heading, subtitle, and narrative, hero behavior, team name, join-page visibility, or social handles.
+- When a rep supplies a complete About section, save all supplied parts in one update: the title as aboutHeading, a short byline or location line as aboutSubheading, and the remaining paragraphs as aboutNarrative. Never save only the body when the rep supplied a title or subtitle.
+- If the rep says an About update was incomplete, use update_site_setting again. Use the complete About copy already present in this conversation; do not tell them to paste it into a separate form.
 - list_join_team_roster reads editable Join Team roster cards.
 - manage_join_team_roster adds, updates, removes, hides/shows, or reorders Join Team roster cards, including photos and TikTok/Facebook VIP/Instagram/globe website/YouTube links.
 - build_site_recipe_draft builds a BlingKitchen Pantry recipe draft from recent chat image uploads. Recipe-card photos are source material for ingredients and steps; display/food photos are the public recipe images. Use 1-based recent chat photo indexes. Do not ask Heather for image URLs.

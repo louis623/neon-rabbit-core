@@ -107,6 +107,7 @@ export interface AmethystHomepageTemplateData {
   heroMotion: string
   tickerTopText: string
   aboutHeadline: string
+  aboutSubheading?: string
   aboutParagraphs: [string, string, string]
   aboutMediaSlots: [
     AmethystHomepageMediaSlot,
@@ -459,6 +460,9 @@ export function buildAmethystHomepageBootstrapScript(
     repName: getPublicRepName(data.repName),
     heroSub: redactPublicRepFullName(data.heroSub, data.repName),
     aboutHeadline: redactPublicRepFullName(data.aboutHeadline, data.repName),
+    aboutSubheading: data.aboutSubheading
+      ? redactPublicRepFullName(data.aboutSubheading, data.repName)
+      : undefined,
     aboutParagraphs: data.aboutParagraphs.map((paragraph) =>
       redactPublicRepFullName(paragraph, data.repName),
     ) as [string, string, string],
@@ -494,6 +498,7 @@ export function buildAmethystHomepageBootstrapScript(
     `  text('.hp-wibp-video-caption', content.showcaseVideoCaption);`,
     `  var showcase = document.querySelector('[data-slot="showcase video"]'); if (showcase && content.showcaseImageUrl) { showcase.style.backgroundImage = 'linear-gradient(rgba(14, 8, 32, 0.2), rgba(14, 8, 32, 0.48)), url("' + content.showcaseImageUrl + '")'; showcase.style.backgroundPosition = 'center'; showcase.style.backgroundSize = 'cover'; }`,
     `  text('[data-slot="about headline"]', content.aboutHeadline);`,
+    `  text('[data-slot="about subheading"]', content.aboutSubheading);`,
     `  text('[data-slot="about paragraph 1"]', content.aboutParagraphs && content.aboutParagraphs[0]);`,
     `  text('[data-slot="about paragraph 2"]', content.aboutParagraphs && content.aboutParagraphs[1]);`,
     `  text('[data-slot="about paragraph 3"]', content.aboutParagraphs && content.aboutParagraphs[2]);`,

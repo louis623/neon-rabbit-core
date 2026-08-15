@@ -1,5 +1,15 @@
 # Decision Log
 
+## August 15, 2026 - An About section is structured customer-site content
+
+**Save the representation the rep supplied**
+When a rep gives an About title, byline/location, and body, persist and render each as its own customer-site field. Do not flatten the content into a narrative-only value and silently discard the identity line.
+
+**A correction retains the same authorized mutation**
+After Nic-Nac reports an About update, a concise complaint that only part was saved remains the same site-edit workflow. Keep `update_site_setting` available and require it again; do not ask the rep to manually move their already-supplied copy into another UI.
+
+---
+
 ## August 15, 2026 - Pasted narrative is a durable site-edit continuation
 
 **The content itself can carry the handoff**

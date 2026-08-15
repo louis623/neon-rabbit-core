@@ -532,7 +532,11 @@ export function mapPreviewSettingsToHomepageTemplateData(
       settings,
       defaultAmethystHomepageTemplateData.tickerTopText,
     ),
-    aboutHeadline: `Meet ${repName} and the story behind ${businessName}.`,
+    aboutHeadline: firstText(
+      settings.aboutHeading,
+      `Meet ${repName} and the story behind ${businessName}.`,
+    ),
+    aboutSubheading: settings.aboutSubheading?.trim() || undefined,
     ...(aboutParagraphs ? { aboutParagraphs } : {}),
     signupSub: `Get a heads-up when ${repName} goes live, plus first dibs on new drops.`,
     signupConsent: `Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from ${businessName}. Msg & data rates may apply. Reply STOP to unsubscribe.`,

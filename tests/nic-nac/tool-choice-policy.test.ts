@@ -32,6 +32,18 @@ describe('Nic-Nac tool choice policy', () => {
     ).toEqual({ type: 'tool', toolName: 'update_site_setting' })
   })
 
+  it('pins an incomplete About-section correction to update_site_setting', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: true,
+        stepsLength: 0,
+        activeToolNames: ['update_site_setting'],
+        previousAssistantText: "Done — Heather's About section has been updated.",
+        latestUserText: 'No, you just added part of it. Add the whole thing.',
+      }),
+    ).toEqual({ type: 'tool', toolName: 'update_site_setting' })
+  })
+
   it('keeps required tool choice for contextual Trade Board turns that are not ready yet', () => {
     expect(
       chooseNicNacToolChoiceForStep({

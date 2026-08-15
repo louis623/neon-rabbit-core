@@ -20,6 +20,8 @@ const inputSchema = z.object({
   showJoinPage: z.boolean().optional(),
   customerSiteTemplate: z.string().optional(),
   appearancePreset: z.string().optional(),
+  aboutHeading: z.string().max(180).optional(),
+  aboutSubheading: z.string().max(240).optional(),
   aboutNarrative: z.string().max(3000).optional(),
   socialHandles: z.record(z.string(), z.string().min(1)).optional(),
 })
@@ -36,6 +38,8 @@ type SiteSettingsRow = {
   show_join_page: boolean | null
   customer_site_template: string | null
   appearance_preset: string | null
+  about_heading: string | null
+  about_subheading: string | null
   about_narrative: string | null
 }
 
@@ -59,7 +63,7 @@ export function makeUpdateSiteSettingTool(ctx: {
   return tool({
     description:
       "Update one or more site customization settings for the authenticated rep. " +
-      'This can patch banner, ticker, tagline, About narrative, controlled hero motion, team name, join-page visibility, the customer-facing Amethyst site appearance preset, and social handles. customerSiteTemplate is always normalized back to Amethyst. Custom hero images are not supported.',
+      'This can patch banner, ticker, tagline, the About section heading, subtitle, and narrative, controlled hero motion, team name, join-page visibility, the customer-facing Amethyst site appearance preset, and social handles. customerSiteTemplate is always normalized back to Amethyst. Custom hero images are not supported.',
     inputSchema,
     execute: async ({
       bannerText,
@@ -72,6 +76,8 @@ export function makeUpdateSiteSettingTool(ctx: {
       showJoinPage,
       customerSiteTemplate,
       appearancePreset,
+      aboutHeading,
+      aboutSubheading,
       aboutNarrative,
       socialHandles,
     }) => {
@@ -86,6 +92,8 @@ export function makeUpdateSiteSettingTool(ctx: {
         showJoinPage !== undefined ||
         customerSiteTemplate !== undefined ||
         appearancePreset !== undefined ||
+        aboutHeading !== undefined ||
+        aboutSubheading !== undefined ||
         aboutNarrative !== undefined ||
         socialHandles !== undefined
 
@@ -116,6 +124,12 @@ export function makeUpdateSiteSettingTool(ctx: {
         siteSettingsPatch.appearance_preset =
           normalizeAmethystSkinSelection(appearancePreset)
       }
+      if (aboutHeading !== undefined) {
+        siteSettingsPatch.about_heading = aboutHeading.trim() || null
+      }
+      if (aboutSubheading !== undefined) {
+        siteSettingsPatch.about_subheading = aboutSubheading.trim() || null
+      }
       if (aboutNarrative !== undefined) {
         siteSettingsPatch.about_narrative = aboutNarrative.trim() || null
       }
@@ -129,7 +143,7 @@ export function makeUpdateSiteSettingTool(ctx: {
           .update(siteSettingsPatch)
           .eq('rep_id', ctx.repId)
           .select(
-            'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, about_narrative',
+            'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, about_heading, about_subheading, about_narrative',
           )
           .single()
 
@@ -184,6 +198,14 @@ export function makeUpdateSiteSettingTool(ctx: {
           updated.appearancePreset = normalizeAmethystAppearancePreset(
             row.appearance_preset,
           )
+        }
+        if (aboutHeading !== undefined) {
+          updatedFields.push('aboutHeading')
+          updated.aboutHeading = row.about_heading
+        }
+        if (aboutSubheading !== undefined) {
+          updatedFields.push('aboutSubheading')
+          updated.aboutSubheading = row.about_subheading
         }
         if (aboutNarrative !== undefined) {
           updatedFields.push('aboutNarrative')

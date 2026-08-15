@@ -147,6 +147,9 @@ describe('site customization tools', () => {
         show_join_page: false,
         customer_site_template: 'amethyst',
         appearance_preset: 'sparkle_suite_morganite',
+        about_heading: 'Meet Heather',
+        about_subheading: 'HEATHER DAUGHERTY · OHIO',
+        about_narrative: 'Heather shares beautiful jewelry and a welcoming community.',
       },
       error: null,
     })
@@ -173,6 +176,9 @@ describe('site customization tools', () => {
       showJoinPage: false,
       customerSiteTemplate: 'not-a-real-template',
       appearancePreset: 'SS-01',
+      aboutHeading: 'Meet Heather',
+      aboutSubheading: 'HEATHER DAUGHERTY · OHIO',
+      aboutNarrative: 'Heather shares beautiful jewelry and a welcoming community.',
       socialHandles: {
         instagram: '@sparklesquad',
       },
@@ -184,6 +190,9 @@ describe('site customization tools', () => {
       show_join_page: false,
       customer_site_template: 'amethyst',
       appearance_preset: 'sparkle_suite_morganite',
+      about_heading: 'Meet Heather',
+      about_subheading: 'HEATHER DAUGHERTY · OHIO',
+      about_narrative: 'Heather shares beautiful jewelry and a welcoming community.',
     })
     expect(siteSettingsChain.spies.eq).toHaveBeenCalledWith('rep_id', 'rep-1')
     expect(repsChain.spies.update).toHaveBeenCalledWith({
@@ -199,6 +208,9 @@ describe('site customization tools', () => {
         'showJoinPage',
         'customerSiteTemplate',
         'appearancePreset',
+        'aboutHeading',
+        'aboutSubheading',
+        'aboutNarrative',
         'socialHandles',
       ],
       updated: {
@@ -207,6 +219,9 @@ describe('site customization tools', () => {
         showJoinPage: false,
         customerSiteTemplate: 'amethyst',
         appearancePreset: 'sparkle_suite_morganite',
+        aboutHeading: 'Meet Heather',
+        aboutSubheading: 'HEATHER DAUGHERTY · OHIO',
+        aboutNarrative: 'Heather shares beautiful jewelry and a welcoming community.',
         socialHandles: {
           instagram: '@sparklesquad',
         },

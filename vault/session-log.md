@@ -4,6 +4,15 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 15, 2026 - Nic-Nac complete About-section repair
+
+- Follow-up live behavior showed that the prior About repair saved only the narrative body and then dropped the site capability after Heather said it was incomplete.
+- Added durable `about_heading` and `about_subheading` fields alongside `about_narrative`, wired them through Site Settings, the Amethyst customer homepage, and Nic-Nac's `update_site_setting` contract. The public About rendering now shows the optional byline below the saved title.
+- Nic-Nac's active site prompt requires a complete title/byline/body save whenever the rep supplied those parts. A confirmed-but-incomplete About save is now a first-class continuation that pins the retry to `update_site_setting` instead of falling back to calendar-only/text behavior.
+- Applied production Supabase migration `20260815190000_ss_add_about_section_fields.sql`. Focused verification passed 134 tests; production build completed. Reviewer-auth remains blocked by the known too-short token and no customer account was used for a state-changing smoke.
+
+---
+
 ## August 15, 2026 - Nic-Nac pasted About-copy execution repair
 
 - Louis reported that the first routing release still denied Heather's submitted About copy. Inspected the exact live conversation logs rather than assuming the route tests represented the model input.

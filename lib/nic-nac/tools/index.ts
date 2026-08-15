@@ -10,7 +10,10 @@
 // Composition order matters - see the header comments in each wrapper.
 
 import type { Tool, ToolSet } from 'ai'
-import { isAboutNarrativeCopySubmission } from '@/lib/nic-nac/site-editing-intent'
+import {
+  isAboutNarrativeCopySubmission,
+  isAboutSectionCorrection,
+} from '@/lib/nic-nac/site-editing-intent'
 import { listMyTradeBoardTool } from './list-my-trade-board'
 import { removeListingTool } from './remove-listing'
 import { restoreListingTool } from './restore-listing'
@@ -508,6 +511,18 @@ function getContinuationIntents(
   messages: RoutableMessage[],
   latestText: string,
 ): NicNacToolIntent[] {
+  const previousAssistant = [...messages.slice(0, -1)]
+    .reverse()
+    .find((message) => message.role === 'assistant')
+  if (
+    isAboutSectionCorrection({
+      latestUserText: latestText,
+      previousAssistantText: getMessageText(previousAssistant),
+    })
+  ) {
+    return ['site']
+  }
+
   const intents: NicNacToolIntent[] = []
   if (isTradeBoardContinuation(messages, latestText)) {
     intents.push('trade_board')
@@ -593,8 +608,19 @@ export function shouldRequireToolCallForMessages(
   ) {
     return true
   }
-  if (intents.includes('site') && isSiteContinuation(messages, latestText)) {
-    return true
+  if (intents.includes('site')) {
+    const previousAssistant = [...messages.slice(0, -1)]
+      .reverse()
+      .find((message) => message.role === 'assistant')
+    if (
+      isSiteContinuation(messages, latestText) ||
+      isAboutSectionCorrection({
+        latestUserText: latestText,
+        previousAssistantText: getMessageText(previousAssistant),
+      })
+    ) {
+      return true
+    }
   }
   if (
     intents.includes('calendar') &&
@@ -666,14 +692,23 @@ function isSiteContinuation(
     latestUserText: latestText,
     previousAssistantText,
   })
+  const isAboutCorrection = isAboutSectionCorrection({
+    latestUserText: latestText,
+    previousAssistantText,
+  })
   if (
     !isContextualFollowUp(latestText, previousAssistantText) &&
     !isPhotoFollowUp &&
-    !isNarrativeCopySubmission
+    !isNarrativeCopySubmission &&
+    !isAboutCorrection
   ) {
     return false
   }
   if (!assistantIsDiscussingSiteEdit(previousAssistantText)) return false
+  // A confirmed About save is already site workflow state. If the rep says it
+  // was incomplete, retain the site capability even when the short correction
+  // itself contains no fresh site-intent keywords.
+  if (isAboutCorrection) return true
 
   const recentText = priorMessages
     .slice(-6)

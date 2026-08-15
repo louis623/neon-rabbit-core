@@ -1,5 +1,17 @@
 # Project State
 
+## August 15 Nic-Nac full About-section repair
+
+- **Whole-section data model:** A customer site's About area now has independently persisted **heading**, optional **subheading/byline**, and narrative fields. Existing sites retain their current default headline until a rep saves an override.
+- **Nic-Nac behavior:** `update_site_setting` accepts all three fields. When a rep supplies title, byline/location, and body copy, the active site prompt explicitly requires a single complete save rather than a body-only mutation.
+- **Incomplete-save retry:** “You only added part of it—add the whole thing” is app-owned site-edit continuation state. Nic-Nac receives and is pinned to `update_site_setting` again, using the complete copy already in the conversation rather than sending the rep to a form.
+- **Database:** production migration `20260815190000_ss_add_about_section_fields.sql` added `site_settings.about_heading` and `site_settings.about_subheading`.
+- **Verification before release:** 134 focused Nic-Nac and Amethyst mapping tests passed, and `npm run build` completed successfully. The authenticated reviewer replay remains blocked by the known too-short reviewer-token configuration; neither Louis's nor Heather's account was used as a workaround.
+
+**Last updated:** August 15, 2026
+
+---
+
 ## August 15 Nic-Nac pasted About-copy execution repair
 
 - **Live evidence corrected the first repair:** Vercel logs for Heather's actual conversation showed the initial About request did expose `update_site_setting`, but the pasted multi-paragraph narrative turn was classified only as `show_memory` (because it mentioned live shows) plus the calendar baseline. The site tool was absent on that turn, so Nic-Nac's denial was accurate to its supplied tool set but still product-wrong.

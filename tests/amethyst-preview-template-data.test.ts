@@ -252,6 +252,23 @@ describe('Amethyst preview template data', () => {
     ])
   })
 
+  it('maps saved About heading and subheading with the narrative', () => {
+    const homepage = mapPreviewSettingsToHomepageTemplateData({
+      ...demoSettings,
+      aboutHeading: 'Meet Heather',
+      aboutSubheading: 'HEATHER DAUGHERTY · OHIO',
+      aboutNarrative: 'First paragraph.\n\nSecond paragraph.',
+    })
+
+    expect(homepage.aboutHeadline).toBe('Meet Heather')
+    expect(homepage.aboutSubheading).toBe('HEATHER DAUGHERTY · OHIO')
+    expect(homepage.aboutParagraphs).toEqual([
+      'First paragraph.',
+      'Second paragraph.',
+      '',
+    ])
+  })
+
   it('hides Join Team customer links when the rep has not launched that page', () => {
     const settings: SiteSettingsDashboardResult = {
       ...demoSettings,
