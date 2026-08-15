@@ -267,14 +267,15 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   `C:\Users\louis\sparkle-suite-repo` on
   `codex/nic-nac-trade-hardening`. Use reviewer-smoke/synthetic sessions on the
   live site, not Louis's personal account.
-- [ ] **Run first real Team Management beta smoke when the tool is re-enabled**
-  - deferred August 2 because Team Management is deliberately visible but
-  inaccessible as `Coming soon` for first beta testers. Brittany's
-  `brittwithbling` account remains verified as `active` with historical
-  `manual_beta` data preserved. When Louis reopens the tool, use an appropriate
-  safe path to create one real onboarding participant link, verify
-  personalization/progress/messages, and archive the invite when finished.
-  Do not create fake rep accounts.
+- [ ] **Run Brittany's first real Team Management beta smoke**
+  - Team Management is re-enabled for Brittany through her verified
+  `manual_beta` entitlement, and its private New Rep Onboarding Site is live.
+  No participant link, progress record, or message has been created yet. With
+  Louis's explicit action-time approval, create one real onboarding participant
+  link, verify personalization/progress/messages on the published Site, then
+  archive the invite when finished. Do not create fake rep accounts and do not
+  use Louis's personal account; the reviewer-browser path remains blocked by
+  the known too-short reviewer-token configuration.
 - [ ] **Build safer Nic-Nac catalog photo replacement from a new chat upload** - current deployed guard lets Nic-Nac replace a bad canonical catalog photo only when an approved jewelry-front replacement URL already exists. A future improvement should let Nic-Nac accept a corrected jewelry-front photo for an existing design, run it through the same photo pipeline/approval guard, and then call the catalog correction path. Do not let raw label/details photos become canonical catalog images.
 - [ ] **Create and smoke-test Sparkle Rep Onboarding Codespace** - paused unless Louis reselects Codespaces; if resumed, stop the rotating secondary Codespace if GitHub's two-running-Codespaces limit blocks creation, create a 4-core Codespace for `louis623/sparkle-rep-onboarding`, then verify terminal, repo path, branch, remote, and write/read/delete.
 - [ ] **External drive backup routine** - after Louis buys a backup drive, copy `C:\Users\louis\Sparkle-Suite-Local-Archive` to it and create a simple periodic GitHub/archive backup checklist.

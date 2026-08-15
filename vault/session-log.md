@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 15, 2026 - Customer social links and Whatnot release
+
+- Added **Whatnot** to the Workspace Customer-facing site setup social-handle fields. It accepts a simple Whatnot handle or a full canonical URL and publishes a valid Whatnot profile destination.
+- Reworked customer-site social data so the homepage, Trade Board, and Join footer social row contains only rep-provided, saved links. Blank and placeholder values are not rendered; ordinary footer navigation is unchanged.
+- A live Brittany audit identified a tenant-specific loophole after the initial change: her custom profile appended TikTok, VIP Group, a duplicate Facebook link, and Shop independently of saved settings. The same override pattern existed in the BlingKitchen and Mile High Fizz profiles. Those profiles now preserve the shared dynamic social collection.
+- Released code commits `95a62f6c` and `50aa15c7` through Vercel production deployment `dpl_6c4JNQct8G9EoswBCTkAXauzZMs2`. Vercel alias inspection and HTTP checks confirmed both Sparkle Suite production domains resolve to it.
+- Verification: focused customer-site suite passed 117 tests across preview/template and Britt With Bling/BlingKitchen public-site coverage; `npm run build` passed. A live Chrome inspection of `https://www.yoursparklesuite.com/brittwithbling` confirmed the rendered social row contains only Brittany's saved TikTok and Facebook links. The logged-in reviewer path remains blocked by the known too-short reviewer-token configuration and was not bypassed.
+
+---
+
 ## August 13, 2026 - Brittany New Rep Onboarding Naming Release
 
 - Renamed the active user-facing Team Management and private onboarding-site language from Start Strong to **New Rep Onboarding**. Existing private invite URLs remain unchanged, so no prior or future invite link is broken.

@@ -1,5 +1,17 @@
 # Project State
 
+## August 15 Customer Social Links and Whatnot checkpoint
+
+- **Optional social contract:** Whatnot is now a supported Customer-facing site setup social handle alongside the existing platforms. A rep may enter either a handle or a full canonical Whatnot URL; the published destination uses `https://www.whatnot.com/user/<handle>` when given a handle.
+- **Dynamic customer footers:** Homepage, Trade Board, and Join pages now render social icons/links only for values actually saved by that rep. Empty values and placeholder URLs are omitted. Standard footer navigation remains separate from this social row.
+- **Custom-profile guard:** Britt With Bling, BlingKitchen, and Mile High Fizz now preserve the saved social-link collection rather than injecting hard-coded TikTok, VIP-group, Facebook, or Shop links. This prevents duplicate or unprovided social destinations from returning through tenant-specific overrides.
+- **Release and live evidence:** commits `95a62f6c feat: add dynamic customer social links` and `50aa15c7 fix: honor saved footer social links` are deployed as `dpl_6c4JNQct8G9EoswBCTkAXauzZMs2`. Both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` resolve to that release. On Brittany's live customer site, the footer contained only her saved TikTok and Facebook links; the prior duplicate VIP/Facebook and Shop entries were absent.
+- **Lesson:** generic template tests alone are insufficient for shared customer-site rules. Tenant/profile overrides can reintroduce default or marketing links, so release verification must include a real affected tenant and assert the final rendered social row contains only that rep's saved values.
+
+**Last updated:** August 15, 2026
+
+---
+
 ## August 9 Control Center, customer-site, and billing checkpoint
 
 - **Brittany Team Management re-enabled:** Team Management is no longer a globally disabled `Coming soon` tool. Entitled reps can open the existing private onboarding control plane; Brittany retains the already-verified `manual_beta` entitlement. It creates private participant links, tracks progress, receives participant questions, stores Brittany replies, archives access, and keeps public Join Team cards as a separate explicit publication path.

@@ -1,5 +1,21 @@
 # Decision Log
 
+## August 15, 2026 - Customer social-profile and footer contract
+
+**Whatnot is a first-class optional social field**
+Store the rep-provided value with the existing social handles. A bare handle is normalized to `https://www.whatnot.com/user/<handle>`; a complete trusted URL remains usable as supplied.
+
+**Customer social rows are saved-data-only**
+Across homepage, Trade Board, and Join, show only non-empty links derived from the current rep's saved social handles. Do not render platform defaults, placeholder `#` URLs, or social icons for fields the rep has not provided.
+
+**Profile customizations cannot bypass the social contract**
+Custom tenant profiles may customize layout and content but must pass through the shared saved social collection. They must not append VIP groups, shops, marketing destinations, or duplicate social links inside the social row. Keep commerce and other navigation in their appropriate non-social locations.
+
+**Live tenant verification is required for cross-tenant presentation changes**
+A generic template passing does not prove that custom profile overrides honor the contract. Smoke the actual affected customer route and inspect the rendered links before closing a release.
+
+---
+
 ## August 4, 2026 - Empty Customer-Site Media Is an Honest, Sized State
 
 **Never collapse an unconfigured public media placement**
