@@ -377,6 +377,13 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
       /\bbanner\b/,
       /\bstreaming link/,
       /\bsite\b/,
+      /\bwebsite\b/,
+      /\bhome\s?page\b/,
+      /\babout\s+(?:section|narrative|copy|story)\b/,
+      /\babout\s+me\b/,
+      /\b(?:our|my)\s+story\b/,
+      /\bbio(?:graphy)?\b/,
+      /\bhero\s+(?:title|headline)\b/,
       /\bprofile\b/,
       /\btagline\b/,
       /\bticker\b/,
@@ -543,6 +550,8 @@ function isContextualFollowUp(text: string, previousAssistantText = ''): boolean
     /^(try again|retry|again|try it again|try once more)\b/,
     /\bdo that\b/,
     /\bgo ahead\b/,
+    /\b(?:i )?(?:don'?t|do not|can'?t|cannot)\s+have\b[\s\S]{0,80}\b(?:option|way|place)\b/,
+    /\byou need to\s+(?:do|handle|publish|save|update)\b/,
     /\blet'?s\s+go\s+with\b/,
     /\bgo\s+with\s+(?:your|that|this|the)\b/,
     /\buse\s+(?:your|that|this|the)\s+(?:pick|one|version|copy|line)\b/,
@@ -700,10 +709,10 @@ function isCalendarContinuation(
 
 function assistantIsDiscussingSiteEdit(text: string): boolean {
   return (
-    /\b(?:ticker|announcement|banner|site|tagline|team\s+name|join\s+page|theme|skin|appearance|social|streaming\s+link|recipe|recipes|pantry|ingredient|ingredients)\b/i.test(
+    /\b(?:ticker|announcement|banner|site|website|home\s?page|tagline|about\s+(?:section|narrative|copy|story)|about\s+me|(?:our|my)\s+story|bio(?:graphy)?|hero\s+(?:title|headline)|team\s+name|join\s+page|theme|skin|appearance|social|streaming\s+link|recipe|recipes|pantry|ingredient|ingredients)\b/i.test(
       text,
     ) &&
-    /\b(?:swap|change|update|save|use|set|turn|make|edit|add|build|draft)\b/i.test(text)
+    /\b(?:swap|change|update|save|use|set|turn|make|edit|add|build|draft|publish)\b/i.test(text)
   )
 }
 

@@ -435,6 +435,68 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
+  it('routes About-narrative requests to the site tools instead of the calendar-only baseline', () => {
+    const intents = getToolIntentsForText(
+      "Edit the About narrative on my website so it sounds more like me.",
+    )
+
+    expect(intents).toContain('site')
+    expect(listToolNamesForIntents(intents)).toContain('update_site_setting')
+  })
+
+  it('keeps the site tool when a rep asks Nic-Nac to apply the About copy it just drafted', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Help me revise the About narrative on my website.',
+          },
+        ],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'Here is a polished About narrative. I can publish this copy directly to your customer-facing site.',
+          },
+        ],
+      },
+      {
+        id: 'apply',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: "I don't have an option to paste it there. You need to do that.",
+          },
+        ],
+      },
+    ]
+
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toEqual(['site'])
+    expect(listToolNamesForIntents(intents)).toContain('update_site_setting')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
+  it('keeps both site and calendar tools available when a rep changes topics in one turn', () => {
+    const intents = getToolIntentsForText(
+      'Update my About story and move Friday\'s show to 8pm Eastern.',
+    )
+
+    expect(intents).toEqual(expect.arrayContaining(['site', 'calendar']))
+    expect(listToolNamesForIntents(intents)).toEqual(
+      expect.arrayContaining(['update_site_setting', 'update_show']),
+    )
+  })
+
   it('keeps calendar tools when the rep provides missing show details after a scheduling prompt', () => {
     const messages = [
       {
