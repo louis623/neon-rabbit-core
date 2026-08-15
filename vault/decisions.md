@@ -1,5 +1,14 @@
 # Decision Log
 
+## August 15, 2026 - Live-platform hero action rule
+
+- Treat TikTok and Whatnot as independent primary live-show destinations on customer sites.
+- Render a hero action only when that rep has saved the corresponding platform URL/handle. Render both actions when both are populated; do not use placeholder, generic, or unprovided platform actions.
+- Keep platform-specific action labels clear: **Watch on TikTok** and **Watch on Whatnot** (TikTok may say **Watch TikTok Live** during a current live show).
+- Apply this shared rule to every existing and future customer site, including bespoke customer homepage variants.
+
+---
+
 ## August 15, 2026 - Saved Hero Motion takes precedence over skin defaults
 
 **A skin sets the starting look; a rep controls the final Hero motion**

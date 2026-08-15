@@ -4,6 +4,15 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 15, 2026 - Hero buttons for TikTok and Whatnot
+
+- Louis specified that TikTok and Whatnot are primary live-show destinations: show a hero action for each populated platform, including both at once.
+- Implemented shared dynamic hero links across standard Amethyst, Britt With Bling, BlingKitchen, and Mile High Fizz. Saved Whatnot data now joins the homepage streaming-link contract.
+- Released `aa110028` as Vercel production `dpl_9YjWh7TnvqCxSKCXVasitgfSTujp`; both Sparkle Suite domains were aliased. Live `/blingkitchen` visibly showed separate TikTok and Whatnot buttons pointing to Heather's saved URLs.
+- Automated validation: 94 focused tests, 77 broader Amethyst template tests, and production build passed. `verify:amethyst-links` local probes were unavailable without a running local server. No state-changing browser action or personal-account testing was used; known too-short reviewer token remains a documented limitation.
+
+---
+
 ## August 15, 2026 - Hero Motion save-to-public-site repair
 
 - Investigated the report that selecting **Sparkle Rise**, saving, and opening the customer-facing site still showed **Soft Glow**.

@@ -1,5 +1,16 @@
 # Project State
 
+## August 15 Hero live-platform actions
+
+- **Customer-site live destinations:** A saved TikTok link and a saved Whatnot link each now create their own hero action button. If both are configured, both buttons appear together; a platform that was not saved is never shown as a hero action.
+- **Shared coverage:** This is driven by the shared homepage template data and applies to the standard Amethyst homepage plus the Britt With Bling, BlingKitchen, and Mile High Fizz customer hero treatments. Whatnot also flows through `streamLinks` so any saved handle or supported full URL becomes a usable live destination.
+- **Release and live evidence:** commit `aa110028 feat: add hero watch platform actions` is production deployment `dpl_9YjWh7TnvqCxSKCXVasitgfSTujp`. Vercel assigned both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` to that exact deployment. A direct live BlingKitchen check rendered distinct **Watch on TikTok** and **Watch on Whatnot** hero actions with Heather's stored destinations.
+- **Verification:** 94 focused public-site/data tests passed; the Amethyst template suite passed 77 tests. The local-link portion could not fetch because no local server was running; `npm run build` passed and live-domain verification covered the affected customer path. The reviewer-browser path remains blocked by the known too-short token configuration and was not bypassed.
+
+**Last updated:** August 15, 2026
+
+---
+
 ## August 15 Hero Motion persistence repair
 
 - **Root cause:** `heroAnimationType` was correctly saved by Site Settings, but the public Homepage bootstrap reapplied the selected appearance preset after mapping that saved setting. The preset's `heroMotion` silently overwrote the rep's saved choice, so a Moonstone/Morganite site could remain on Soft Glow after the rep saved Sparkle Rise.
