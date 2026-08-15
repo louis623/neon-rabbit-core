@@ -1,6 +1,5 @@
 import { AuthError, getAuthenticatedRep } from './auth'
 import { createAdminClient } from './admin'
-import { createClient } from '@supabase/supabase-js'
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { cookies } from 'next/headers'
 
@@ -110,27 +109,32 @@ function decodeControlCenterSession(value: string, sessionSecret: string) {
 }
 
 export async function authenticateControlCenterOperator(email: string, password: string): Promise<OperatorContext> {
-  const normalizedEmail = email.trim().toLowerCase()
-  if (!normalizedEmail || !password) throw new AuthError('Email and password are required.')
+  const username = email.trim().toLowerCase()
+  const configuredUsername = process.env.CONTROL_CENTER_USERNAME?.trim().toLowerCase()
+  const configuredPassword = process.env.CONTROL_CENTER_PASSWORD
+  if (!username || !password) throw new AuthError('Username and password are required.')
+  if (!configuredUsername || !configuredPassword) {
+    throw new Error('Control Center credentials are not configured.')
+  }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false } },
-  )
-  const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
-  if (error || !data.user) throw new AuthError('That email or password is not valid.')
+  const suppliedUsername = Buffer.from(username)
+  const expectedUsername = Buffer.from(configuredUsername)
+  const suppliedPassword = Buffer.from(password)
+  const expectedPassword = Buffer.from(configuredPassword)
+  const usernameMatches = suppliedUsername.length === expectedUsername.length && timingSafeEqual(suppliedUsername, expectedUsername)
+  const passwordMatches = suppliedPassword.length === expectedPassword.length && timingSafeEqual(suppliedPassword, expectedPassword)
+  if (!usernameMatches || !passwordMatches) throw new AuthError('That username or password is not valid.')
 
-  const authenticatedEmail = data.user.email?.trim().toLowerCase()
-  if (!authenticatedEmail || !getOperatorEmails().includes(authenticatedEmail)) {
-    throw new OperatorAuthError('This Sparkle Suite account is not an internal operator.')
+  const operatorEmail = (process.env.CONTROL_CENTER_OPERATOR_EMAIL ?? configuredUsername).trim().toLowerCase()
+  if (!getOperatorEmails().includes(operatorEmail)) {
+    throw new OperatorAuthError('Control Center operator identity is not authorized.')
   }
 
   const admin = createAdminClient()
   const { data: rep, error: repError } = await admin
     .from('reps')
     .select('id, auth_user_id, email, display_name, business_name, stripe_customer_id, public_site_slug, time_zone')
-    .eq('auth_user_id', data.user.id)
+    .eq('email', operatorEmail)
     .single()
   if (repError || !rep) throw new AuthError('Operator account was not found.')
 
@@ -160,15 +164,9 @@ export async function getControlCenterSession() {
 }
 
 export async function getControlCenterAccess() {
-  try {
-    const operator = await getAuthenticatedOperator()
-    return { method: 'sparkle_suite_operator' as const, operator }
-  } catch (error) {
-    if (!(error instanceof AuthError || error instanceof OperatorAuthError)) throw error
-    const session = await getControlCenterSession()
-    if (session) return { method: 'control_center_session' as const, operator: { repId: session.repId } }
-    throw error
-  }
+  const session = await getControlCenterSession()
+  if (!session) throw new AuthError('Control Center sign in is required.')
+  return { method: 'control_center_session' as const, operator: { email: session.email, repId: session.repId } }
 }
 
 export const controlCenterSessionCookie = {

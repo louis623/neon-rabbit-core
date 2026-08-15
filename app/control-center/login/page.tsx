@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 
 export default function ControlCenterLoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -16,7 +16,7 @@ export default function ControlCenterLoginPage() {
     setError(null)
     try {
       const response = await fetch('/api/control-center/session', {
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
       })
@@ -36,10 +36,10 @@ export default function ControlCenterLoginPage() {
       <section className="mx-auto max-w-md rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
         <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Sparkle Suite</p>
         <h1 className="mt-1 text-2xl font-semibold">Control Center sign in</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-600">Sign in with your Sparkle Suite operator email and password. This Control Center session stays separate from the Workspace account already open in this browser.</p>
+        <p className="mt-3 text-sm leading-6 text-slate-600">Sign in with your Control Center username and password. This is independent from the Sparkle Suite Workspace account already open in this browser.</p>
         <form className="mt-6" onSubmit={submit}>
-          <label className="block text-xs font-bold uppercase tracking-wide text-slate-500" htmlFor="control-center-email">Email</label>
-          <input autoComplete="username" className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900" id="control-center-email" onChange={(event) => setEmail(event.target.value)} required type="email" value={email} />
+          <label className="block text-xs font-bold uppercase tracking-wide text-slate-500" htmlFor="control-center-username">Username</label>
+          <input autoComplete="username" className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900" id="control-center-username" onChange={(event) => setUsername(event.target.value)} required type="text" value={username} />
           <label className="mt-4 block text-xs font-bold uppercase tracking-wide text-slate-500" htmlFor="control-center-password">Password</label>
           <input autoComplete="current-password" className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900" id="control-center-password" onChange={(event) => setPassword(event.target.value)} required type="password" value={password} />
           <button className="mt-4 w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60" disabled={saving} type="submit">{saving ? 'Signing in…' : 'Open Control Center'}</button>
