@@ -765,6 +765,33 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('bk-home-cta-label">{link.label}</span>')
   })
 
+  it('keeps watch actions together and makes the Trade Board hero action span their row', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+    const standardHero = jsx.slice(
+      jsx.indexOf('function Hero({ t, isLive, liveShow })'),
+      jsx.indexOf('function EventCard('),
+    )
+
+    expect(standardHero).toContain('className="hp-hero-cta-stack"')
+    expect(standardHero).toContain('className="hp-hero-cta-primary-row"')
+    expect(standardHero.indexOf('Shop Bomb Party')).toBeLessThan(
+      standardHero.indexOf('Browse the trade board'),
+    )
+    expect(standardHero.indexOf('heroWatchLinks.map((link) =>')).toBeLessThan(
+      standardHero.indexOf('Browse the trade board'),
+    )
+    expect(standardHero).toContain('hp-hero-trade-board-cta')
+    expect(css).toMatch(/\.hp-hero-cta-stack\s*\{[\s\S]*?width:\s*fit-content;/)
+    expect(css).toMatch(/\.hp-hero-trade-board-cta\s*\{[\s\S]*?width:\s*100%;/)
+  })
+
   it('uses the live-show header grid with brand, centered nav, and primary shop CTA', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.css'),

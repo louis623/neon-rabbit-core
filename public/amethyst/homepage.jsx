@@ -615,17 +615,21 @@ function Hero({ t, isLive, liveShow }) {
               </>
             ) : (
               <>
-                <a {...linkProps(getTradeBoardHref())} className="hp-btn-primary hp-btn-sparkle">
-                  Browse the trade board
-                  <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
-                </a>
-                <a {...linkProps(getShopHref())} className="hp-btn-outline">Shop Bomb Party</a>
-                {heroWatchLinks.map((link) => (
-                  <a key={link.id} {...linkProps(link.href)} className={`hp-btn-outline hp-btn-watch ${isLive && link.id === "tiktok" ? "is-live" : "is-offline"}`}>
-                    {isLive && link.id === "tiktok" && <span className="hp-watch-dot" />}
-                    {link.label}
+                <div className="hp-hero-cta-stack">
+                  <div className="hp-hero-cta-primary-row">
+                    <a {...linkProps(getShopHref())} className="hp-btn-outline">Shop Bomb Party</a>
+                    {heroWatchLinks.map((link) => (
+                      <a key={link.id} {...linkProps(link.href)} className={`hp-btn-outline hp-btn-watch ${isLive && link.id === "tiktok" ? "is-live" : "is-offline"}`}>
+                        {isLive && link.id === "tiktok" && <span className="hp-watch-dot" />}
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                  <a {...linkProps(getTradeBoardHref())} className="hp-btn-primary hp-btn-sparkle hp-hero-trade-board-cta">
+                    Browse the trade board
+                    <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
                   </a>
-                ))}
+                </div>
               </>
             )}
           </div>

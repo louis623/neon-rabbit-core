@@ -1274,6 +1274,23 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   align-items: center;
   justify-content: center;
 }
+.hp-hero-cta-stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 12px;
+  width: fit-content;
+  max-width: 100%;
+}
+.hp-hero-cta-primary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+.hp-hero-trade-board-cta {
+  width: 100%;
+  justify-content: center;
+}
 .hp-hero-side {
   background: rgba(255,255,255,0.06);
   backdrop-filter: blur(16px);
