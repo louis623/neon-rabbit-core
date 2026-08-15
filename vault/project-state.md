@@ -6,6 +6,7 @@
 - **Final repair:** A substantive copy block following Nic-Nac's request for About text is now an app-owned site-edit continuation even when the block does not repeat "About" or "website." Its first model step is pinned to `update_site_setting`, preventing a text-only fallback or a calendar-tool detour.
 - **Release and verification:** commit `1de5b0c6 fix: apply Nic-Nac About copy submissions` is production deployment `dpl_DAYiJDsQxx5Kac4boiPyEcG1Wpyu`. Vercel assigned both production aliases; both domains returned 200 for `/nic-nac` and `/blingkitchen`. The exact three-message transcript runs through the real route test, exposes `update_site_setting`, and forces that tool. Five focused suites passed 110 tests.
 - **Verification limit:** The known too-short reviewer token still prevents a synthetic authenticated live chat replay. The customer Workspace was not used for a state-changing retest; Louis can now paste the copy again without a separate form.
+- **Current-conversation retry guard:** commit `88d0cb1 fix: retain About copy after Nic-Nac denial` is production deployment `dpl_DRowkGoJGw371eHiYxVQFCFte5SB`. It also recognizes a substantive copy block after Nic-Nac's earlier "ready to paste into Heather's About section" denial, so the same open conversation can be retried without starting a new chat.
 
 **Last updated:** August 15, 2026
 

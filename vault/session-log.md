@@ -11,6 +11,7 @@ Running log of significant work sessions. Most recent first.
 - Added a shared app-owned detection contract for a substantive narrative pasted after Nic-Nac requests About text. The router keeps the site intent, and the tool-choice policy pins the first step specifically to `update_site_setting`.
 - Added a real route replay of the exact conversation shape. It proves the route exposes `update_site_setting` and returns `{ type: 'tool', toolName: 'update_site_setting' }` on the pasted-copy turn. Updated the stale route smoke harness to mock the current generic Trade workflow context as well.
 - Released `1de5b0c6 fix: apply Nic-Nac About copy submissions` as production `dpl_DAYiJDsQxx5Kac4boiPyEcG1Wpyu`; both domains are assigned. 110 focused tests passed. Reviewer-auth remains blocked by the too-short token; no customer Workspace mutation was used as a workaround.
+- Added the same continuation guard after Nic-Nac's prior refusal language, so Louis does not need to begin a new conversation to retry the already-pasted About content. Commit `88d0cb1 fix: retain About copy after Nic-Nac denial` is production deployment `dpl_DRowkGoJGw371eHiYxVQFCFte5SB`, with both Sparkle Suite domains assigned.
 
 ---
 
