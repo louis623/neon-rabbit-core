@@ -1,6 +1,6 @@
 'use client'
 
-import { type FormEvent, useEffect, useMemo, useState } from 'react'
+import { type FormEvent, useMemo, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 import {
@@ -22,12 +22,6 @@ export function BugHuntPanel({ initialItems }: { initialItems: BugHuntItem[] }) 
   const [form, setForm] = useState({ title: '', itemType: 'bug' as BugHuntItemType, owner: '', details: '' })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
-
-  useEffect(() => {
-    // Refreshes the independent Control Center cookie for tabs opened before
-    // the API cookie-path correction shipped.
-    void fetch('/control-center/session', { cache: 'no-store' })
-  }, [])
 
   const openItems = items.filter((item) => item.status !== 'complete')
   const archivedItems = items.filter((item) => item.status === 'complete')

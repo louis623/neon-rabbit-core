@@ -8,7 +8,7 @@ import {
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AuthError,
-  getControlCenterAccess,
+  getAuthenticatedOperator,
   OperatorAuthError,
 } from '@/lib/supabase/operator-auth'
 
@@ -39,7 +39,7 @@ function errorResponse(error: unknown) {
 
 export async function POST(request: Request) {
   try {
-    await getControlCenterAccess()
+    await getAuthenticatedOperator()
     const body = (await request.json()) as Record<string, unknown>
     const name = text(body.name)
     const email = text(body.email).toLowerCase()
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const access = await getControlCenterAccess()
+    const operator = await getAuthenticatedOperator()
     const body = (await request.json()) as Record<string, unknown>
     const id = text(body.id)
     if (!id) {
@@ -95,7 +95,7 @@ export async function PATCH(request: Request) {
     if ('accountActivated' in body) {
       const accountActivated = body.accountActivated === true
       update.account_activated_at = accountActivated ? new Date().toISOString() : null
-      update.account_activated_by_rep_id = accountActivated && access.method === 'sparkle_suite_operator' ? access.operator.repId : null
+      update.account_activated_by_rep_id = accountActivated ? operator.repId : null
     }
 
     if (Object.keys(update).length === 1) {
@@ -121,7 +121,7 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    await getControlCenterAccess()
+    await getAuthenticatedOperator()
     const body = (await request.json()) as Record<string, unknown>
     const id = text(body.id)
     if (!id) {

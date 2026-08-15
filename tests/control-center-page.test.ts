@@ -6,6 +6,8 @@ const getAuthenticatedOperatorMock = vi.fn()
 const createAdminClientMock = vi.fn()
 const listOperatorSupportReportsMock = vi.fn()
 const listOperatorCustomerProfilesMock = vi.fn()
+const loadCustomerWaitlistMock = vi.fn()
+const loadBugHuntItemsMock = vi.fn()
 const redirectMock = vi.fn((target: string) => {
   throw new Error(`redirect:${target}`)
 })
@@ -38,6 +40,15 @@ vi.mock('@/lib/services/support-reports', () => ({
 vi.mock('@/lib/services/client-account-profiles', () => ({
   listOperatorCustomerProfiles: (...args: unknown[]) =>
     listOperatorCustomerProfilesMock(...args),
+}))
+
+vi.mock('@/lib/prelaunch/customer-waitlist', () => ({
+  loadCustomerWaitlist: (...args: unknown[]) => loadCustomerWaitlistMock(...args),
+}))
+
+vi.mock('@/lib/control-center/bug-hunt', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/control-center/bug-hunt')>()),
+  loadBugHuntItems: (...args: unknown[]) => loadBugHuntItemsMock(...args),
 }))
 
 vi.mock(
@@ -96,12 +107,16 @@ describe('SparkleSuiteControlCenterPage', () => {
     createAdminClientMock.mockReset()
     listOperatorSupportReportsMock.mockReset()
     listOperatorCustomerProfilesMock.mockReset()
+    loadCustomerWaitlistMock.mockReset()
+    loadBugHuntItemsMock.mockReset()
     redirectMock.mockClear()
     getAuthenticatedOperatorMock.mockResolvedValue({
       repId: 'operator-1',
       rep: { email: 'louis@neonrabbit.net' },
     })
     createAdminClientMock.mockReturnValue({ from: vi.fn() })
+    loadCustomerWaitlistMock.mockResolvedValue([])
+    loadBugHuntItemsMock.mockResolvedValue([])
     listOperatorSupportReportsMock.mockResolvedValue([
       {
         id: 'report-1',
