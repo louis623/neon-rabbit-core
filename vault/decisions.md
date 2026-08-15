@@ -1,5 +1,13 @@
 # Decision Log
 
+## August 15, 2026 - Customer hero action hierarchy
+
+- On the standard customer homepage, keep purchase/live-watch actions together in the first hero row: Shop Bomb Party plus only the saved TikTok and/or Whatnot actions.
+- Place Browse the Trade Board beneath that row as the primary, full-width action. Its width must follow the rendered first-row action group rather than a fixed platform-specific count.
+- This is a layout hierarchy only: preserve all existing destinations and action labels.
+
+---
+
 ## August 15, 2026 - Live-platform hero action rule
 
 - Treat TikTok and Whatnot as independent primary live-show destinations on customer sites.

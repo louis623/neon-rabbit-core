@@ -1,5 +1,16 @@
 # Project State
 
+## August 15 Dynamic hero action layout
+
+- **Customer-site hero order:** Standard Amethyst customer homepages now place **Shop Bomb Party** and any saved TikTok/Whatnot watch actions in the first hero row. **Browse the Trade Board** is always a separate second-row primary action beneath them.
+- **Responsive sizing rule:** The Trade Board action stretches to the exact rendered width of the first-row action group. This automatically adapts when a rep has Shop only, Shop plus one watch destination, or Shop plus both TikTok and Whatnot.
+- **Release and direct live proof:** commit `f93ce618 fix: stack hero trade board action` is deployed as `dpl_rDRUDkrEue4HbtK1h6JU3fMtR6nG`; both Sparkle Suite production domains are assigned. Live `/blingkitchen` rendered Shop Bomb Party, Watch on TikTok, and Watch on Whatnot in one row (508px total), with Browse the Trade Board directly below at the same 508px width.
+- **Verification:** 95 focused customer-site tests and 78 broader Amethyst-template tests passed. Local-link probes remain unavailable without a running local server. No customer account, reviewer token workaround, or state-changing browser action was used.
+
+**Last updated:** August 15, 2026
+
+---
+
 ## August 15 Hero live-platform actions
 
 - **Customer-site live destinations:** A saved TikTok link and a saved Whatnot link each now create their own hero action button. If both are configured, both buttons appear together; a platform that was not saved is never shown as a hero action.

@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 15, 2026 - Dynamic two-row customer hero actions
+
+- Louis requested a layout-only refinement: Shop and available live-platform actions on the first row; existing Browse the Trade Board action on a full-width second row, dynamically sized to the row above.
+- Released `f93ce618` as Vercel production `dpl_rDRUDkrEue4HbtK1h6JU3fMtR6nG`. Both Sparkle Suite domains were assigned. Direct live inspection of `/blingkitchen` showed all three actions on the first row and the Trade Board action below at the same width.
+- Validation: 95 focused tests and 78 Amethyst suite tests passed; local link probes were unavailable without a local server. The reviewer-token configuration remains too short and was not bypassed.
+
+---
+
 ## August 15, 2026 - Hero buttons for TikTok and Whatnot
 
 - Louis specified that TikTok and Whatnot are primary live-show destinations: show a hero action for each populated platform, including both at once.
