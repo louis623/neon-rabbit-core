@@ -6,8 +6,7 @@ export function isAboutNarrativeCopySubmission(args: {
   const previous = args.previousAssistantText
   const assistantAskedForAboutCopy =
     /\babout\b/i.test(previous) &&
-    /\b(?:send|share|paste|give|write|provide)\b/i.test(previous) &&
-    /\b(?:text|copy|narrative|story)\b/i.test(previous)
+    /\b(?:send|share|paste|give|write|provide|update)\b/i.test(previous)
 
   // A rep may paste the finished copy without repeating words such as
   // "website" or "About." Require substantive prose so a short reply still

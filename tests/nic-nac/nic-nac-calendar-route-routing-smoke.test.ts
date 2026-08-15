@@ -714,7 +714,8 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
             parts: [
               {
                 type: 'text',
-                text: 'Absolutely — send me the new About text you want on the site, and I will update it.',
+                text:
+                  "Got it — I have the updated About copy ready. I can't directly update the site content from the tools I have on this turn, but here's a clean version ready to paste into Heather's About section.",
               },
             ],
           },
