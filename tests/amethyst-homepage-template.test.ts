@@ -788,6 +788,8 @@ describe('Amethyst homepage template data wiring', () => {
       standardHero.indexOf('Browse the trade board'),
     )
     expect(standardHero).toContain('hp-hero-trade-board-cta')
+    expect(standardHero).toContain('isHeatherBlingKitchenSite && CONTENT.pantryPageUrl')
+    expect(standardHero).toContain('In the Pantry')
     expect(css).toMatch(/\.hp-hero-cta-stack\s*\{[\s\S]*?width:\s*fit-content;/)
     expect(css).toMatch(/\.hp-hero-trade-board-cta\s*\{[\s\S]*?width:\s*100%;/)
   })

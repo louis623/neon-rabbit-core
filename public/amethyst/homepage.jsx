@@ -61,6 +61,7 @@ const RUNTIME_CONTEXT = window.AMETHYST_RUNTIME_CONTEXT || {};
 const isMileHighFizzHybrid = CONTENT.publicSiteVariant === "mile_high_fizz_hybrid";
 const isBrittWithBlingHybrid = CONTENT.publicSiteVariant === "britt_with_bling_hybrid";
 const isBlingKitchenHybrid = CONTENT.publicSiteVariant === "bling_kitchen_hybrid";
+const isHeatherBlingKitchenSite = String(CONTENT.businessName || "").trim().toLowerCase() === "blingkitchen";
 
 function publicRepName(value, fallback = "your rep") {
   const cleaned = String(value || "").trim().replace(/\s+/g, " ");
@@ -629,6 +630,12 @@ function Hero({ t, isLive, liveShow }) {
                     Browse the trade board
                     <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
                   </a>
+                  {isHeatherBlingKitchenSite && CONTENT.pantryPageUrl && (
+                    <a {...linkProps(CONTENT.pantryPageUrl)} className="hp-btn-primary hp-btn-sparkle hp-hero-trade-board-cta">
+                      In the Pantry
+                      <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
+                    </a>
+                  )}
                 </div>
               </>
             )}
