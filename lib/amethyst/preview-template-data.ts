@@ -291,16 +291,20 @@ function resolveShopUrl(extras: PreviewRepExtras) {
 
 function resolveStreamingLinks(settings: SiteSettingsDashboardResult, extras: PreviewRepExtras) {
   const links = asRecord(extras.streamingLinks)
+  const tiktok = normalizeSocialUrl('tiktok', settings.socialHandles.tiktok)
+  const facebook = normalizeSocialUrl('facebook', settings.socialHandles.facebook)
+  const whatnot =
+    links.whatnot || normalizeSocialUrl('whatnot', settings.socialHandles.whatnot)
 
   return {
     shop: resolveShopUrl(extras),
     watch:
       links.tiktok ||
       links.facebook ||
-      normalizeSocialUrl('tiktok', settings.socialHandles.tiktok),
-    tiktok: links.tiktok || normalizeSocialUrl('tiktok', settings.socialHandles.tiktok),
-    facebook:
-      links.facebook || normalizeSocialUrl('facebook', settings.socialHandles.facebook),
+      (tiktok !== '#' ? tiktok : whatnot),
+    tiktok: links.tiktok || tiktok,
+    facebook: links.facebook || facebook,
+    whatnot,
   }
 }
 

@@ -128,6 +128,7 @@ export interface AmethystHomepageTemplateData {
     watch: string
     tiktok: string
     facebook: string
+    whatnot?: string
   }
   socialLinks: AmethystHomepageSocialLink[]
   footerLinks: {
@@ -242,6 +243,7 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
     watch: '#',
     tiktok: '#',
     facebook: '#',
+    whatnot: '#',
   },
   socialLinks: [
     { label: 'TikTok', shortLabel: 'TT', href: '#' },

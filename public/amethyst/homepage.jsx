@@ -180,6 +180,34 @@ function getWatchCtaLabel(isLive) {
   return "Watch updates";
 }
 
+function isConfiguredWatchLink(href) {
+  return typeof href === "string" && href.trim().length > 0 && href !== "#";
+}
+
+function getHeroWatchLinks(liveShow, isLive) {
+  const links = [];
+  const tiktok = CONTENT.streamLinks?.tiktok;
+  const whatnot = CONTENT.streamLinks?.whatnot;
+
+  if (isConfiguredWatchLink(tiktok)) {
+    links.push({
+      id: "tiktok",
+      href: getLiveShowWatchHref(liveShow) || tiktok,
+      label: isLive ? "Watch TikTok Live" : "Watch on TikTok",
+    });
+  }
+  if (isConfiguredWatchLink(whatnot)) {
+    links.push({ id: "whatnot", href: whatnot, label: "Watch on Whatnot" });
+  }
+
+  if (links.length > 0) return links;
+
+  const fallback = getWatchHref(liveShow);
+  return isConfiguredWatchLink(fallback)
+    ? [{ id: "watch", href: fallback, label: getWatchCtaLabel(isLive) }]
+    : [];
+}
+
 function ComingSoonNavItem({ label = "Join Team" }) {
   return (
     <span
@@ -553,6 +581,7 @@ function LRQRail({ state }) {
 function Hero({ t, isLive, liveShow }) {
   const joinTeamHref = CONTENT.footerLinks?.joinTeam || "";
   const mileHighFizzKicker = t.heroEyebrow || CONTENT.heroEyebrow || "With Lindsey";
+  const heroWatchLinks = getHeroWatchLinks(liveShow, isLive);
 
   return (
     <section className="hp-hero">
@@ -577,10 +606,12 @@ function Hero({ t, isLive, liveShow }) {
                   <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
                 </a>
                 {joinTeamHref && <a {...linkProps(joinTeamHref)} className="hp-btn-outline">Join My Team</a>}
-                <a {...linkProps(getWatchHref(liveShow))} className={`hp-btn-outline hp-btn-watch ${isLive ? "is-live" : "is-offline"}`}>
-                  {isLive && <span className="hp-watch-dot" />}
-                  Watch Live Reveal
-                </a>
+                {heroWatchLinks.map((link) => (
+                  <a key={link.id} {...linkProps(link.href)} className={`hp-btn-outline hp-btn-watch ${isLive && link.id === "tiktok" ? "is-live" : "is-offline"}`}>
+                    {isLive && link.id === "tiktok" && <span className="hp-watch-dot" />}
+                    {link.label}
+                  </a>
+                ))}
               </>
             ) : (
               <>
@@ -589,10 +620,12 @@ function Hero({ t, isLive, liveShow }) {
                   <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
                 </a>
                 <a {...linkProps(getShopHref())} className="hp-btn-outline">Shop Bomb Party</a>
-                <a {...linkProps(getWatchHref(liveShow))} className={`hp-btn-outline hp-btn-watch ${isLive ? "is-live" : "is-offline"}`}>
-                  {isLive && <span className="hp-watch-dot" />}
-                  {getWatchCtaLabel(isLive)}
-                </a>
+                {heroWatchLinks.map((link) => (
+                  <a key={link.id} {...linkProps(link.href)} className={`hp-btn-outline hp-btn-watch ${isLive && link.id === "tiktok" ? "is-live" : "is-offline"}`}>
+                    {isLive && link.id === "tiktok" && <span className="hp-watch-dot" />}
+                    {link.label}
+                  </a>
+                ))}
               </>
             )}
           </div>
@@ -1728,6 +1761,7 @@ function SparkleSuiteHeaderStack({ t, scheduleIsLive, effectiveLrqState, onOpenQ
 function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queueState, onOpenQueue }) {
   const joinTeamHref = CONTENT.footerLinks?.joinTeam || "#";
   const heroVideoUrl = CONTENT.heroVideoUrl || "/mile-high-fizz/hero.mp4";
+  const heroWatchLinks = getHeroWatchLinks(liveShow, isLive);
 
   return (
     <div className="mhf-page" id="top">
@@ -1748,9 +1782,11 @@ function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queu
           <div className="mhf-hero-ctas">
             <a {...linkProps(getShopHref())} className="mhf-cta mhf-cta-shop">Shop Bomb Party</a>
             <a {...linkProps(joinTeamHref)} className="mhf-cta mhf-cta-join">Join My Team</a>
-            <a {...linkProps(getWatchHref(liveShow))} className={`mhf-cta mhf-cta-watch ${isLive ? "is-live" : ""}`}>
-              Watch Live Reveal
-            </a>
+            {heroWatchLinks.map((link) => (
+              <a key={link.id} {...linkProps(link.href)} className={`mhf-cta mhf-cta-watch ${isLive && link.id === "tiktok" ? "is-live" : ""}`}>
+                {link.label}
+              </a>
+            ))}
           </div>
         </div>
       </section>
@@ -1849,6 +1885,7 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
   const joinTeamHref = CONTENT.footerLinks?.joinTeam || "#";
   const shopCtaLabel = CONTENT.shopCtaLabel || "Shop";
   const heroImageUrl = CONTENT.heroImageUrl || "/britt-with-bling/hero.jpeg";
+  const heroWatchLinks = getHeroWatchLinks(liveShow, isLive);
 
   return (
     <div className="bwb-page" id="top">
@@ -1867,9 +1904,11 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
           <div className="bwb-hero-ctas">
             <a {...linkProps(getShopHref())} className="bwb-cta bwb-cta-shop">{shopCtaLabel}</a>
             <a {...linkProps(joinTeamHref)} className="bwb-cta bwb-cta-join">Join the Team</a>
-            <a {...linkProps(getWatchHref(liveShow))} className={`bwb-cta bwb-cta-watch ${isLive ? "is-live" : ""}`}>
-              Watch on TikTok
-            </a>
+            {heroWatchLinks.map((link) => (
+              <a key={link.id} {...linkProps(link.href)} className={`bwb-cta bwb-cta-watch ${isLive && link.id === "tiktok" ? "is-live" : ""}`}>
+                {link.label}
+              </a>
+            ))}
           </div>
         </div>
       </section>
@@ -1891,6 +1930,7 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
 function BlingKitchenHomepage({ t, repName, businessName, isLive, liveShow, queueState, onOpenQueue }) {
   const pantryHref = CONTENT.pantryPageUrl || "#";
   const heroImageUrl = CONTENT.heroImageUrl || "";
+  const heroWatchLinks = getHeroWatchLinks(liveShow, isLive);
 
   return (
     <div className="bk-home-page" id="top">
@@ -1905,9 +1945,11 @@ function BlingKitchenHomepage({ t, repName, businessName, isLive, liveShow, queu
           <div className="bk-home-hero-ctas">
             <a {...linkProps(getShopHref())}><span className="bk-home-cta-label">Shop Bomb Party</span></a>
             <a {...linkProps(pantryHref)}><span className="bk-home-cta-label">In the Pantry</span></a>
-            <a {...linkProps(getWatchHref(liveShow))} className={isLive ? "is-live" : ""}>
-              <span className="bk-home-cta-label">Watch on TikTok</span>
-            </a>
+            {heroWatchLinks.map((link) => (
+              <a key={link.id} {...linkProps(link.href)} className={isLive && link.id === "tiktok" ? "is-live" : ""}>
+                <span className="bk-home-cta-label">{link.label}</span>
+              </a>
+            ))}
           </div>
         </div>
       </section>

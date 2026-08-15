@@ -148,7 +148,7 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect(jsx).toContain('CONTENT.heroVideoUrl')
     expect(jsx).toContain('Shop Bomb Party')
     expect(jsx).toContain('Join My Team')
-    expect(jsx).toContain('Watch Live Reveal')
+    expect(jsx).toContain('getHeroWatchLinks(liveShow, isLive)')
     expect(jsx).toContain('MileHighFizzHomepage')
     expect(jsx).toContain('body.classList.add("mile-high-fizz")')
     expect(css).toContain('.mhf-hero-video')

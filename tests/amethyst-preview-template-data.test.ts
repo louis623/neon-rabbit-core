@@ -217,6 +217,26 @@ describe('Amethyst preview template data', () => {
     expect(homepage.socialLinks).toEqual(expectedLinks)
     expect(trade.socialLinks).toEqual(expectedLinks)
     expect(join.socialLinks).toEqual(expectedLinks)
+    expect(homepage.streamLinks.whatnot).toBe(
+      'https://www.whatnot.com/user/sparkle-demo',
+    )
+  })
+
+  it('maps saved TikTok and Whatnot destinations independently for hero actions', () => {
+    const homepage = mapPreviewSettingsToHomepageTemplateData({
+      ...demoSettings,
+      socialHandles: {
+        tiktok: '@sparklesuitedemo',
+        whatnot: '@sparkle-demo',
+      },
+    })
+
+    expect(homepage.streamLinks.tiktok).toBe(
+      'https://www.tiktok.com/@sparklesuitedemo',
+    )
+    expect(homepage.streamLinks.whatnot).toBe(
+      'https://www.whatnot.com/user/sparkle-demo',
+    )
   })
 
   it('uses the saved About narrative without adding default filler copy', () => {

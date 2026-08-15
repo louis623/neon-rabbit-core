@@ -748,6 +748,23 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toContain('body.hero-motion-soft-glow.fx-confetti .hp-hero::before')
   })
 
+  it('renders separate TikTok and Whatnot hero actions whenever those saved links exist', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('function getHeroWatchLinks(liveShow, isLive)')
+    expect(jsx).toContain('id: "tiktok"')
+    expect(jsx).toContain('id: "whatnot"')
+    expect(jsx).toContain('label: "Watch on Whatnot"')
+    expect(jsx).toContain('Watch on TikTok')
+    expect(jsx).toContain('heroWatchLinks.map((link) =>')
+    expect(jsx).toContain('className={`bwb-cta bwb-cta-watch')
+    expect(jsx).toContain('className={`mhf-cta mhf-cta-watch')
+    expect(jsx).toContain('bk-home-cta-label">{link.label}</span>')
+  })
+
   it('uses the live-show header grid with brand, centered nav, and primary shop CTA', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.css'),
