@@ -7,6 +7,8 @@
 - **Incomplete-save retry:** “You only added part of it—add the whole thing” is app-owned site-edit continuation state. Nic-Nac receives and is pinned to `update_site_setting` again, using the complete copy already in the conversation rather than sending the rep to a form.
 - **Database:** production migration `20260815190000_ss_add_about_section_fields.sql` added `site_settings.about_heading` and `site_settings.about_subheading`.
 - **Verification before release:** 134 focused Nic-Nac and Amethyst mapping tests passed, and `npm run build` completed successfully. The authenticated reviewer replay remains blocked by the known too-short reviewer-token configuration; neither Louis's nor Heather's account was used as a workaround.
+- **Final live acceptance:** Louis retried Heather's complete About update in the real Nic-Nac conversation after the release and confirmed it finally worked. This is the first accepted live proof of the complete title/byline/body flow; retain the deterministic route replay and the user-confirmed production result together as the regression evidence.
+- **Production provenance:** commit `28cabb2e fix: save complete Nic-Nac About sections` is Vercel production deployment `dpl_AKpuJmgpyzxZ37oySahT5cRJEK1n`. Vercel assigned both Sparkle Suite aliases; both domains returned 200 for `/nic-nac` and `/blingkitchen`.
 
 **Last updated:** August 15, 2026
 

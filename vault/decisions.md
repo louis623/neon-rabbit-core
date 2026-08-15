@@ -8,6 +8,9 @@ When a rep gives an About title, byline/location, and body, persist and render e
 **A correction retains the same authorized mutation**
 After Nic-Nac reports an About update, a concise complaint that only part was saved remains the same site-edit workflow. Keep `update_site_setting` available and require it again; do not ask the rep to manually move their already-supplied copy into another UI.
 
+**Acceptance evidence can complement—not replace—safe replay coverage**
+Louis's successful retry in Heather's real conversation confirms the shipped flow met the reported need. Continue to keep deterministic route/tool tests as the repeatable gate; the known too-short reviewer token still means that a customer-account acceptance is not a substitute for an automated reviewer smoke path.
+
 ---
 
 ## August 15, 2026 - Pasted narrative is a durable site-edit continuation

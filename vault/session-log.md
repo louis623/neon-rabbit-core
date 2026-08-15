@@ -10,6 +10,8 @@ Running log of significant work sessions. Most recent first.
 - Added durable `about_heading` and `about_subheading` fields alongside `about_narrative`, wired them through Site Settings, the Amethyst customer homepage, and Nic-Nac's `update_site_setting` contract. The public About rendering now shows the optional byline below the saved title.
 - Nic-Nac's active site prompt requires a complete title/byline/body save whenever the rep supplied those parts. A confirmed-but-incomplete About save is now a first-class continuation that pins the retry to `update_site_setting` instead of falling back to calendar-only/text behavior.
 - Applied production Supabase migration `20260815190000_ss_add_about_section_fields.sql`. Focused verification passed 134 tests; production build completed. Reviewer-auth remains blocked by the known too-short token and no customer account was used for a state-changing smoke.
+- Released `28cabb2e fix: save complete Nic-Nac About sections` as Vercel production deployment `dpl_AKpuJmgpyzxZ37oySahT5cRJEK1n`. Both Sparkle Suite aliases and `/nic-nac` plus `/blingkitchen` returned successfully on the live surface.
+- Louis then retried the complete Heather About update in the actual Nic-Nac conversation and confirmed it worked. Preserve that user-confirmed acceptance as the real-world proof, while keeping the reviewer-token limitation documented rather than treating Louis/Heather's account as a repeatable smoke path.
 
 ---
 
