@@ -697,6 +697,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('motion === "soft_glow"')
     expect(jsx).toContain('hp-fx-layer-glow')
     expect(jsx).toContain('<SparkleFx level={t.sparkleLevel} motion={t.heroMotion} />')
+    expect(jsx).toContain('body.classList.add(`hero-motion-${t.heroMotion.replace("_", "-")}`)')
     expect(jsx).toContain('label="Hero motion"')
     expect(jsx).toContain('label: "Sparkle rise"')
     expect(jsx).toContain('label: "Soft glow"')
@@ -706,6 +707,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toContain('.hp-fx-layer-glow::after')
     expect(css).toContain('.hp-hero .hp-hero-fx-layer')
     expect(css).toContain('@keyframes hp-fx-soft-glow')
+    expect(css).toContain('body.hero-motion-soft-glow.tex-sparkle::before')
+    expect(css).toContain('body.hero-motion-soft-glow.fx-confetti .hp-hero::before')
   })
 
   it('uses the live-show header grid with brand, centered nav, and primary shop CTA', () => {

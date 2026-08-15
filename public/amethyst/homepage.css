@@ -3232,13 +3232,13 @@ body.bg-quartz-paper .hp-step-num {
 .hp-fx-layer-glow::after {
   content: "";
   position: absolute;
-  width: min(52vw, 560px);
+  width: min(68vw, 780px);
   aspect-ratio: 1;
   border-radius: 999px;
   background:
-    radial-gradient(circle, color-mix(in oklab, var(--hp-primary) 26%, transparent) 0%, transparent 68%);
-  filter: blur(8px);
-  opacity: 0.55;
+    radial-gradient(circle, color-mix(in oklab, var(--hp-primary) 44%, transparent) 0%, color-mix(in oklab, var(--hp-primary) 18%, transparent) 42%, transparent 72%);
+  filter: blur(18px);
+  opacity: 0.72;
   animation: hp-fx-soft-glow 9s ease-in-out infinite;
 }
 
@@ -3248,10 +3248,10 @@ body.bg-quartz-paper .hp-step-num {
 }
 
 .hp-fx-layer-glow::after {
-  right: -12vw;
-  bottom: 10vh;
+  right: -16vw;
+  bottom: -18vh;
   background:
-    radial-gradient(circle, color-mix(in oklab, var(--hp-accent) 22%, transparent) 0%, transparent 70%);
+    radial-gradient(circle, color-mix(in oklab, var(--hp-accent) 38%, transparent) 0%, color-mix(in oklab, var(--hp-accent) 14%, transparent) 44%, transparent 74%);
   animation-delay: -3s;
 }
 
@@ -3263,8 +3263,22 @@ body.bg-quartz-paper .hp-step-num {
 }
 
 @keyframes hp-fx-soft-glow {
-  0%, 100% { opacity: 0.35; transform: translate3d(0, 0, 0) scale(0.92); }
-  50% { opacity: 0.68; transform: translate3d(4vw, -3vh, 0) scale(1.06); }
+  0%, 100% { opacity: 0.48; transform: translate3d(0, 0, 0) scale(0.9); }
+  50% { opacity: 0.86; transform: translate3d(5vw, -4vh, 0) scale(1.08); }
+}
+
+/*
+ * Hero motion is the authoritative visual choice for the hero. A rep can
+ * still choose a sparkly page treatment, but Soft glow must remain a clearly
+ * distinct, sparkle-free hero rather than competing with a fixed texture or
+ * the confetti layer from the previously selected skin.
+ */
+body.hero-motion-soft-glow.tex-sparkle::before {
+  display: none;
+}
+
+body.hero-motion-soft-glow.fx-confetti .hp-hero::before {
+  display: none;
 }
 
 /* Body-level FX modes */

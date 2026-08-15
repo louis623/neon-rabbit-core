@@ -2038,6 +2038,9 @@ function App() {
     if (t.tradeFlair === "citrine-glow") body.classList.add("citrine-glow");
     if (t.tradeFlair === "orchid-gloss") body.classList.add("orchid-gloss");
     if (t.tradeFlair === "pink-spark") body.classList.add("pink-spark");
+    if (["sparkle_rise", "soft_glow", "still"].includes(t.heroMotion)) {
+      body.classList.add(`hero-motion-${t.heroMotion.replace("_", "-")}`);
+    }
     if (t.cursorEffect === "sparkle") body.classList.add("cursor-sparkle");
     if (t.density === "compact") body.classList.add("density-compact");
     if (t.density === "spacious") body.classList.add("density-spacious");

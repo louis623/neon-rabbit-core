@@ -287,6 +287,28 @@ describe('Amethyst appearance presets', () => {
     )
   })
 
+  it('gives every selectable skin a deliberate, non-competing hero animation profile', () => {
+    const softGlowSkins = new Set([
+      'sparkle_suite_morganite',
+      'moonstone',
+      'emerald_garden',
+      'garnet',
+    ])
+
+    for (const [id, preset] of Object.entries(AMETHYST_APPEARANCE_PRESETS)) {
+      expect(['sparkle_rise', 'soft_glow']).toContain(preset.values.heroMotion)
+      expect(['none', 'subtle', 'glittery']).toContain(preset.values.sparkleLevel)
+
+      if (softGlowSkins.has(id)) {
+        expect(preset.values.heroMotion).toBe('soft_glow')
+        expect(preset.values.sparkleLevel).toBe('subtle')
+        expect(preset.values.textureOverlay).toBe('none')
+      } else {
+        expect(preset.values.heroMotion).toBe('sparkle_rise')
+      }
+    }
+  })
+
   it('keeps Black Diamond public controls readable on homepage and trade pages', () => {
     const homepageCss = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.css'),
