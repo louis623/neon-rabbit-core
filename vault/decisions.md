@@ -1,5 +1,15 @@
 # Decision Log
 
+## August 15, 2026 - Nic-Nac must keep relevant tool capabilities across task changes
+
+**Natural customer-site language is a first-class site intent**
+About narrative, website, homepage, story, bio, and hero-title requests must route to the public-site tool family. A rep should never need to learn internal setting names or paste content into a different form when Nic-Nac has the authorized mutation.
+
+**Tool selection is composable, not a single-task lock**
+Nic-Nac may expose every relevant authorized tool family in one turn—for example, site editing and calendar work together. Conversation history may retain an active workflow, but it must not suppress a newly expressed eligible task. Short corrective follow-ups must preserve the immediately relevant site workflow until it completes, is cancelled, expires, or is escalated.
+
+---
+
 ## August 15, 2026 - Customer homepage copy and Heather-specific action rule
 
 **Homepage headline belongs to the rep**

@@ -1,5 +1,16 @@
 # Project State
 
+## August 15 Nic-Nac site-tool continuity repair
+
+- **Root cause:** Nic-Nac's turn router did not recognize natural About/website language as a customer-site request. After a draft, the rep's follow-up "I don't have an option to paste it there. You need to do that" also failed the site-work continuation check, so the model only received the always-present calendar tool pack and incorrectly claimed it could not edit the site.
+- **Repair:** About narrative, website, homepage, story, bio, and hero-title language now route to the **site** intent. A follow-up that asks Nic-Nac to handle/publish/save/update the drafted copy retains the site tool and requires a tool call. One request can expose both relevant site and calendar tools; changing tasks in chat does not lock a rep into the previous tool category.
+- **Release and verification:** commit `85b41630 fix: retain Nic-Nac site editing tools` is production deployment `dpl_4WgURX78pyZoYg8P8ecrggqLdoiK`, with both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` assigned. Both domain variants returned 200 for `/nic-nac` and `/blingkitchen` after release.
+- **Verification limit:** 83 focused tool-routing, site-customization, and core-policy tests passed, including the exact Heather About-copy replay and a combined About-plus-calendar request. The authenticated reviewer replay remains blocked by the known too-short reviewer-token configuration; it was not bypassed with Louis's or Heather's account.
+
+**Last updated:** August 15, 2026
+
+---
+
 ## August 15 BlingKitchen hero personalization and reveal guidance
 
 - **Editable customer homepage title:** Site Settings now gives every rep a persisted **Homepage title** field. A saved value replaces the default title on the public homepage while leaving the business name as the safe fallback. This is a rep-controlled presentation setting, not a tenant-code override.

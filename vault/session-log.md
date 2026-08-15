@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 15, 2026 - Nic-Nac About narrative and multi-tool routing repair
+
+- Investigated Heather's report that Nic-Nac drafted an About narrative but then said it only had show/calendar tools and could not publish it.
+- The mutation tool already existed: `update_site_setting` supports `aboutNarrative`. The defect was in routing/continuity: natural About/website words were absent from the site-intent vocabulary, and the later "you need to do that" message did not retain a site-edit continuation.
+- Nic-Nac now recognizes About narrative, website, homepage, story, bio, and hero-title wording as site work. It keeps the site tool active when a rep asks it to publish its drafted copy, and it can surface site and calendar tools together for a combined request.
+- Commit `85b41630 fix: retain Nic-Nac site editing tools` is deployed to production as `dpl_4WgURX78pyZoYg8P8ecrggqLdoiK`; both Sparkle Suite aliases were assigned. Focused tests passed 83/83, including the exact denial-follow-up replay and a combined site/calendar case. Both domains returned 200 for `/nic-nac` and `/blingkitchen`.
+- The known too-short reviewer-token configuration still blocks a synthetic authenticated chat replay. No customer or Louis personal Workspace account was used to work around that limitation.
+
+---
+
 ## August 15, 2026 - BlingKitchen hero and reveal-copy refinement
 
 - Added a rep-editable **Homepage title** Site Settings value so customer-facing hero headlines can match each rep's show and style. The public site uses the saved title when present and retains a safe business-name fallback.
