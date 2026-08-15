@@ -4,11 +4,11 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
-## August 15, 2026 - Control Center unified Sparkle Suite sign-in
+## August 15, 2026 - Control Center independent sign-in correction
 
-- Removed the separate Control Center access-code path. `/control-center/login` now redirects to the standard Sparkle Suite sign-in with a safe return path, and all Control Center pages/API mutations require `getAuthenticatedOperator`.
-- Removed the legacy independent Control Center signed-cookie implementation and its two session routes. Bug Hunt and Customer Waitlist actions no longer accept either a code-based session or an unaffiliated login; the account-activation audit uses the authenticated operator's rep ID.
-- Commit `33aa9d3a fix: use Sparkle sign-in for Control Center` passed 16 focused Control Center/authentication tests and the production build. It is deployed as `dpl_5YBg4HtCJ8qkaE987oQhpUTJRVex`; Vercel confirmed both production Sparkle Suite aliases. A live unauthenticated request redirected to `/login?redirect=%2Fcontrol-center`, while a signed-in non-operator browser session displayed **Operator access required**.
+- The interim shared Sparkle Suite sign-in implementation was incorrect because it prevented Louis from opening Control Center while Brittany's Workspace remained open. It was superseded in the same session.
+- Control Center now uses its own dedicated username/password and a separate signed HTTP-only session. The credentials and operator audit identity are Vercel Production secrets only; no password, username secret, or provider credential was written to Git.
+- Final commit `afa046de fix: separate Control Center credentials` passed 16 focused Control Center/authentication tests and the production build. It is deployed as `dpl_7YCHxB3GTe2F7QsEno4JM7R2MFSb`; both production Sparkle Suite aliases are assigned. Live browser verification completed the independent Control Center sign-in successfully.
 
 ---
 

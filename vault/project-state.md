@@ -1,10 +1,11 @@
 # Project State
 
-## August 15 Control Center unified sign-in checkpoint
+## August 15 Control Center independent sign-in checkpoint
 
-- **Control Center access:** The separate access-code/session mechanism has been removed. Control Center pages and mutations now require the normal Sparkle Suite authenticated session plus the internal operator allowlist. Unauthenticated visitors are sent to `/login?redirect=%2Fcontrol-center`; authenticated non-operators receive an explicit access-required response.
-- **No parallel authentication path:** The code-entry screen, independent signed cookie, session-refresh client call, and code-session API routes are deleted. Bug Hunt and Customer Waitlist mutations now use the same authenticated-operator guard as the rest of the protected operator surface.
-- **Release and verification:** commit `33aa9d3a fix: use Sparkle sign-in for Control Center` is deployed as `dpl_5YBg4HtCJ8qkaE987oQhpUTJRVex`. Vercel assigned both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` to that deployment. Focused Control Center authentication tests passed (16 tests) and the production build completed. Live checks confirmed the normal login redirect for an unauthenticated request and an access-required result for a non-operator signed-in session.
+- **Control Center access:** Control Center has its own username/password sign-in and its own signed, HTTP-only session cookie. It does not read, replace, or depend on whichever Sparkle Suite Workspace account is already open in the browser. The credentials and operator audit identity exist only as protected Vercel production configuration, never in Git.
+- **No access-code or Workspace-auth barrier:** The old access code is not used. The Control Center sign-in endpoint validates only its dedicated protected credentials, then creates the independent 12-hour operator session. The existing Sparkle Suite Workspace session remains separate.
+- **Release and verification:** final commit `afa046de fix: separate Control Center credentials` is deployed as `dpl_7YCHxB3GTe2F7QsEno4JM7R2MFSb`. Vercel assigned both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` to that deployment. Focused Control Center authentication tests passed (16 tests) and the production build completed. Live browser verification submitted the independent Control Center credentials successfully and opened the Control Center while a separate Workspace session was left untouched.
+- **Lesson:** Control Center independence means independent authentication, not merely an authorization check on the active Workspace account. Do not substitute a shared Sparkle Suite login or a static access code for the dedicated operator sign-in flow.
 
 **Last updated:** August 15, 2026
 

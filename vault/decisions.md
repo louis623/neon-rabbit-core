@@ -1,12 +1,12 @@
 # Decision Log
 
-## August 15, 2026 - Control Center uses normal Sparkle Suite authentication
+## August 15, 2026 - Control Center has independent operator authentication
 
-**One account session, plus an operator authorization check**
-Control Center must use the standard Sparkle Suite sign-in session. Access is granted only after the authenticated account is matched against the internal operator allowlist; an independent code or cookie is not an alternative authorization path.
+**A separate Control Center session is required**
+Control Center must authenticate independently of the Sparkle Suite Workspace account currently open in the browser. Its operator username/password is protected production configuration and produces its own HTTP-only signed session.
 
-**Fail closed for both missing and insufficient identity**
-Unauthenticated visitors go to the normal sign-in route with a return path. Authenticated reps who are not operators see an explicit access-required response. Protected Control Center APIs use the same authenticated-operator guard, so page access and mutations have the same boundary.
+**Do not use the Workspace session or a static access code as a substitute**
+The independent operator sign-in must neither inspect nor replace Workspace authentication. A static access code is not the product model. Protected Control Center access is granted only by its independent session; audit attribution resolves to the configured internal operator identity without making Workspace login part of the sign-in decision.
 
 ---
 
