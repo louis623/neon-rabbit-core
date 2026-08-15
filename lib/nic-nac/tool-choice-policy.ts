@@ -1,3 +1,5 @@
+import { isAboutNarrativeCopySubmission } from '@/lib/nic-nac/site-editing-intent'
+
 type TradeBoardWorkflowForToolChoice = {
   status?: string
   phase?: string
@@ -41,6 +43,7 @@ export type NicNacStepToolChoice =
         | 'reject_trade'
         | 'update_fulfillment_status'
         | 'report_jewelry_catalog_issue'
+        | 'update_site_setting'
     }
 
 export function chooseNicNacToolChoiceForStep(args: {
@@ -55,6 +58,15 @@ export function chooseNicNacToolChoiceForStep(args: {
 }): NicNacStepToolChoice {
   if (args.stepsLength > 0) return 'auto'
   if (!args.requireToolCall) return 'auto'
+  if (
+    args.activeToolNames.includes('update_site_setting') &&
+    isAboutNarrativeCopySubmission({
+      latestUserText: args.latestUserText ?? '',
+      previousAssistantText: args.previousAssistantText ?? '',
+    })
+  ) {
+    return { type: 'tool', toolName: 'update_site_setting' }
+  }
   if (
     args.activeToolNames.includes('add_listing') &&
     (tradeBoardWorkflowIsReadyToAdd(args.activeTradeBoardWorkflow) ||

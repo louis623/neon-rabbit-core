@@ -18,6 +18,20 @@ describe('Nic-Nac tool choice policy', () => {
     ).toEqual({ type: 'tool', toolName: 'add_listing' })
   })
 
+  it('pins a pasted About narrative to update_site_setting after Nic-Nac requests the copy', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: true,
+        stepsLength: 0,
+        activeToolNames: ['update_site_setting', 'add_show'],
+        previousAssistantText:
+          'Send me the new About text you want on the site, and I will update it.',
+        latestUserText:
+          'Meet Heather\n\nHeather is a Registered Nurse with a love for family, food, and live jewelry reveals. She built a welcoming community by sharing that passion live and brings the same warmth to every show.',
+      }),
+    ).toEqual({ type: 'tool', toolName: 'update_site_setting' })
+  })
+
   it('keeps required tool choice for contextual Trade Board turns that are not ready yet', () => {
     expect(
       chooseNicNacToolChoiceForStep({

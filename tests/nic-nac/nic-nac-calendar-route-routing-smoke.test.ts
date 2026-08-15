@@ -19,6 +19,7 @@ const {
   getNicNacProviderOptionsMock,
   createAdminClientMock,
   getOrCreateTradeBoardIntakeContextMock,
+  getOrCreateTradeWorkflowContextMock,
   getOrCreateCalendarWorkflowContextMock,
   loadSuiteRepMemoryCardsMock,
 } = vi.hoisted(() => ({
@@ -40,6 +41,7 @@ const {
   getNicNacProviderOptionsMock: vi.fn(),
   createAdminClientMock: vi.fn(),
   getOrCreateTradeBoardIntakeContextMock: vi.fn(),
+  getOrCreateTradeWorkflowContextMock: vi.fn(),
   getOrCreateCalendarWorkflowContextMock: vi.fn(),
   loadSuiteRepMemoryCardsMock: vi.fn(),
 }))
@@ -98,6 +100,10 @@ vi.mock('@/lib/nic-nac/workflows/trade-board-intake-context', async (importOrigi
     getOrCreateTradeBoardIntakeContext: getOrCreateTradeBoardIntakeContextMock,
   }
 })
+
+vi.mock('@/lib/nic-nac/workflows/trade-workflow-context', () => ({
+  getOrCreateTradeWorkflowContext: getOrCreateTradeWorkflowContextMock,
+}))
 
 vi.mock('@/lib/nic-nac/workflows/calendar-workflow-context', () => ({
   getOrCreateCalendarWorkflowContext: getOrCreateCalendarWorkflowContextMock,
@@ -159,6 +165,11 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
       workflowIntents: [],
       toolPolicySource: 'latest_turn_intent',
       workflowPromptState: '',
+    })
+    getOrCreateTradeWorkflowContextMock.mockResolvedValue({
+      sessionBefore: null,
+      sessionAfter: null,
+      activeWorkflow: null,
     })
     getOrCreateCalendarWorkflowContextMock.mockResolvedValue({
       sessionBefore: null,
@@ -672,6 +683,71 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
           conversationId: 'calendar-chaos-conversation',
           intents: expect.arrayContaining(['site']),
           toolNames: expect.arrayContaining(['build_site_recipe_draft']),
+        }),
+      )
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
+
+  it('routes a pasted About narrative through the real chat route and pins the site update tool', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    try {
+      const response = await POST(
+        requestForMessages([
+          {
+            id: 'about-request',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text: "Nic-Nac, I need to update the About section for Heather's site.",
+              },
+            ],
+          },
+          {
+            id: 'about-prompt',
+            role: 'assistant',
+            parts: [
+              {
+                type: 'text',
+                text: 'Absolutely — send me the new About text you want on the site, and I will update it.',
+              },
+            ],
+          },
+          {
+            id: 'about-copy',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text:
+                  'Meet Heather\n\nHeather is a Registered Nurse with a love for family, food, and live jewelry reveals. She built a welcoming community by sharing that passion live and brings the same warmth to every show.',
+              },
+            ],
+          },
+        ]),
+      )
+      await response.text()
+
+      expect(response.status).toBe(200)
+      const options = streamTextMock.mock.calls[0][0] as {
+        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
+        tools: Record<string, unknown>
+      }
+
+      expect(options.tools).toHaveProperty('update_site_setting')
+      expect(options.prepareStep({ steps: [] }).toolChoice).toEqual({
+        type: 'tool',
+        toolName: 'update_site_setting',
+      })
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          intents: expect.arrayContaining(['site']),
+          toolNames: expect.arrayContaining(['update_site_setting']),
         }),
       )
     } finally {

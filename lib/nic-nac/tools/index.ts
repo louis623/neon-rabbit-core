@@ -10,6 +10,7 @@
 // Composition order matters - see the header comments in each wrapper.
 
 import type { Tool, ToolSet } from 'ai'
+import { isAboutNarrativeCopySubmission } from '@/lib/nic-nac/site-editing-intent'
 import { listMyTradeBoardTool } from './list-my-trade-board'
 import { removeListingTool } from './remove-listing'
 import { restoreListingTool } from './restore-listing'
@@ -661,7 +662,15 @@ function isSiteContinuation(
     /\b(recipe|recipes|pantry|ingredient|ingredients|food|display photo|recipe[- ]?card|card photo|image|photo|picture|upload)\b/i.test(
       previousAssistantText,
     )
-  if (!isContextualFollowUp(latestText, previousAssistantText) && !isPhotoFollowUp) {
+  const isNarrativeCopySubmission = isAboutNarrativeCopySubmission({
+    latestUserText: latestText,
+    previousAssistantText,
+  })
+  if (
+    !isContextualFollowUp(latestText, previousAssistantText) &&
+    !isPhotoFollowUp &&
+    !isNarrativeCopySubmission
+  ) {
     return false
   }
   if (!assistantIsDiscussingSiteEdit(previousAssistantText)) return false

@@ -486,6 +486,43 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
+  it('keeps the site tool when a rep pastes a complete About narrative after Nic-Nac asks for it', () => {
+    const messages = [
+      {
+        id: 'request',
+        role: 'user',
+        parts: [{ type: 'text', text: "I need to update Heather's About section." }],
+      },
+      {
+        id: 'assistant',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'Send me the new About text you want on the site, and I will update it.',
+          },
+        ],
+      },
+      {
+        id: 'copy',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text:
+              'Meet Heather\n\nHeather is a Registered Nurse with a love for family, food, and live jewelry reveals. She built a welcoming community by sharing that passion live and brings the same warmth to every show.',
+          },
+        ],
+      },
+    ]
+
+    const intents = getToolIntentsForMessages(messages)
+
+    expect(intents).toContain('site')
+    expect(listToolNamesForIntents(intents)).toContain('update_site_setting')
+    expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
+  })
+
   it('keeps both site and calendar tools available when a rep changes topics in one turn', () => {
     const intents = getToolIntentsForText(
       'Update my About story and move Friday\'s show to 8pm Eastern.',
