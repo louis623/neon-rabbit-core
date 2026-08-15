@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 15, 2026 - Hero Motion save-to-public-site repair
+
+- Investigated the report that selecting **Sparkle Rise**, saving, and opening the customer-facing site still showed **Soft Glow**.
+- Root cause was bootstrap ordering, not the Site Settings API: `heroAnimationType` saved correctly, but the selected skin preset reapplied its own `heroMotion` after mapping the saved setting and overwrote it.
+- Reordered the homepage defaults so a skin supplies visual tokens first and the saved Hero motion is applied last. Added direct regression coverage for Sparkle Rise, Soft Glow, and Still across incompatible skin defaults and for the serialized public bootstrap.
+- Commit `e5e40653 fix: preserve saved hero motion` passed 114 focused tests, 76 Amethyst template tests, and the production build. Vercel production deployment `dpl_B9EY3RBVWfs2C71temz2pkBsaiW3` is Ready with both Sparkle Suite aliases assigned.
+- Read the live BlingKitchen template payload after release: it retained Moonstone styling and carried the saved `sparkle_rise` value into `HOMEPAGE_TWEAK_DEFAULTS`. Live rendered inspection of `/blingkitchen` confirmed `hero-motion-sparkle-rise`, eight sparkle elements, and no Soft Glow layer. The reviewer-token limitation remains and was not bypassed.
+
+---
+
 ## August 15, 2026 - Customer-site animation audit and repair
 
 - Audited all 11 selectable Amethyst appearance presets and their shared hero runtime. Four skins intentionally use Soft Glow (Sparkle Suite/Morganite, Moonstone, Emerald Garden, and Garnet); the other seven intentionally use Sparkle Rise.

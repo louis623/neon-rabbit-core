@@ -1,5 +1,16 @@
 # Project State
 
+## August 15 Hero Motion persistence repair
+
+- **Root cause:** `heroAnimationType` was correctly saved by Site Settings, but the public Homepage bootstrap reapplied the selected appearance preset after mapping that saved setting. The preset's `heroMotion` silently overwrote the rep's saved choice, so a Moonstone/Morganite site could remain on Soft Glow after the rep saved Sparkle Rise.
+- **Repair:** `buildAmethystHomepageTweakDefaults` now applies the visual skin first, then explicitly preserves the mapped/saved `heroMotion`. Appearance presets continue to provide all other visual defaults and no longer reset a rep's Hero motion control.
+- **Release and direct live proof:** commit `e5e40653 fix: preserve saved hero motion` is deployed as `dpl_B9EY3RBVWfs2C71temz2pkBsaiW3`; both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` are assigned. The live BlingKitchen template payload returned `heroMotion: "sparkle_rise"` in both template data and bootstrap defaults while retaining Moonstone tokens. Rendered `/blingkitchen` had `hero-motion-sparkle-rise`, eight sparkle-rise elements, and no Soft Glow layer.
+- **Verification:** 114 focused settings/template/preset tests passed, the Amethyst template suite passed 76 tests (local link probes fail-soft without a server), and the production build passed. The known too-short reviewer-token issue remains; this did not use a personal account to bypass it.
+
+**Last updated:** August 15, 2026
+
+---
+
 ## August 15 Customer-site animation audit and repair
 
 - **Hero animation contract:** every selectable customer-site skin now has a deliberate hero profile: Sparkle Suite/Morganite, Moonstone, Emerald Garden, and Garnet use **Soft Glow** with subtle/no texture; Amethyst, Black Diamond, Alpine Opal, Rose Gold, Amber, Velvet, and Rose Quartz use **Sparkle Rise**. All eleven profiles are covered by a regression test.

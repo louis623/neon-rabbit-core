@@ -1,5 +1,15 @@
 # Decision Log
 
+## August 15, 2026 - Saved Hero Motion takes precedence over skin defaults
+
+**A skin sets the starting look; a rep controls the final Hero motion**
+Appearance presets may establish initial visual defaults, including a recommended hero effect, but a rep's saved **Hero motion** selection is a separate persisted Site Settings control. Public template assembly must preserve that saved value after skin tokens are applied. Changing a skin must not silently reset Sparkle Rise, Soft Glow, or Still.
+
+**Test the deployed bootstrap, not only the save response**
+For settings that affect public rendering, verification must cover the whole chain: API validation/save, mapped template data, serialized bootstrap defaults, and a live rendered customer route. A successful save response alone is insufficient.
+
+---
+
 ## August 15, 2026 - Hero animation must be a clear customer-site choice
 
 **Soft Glow is particle-free in the hero**
