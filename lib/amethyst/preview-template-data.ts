@@ -505,6 +505,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
     defaultAmethystHomepageTemplateData.businessName,
   )
   const tagline = firstText(settings.tagline, defaultAmethystHomepageTemplateData.tagline)
+  const heroHeadlineOverride = settings.heroHeadline?.trim() || ''
   const streamLinks = resolveStreamingLinks(settings, extras)
   const showJoinPage = settings.showJoinPage !== false
   const homepageMediaSlots = settings.homepageMediaSlots ?? []
@@ -522,6 +523,8 @@ export function mapPreviewSettingsToHomepageTemplateData(
     businessName,
     teamName: firstText(settings.teamName, defaultAmethystHomepageTemplateData.teamName),
     tagline,
+    heroHeadline: firstText(heroHeadlineOverride, defaultAmethystHomepageTemplateData.heroHeadline),
+    heroHeadlineOverride,
     heroSub: `I'm ${repName} - join me for live reveals, favorite finds, and customer-first sparkle.`,
     heroMotion: settings.heroAnimationType,
     heroEyebrow: 'Live schedule coming soon',

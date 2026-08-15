@@ -120,6 +120,7 @@ describe('site settings service', () => {
       tickerText: '',
       tickerVisible: false,
       tagline: '',
+      heroHeadline: '',
       heroImageUrl: '',
       heroAnimationType: 'sparkle_rise',
       teamName: '',

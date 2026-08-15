@@ -87,6 +87,7 @@ export interface AmethystHomepageTemplateData {
   tagline: string
   heroEyebrow: string
   heroHeadline: string
+  heroHeadlineOverride?: string
   heroSub: string
   heroVideoUrl?: string
   heroImageUrl?: string

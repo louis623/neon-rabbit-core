@@ -18,6 +18,7 @@ type SiteSettingsRow = {
   ticker_text: string | null
   ticker_visible: boolean | null
   tagline: string | null
+  hero_headline: string | null
   hero_image_url: string | null
   hero_animation_type: string | null
   team_name: string | null
@@ -37,7 +38,7 @@ type RepProfileRow = {
 }
 
 const SITE_SETTINGS_SELECT =
-  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, about_narrative, homepage_media_slots'
+  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_headline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, about_narrative, homepage_media_slots'
 const REP_PROFILE_SELECT =
   'display_name, business_name, email, phone, social_handles'
 
@@ -209,6 +210,7 @@ function buildDashboardResult(args: {
     tickerText: normalizeText(args.siteSettings?.ticker_text),
     tickerVisible: args.siteSettings?.ticker_visible ?? false,
     tagline: normalizeText(args.siteSettings?.tagline),
+    heroHeadline: normalizeText(args.siteSettings?.hero_headline),
     heroImageUrl: normalizeText(args.siteSettings?.hero_image_url),
     heroAnimationType: normalizeHeroAnimationType(
       args.siteSettings?.hero_animation_type,
@@ -335,6 +337,9 @@ export async function updateSiteSettingsDashboard(
     siteSettingsPatch.customer_site_template = normalizeCustomerSiteTemplate(
       input.customerSiteTemplate,
     )
+  }
+  if (input.heroHeadline !== undefined) {
+    siteSettingsPatch.hero_headline = normalizeNullableText(input.heroHeadline.slice(0, 180))
   }
   if (input.appearancePreset !== undefined) {
     siteSettingsPatch.appearance_preset = normalizeAmethystAppearancePreset(

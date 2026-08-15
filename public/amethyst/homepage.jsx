@@ -1778,7 +1778,7 @@ function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queu
         <div className="mhf-hero-shade" aria-hidden="true" />
         <div className="mhf-hero-content">
           <h1 id="mhf-hero-title" className="mhf-hero-title mhf-logo-gradient">
-            {businessName}
+            {CONTENT.heroHeadline || businessName}
           </h1>
           <p className="mhf-hero-with">WITH {repName.toUpperCase()}</p>
           <p className="mhf-hero-line">REVEALING SOMETHING MAGICAL TOGETHER</p>
@@ -1901,7 +1901,7 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
         <div className="bwb-hero-content">
           <p className="bwb-hero-team">The Virtuous Fizzers</p>
           <h1 id="bwb-hero-title" className="bwb-hero-title">
-            {businessName}
+            {CONTENT.heroHeadline || businessName}
           </h1>
           <p className="bwb-hero-line">Where Faith Meets Fizz & Every Reveal is a VIP Experience</p>
           <p className="bwb-hero-instruction">PLACE YOUR ORDER AND RETURN TO THE LIVE PARTY TO WATCH YOUR REVEAL</p>

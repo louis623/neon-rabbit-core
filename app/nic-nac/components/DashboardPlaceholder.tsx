@@ -7550,6 +7550,11 @@ export function SiteSettingsCard({
               }
             />
           </label>
+          <label className={styles.sortFieldWide}>
+            <span className={styles.searchLabel}>Homepage title</span>
+            <input className={styles.searchInput} value={draft.heroHeadline ?? ''} maxLength={180} onChange={(event) => onDraftChange?.({ heroHeadline: event.target.value })} />
+            <span className={styles.siteSettingsPreviewNote}>This is the large heading customers see first on your homepage.</span>
+          </label>
           <label className={styles.sortField}>
             <span className={styles.sortLabel}>Hero motion</span>
             <select

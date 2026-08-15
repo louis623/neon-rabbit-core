@@ -558,6 +558,7 @@ export interface SiteSettingsDashboardResult {
   tickerText: string
   tickerVisible: boolean
   tagline: string
+  heroHeadline?: string
   heroImageUrl: string
   heroAnimationType: HeroAnimationType
   teamName: string
@@ -579,6 +580,7 @@ export interface UpdateSiteSettingsDashboardInput {
   tickerText?: string
   tickerVisible?: boolean
   tagline?: string
+  heroHeadline?: string
   heroImageUrl?: string
   heroAnimationType?: HeroAnimationType
   teamName?: string

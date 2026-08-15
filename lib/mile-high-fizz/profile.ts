@@ -50,7 +50,7 @@ export function applyMileHighFizzHomepage(
     teamName: MILE_HIGH_FIZZ_PROFILE.teamName,
     tagline: 'Revealing something magical together.',
     heroEyebrow: 'With Lindsey',
-    heroHeadline: 'Mile High Fizz',
+    heroHeadline: homepage.heroHeadlineOverride || 'Mile High Fizz',
     heroSub:
       'Revealing something magical together. Place your order and return to the live party to watch your reveal.',
     heroVideoUrl: MILE_HIGH_FIZZ_PROFILE.heroVideoUrl,

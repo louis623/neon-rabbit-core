@@ -320,7 +320,7 @@ export function applyBrittWithBlingHomepage(
     teamName: BRITT_WITH_BLING_PROFILE.teamName,
     tagline: 'Where Faith Meets Fizz & Every Reveal is a VIP Experience',
     heroEyebrow: 'The Virtuous Fizzers',
-    heroHeadline: 'Britt with Bling',
+    heroHeadline: homepage.heroHeadlineOverride || 'Britt with Bling',
     heroSub:
       'Where Faith Meets Fizz & Every Reveal is a VIP Experience. Place your order and return to the live party to watch your reveal.',
     heroImageUrl: BRITT_WITH_BLING_PROFILE.heroImageUrl,
