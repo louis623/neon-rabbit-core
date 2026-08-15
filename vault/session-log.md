@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 15, 2026 - Customer-site animation audit and repair
+
+- Audited all 11 selectable Amethyst appearance presets and their shared hero runtime. Four skins intentionally use Soft Glow (Sparkle Suite/Morganite, Moonstone, Emerald Garden, and Garnet); the other seven intentionally use Sparkle Rise.
+- Found the issue behind the report: the hero motion component was exclusive, but a separately selected page-level sparkle texture or confetti layer could remain visible and overpower Soft Glow after settings changed.
+- Made hero motion explicit on the page body. Soft Glow now suppresses that residual sparkle/confetti presentation in the hero, and its glow treatment is stronger and more legible over every theme's hero palette.
+- Commit `726ffb99 fix: clarify customer site hero animations` passed focused tests (54), the Amethyst template/links suite (74 template tests; local links had no local server and fail soft), and the production build. Vercel production deployment `dpl_BrKWaCpayfNyr4PNG6kEmpaC4TZQ` is Ready with both Sparkle Suite domains assigned. Live public-homepage inspection confirmed the Soft Glow runtime class/layer and visually showed the glow without sparkle particles.
+- Reviewer-browser authentication remains blocked by the known too-short reviewer-token configuration; no personal Workspace account was used to bypass it.
+
+---
+
 ## August 15, 2026 - Control Center independent sign-in correction
 
 - The interim shared Sparkle Suite sign-in implementation was incorrect because it prevented Louis from opening Control Center while Brittany's Workspace remained open. It was superseded in the same session.

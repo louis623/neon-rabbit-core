@@ -1,5 +1,15 @@
 # Decision Log
 
+## August 15, 2026 - Hero animation must be a clear customer-site choice
+
+**Soft Glow is particle-free in the hero**
+The Soft Glow setting must render a visible, gentle color glow and must not compete with a stale sparkle texture or confetti layer from another appearance choice. It is an authoritative hero presentation, not merely a low-opacity effect layered beneath independent sparkles.
+
+**Skin defaults stay intentional and test-covered**
+Keep the four calm skins on Soft Glow with subtle/no texture, and keep the seven higher-energy skins on Sparkle Rise. New or modified skins must explicitly choose a compatible hero-motion/sparkle/texture profile and preserve the all-skin regression contract.
+
+---
+
 ## August 15, 2026 - Control Center has independent operator authentication
 
 **A separate Control Center session is required**

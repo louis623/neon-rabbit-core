@@ -1,5 +1,16 @@
 # Project State
 
+## August 15 Customer-site animation audit and repair
+
+- **Hero animation contract:** every selectable customer-site skin now has a deliberate hero profile: Sparkle Suite/Morganite, Moonstone, Emerald Garden, and Garnet use **Soft Glow** with subtle/no texture; Amethyst, Black Diamond, Alpine Opal, Rose Gold, Amber, Velvet, and Rose Quartz use **Sparkle Rise**. All eleven profiles are covered by a regression test.
+- **Soft Glow is authoritative:** selecting Soft Glow now applies an explicit hero-motion state that disables a previously selected fixed sparkle texture or confetti layer in the hero. The glow itself is larger, more saturated, and gently animated so it reads over each skin’s hero background without competing particles.
+- **Release and live evidence:** commit `726ffb99 fix: clarify customer site hero animations` is deployed as `dpl_BrKWaCpayfNyr4PNG6kEmpaC4TZQ`. Vercel assigned both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` to that exact deployment. Live inspection of `/amethyst/Homepage.html` confirmed `hero-motion-soft-glow`, the glow layer, the new 780px glow treatment, and no sparkle texture class; screenshot review confirmed a visible blush glow with no particles taking over.
+- **Verification:** focused appearance/homepage tests passed (54 tests), `npm run qa:amethyst` template suite passed (74 tests; link probes were fail-soft because no local server was running), and `npm run build` passed. The authenticated reviewer-browser path is still blocked by the known too-short reviewer token and was not bypassed.
+
+**Last updated:** August 15, 2026
+
+---
+
 ## August 15 Control Center independent sign-in checkpoint
 
 - **Control Center access:** Control Center has its own username/password sign-in and its own signed, HTTP-only session cookie. It does not read, replace, or depend on whichever Sparkle Suite Workspace account is already open in the browser. The credentials and operator audit identity exist only as protected Vercel production configuration, never in Git.
