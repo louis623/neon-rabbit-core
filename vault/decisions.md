@@ -1,5 +1,18 @@
 # Decision Log
 
+## August 15, 2026 - Customer homepage copy and Heather-specific action rule
+
+**Homepage headline belongs to the rep**
+Every rep may set the public homepage title in Site Settings. Use the saved value when it exists; otherwise retain the business-name fallback. Do not turn a general presentation choice into a bespoke hard-coded tenant override.
+
+**Use real platform buttons for destinations; keep onboarding-style explanation neutral**
+For BlingKitchen, configured TikTok/Whatnot buttons remain the clear destination controls. The separate "First time here?" explanation should say customers watch Heather open their jewelry live, without naming or privileging particular social networks.
+
+**Heather's Pantry is a deliberate customer-site action**
+The BlingKitchen hero exposes **In the Pantry** as a second full-width action after Browse the Trade Board. It is Heather-specific and must not appear on every rep's site unless a future product rule explicitly generalizes it.
+
+---
+
 ## August 15, 2026 - Customer hero action hierarchy
 
 - On the standard customer homepage, keep purchase/live-watch actions together in the first hero row: Shop Bomb Party plus only the saved TikTok and/or Whatnot actions.

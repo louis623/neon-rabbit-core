@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 15, 2026 - BlingKitchen hero and reveal-copy refinement
+
+- Added a rep-editable **Homepage title** Site Settings value so customer-facing hero headlines can match each rep's show and style. The public site uses the saved title when present and retains a safe business-name fallback.
+- For Heather/BlingKitchen only, added a matching full-width **In the Pantry** hero action underneath Browse the Trade Board. The existing Shop, TikTok, and Whatnot actions remain configured-platform actions and were not repointed or renamed.
+- Per Heather's review note, changed the First Time Here explanation to platform-neutral language: customers watch Heather open their box live, and the Watch Live step now says "Join the reveal live." TikTok/Facebook are no longer named in that explanatory card.
+- Released `e5aa0184 fix: simplify BlingKitchen reveal guidance` as production deployment `dpl_92M5a2erpWWmPTEREvGdjmffofpA`. Both Sparkle Suite production domains are assigned. Direct live `/blingkitchen` inspection confirmed the corrected copy and the five expected hero actions.
+- Validation: 47 focused tests passed. No customer account or personal Workspace session was used. Reviewer-auth smoke is still blocked by the known too-short token configuration and was not bypassed.
+
+---
+
 ## August 15, 2026 - Dynamic two-row customer hero actions
 
 - Louis requested a layout-only refinement: Shop and available live-platform actions on the first row; existing Browse the Trade Board action on a full-width second row, dynamically sized to the row above.

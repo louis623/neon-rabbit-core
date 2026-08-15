@@ -1,5 +1,17 @@
 # Project State
 
+## August 15 BlingKitchen hero personalization and reveal guidance
+
+- **Editable customer homepage title:** Site Settings now gives every rep a persisted **Homepage title** field. A saved value replaces the default title on the public homepage while leaving the business name as the safe fallback. This is a rep-controlled presentation setting, not a tenant-code override.
+- **Heather's BlingKitchen actions:** Heather's public hero keeps Shop Bomb Party plus her saved TikTok and Whatnot destinations in the first row; Browse the Trade Board is the full-width second-row action, and the BlingKitchen-only **In the Pantry** action appears below it at the same width.
+- **Heather's explanation is platform-neutral:** In the "First time here?" card, BlingKitchen now says that customers can watch Heather open it live and "Join the reveal live." It no longer names TikTok or Facebook there. The real configured platform action buttons remain visible and unchanged.
+- **Release and live proof:** commit `e5aa0184 fix: simplify BlingKitchen reveal guidance` is production deployment `dpl_92M5a2erpWWmPTEREvGdjmffofpA`. Vercel assigned both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` to it. Live inspection of `/blingkitchen` confirmed the platform-neutral paragraph and Watch Live step, alongside Shop Bomb Party, Watch on TikTok, Watch on Whatnot, Browse the Trade Board, and In the Pantry.
+- **Verification:** 47 focused BlingKitchen/Amethyst public-site tests passed. The live public page was checked in the in-app browser without a customer or personal Workspace account. The authenticated reviewer-browser path remains blocked by the known too-short reviewer-token configuration and was not bypassed.
+
+**Last updated:** August 15, 2026
+
+---
+
 ## August 15 Dynamic hero action layout
 
 - **Customer-site hero order:** Standard Amethyst customer homepages now place **Shop Bomb Party** and any saved TikTok/Whatnot watch actions in the first hero row. **Browse the Trade Board** is always a separate second-row primary action beneath them.
