@@ -789,6 +789,8 @@ describe('Amethyst homepage template data wiring', () => {
     )
     expect(standardHero).toContain('hp-hero-trade-board-cta')
     expect(standardHero).toContain('isHeatherBlingKitchenSite && CONTENT.pantryPageUrl')
+    expect(jsx).toContain('open it live{isHeatherBlingKitchenSite ? "." : " on TikTok or Facebook."}{" "}')
+    expect(jsx).toContain('isHeatherBlingKitchenSite ? "Join the reveal live." : "Join the reveal on TikTok or Facebook."')
     expect(standardHero).toContain('In the Pantry')
     expect(css).toMatch(/\.hp-hero-cta-stack\s*\{[\s\S]*?width:\s*fit-content;/)
     expect(css).toMatch(/\.hp-hero-trade-board-cta\s*\{[\s\S]*?width:\s*100%;/)

@@ -1324,7 +1324,7 @@ function Wibp({ repName }) {
             <div className="hp-wibp-eyebrow">First time here?</div>
             <h2 className="hp-wibp-title">It's a live jewelry reveal — with <span className="slot" data-slot="rep name">{repName}</span></h2>
             <p className="hp-wibp-body">
-              You order a sealed box, then watch <span className="slot" data-slot="rep name">{repName}</span> open it live on TikTok or Facebook.
+              You order a sealed box, then watch <span className="slot" data-slot="rep name">{repName}</span> open it live{isHeatherBlingKitchenSite ? "." : " on TikTok or Facebook."}{" "}
               Every box has real jewelry inside — some Everyday Sparkle, some Diamond Territory, and a few rare Unicorn Magic pieces hidden throughout the show.
               After the reveal, your jewelry ships straight to your door from Bomb Party.
             </p>
@@ -1337,7 +1337,7 @@ function Wibp({ repName }) {
               <div className="hp-step">
                 <div className="hp-step-num">2</div>
                 <div className="hp-step-label">Watch Live</div>
-                <div className="hp-step-desc">Join the reveal on TikTok or Facebook.</div>
+                <div className="hp-step-desc">{isHeatherBlingKitchenSite ? "Join the reveal live." : "Join the reveal on TikTok or Facebook."}</div>
               </div>
               <div className="hp-step">
                 <div className="hp-step-num">3</div>
