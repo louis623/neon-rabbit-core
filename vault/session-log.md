@@ -3878,3 +3878,20 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Focused suites passed for the relevant changes, including 128 billing/workspace tests for the final Stripe-only Account view. Each release passed `npm run build` and live alias checks for `www.yoursparklesuite.com`, the apex redirect, and `theblingkitchen.com`.
 - Do not infer or attach a Stripe payer from incomplete application data. Verify the exact customer/subscription in the authorized Stripe account first, then use identity-guarded production updates. Local sandbox Stripe credentials can point to a different account from the production payer account; never use that mismatch as proof that a live payer does not exist.
 - A visual reviewer smoke is still blocked by the known reviewer-token length configuration. Do not substitute Louis's personal account. Use focused tests, production health/alias checks, and an authorized external provider dashboard where applicable; record the visual limitation honestly.
+
+---
+
+# August 16, 2026 - Customer Custom-Domain Navigation Repair
+
+## Completed
+
+- Custom-domain customer pages now generate root-relative internal navigation for Home, Trade Board, Join Team, Pantry, and homepage collection links. The browser therefore stays on the configured customer hostname rather than navigating to `www.yoursparklesuite.com/{slug}/...` or an `/amethyst/*.html` path.
+- The template APIs now retain the validated request custom domain as the navigation authority even when the internal `c` query parameter is needed to identify the rep. This separates private tenant lookup from the public URL visitors see.
+- Heather/BlingKitchen is the first live proof: Home, Trade Board, Join Team, and In the Pantry all remain under `https://theblingkitchen.com`.
+
+## Verification and release
+
+- Focused custom-domain route/link tests passed: 25 tests across four files. `npm run build` passed with the active-branch safety gate and Next.js production compilation.
+- Application commits `a24bc545 fix: keep customer subpages on custom domains` and `f3f27d69 fix: preserve custom-domain navigation targets` are deployed in production as `dpl_6jf82p7d8GEeVTKHmdj9TDS1NSf9`.
+- Vercel assigned `www.yoursparklesuite.com`, `yoursparklesuite.com`, `theblingkitchen.com`, `www.theblingkitchen.com`, and Bri's custom-domain aliases to that exact deployment.
+- An unauthenticated Codex-browser smoke verified Heather’s live Home, `/trade`, `/join`, and `/in-the-pantry` pages and their internal customer navigation. No Workspace or Control Center account was used.

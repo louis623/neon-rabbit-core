@@ -1,5 +1,17 @@
 # Project State
 
+## August 16 Custom-domain customer-site navigation repair
+
+- **Domain-first customer paths:** Customer sites served from a configured custom domain now emit root-relative public navigation for Home, Trade Board, Join Team, Pantry, and homepage collection links. This keeps each visitor on the rep's configured host instead of returning them to a Sparkle Suite slug or `/amethyst/*.html` URL.
+- **Heather live proof:** `theblingkitchen.com`, `/trade`, `/join`, and `/in-the-pantry` all render on Heather's host and link only to `theblingkitchen.com` for internal customer-site navigation.
+- **Routing guard:** Custom-host navigation is derived from the verified request hostname even when the internal template request carries its rep target in `?c=...`; the internal target can resolve the tenant but cannot override the public host.
+- **Release:** application commits `a24bc545 fix: keep customer subpages on custom domains` and `f3f27d69 fix: preserve custom-domain navigation targets` are deployed as Vercel production deployment `dpl_6jf82p7d8GEeVTKHmdj9TDS1NSf9`. Vercel assigned `www.yoursparklesuite.com`, `yoursparklesuite.com`, `theblingkitchen.com`, and `www.theblingkitchen.com` to that exact deployment.
+- **Verification:** 25 focused domain-routing tests passed, the production build passed, and an unauthenticated Codex-browser check confirmed Heather's customer paths and rendered navigation. The reviewer-token limit was irrelevant because no Workspace authentication was required.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 15 Nic-Nac full About-section repair
 
 - **Whole-section data model:** A customer site's About area now has independently persisted **heading**, optional **subheading/byline**, and narrative fields. Existing sites retain their current default headline until a rep saves an override.
