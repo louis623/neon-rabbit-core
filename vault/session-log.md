@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Native TikTok About-card sizing and playback
+
+- Verified TikTok's official Embed Player parameters and its standard video-embed card sizing before changing the prior About row. TikTok's published embed markup uses a 325px minimum card width; the former 280px cap was too narrow.
+- Increased the desktop card cap to 348px, which produces three 348 × 619px 9:16 cards in the shared 1080px customer-site container. The grid switches to two columns at 1100px and one at the mobile breakpoint.
+- Corrected the TikTok embed contract: `muted=0` keeps volume controllable, the host waits for `onPlayerReady` before issuing muted play, and `loop=1` repeats the selected post. The existing host **Unmute/Mute** button remains available. This avoids a video ending into unrelated end-state content.
+- Focused template/settings/workspace/help coverage remains 205 passing tests; the production build compiled after the branch safety gate. TikTok's official player and YouTube's documented same-video playlist loop behavior informed the implementation.
+- Released `8c28cd78 fix: size and loop about short videos` as production deployment `dpl_Ewj5MHGR9wsCRV2dnrGpixQYjmiZ`. Both Sparkle Suite domains return 200 for `/blingkitchen`, and public browser inspection confirmed the exact live 348 × 619px cards, 9:16 sizing, and contained portrait. No account was signed into or changed.
+
+---
+
 ## August 16, 2026 - Shared About portrait and short-video layout
 
 - Replaced the shared two-card About-media gallery with a clean editorial layout: the rep narrative and one portrait photo in the top row, followed by three 9:16 short-video cards.

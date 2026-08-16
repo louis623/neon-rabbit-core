@@ -66,7 +66,7 @@ future work.
 - [ ] **Complete homepage-media authenticated reviewer smoke** - the current
   contract is one uncropped 3:4 About portrait plus three 9:16 TikTok/YouTube
   short-video cards, with the Showcase video separate. Public production visual
-  inspection passed on commit `977c8eb5`; the remaining authenticated synthetic
+  inspection passed on commit `8c28cd78`; the remaining authenticated synthetic
   click-through, including one photo upload and a short-video save, is blocked
   because production's configured reviewer token is shorter than the enforced
   12-character minimum. Repair that environment secret with explicit release

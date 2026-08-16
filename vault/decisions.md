@@ -1,5 +1,15 @@
 # Decision Log
 
+## August 16, 2026 - Short embeds preserve the selected video and its controls
+
+**Size for the provider's card, not an arbitrary thumbnail**
+TikTok's published video embed card uses a 325px minimum width. Customer-site About shorts therefore use a 348px desktop card cap with a 9:16 visual canvas, rather than a 280px constrained panel that risks clipping the provider player.
+
+**Mute through the player API, not a permanent volume lock**
+TikTok's `muted=1` query setting prevents volume changes. Use a volume-controllable player URL, wait for the official player-ready message, then send `mute` and `play`. Keep the host's clear unmute/mute control available and use `loop=1` to replay the configured post.
+
+---
+
 ## August 16, 2026 - About media is a portrait plus three short videos
 
 **One uncropped representative image**

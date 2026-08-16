@@ -1,5 +1,16 @@
 # Project State
 
+## August 16 Native TikTok short-card sizing and playback
+
+- **Native player dimensions:** About short cards now reserve TikTok's documented card width instead of capping at 280px: three 348 × 619px 9:16 cards at the desktop layout, two columns at narrower desktop/tablet widths, and one on mobile.
+- **Playback contract:** TikTok player embeds load without a volume-lock query parameter, then receive `mute` and `play` only after the player-ready event. Reps' videos therefore start muted, retain the existing host **Unmute** button, and use TikTok's `loop=1` setting to replay the selected video rather than stopping into end content.
+- **Release:** application commit `8c28cd78 fix: size and loop about short videos` is Vercel production deployment `dpl_Ewj5MHGR9wsCRV2dnrGpixQYjmiZ`. Vercel assigned `www.yoursparklesuite.com` and `yoursparklesuite.com` to that exact deployment.
+- **Verification:** 205 focused tests passed and the production build compiled. Public browser verification on `https://www.yoursparklesuite.com/blingkitchen` confirmed three 348 × 619px 9:16 cards, the player query contract, and retained portrait `object-fit: contain`. Heather has no configured About short yet, so a real video’s mute/unmute interaction remains pending a safe reviewer-configured short.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Shared About portrait and short-video layout
 
 - **All customer sites:** The shared customer-site About section now has one clean portrait photo beside the rep story and three portrait-format short-video cards beneath it. This is the default for current and future Sparkle Suite customer sites.
