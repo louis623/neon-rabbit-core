@@ -4049,7 +4049,7 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 # August 16, 2026 - Always-Visible Video Instructions
 
-## Completed pending release
+## Completed and released
 
 - Replaced the expandable **Video help: links and embeds** disclosure with a permanent compact **Video links and embeds** card. It remains at the top of the right-side stack but no longer uses a summary, chevron, maximize/minimize behavior, or hidden instructions.
 
@@ -4057,4 +4057,5 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 - Focused Site Settings, public customer-video template, and media service suites passed: 3 files, 160 tests. The rendered Site Settings contract explicitly asserts that no `<summary>` element is emitted.
 - `npm run build` completed production compilation after the allowlisted-branch safety guard.
+- Released application commit `7dfabc06 fix: keep video instructions visible` as Vercel production deployment `dpl_EkAT2DMHngRMwR6zJSGMj5bAuwdB`. Both Sparkle Suite domains are assigned to that deployment; the canonical Site Settings route returned 200 and the apex returned the expected 307 canonical redirect.
 - Reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration. No Louis or customer session was used as a workaround.

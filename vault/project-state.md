@@ -3,7 +3,7 @@
 ## August 16 Always-visible video instructions
 
 - **No disclosure control:** Replaced the unnecessary expandable Video Help control with a compact, permanently visible **Video links and embeds** instruction card at the top of the right-side video stack. There is no maximize/minimize arrow or hidden content.
-- **Verification pending release:** focused Site Settings, customer-video template, and media service coverage passed (160 tests), explicitly confirming the rendered card contains no `<summary>` element. The production build compiled after the active-branch guard. Authenticated reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration; no personal or customer account should be used instead.
+- **Release and verification:** application commit `7dfabc06 fix: keep video instructions visible` is Vercel production deployment `dpl_EkAT2DMHngRMwR6zJSGMj5bAuwdB`. Focused Site Settings, customer-video template, and media service coverage passed (160 tests), explicitly confirming the rendered card contains no `<summary>` element. The production build compiled after the active-branch guard, and `https://www.yoursparklesuite.com/nic-nac?section=site-settings` returned 200 (the apex returned its canonical 307 redirect). Authenticated reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration; no personal or customer account should be used instead.
 
 **Last updated:** August 16, 2026
 
