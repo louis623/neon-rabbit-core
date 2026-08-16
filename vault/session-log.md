@@ -4,6 +4,15 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Customer-list ownership export
+
+- Added a permanent **Download full list (CSV)** control to the rep Workspace at Tools → Customer List, beside the existing spreadsheet import control.
+- The authenticated export is strictly rep-scoped and contains the complete roster rather than the UI's short visible batch. It includes customer profile fields, tags, consent/reachability state, opt-out/STOP history, and dates, with spreadsheet-formula hardening for customer-entered text.
+- Customer-audience retrieval now pages 1,000 database rows at a time, so a future larger roster remains fully exportable.
+- Verification passed: 120 focused customer-list/route/export tests and a production build. Commit `ff3c1ab1 feat: export rep customer lists` was released as production deployment `dpl_5UijLM8dL4nbHUyQa4cobVnxVKs5`; both Sparkle Suite aliases were assigned. A reviewer-safe Brittany Workspace session visibly confirmed the customer-list download control on the live production domain. No personal or customer Workspace account was used.
+
+---
+
 ## August 15, 2026 - Nic-Nac complete About-section repair
 
 - Follow-up live behavior showed that the prior About repair saved only the narrative body and then dropped the site capability after Heather said it was incomplete.

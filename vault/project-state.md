@@ -1,5 +1,17 @@
 # Project State
 
+## August 16 Customer-list ownership export
+
+- **Rep-owned data export:** The Workspace **Tools → Customer List** now includes **Download full list (CSV)**. It is an authenticated, `no-store` download that returns the signed-in rep's entire customer list, not only the short batch currently displayed on screen.
+- **Complete portable record:** The CSV includes contact and editable profile fields, tags, channel-consent/reachability fields, opt-out/STOP history, and timestamps. Customer-supplied spreadsheet formula prefixes are escaped before export.
+- **Scale and isolation:** The export uses the same paid Workspace context and rep ID guard as the roster API, and paginates the database read in 1,000-row pages so larger lists remain complete.
+- **Release:** application commit `ff3c1ab1 feat: export rep customer lists` is Vercel production deployment `dpl_5UijLM8dL4nbHUyQa4cobVnxVKs5`. Vercel assigned `www.yoursparklesuite.com` and `yoursparklesuite.com` (alongside configured customer domains) to that exact deployment.
+- **Verification:** 120 focused customer-audience tests passed and the production build completed. A reviewer-safe Brittany Workspace session on the live `www.yoursparklesuite.com` opened Tools → Customer List and visibly showed the CSV download link. No personal or customer account was used.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Custom-domain customer-site navigation repair
 
 - **Domain-first customer paths:** Customer sites served from a configured custom domain now emit root-relative public navigation for Home, Trade Board, Join Team, Pantry, and homepage collection links. This keeps each visitor on the rep's configured host instead of returning them to a Sparkle Suite slug or `/amethyst/*.html` URL.
