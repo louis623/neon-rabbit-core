@@ -7616,15 +7616,15 @@ export function SiteSettingsCard({
           </p>
         </div>
         <div className={styles.homepageMediaGrid}>
-          <details className={styles.homepageMediaHelp}>
-            <summary>Video help: links and embeds</summary>
+          <aside className={styles.homepageMediaHelp} aria-label="Video links and embeds">
+            <strong>Video links and embeds</strong>
             <p>
               Use a public TikTok, YouTube Short, Instagram Reel, or Facebook Reel/video.
               Paste its link or the platform&apos;s embed code into the video spot you want.
               TikTok and YouTube play muted, loop, and do not show a pause control.
               Instagram and Facebook use their native player controls.
             </p>
-          </details>
+          </aside>
           {(draft.homepageMediaSlots ?? EMPTY_HOMEPAGE_MEDIA_SLOTS).map((slot) => {
             const label =
               slot.key === 'showcase'

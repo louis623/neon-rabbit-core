@@ -4464,9 +4464,9 @@
   grid-column: 2;
 }
 
-.homepageMediaHelp summary {
+.homepageMediaHelp strong {
+  display: block;
   color: var(--nic-nac-text-primary);
-  cursor: pointer;
   font-weight: 800;
 }
 

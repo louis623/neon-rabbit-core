@@ -1,5 +1,14 @@
 # Project State
 
+## August 16 Always-visible video instructions
+
+- **No disclosure control:** Replaced the unnecessary expandable Video Help control with a compact, permanently visible **Video links and embeds** instruction card at the top of the right-side video stack. There is no maximize/minimize arrow or hidden content.
+- **Verification pending release:** focused Site Settings, customer-video template, and media service coverage passed (160 tests), explicitly confirming the rendered card contains no `<summary>` element. The production build compiled after the active-branch guard. Authenticated reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration; no personal or customer account should be used instead.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 In-stack Site Settings video help
 
 - **Right-stack placement:** The expandable **Video help: links and embeds** card now sits inside the desktop video column directly above Showcase, rather than spanning the full Site Settings section.
