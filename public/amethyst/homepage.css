@@ -2625,20 +2625,21 @@ body.bg-quartz-paper .hp-step-num {
 }
 
 .hp-about-portrait-card {
-  aspect-ratio: 3 / 4;
   align-self: start;
   justify-content: flex-end;
   margin: 0;
   min-height: 0;
+  background: transparent;
+  border: 0;
 }
 
 .hp-about-portrait-image {
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  background: color-mix(in oklab, var(--hp-bg-elevated) 84%, #0e0820);
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: inherit;
+  object-fit: initial;
 }
 
 .hp-about-portrait-card::after {

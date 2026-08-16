@@ -415,7 +415,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(softGlowScript).toContain('"heroMotion":"soft_glow"')
   })
 
-  it('uses one uncropped About portrait followed by three portrait short-video cards', () => {
+  it('uses a photo-sized uncropped About portrait followed by three portrait short-video cards', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
       'utf8',
@@ -431,7 +431,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('getYouTubeVideoId')
     expect(jsx).toContain('youtube-nocookie.com/embed')
     expect(css).toContain('.hp-about-portrait-image')
-    expect(css).toContain('object-fit: contain')
+    expect(css).toContain('height: auto')
+    expect(css).toContain('object-fit: initial')
     expect(css).toMatch(/\.hp-about-shorts-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/)
     expect(css).toContain('aspect-ratio: 9 / 16')
     expect(css).toContain('width: min(100%, 348px)')
