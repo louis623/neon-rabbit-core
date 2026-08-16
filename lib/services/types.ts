@@ -853,6 +853,7 @@ export interface PublicSiteRecipe {
   sortOrder: number
   isVisible: boolean
   sourceRecipeId: string
+  recipeSourceImageUrls: string[]
   createdAt: string | null
   updatedAt: string | null
 }
@@ -877,6 +878,7 @@ export interface UpsertPublicSiteRecipeInput {
   sortOrder?: number
   isVisible?: boolean
   sourceRecipeId?: string
+  recipeSourceImageUrls?: string[]
 }
 
 export interface ReorderPublicSiteRecipesInput {

@@ -71,6 +71,7 @@ describe('site recipes service', () => {
         sort_order: 2,
         is_visible: true,
         source_recipe_id: '3',
+        recipe_source_image_urls: ['https://cdn.example.com/sauce-card.jpg'],
         created_at: '2026-06-19T12:00:00.000Z',
         updated_at: null,
       },
@@ -99,6 +100,7 @@ describe('site recipes service', () => {
         ingredients: ['Tomatoes', 'Garlic'],
         imagePosition: 'center 20%',
         modalImagePosition: 'center',
+        recipeSourceImageUrls: ['https://cdn.example.com/sauce-card.jpg'],
       }),
     ])
   })
@@ -126,6 +128,7 @@ describe('site recipes service', () => {
       sort_order: 1,
       is_visible: true,
       source_recipe_id: '2',
+      recipe_source_image_urls: ['https://cdn.example.com/creamer-card.jpg'],
       created_at: null,
       updated_at: '2026-06-19T13:00:00.000Z',
     })
@@ -142,6 +145,7 @@ describe('site recipes service', () => {
       steps: ['Whisk'],
       sortOrder: 1,
       sourceRecipeId: '2',
+      recipeSourceImageUrls: [' https://cdn.example.com/creamer-card.jpg '],
     })
 
     expect(query.insert).toHaveBeenCalledWith(
@@ -153,6 +157,7 @@ describe('site recipes service', () => {
         steps: ['Whisk'],
         image_url: 'https://cdn.example.com/creamer.jpg',
         source_recipe_id: '2',
+        recipe_source_image_urls: ['https://cdn.example.com/creamer-card.jpg'],
       }),
     )
     expect(recipe).toMatchObject({
@@ -185,6 +190,7 @@ describe('site recipes service', () => {
       sort_order: 0,
       is_visible: false,
       source_recipe_id: '',
+      recipe_source_image_urls: [],
       created_at: null,
       updated_at: '2026-06-19T13:30:00.000Z',
     })
@@ -205,6 +211,9 @@ describe('site recipes service', () => {
     )
     expect(query.eq).toHaveBeenCalledWith('rep_id', 'rep-1')
     expect(query.eq).toHaveBeenCalledWith('id', 'recipe-3')
+    expect(query.update).toHaveBeenCalledWith(
+      expect.not.objectContaining({ recipe_source_image_urls: expect.anything() }),
+    )
   })
 
   it('rejects invalid titles, servings, and non-http links', async () => {
@@ -229,6 +238,15 @@ describe('site recipes service', () => {
       upsertPublicSiteRecipe(supabase, 'rep-1', {
         title: 'Sauce',
         imageUrl: 'not-a-url',
+      }),
+    ).rejects.toMatchObject({
+      code: 'INVALID_INPUT',
+      userMessage: 'Recipe image and TikTok links need to be full http or https URLs.',
+    })
+    await expect(
+      upsertPublicSiteRecipe(supabase, 'rep-1', {
+        title: 'Sauce',
+        recipeSourceImageUrls: ['javascript:alert(1)'],
       }),
     ).rejects.toMatchObject({
       code: 'INVALID_INPUT',

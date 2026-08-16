@@ -7,7 +7,7 @@ import type {
 } from '@/lib/services/types'
 
 const PUBLIC_SITE_RECIPE_SELECT =
-  'id, rep_id, title, slug, description, category, prep_time, servings, image_url, image_alt, image_position, modal_image_url, modal_image_position, tiktok_url, ingredients, steps, note, sort_order, is_visible, source_recipe_id, created_at, updated_at'
+  'id, rep_id, title, slug, description, category, prep_time, servings, image_url, image_alt, image_position, modal_image_url, modal_image_position, tiktok_url, ingredients, steps, note, sort_order, is_visible, source_recipe_id, recipe_source_image_urls, created_at, updated_at'
 
 type PublicSiteRecipeRow = {
   id: string
@@ -30,6 +30,7 @@ type PublicSiteRecipeRow = {
   sort_order: number | null
   is_visible: boolean | null
   source_recipe_id: string | null
+  recipe_source_image_urls: unknown
   created_at: string | null
   updated_at: string | null
 }
@@ -58,6 +59,12 @@ function normalizeStringArray(value: unknown) {
   return value
     .map((item) => normalizeText(typeof item === 'string' ? item : String(item ?? '')))
     .filter(Boolean)
+}
+
+function normalizeHttpUrlArray(value: unknown) {
+  return normalizeStringArray(value).map((item) =>
+    normalizeOptionalUrl(item, 'imageUrl'),
+  )
 }
 
 function normalizeSortOrder(value: number | undefined) {
@@ -123,6 +130,7 @@ function mapRow(row: PublicSiteRecipeRow): PublicSiteRecipe {
     sortOrder: row.sort_order ?? 0,
     isVisible: row.is_visible ?? true,
     sourceRecipeId: normalizeText(row.source_recipe_id),
+    recipeSourceImageUrls: normalizeHttpUrlArray(row.recipe_source_image_urls),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -168,6 +176,13 @@ function buildPatch(repId: string, input: UpsertPublicSiteRecipeInput) {
     ...(sortOrder !== undefined ? { sort_order: sortOrder } : {}),
     ...(input.isVisible !== undefined ? { is_visible: input.isVisible } : {}),
     source_recipe_id: normalizeText(input.sourceRecipeId),
+    ...(input.recipeSourceImageUrls !== undefined
+      ? {
+          recipe_source_image_urls: normalizeHttpUrlArray(
+            input.recipeSourceImageUrls,
+          ),
+        }
+      : {}),
   }
 }
 

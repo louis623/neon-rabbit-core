@@ -4865,6 +4865,44 @@
   -webkit-line-clamp: 3;
 }
 
+.recipeEditHeader,
+.recipeRemovalConfirmation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.recipeRemovalConfirmation {
+  flex: 1 1 100%;
+  justify-content: flex-start;
+  border: 1px solid rgba(180, 35, 24, 0.24);
+  border-radius: 12px;
+  background: rgba(255, 243, 241, 0.9);
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px;
+}
+
+.recipeRemoveConfirmButton {
+  border: 1px solid #b42318;
+  border-radius: 10px;
+  background: #b42318;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  padding: 8px 12px;
+}
+
+.recipeRemoveConfirmButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .recipeModeSelect {
   min-width: min(100%, 220px);
   border: 1px solid var(--nic-nac-border-strong);

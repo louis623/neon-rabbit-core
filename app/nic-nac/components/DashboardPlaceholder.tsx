@@ -1466,7 +1466,7 @@ export function getRecipeDraft(recipe?: PublicSiteRecipe | null): RecipeDraft {
     note: recipe?.note ?? '',
     isVisible: recipe?.isVisible ?? true,
     sourceRecipeId: recipe?.sourceRecipeId ?? '',
-    recipeCardImageUrls: [],
+    recipeCardImageUrls: recipe?.recipeSourceImageUrls ?? [],
   }
 }
 
@@ -1497,6 +1497,7 @@ export function getRecipeDraftSavePayload(
     sortOrder: options.sortOrder,
     isVisible: draft.isVisible,
     sourceRecipeId: draft.sourceRecipeId.trim(),
+    recipeSourceImageUrls: draft.recipeCardImageUrls.map((url) => url.trim()).filter(Boolean),
   }
 }
 
@@ -8041,8 +8042,10 @@ export function RecipesCard({
   onBuildDraft?: () => void
 }) {
   const [activeTab, setActiveTab] = useState<RecipeEditorTab>(
-    initialTab ?? (initialEditorMode === 'manual' ? 'edit' : 'upload'),
+    initialTab ?? (initialEditorMode === 'manual' ? 'edit' : 'current'),
   )
+  const [isRemovalConfirmationVisible, setIsRemovalConfirmationVisible] =
+    useState(false)
 
   if (state.status === 'error') {
     return (
@@ -8065,9 +8068,15 @@ export function RecipesCard({
   const canRemove = Boolean(draft.id)
   const isBuilderMode = activeTab === 'upload'
   const isEditMode = activeTab === 'edit'
+  const subtitle = isBuilderMode
+    ? 'Upload the two customer-facing food photos, then add recipe-source photos to read and format before you review and save.'
+    : isEditMode
+      ? 'Review the saved food photos and recipe details, make your changes, then save them to the Pantry.'
+      : 'Review the recipes already on your customer site, then choose one to edit or upload a new recipe.'
 
   function handleTabChange(nextTab: RecipeEditorTab) {
     setActiveTab(nextTab)
+    setIsRemovalConfirmationVisible(false)
     if (nextTab === 'upload') {
       onNewRecipe?.()
     }
@@ -8079,7 +8088,7 @@ export function RecipesCard({
         <div>
           <div className={styles.cardTitle}>Recipes</div>
           <div className={styles.cardSubtitle}>
-            Upload the two customer-facing food photos, then add recipe-source photos to read and format before you review and save.
+            {subtitle}
           </div>
         </div>
         <div className={styles.siteSettingsSaveActions}>
@@ -8134,15 +8143,6 @@ export function RecipesCard({
             >
               Upload new recipe
             </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={isEditMode}
-              className={`${styles.recipeEditorTab}${isEditMode ? ` ${styles.recipeEditorTabActive}` : ''}`}
-              onClick={() => handleTabChange('edit')}
-            >
-              Edit current recipes
-            </button>
           </div>
 
           <div className={styles.calendarHeader}>
@@ -8181,6 +8181,7 @@ export function RecipesCard({
                           className={styles.secondaryActionButton}
                           onClick={() => {
                             onSelectRecipe?.(recipe.id)
+                            setIsRemovalConfirmationVisible(false)
                             handleTabChange('edit')
                           }}
                         >
@@ -8336,27 +8337,21 @@ export function RecipesCard({
           </>
           ) : (
           <div className={styles.recipeManualEditPanel}>
-            <div className={styles.siteSettingsGrid}>
-              <label className={styles.sortFieldWide}>
-                <span className={styles.searchLabel}>Choose a recipe to edit</span>
-                <select
-                  className={styles.searchInput}
-                  value={draft.id ?? ''}
-                  onChange={(event) => {
-                    const recipeId = event.target.value
-                    if (recipeId) {
-                      onSelectRecipe?.(recipeId)
-                    }
-                  }}
-                >
-                  <option value="">Select a current recipe</option>
-                  {state.recipes.map((recipe) => (
-                    <option value={recipe.id} key={recipe.id}>
-                      {recipe.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            <div className={styles.recipeEditHeader}>
+              <div>
+                <div className={styles.walletSettingsTitle}>Editing {draft.title || 'recipe'}</div>
+                <div className={styles.siteSettingsPreviewNote}>
+                  Update what customers see, then save your changes when you are finished.
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.secondaryActionButton}
+                onClick={() => handleTabChange('current')}
+                disabled={Boolean(pendingKey)}
+              >
+                Back to current recipes
+              </button>
             </div>
 
             {draft.id ? (
@@ -8570,14 +8565,36 @@ export function RecipesCard({
               >
                 {pendingKey === 'save' ? 'Saving...' : 'Save recipe'}
               </button>
-              <button
-                type="button"
-                className={styles.secondaryActionButton}
-                onClick={() => draft.id && onRemove?.(draft.id)}
-                disabled={Boolean(pendingKey) || !canRemove}
-              >
-                Remove recipe
-              </button>
+              {isRemovalConfirmationVisible ? (
+                <div className={styles.recipeRemovalConfirmation} role="alert">
+                  <span>Remove “{draft.title}” permanently?</span>
+                  <button
+                    type="button"
+                    className={styles.secondaryActionButton}
+                    onClick={() => setIsRemovalConfirmationVisible(false)}
+                    disabled={Boolean(pendingKey)}
+                  >
+                    Keep recipe
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.recipeRemoveConfirmButton}
+                    onClick={() => draft.id && onRemove?.(draft.id)}
+                    disabled={Boolean(pendingKey) || !canRemove}
+                  >
+                    Yes, remove recipe
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.secondaryActionButton}
+                  onClick={() => setIsRemovalConfirmationVisible(true)}
+                  disabled={Boolean(pendingKey) || !canRemove}
+                >
+                  Remove recipe
+                </button>
+              )}
             </div>
               </>
             ) : (

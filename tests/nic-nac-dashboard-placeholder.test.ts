@@ -348,6 +348,7 @@ const RECIPES_READY_STATE = {
       sortOrder: 0,
       isVisible: true,
       sourceRecipeId: 'source-1',
+      recipeSourceImageUrls: ['https://cdn.example.com/chicken-card.jpg'],
       createdAt: '2026-06-19T12:00:00.000Z',
       updatedAt: '2026-06-19T12:00:00.000Z',
     },
@@ -372,6 +373,7 @@ const RECIPES_READY_STATE = {
       sortOrder: 1,
       isVisible: false,
       sourceRecipeId: 'source-2',
+      recipeSourceImageUrls: [],
       createdAt: '2026-06-19T12:00:00.000Z',
       updatedAt: '2026-06-19T12:00:00.000Z',
     },
@@ -2281,13 +2283,14 @@ describe('DashboardPlaceholder', () => {
           helperMessage: 'Recipe saved.',
         },
         statusMessage: 'Recipe saved.',
+        initialTab: 'upload',
       }),
     )
 
     expect(html).toContain('Recipes')
     expect(html).toContain('Current recipes')
     expect(html).toContain('Upload new recipe')
-    expect(html).toContain('Edit current recipes')
+    expect(html).not.toContain('Edit current recipes')
     expect(html).not.toContain('Pantry order')
     expect(html).not.toContain('Add recipe')
     expect(html).toContain('Bling Kitchen Chicken Dip')
@@ -2324,7 +2327,7 @@ describe('DashboardPlaceholder', () => {
     const html = renderToStaticMarkup(
       createElement(RecipesCard, {
         state: RECIPES_READY_STATE,
-        draft: getRecipeDraft(RECIPES_READY_STATE.recipes[1]),
+        draft: getRecipeDraft(RECIPES_READY_STATE.recipes[0]),
         initialEditorMode: 'manual',
         actionState: {
           pendingKey: null,
@@ -2337,11 +2340,10 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Recipe editor')
     expect(html).toContain('Current recipes')
     expect(html).toContain('Upload new recipe')
-    expect(html).toContain('Edit current recipes')
-    expect(html).toContain('Choose a recipe to edit')
-    expect(html).toContain('Select a current recipe')
-    expect(html).toContain('Bling Kitchen Chicken Dip')
-    expect(html).toContain('Hidden Draft Dessert')
+    expect(html).not.toContain('Edit current recipes')
+    expect(html).toContain('Back to current recipes')
+    expect(html).toContain('Editing Bling Kitchen Chicken Dip')
+    expect(html).not.toContain('Hidden Draft Dessert')
     expect(html).toContain('Title')
     expect(html).toContain('Category')
     expect(html).toContain('Prep time')
@@ -2359,9 +2361,11 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Outside food photo for Pantry card')
     expect(html).toContain('Inside food photo for recipe view')
     expect(html).toContain('Recipe-source photos')
+    expect(html).toContain('https://cdn.example.com/chicken-card.jpg')
     expect(html).toContain('Save recipe')
     expect(html.match(/Save recipe/g)).toHaveLength(1)
     expect(html).toContain('Remove recipe')
+    expect(html).not.toContain('Yes, remove recipe')
     expect(html).not.toContain('Advanced edit')
     expect(html).not.toContain('New manual recipe')
     expect(html).not.toContain('Recipe Preview')
@@ -2383,6 +2387,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Hidden Draft Dessert')
     expect(html).toContain('Edit this recipe')
     expect(html.match(/Edit this recipe/g)).toHaveLength(2)
+    expect(html).not.toContain('Edit current recipes')
   })
 
   it('renders the site settings card with profile, copy, and social controls', () => {
