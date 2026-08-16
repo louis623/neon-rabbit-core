@@ -1103,3 +1103,12 @@ Verification passed:
 - Stable-demo pressure smoke passed against the deployed alias with conversation `6ea818bc-820b-4476-acfd-5223eb336f76`, run tag `0703200456`, and cleanup of 147 synthetic calendar rows.
 - Pressure smoke verified one-time shows, exact-count two-Tuesday repeat, weekly recurring series, weekday recurring series, code/collection updates, single-occurrence skip, bounded pause, one-time cancel, future-series cancel, public-site visibility, and cleanup.
 - Carry-forward for Trade Board and Trade tools: apply the same durable workflow contract, active tool retention, model-input sanitization, DB assertions, public visibility checks, and deployed pressure smoke pattern before declaring those tools hardened.
+
+### August 16, 2026 Nic-Nac Conversation Control Simplification
+
+- Released `b0f5c1d2 fix: simplify Nic-Nac conversation controls` on `codex/nic-nac-trade-hardening`.
+- The workspace home and compact Nic-Nac headers now use one visible **Clear conversation** button. It starts a new empty conversation; the redundant manual refresh button is removed. Passive refresh-on-focus/online/visibility behavior remains unchanged.
+- The workspace greeting now uses the rep profile display name: `Hi {rep name}, how can I help you today?` (with `Hi there` only while profile data is unavailable).
+- Validation passed: 119 focused workspace/Nic-Nac tests and `npm run build` with the active-branch safety gate.
+- Production deployment: `dpl_392QjSeTYmG7wCio8saGH7ksGgez` (`https://sparkle-suite-orfl311rg-louis-2849s-projects.vercel.app`), serving commit `b0f5c1d2`. Both `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to it.
+- Reviewer UI smoke remains blocked: `/start` routes to the prelaunch surface with no reviewer controls, and the existing browser workspace is authenticated. No customer or Louis account was used to bypass the known reviewer-token limitation.

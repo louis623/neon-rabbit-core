@@ -3895,3 +3895,20 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Application commits `a24bc545 fix: keep customer subpages on custom domains` and `f3f27d69 fix: preserve custom-domain navigation targets` are deployed in production as `dpl_6jf82p7d8GEeVTKHmdj9TDS1NSf9`.
 - Vercel assigned `www.yoursparklesuite.com`, `yoursparklesuite.com`, `theblingkitchen.com`, `www.theblingkitchen.com`, and Bri's custom-domain aliases to that exact deployment.
 - An unauthenticated Codex-browser smoke verified Heather’s live Home, `/trade`, `/join`, and `/in-the-pantry` pages and their internal customer navigation. No Workspace or Control Center account was used.
+
+---
+
+# August 16, 2026 - Nic-Nac Conversation Control Simplification
+
+## Completed
+
+- Replaced the workspace home’s refresh and plus icons with one clearly labeled **Clear conversation** control. It invokes the existing safe new-conversation rollover, clearing the current chat to begin a new conversation.
+- Removed only the redundant manual refresh signal. Nic-Nac still refreshes conversation content passively on focus, connectivity, and page visibility changes.
+- Applied the same single-control treatment to the compact Nic-Nac header and made its control a readable text pill.
+- Personalized the workspace greeting from the rep profile: `Hi {rep name}, how can I help you today?`.
+
+## Verification and release
+
+- Focused workspace/Nic-Nac coverage passed: 119 tests across `nic-nac-workspace-shell`, `nic-nac-branding`, and `nic-nac-dashboard-placeholder`. `npm run build` passed including the allowlisted-branch guard.
+- Released commit `b0f5c1d2 fix: simplify Nic-Nac conversation controls` to production deployment `dpl_392QjSeTYmG7wCio8saGH7ksGgez` (`https://sparkle-suite-orfl311rg-louis-2849s-projects.vercel.app`). Vercel confirmed both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` resolve to that deployment.
+- Browser reviewer smoke could not visually verify the authenticated workspace: `/start` redirected to the prelaunch page with no reviewer-smoke controls, and a workspace session was already authenticated. This was not bypassed with Louis’s or Heather’s account; the known reviewer-token configuration remains the blocker.
