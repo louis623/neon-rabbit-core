@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Customer-list action uniformity
+
+- Refined the three Customer List controls—Add customer, Import spreadsheet, and Download full list (CSV)—into one compact, equal-size action group.
+- The group uses the canonical Sparkle Suite bright pink (`#EE2C9B`), matching 190px/40px desktop controls, 8px spacing, and a responsive full-width mobile stack.
+- Focused dashboard verification passed 102 tests and the production build completed. Commit `3eb63a4e style: unify customer list actions` is deployed as `dpl_3CGbPntNPGUYJfBaVXMG8u8L3B4f`; both Sparkle Suite aliases are assigned. A reviewer-safe live screenshot confirmed the final rendered layout without using a personal or customer account.
+
+---
+
 ## August 16, 2026 - Customer-list ownership export
 
 - Added a permanent **Download full list (CSV)** control to the rep Workspace at Tools → Customer List, beside the existing spreadsheet import control.

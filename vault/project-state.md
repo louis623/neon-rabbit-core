@@ -1,5 +1,16 @@
 # Project State
 
+## August 16 Customer-list action uniformity
+
+- **Compact primary actions:** Customer List now groups Add customer, Import spreadsheet, and Download full list (CSV) in one compact action set instead of spreading them across the heading row.
+- **Visual contract:** The three actions have matching 190px desktop dimensions, 40px height, consistent icon/text alignment, 8px gaps, bright Sparkle Suite pink fill, white text, visible focus treatment, and a clean full-width mobile stack.
+- **Release:** application commit `3eb63a4e style: unify customer list actions` is Vercel production deployment `dpl_3CGbPntNPGUYJfBaVXMG8u8L3B4f`. Vercel assigned `www.yoursparklesuite.com` and `yoursparklesuite.com` to that exact deployment.
+- **Verification:** 102 focused dashboard tests and the production build passed. A live reviewer-safe workspace screenshot on `www.yoursparklesuite.com` visibly confirmed the equal pink action group at Tools → Customer List. No personal or customer account was used.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Customer-list ownership export
 
 - **Rep-owned data export:** The Workspace **Tools → Customer List** now includes **Download full list (CSV)**. It is an authenticated, `no-store` download that returns the signed-in rep's entire customer list, not only the short batch currently displayed on screen.
