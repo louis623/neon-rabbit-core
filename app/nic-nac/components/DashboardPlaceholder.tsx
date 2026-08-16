@@ -7407,6 +7407,41 @@ export function SiteSettingsCard({
   onWriteAboutNarrative?: () => void
   onSave?: () => void
 }) {
+  const tickerTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const [tickerLinkText, setTickerLinkText] = useState('')
+  const [tickerLinkUrl, setTickerLinkUrl] = useState('')
+  const [tickerLinkError, setTickerLinkError] = useState<string | null>(null)
+
+  const addTickerText = (value: string) => {
+    if (!onDraftChange) return
+    const currentValue = draft?.tickerText ?? ''
+    const textarea = tickerTextareaRef.current
+    const start = textarea?.selectionStart ?? currentValue.length
+    const end = textarea?.selectionEnd ?? start
+    const prefix = currentValue.slice(0, start)
+    const suffix = currentValue.slice(end)
+    onDraftChange({ tickerText: `${prefix}${value}${suffix}` })
+    window.requestAnimationFrame(() => {
+      textarea?.focus()
+      textarea?.setSelectionRange(start + value.length, start + value.length)
+    })
+  }
+
+  const addLinkedTickerAnnouncement = () => {
+    const text = tickerLinkText.trim()
+    if (!text) return
+    try {
+      const url = new URL(tickerLinkUrl.trim())
+      if (!['http:', 'https:'].includes(url.protocol)) throw new Error('unsupported')
+      addTickerText(`${draft?.tickerText.trim() ? '\n' : ''}[${text}](${url.href})`)
+      setTickerLinkText('')
+      setTickerLinkUrl('')
+      setTickerLinkError(null)
+    } catch {
+      setTickerLinkError('Use a complete https:// or http:// link.')
+    }
+  }
+
   if (state.status === 'error') {
     return (
       <div className={styles.rosterFallback}>
@@ -7503,6 +7538,7 @@ export function SiteSettingsCard({
           <label className={styles.sortFieldWide}>
             <span className={styles.searchLabel}>Announcement ticker messages</span>
             <textarea
+              ref={tickerTextareaRef}
               className={styles.siteSettingsTextarea}
               value={draft.tickerText}
               onChange={(event) =>
@@ -7510,9 +7546,53 @@ export function SiteSettingsCard({
               }
             />
             <span className={styles.helperNote}>
-              Use one announcement per line. Emojis work. To make one clickable,
-              add a link like [Shop the new drop](https://example.com).
+              Use one announcement per line. Add emojis and clickable announcements with the tools below.
             </span>
+            <div className={styles.tickerComposer}>
+              <div>
+                <span className={styles.searchLabel}>Add an emoji</span>
+                <div className={styles.tickerEmojiRow}>
+                  {['✨', '💎', '🎥', '🛍️', '🎉', '📣', '⏰', '💖'].map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      className={styles.tickerEmojiButton}
+                      onClick={() => addTickerText(emoji)}
+                      aria-label={`Add ${emoji} to the announcement ticker`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className={styles.searchLabel}>Add a clickable announcement</span>
+                <div className={styles.tickerLinkBuilder}>
+                  <input
+                    className={styles.searchInput}
+                    value={tickerLinkText}
+                    onChange={(event) => setTickerLinkText(event.target.value)}
+                    placeholder="What should customers see?"
+                  />
+                  <input
+                    className={styles.searchInput}
+                    type="url"
+                    value={tickerLinkUrl}
+                    onChange={(event) => setTickerLinkUrl(event.target.value)}
+                    placeholder="https://where-it-goes.com"
+                  />
+                  <button
+                    type="button"
+                    className={styles.tickerLinkButton}
+                    onClick={addLinkedTickerAnnouncement}
+                    disabled={!tickerLinkText.trim() || !tickerLinkUrl.trim()}
+                  >
+                    Add link
+                  </button>
+                </div>
+                {tickerLinkError ? <span className={styles.tickerLinkError}>{tickerLinkError}</span> : null}
+              </div>
+            </div>
           </label>
         </div>
         <div className={styles.siteSettingsToggleGrid}>

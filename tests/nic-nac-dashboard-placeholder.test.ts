@@ -2406,7 +2406,11 @@ describe('DashboardPlaceholder', () => {
     )
     expect(html).toContain('Show the “Join My Team” recruiting page on your public site')
     expect(html).toContain('Announcement ticker messages')
-    expect(html).toContain('Use one announcement per line. Emojis work.')
+    expect(html).toContain('Use one announcement per line. Add emojis and clickable announcements with the tools below.')
+    expect(html).toContain('Add an emoji')
+    expect(html).toContain('Add a clickable announcement')
+    expect(html).toContain('What should customers see?')
+    expect(html).toContain('Add link')
     expect(html).toContain('Homepage photos and videos')
     expect(html).toContain('About section narrative')
     expect(html).toContain('Build this with Nic-Nac: share your story')
@@ -2474,7 +2478,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Preview customer site')
     expect(html).toContain('Save site settings')
     expect(html).not.toContain('No unsaved changes')
-    expect(html).not.toContain('disabled=""')
+    expect(html).not.toMatch(/class="[^"]*siteSettingsPreviewButton[^"]*" disabled/)
+    expect(html).not.toMatch(/class="[^"]*siteSettingsSaveButton[^"]*" disabled/)
   })
 
   it('derives manual site settings save status text', () => {

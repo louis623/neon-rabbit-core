@@ -4657,6 +4657,70 @@
   border-color: var(--nic-nac-border-input-focus);
 }
 
+.tickerComposer {
+  display: grid;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.tickerEmojiRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.tickerEmojiButton,
+.tickerLinkButton {
+  border: 1px solid var(--nic-nac-border-strong);
+  border-radius: 10px;
+  background: var(--nic-nac-surface-input);
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-weight: 800;
+}
+
+.tickerEmojiButton {
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.tickerEmojiButton:hover,
+.tickerEmojiButton:focus-visible,
+.tickerLinkButton:hover:not(:disabled),
+.tickerLinkButton:focus-visible {
+  border-color: var(--nic-nac-accent);
+  background: #fff6fa;
+}
+
+.tickerLinkBuilder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.tickerLinkButton {
+  cursor: pointer;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.tickerLinkButton:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.tickerLinkError {
+  display: block;
+  margin-top: 6px;
+  color: #b4235a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .recipeEditorLayout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -6107,6 +6171,14 @@
 }
 
 @media (max-width: 720px) {
+  .tickerLinkBuilder {
+    grid-template-columns: 1fr;
+  }
+
+  .tickerLinkButton {
+    min-height: 40px;
+  }
+
   .workspaceSectionPage {
     gap: 10px;
     padding: 10px 12px 14px;
