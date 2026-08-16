@@ -4015,7 +4015,7 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 # August 16, 2026 - Four-Provider Customer Video Support
 
-## Completed pending release
+## Completed and released
 
 - Expanded shared customer-site video rendering from TikTok/YouTube-only to four explicit providers: TikTok, YouTube, Instagram Reels/video posts, and Facebook Reels/videos. The same renderer is used for Showcase and all three About short-video slots, so current and future Sparkle Suite sites share the support.
 - TikTok and YouTube now auto-play muted, loop, and expose no pause control; TikTok no longer sends an offscreen pause command. Instagram and Facebook use their native player URLs and controls; no unsupported cross-origin player command is claimed.
@@ -4026,4 +4026,5 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 - Focused public template, Site Settings, media-validation, and Help suites passed: 4 files, 180 tests.
 - `npm run build` completed production compilation after the allowlisted-branch safety guard.
+- Released application commit `eed217d1 feat: support social short video embeds` as Vercel production deployment `dpl_9HgGBM56eLRfa543qWXvhwtJvRn1`. Both Sparkle Suite domains are assigned to that deployment; the canonical Site Settings route and the live BlingKitchen customer page both returned 200, and the apex Site Settings URL returned the expected 307 canonical redirect.
 - Reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration. No Louis or customer session was used as a workaround.
