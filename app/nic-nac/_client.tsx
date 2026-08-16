@@ -288,7 +288,6 @@ export default function NicNacClient({
   const [rolloverInFlight, setRolloverInFlight] = useState(false)
   const rolloverInFlightRef = useRef(false)
   const wasStreamingRef = useRef(false)
-  const [refreshSignal, setRefreshSignal] = useState(0)
 
   useEffect(() => {
     if (!isDesktop || !shouldKeepDesktopNicNacOpen) return
@@ -788,11 +787,6 @@ export default function NicNacClient({
     activateConversation(newConversationId(), [])
   }, [activateConversation, chatState])
 
-  const handleRefreshConversation = useCallback(() => {
-    if (chatState.isStreaming || chatState.hasPendingApproval || rolloverInFlight) return
-    setRefreshSignal((current) => current + 1)
-  }, [chatState, rolloverInFlight])
-
   const handleLaunchNicNacAction = useCallback(
     (action: WorkspaceLaunchAction) => {
       const prompt = getLaunchPromptForWorkspaceAction(action)
@@ -926,7 +920,6 @@ export default function NicNacClient({
       initialMessages={initialMessages!}
       onChatStateChange={setChatState}
       onRolloverRecommended={rolloverConversation}
-      refreshSignal={refreshSignal}
       resetSignal={conversationId!}
       launchPrompt={pendingLaunchPrompt}
       onLaunchPromptConsumed={() => setPendingLaunchPrompt(null)}
@@ -1029,7 +1022,6 @@ export default function NicNacClient({
         onLaunchNicNacAction={handleLaunchNicNacAction}
         onSendNicNacPrompt={handleSendNicNacPrompt}
         onNewConversation={handleNewConversation}
-        onRefreshConversation={handleRefreshConversation}
         conversationControlsDisabled={newDisabled}
         desktopChat={
           isDesktop && (desktopOpen || shouldKeepDesktopNicNacOpen)
@@ -1058,7 +1050,6 @@ export default function NicNacClient({
             variant="mobile"
             onClose={() => setMobileOpen(false)}
             onNewConversation={handleNewConversation}
-            onRefreshConversation={handleRefreshConversation}
             newConversationDisabled={newDisabled}
           >
             {chatContent}

@@ -2285,7 +2285,6 @@ export type DashboardPlaceholderProps = {
   onLaunchNicNacAction?: (action: WorkspaceLaunchAction) => void
   onSendNicNacPrompt?: (prompt: string) => void
   onNewConversation?: () => void
-  onRefreshConversation?: () => void
   conversationControlsDisabled?: boolean
   desktopChat?: ReactNode
 }
@@ -2309,7 +2308,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     onLaunchNicNacAction,
     onSendNicNacPrompt,
     onNewConversation,
-    onRefreshConversation,
     conversationControlsDisabled = false,
     desktopChat,
   } = props
@@ -5691,7 +5689,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               onOpenPublicSite={handleOpenCustomerSitePreview}
               onOpenHelp={() => setActiveSection('help-resources')}
               onNewConversation={onNewConversation}
-              onRefreshConversation={onRefreshConversation}
+              repName={repProfileState.displayName ?? siteSettingsState.settings?.displayName ?? null}
               conversationControlsDisabled={conversationControlsDisabled}
             />
           ) : (
@@ -5880,8 +5878,8 @@ function ConceptHomeWorkspace({
   onOpenPublicSite,
   onOpenHelp,
   onNewConversation,
-  onRefreshConversation,
   conversationControlsDisabled,
+  repName,
 }: {
   chat?: ReactNode | null
   tradeRequestsCount: number
@@ -5895,8 +5893,8 @@ function ConceptHomeWorkspace({
   onOpenPublicSite: () => void
   onOpenHelp: () => void
   onNewConversation?: () => void
-  onRefreshConversation?: () => void
   conversationControlsDisabled: boolean
+  repName: string | null
 }) {
   return (
     <section className={styles.conceptHome} aria-label="Nic-Nac first workspace">
@@ -5932,51 +5930,21 @@ function ConceptHomeWorkspace({
               </span>
               <span>Nic-Nac</span>
             </h1>
-            {onNewConversation || onRefreshConversation ? (
+            {onNewConversation ? (
               <div className={styles.nicNacHeroActions} aria-label="Nic-Nac conversation controls">
-                {onRefreshConversation ? (
-                  <button
-                    type="button"
-                    onClick={onRefreshConversation}
-                    disabled={conversationControlsDisabled}
-                    aria-label="Refresh conversation"
-                    title="Refresh conversation"
-                  >
-                    <svg viewBox="0 0 14 14" aria-hidden="true">
-                      <path
-                        d="M11.75 5.5 A5 5 0 1 0 12 7 M11.75 1.75 V 5.5 H8"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                ) : null}
-                {onNewConversation ? (
-                  <button
-                    type="button"
-                    onClick={onNewConversation}
-                    disabled={conversationControlsDisabled}
-                    aria-label="New conversation"
-                    title="New conversation"
-                  >
-                    <svg viewBox="0 0 14 14" aria-hidden="true">
-                      <path
-                        d="M7 1.5 V 12.5 M 1.5 7 H 12.5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
-                ) : null}
+                <button
+                  type="button"
+                  onClick={onNewConversation}
+                  disabled={conversationControlsDisabled}
+                  aria-label="Clear conversation with Nic-Nac to start a new conversation"
+                  title="Clear conversation with Nic-Nac to start a new conversation"
+                >
+                  Clear conversation
+                </button>
               </div>
             ) : null}
           </div>
-          <p>How can I help you today?</p>
+          <p>Hi {repName?.trim() || 'there'}, how can I help you today?</p>
           <div className={styles.mobileHeroQuickActions}>
             <button type="button" onClick={() => onLaunchAction('add_trade_piece')}>
               <span className={styles.railLaunchPieceIcon} aria-hidden="true">+</span>

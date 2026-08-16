@@ -506,7 +506,7 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(html).toContain('How can I help you today?')
+    expect(html).toContain('Hi there, how can I help you today?')
     expect(html).not.toContain('Ask Nic-Nac anything...')
     expect(html).not.toContain('aria-label="Notifications"')
     expect(html).toContain('Sparkle Suite')
@@ -628,6 +628,7 @@ describe('DashboardPlaceholder', () => {
     expect(source).not.toContain('publicSitePreviewImageUrl')
     expect(html).not.toContain('https://cdn.example.com/hero.jpg')
     expect(html).not.toContain('/nic-nac/concept-')
+    expect(html).toContain('Hi Louis, how can I help you today?')
   })
 
   it('renders Finder-matching jewelry library search controls and board actions', () => {
@@ -1294,7 +1295,7 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(html).toContain('How can I help you today?')
+    expect(html).toContain('Hi there, how can I help you today?')
     expect(html).not.toContain('Ask Nic-Nac anything...')
     expect(html).not.toContain('aria-label="Notifications"')
     expect(html).toContain('Public site')
@@ -2780,7 +2781,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Ready after checkout')
     expect(html).not.toContain('Continue in Site Settings')
     expect(html).not.toContain('After checkout')
-    expect(html).toContain('How can I help you today?')
+    expect(html).toContain('Hi there, how can I help you today?')
   })
 
   it('keeps customer site looks in Site Settings instead of Help & Resources', () => {

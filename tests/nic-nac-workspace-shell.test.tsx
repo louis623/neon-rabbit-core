@@ -92,6 +92,10 @@ describe('Nic-Nac workspace shell reset', () => {
       ),
       'utf8',
     )
+    const workspaceHeaderSource = source.slice(
+      source.indexOf('function WorkspaceAppHeader'),
+      source.indexOf('function ConceptHomeWorkspace'),
+    )
 
     expect(source).toContain('function WorkspaceAppHeader')
     expect(source).toContain('aria-label="Go to Nic-Nac home"')
@@ -106,7 +110,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(source).toContain("'Log out'")
     expect(source).not.toContain('Preview site')
     expect(source).not.toContain('Sparkle with us.')
-    expect(source).not.toContain('Secret Rep ID Number')
+    expect(workspaceHeaderSource).not.toContain('Secret Rep ID Number')
     expect(css).toContain('.appHeader')
     expect(css).toContain('.appBrand')
     expect(css).not.toContain('.appSearch')
@@ -118,7 +122,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(hasDeclaration(css, '.main', 'padding: 6px')).toBe(true)
   })
 
-  it('keeps Nic-Nac conversation controls beside the central workspace heading', () => {
+  it('keeps one clear-conversation control beside the personalized workspace heading', () => {
     const client = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/_client.tsx'),
       'utf8',
@@ -129,11 +133,12 @@ describe('Nic-Nac workspace shell reset', () => {
     )
 
     expect(client).toContain('onNewConversation={handleNewConversation}')
-    expect(client).toContain('onRefreshConversation={handleRefreshConversation}')
-    expect(client).toContain('refreshSignal={refreshSignal}')
+    expect(client).not.toContain('onRefreshConversation={handleRefreshConversation}')
+    expect(client).not.toContain('refreshSignal={refreshSignal}')
     expect(client).not.toContain('<NicNacColumn\n                  variant="desktop"')
-    expect(header).toContain('aria-label="New conversation"')
-    expect(header).toContain('aria-label="Refresh conversation"')
+    expect(header).toContain('Clear conversation with Nic-Nac to start a new conversation')
+    expect(header).toContain('Clear conversation')
+    expect(header).not.toContain('Refresh conversation')
   })
 
   it('does not use the espresso gradient as the dominant shell surface', () => {
