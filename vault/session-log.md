@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Linked announcement ticker
+
+- Replaced the generic ticker labels in Customer-facing site setup with the plain-language **Announcement ticker and Join Team page**, **Announcement ticker messages**, and **Show announcement ticker on your public site**.
+- The ticker now accepts one announcement per line, normal emoji, and a clear clickable-link pattern: `[Shop the new drop](https://example.com)`. Existing pipe-separated entries still render. The public Homepage, Trade, and Join scripts parse the format, only permit `http`/`https` links, and make linked messages visibly underlined.
+- Focused coverage passed: 209 Site Settings and Amethyst Homepage/Trade/Join template tests. Commit `4129aba1 feat: support linked announcement tickers` is production deployment `dpl_HuhTRc7bFCC4EmJjKSHMVXRo5aK7`; both Sparkle Suite aliases resolve to that exact deployment. The deployed public ticker script was verified to contain the parser and link class. The live Site Settings route returned 200 without using an account. Authenticated reviewer-browser confirmation remains blocked by the known too-short reviewer token.
+
+---
+
 ## August 16, 2026 - Plain-language Join Team setting
 
 - Replaced the ambiguous Site Settings checkbox label **Join page visible** with **Show the “Join My Team” recruiting page on your public site**. The setting controls the public recruiting page and its associated Join Team links, not the announcement ticker.

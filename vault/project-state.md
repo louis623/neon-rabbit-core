@@ -1,5 +1,15 @@
 # Project State
 
+## August 16 Linked announcement ticker
+
+- **Clear ticker controls:** Site Settings now uses **Announcement ticker and Join Team page**, **Announcement ticker messages**, and **Show announcement ticker on your public site**—removing the prior generic ticker wording.
+- **Emoji and links:** Reps can use normal emoji in every announcement. Add one announcement per line; an item becomes a safe, underlined link with Markdown-style text such as `[Shop the new drop](https://example.com)`. Existing pipe-separated ticker copy remains supported. Only `http` and `https` destinations render as links.
+- **Release and verification:** application commit `4129aba1 feat: support linked announcement tickers` is Vercel production deployment `dpl_HuhTRc7bFCC4EmJjKSHMVXRo5aK7`. Focused Site Settings and Amethyst Homepage/Trade/Join template coverage passed (209 tests). The live `homepage.jsx` script contains the link parser; `https://www.yoursparklesuite.com/nic-nac?section=site-settings` returned 200 and the apex canonically redirects there. Authenticated reviewer-browser visual confirmation remains blocked by the known too-short reviewer-token configuration; no personal or customer account was used.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Plain-language Join Team setting
 
 - **Clear site-setting label:** The former ambiguous **Join page visible** checkbox now reads **Show the “Join My Team” recruiting page on your public site**. It controls the public recruiting page and its Join Team links; it does not affect the promotional ticker.
