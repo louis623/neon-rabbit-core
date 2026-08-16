@@ -10295,27 +10295,29 @@ export function CustomerRosterCard({
           <h2 className={styles.rosterHeading}>Customer List</h2>
           <p className={styles.rosterIntro}>Keep the details your customers choose to share in one place.</p>
         </div>
-        <button type="button" className={styles.bulkActionButton} onClick={openCreate} disabled={!onCreate}>
-          Add customer
-        </button>
-        <label className={styles.bulkActionButton}>
-          Import spreadsheet
-          <input
-            className={styles.customerImportInput}
-            type="file"
-            accept=".csv,.xlsx"
-            onChange={handleImportFile}
-            disabled={!onImport || importState?.pending}
-          />
-        </label>
-        <a
-          className={styles.bulkActionButton}
-          href="/api/nic-nac/customer-audience?format=csv"
-          download
-        >
-          <Download size={16} aria-hidden="true" />
-          Download full list (CSV)
-        </a>
+        <div className={styles.rosterPrimaryActions}>
+          <button type="button" className={styles.bulkActionButton} onClick={openCreate} disabled={!onCreate}>
+            Add customer
+          </button>
+          <label className={styles.bulkActionButton}>
+            Import spreadsheet
+            <input
+              className={styles.customerImportInput}
+              type="file"
+              accept=".csv,.xlsx"
+              onChange={handleImportFile}
+              disabled={!onImport || importState?.pending}
+            />
+          </label>
+          <a
+            className={styles.bulkActionButton}
+            href="/api/nic-nac/customer-audience?format=csv"
+            download
+          >
+            <Download size={16} aria-hidden="true" />
+            Download full list (CSV)
+          </a>
+        </div>
       </div>
       <div className={styles.metricGrid}>
         <div className={styles.metricBlock}>

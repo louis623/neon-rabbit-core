@@ -2454,6 +2454,40 @@
   gap: 12px;
 }
 
+.rosterPrimaryActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.rosterPrimaryActions .bulkActionButton {
+  box-sizing: border-box;
+  display: inline-flex;
+  width: 190px;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-color: var(--workspace-accent);
+  background: var(--workspace-accent);
+  color: #fff;
+  box-shadow: 0 7px 16px rgba(238, 44, 155, 0.22);
+  text-decoration: none;
+}
+
+.rosterPrimaryActions .bulkActionButton:hover {
+  border-color: #d81881;
+  background: #d81881;
+}
+
+.rosterPrimaryActions .bulkActionButton:focus-visible {
+  outline: 3px solid rgba(238, 44, 155, 0.28);
+  outline-offset: 2px;
+}
+
 .rosterHeading,
 .editorHeading {
   margin: 0;
@@ -6007,6 +6041,16 @@
 
   .liveQueueActionRow > * {
     flex: 1 1 100%;
+  }
+
+  .rosterPrimaryActions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: stretch;
+  }
+
+  .rosterPrimaryActions .bulkActionButton {
+    width: 100%;
   }
 }
 
