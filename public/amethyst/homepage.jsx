@@ -799,6 +799,11 @@ function AboutPortraitCard({ fallbackCaption }) {
         className="hp-about-portrait-image"
         loading="lazy"
         src={slot.mediaUrl}
+        style={{
+          "--hp-about-portrait-focus-x": `${slot?.portraitFocusX ?? 50}%`,
+          "--hp-about-portrait-focus-y": `${slot?.portraitFocusY ?? 20}%`,
+          "--hp-about-portrait-zoom": slot?.portraitZoom ?? 1.18,
+        }}
       />
       <figcaption className="hp-about-media-caption">
         {slot?.caption || fallbackCaption}

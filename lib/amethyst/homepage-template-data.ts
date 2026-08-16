@@ -15,6 +15,9 @@ export interface AmethystHomepageMediaSlot {
   caption: string
   href: string
   mediaUrl?: string
+  portraitFocusX?: number
+  portraitFocusY?: number
+  portraitZoom?: number
 }
 
 export interface AmethystHomepageSocialLink {

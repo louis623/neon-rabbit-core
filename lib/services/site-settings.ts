@@ -140,6 +140,17 @@ function normalizePublicMediaUrl(value: unknown) {
   return ''
 }
 
+function normalizePortraitFramingValue(
+  value: unknown,
+  fallback: number,
+  minimum: number,
+  maximum: number,
+) {
+  const parsed = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(parsed)) return fallback
+  return Math.min(maximum, Math.max(minimum, Math.round(parsed * 100) / 100))
+}
+
 export function normalizePublicSiteMediaSlots(
   value: unknown,
   options: { rejectInvalidUrls?: boolean } = {},
@@ -191,6 +202,20 @@ export function normalizePublicSiteMediaSlots(
     const caption =
       typeof row?.caption === 'string' ? row.caption.trim().slice(0, 240) : ''
 
+    const hasPortraitFraming =
+      key === 'about_1' &&
+      ['portraitFocusX', 'portraitFocusY', 'portraitZoom'].some(
+        (framingKey) => row?.[framingKey] !== undefined,
+      )
+    const portraitFraming =
+      hasPortraitFraming
+        ? {
+            portraitFocusX: normalizePortraitFramingValue(row?.portraitFocusX, 50, 0, 100),
+            portraitFocusY: normalizePortraitFramingValue(row?.portraitFocusY, 20, 0, 100),
+            portraitZoom: normalizePortraitFramingValue(row?.portraitZoom, 1.18, 1, 1.5),
+          }
+        : {}
+
     return {
       key,
       caption: key === 'about_1' ? caption : '',
@@ -199,6 +224,7 @@ export function normalizePublicSiteMediaSlots(
       // portrait card, and the public template never renders these legacy URLs.
       imageUrl: key === 'showcase' ? '' : imageUrl,
       videoUrl: key === 'about_1' ? '' : videoUrl,
+      ...portraitFraming,
     }
   })
 }

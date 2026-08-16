@@ -539,6 +539,9 @@ export interface PublicSiteMediaSlot {
   caption: string
   imageUrl: string
   videoUrl: string
+  portraitFocusX?: number
+  portraitFocusY?: number
+  portraitZoom?: number
 }
 
 export type SiteAppearancePreset =

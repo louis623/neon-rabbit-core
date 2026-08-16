@@ -2648,10 +2648,10 @@ body.bg-quartz-paper .hp-step-num {
    * a second image edge.  This applies to every rep rather than baking a
    * special crop into one customer's image.
    */
-  object-position: center 42%;
-  transform: scale(1.18);
+  object-position: var(--hp-about-portrait-focus-x, 50%) var(--hp-about-portrait-focus-y, 20%);
+  transform: scale(var(--hp-about-portrait-zoom, 1.18));
   /* Keep a comfortable amount of headroom after the subject-forward zoom. */
-  transform-origin: center 20%;
+  transform-origin: var(--hp-about-portrait-focus-x, 50%) var(--hp-about-portrait-focus-y, 20%);
 }
 
 .hp-about-portrait-card::after {

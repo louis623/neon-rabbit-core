@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import type { ChangeEvent, FormEvent, ReactNode } from 'react'
+import type { ChangeEvent, CSSProperties, FormEvent, ReactNode } from 'react'
 import {
   useCallback,
   useEffect,
@@ -1689,6 +1689,54 @@ const PUBLIC_SITE_MEDIA_MIME_TYPES = new Set([
 ])
 const DIRECT_PUBLIC_SITE_MEDIA_MAX_BYTES = 2_700_000
 const COMPRESSED_PUBLIC_SITE_MEDIA_MAX_BYTES = 2_400_000
+const DEFAULT_PORTRAIT_FRAMING = {
+  portraitFocusX: 50,
+  portraitFocusY: 20,
+  portraitZoom: 1.18,
+}
+
+type BrowserFaceDetector = {
+  detect: (image: HTMLImageElement) => Promise<Array<{ boundingBox: DOMRectReadOnly }>>
+}
+
+type BrowserFaceDetectorConstructor = new (options?: {
+  fastMode?: boolean
+  maxDetectedFaces?: number
+}) => BrowserFaceDetector
+
+async function getSmartPortraitFraming(file: File) {
+  const objectUrl = URL.createObjectURL(file)
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const nextImage = new Image()
+      nextImage.onload = () => resolve(nextImage)
+      nextImage.onerror = () => reject(new Error('Unable to read that photo.'))
+      nextImage.src = objectUrl
+    })
+    const FaceDetector = (window as unknown as {
+      FaceDetector?: BrowserFaceDetectorConstructor
+    }).FaceDetector
+    if (!FaceDetector) return DEFAULT_PORTRAIT_FRAMING
+
+    const [face] = await new FaceDetector({ fastMode: true, maxDetectedFaces: 1 }).detect(image)
+    if (!face || !image.naturalWidth || !image.naturalHeight) {
+      return DEFAULT_PORTRAIT_FRAMING
+    }
+
+    const centerX = ((face.boundingBox.x + face.boundingBox.width / 2) / image.naturalWidth) * 100
+    const centerY = ((face.boundingBox.y + face.boundingBox.height / 2) / image.naturalHeight) * 100
+    const faceWidth = face.boundingBox.width / image.naturalWidth
+    return {
+      portraitFocusX: Math.min(82, Math.max(18, Math.round(centerX))),
+      portraitFocusY: Math.min(48, Math.max(14, Math.round(centerY - 7))),
+      portraitZoom: Math.min(1.28, Math.max(1.1, Math.round((1.08 + faceWidth * 0.35) * 100) / 100)),
+    }
+  } catch {
+    return DEFAULT_PORTRAIT_FRAMING
+  } finally {
+    URL.revokeObjectURL(objectUrl)
+  }
+}
 
 async function preparePublicSiteMediaUpload(file: File) {
   if (!PUBLIC_SITE_MEDIA_MIME_TYPES.has(file.type)) {
@@ -3512,7 +3560,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }))
 
     try {
-      const { base64Data, filename } = await preparePublicSiteMediaUpload(file)
+      const [preparedUpload, smartPortraitFraming] = await Promise.all([
+        preparePublicSiteMediaUpload(file),
+        key === 'about_1' ? getSmartPortraitFraming(file) : Promise.resolve(null),
+      ])
+      const { base64Data, filename } = preparedUpload
       const response = await fetch('/api/nic-nac/site-settings/media', {
         method: 'POST',
         credentials: 'include',
@@ -3527,7 +3579,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       }
       setSiteSettingsDraft((current) =>
         current
-          ? updateHomepageMediaSlot(current, key, { imageUrl: payload.imageUrl })
+          ? updateHomepageMediaSlot(current, key, {
+              imageUrl: payload.imageUrl,
+              ...(smartPortraitFraming ?? {}),
+            })
           : current,
       )
       setSiteSettingsActionState((current) => ({
@@ -3537,7 +3592,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       }))
       setSiteSettingsMediaUploadFeedback({
         key,
-        message: 'Photo uploaded. It is ready to save.',
+        message:
+          key === 'about_1'
+            ? 'Photo uploaded with Smart Frame. Review the preview, then save.'
+            : 'Photo uploaded. It is ready to save.',
         tone: 'success',
       })
     } catch (error) {
@@ -7578,11 +7636,18 @@ export function SiteSettingsCard({
                   {allowsPhoto && slot.imageUrl ? <span>Photo added</span> : null}
                 </div>
                 {allowsPhoto && slot.imageUrl ? (
-                  <img
-                    className={styles.homepageMediaPreview}
-                    src={slot.imageUrl}
-                    alt={`${label} preview`}
-                  />
+                  <div className={styles.homepagePortraitFramePreview}>
+                    <img
+                      className={styles.homepageMediaPreview}
+                      src={slot.imageUrl}
+                      alt={`${label} preview`}
+                      style={{
+                        '--homepage-portrait-focus-x': `${slot.portraitFocusX ?? 50}%`,
+                        '--homepage-portrait-focus-y': `${slot.portraitFocusY ?? 20}%`,
+                        '--homepage-portrait-zoom': slot.portraitZoom ?? 1.18,
+                      } as CSSProperties}
+                    />
+                  </div>
                 ) : null}
                 {allowsPhoto ? (
                   <label className={styles.homepageMediaUploadButton}>
@@ -7632,6 +7697,57 @@ export function SiteSettingsCard({
                       }}
                     />
                   </label>
+                ) : null}
+                {allowsPhoto && slot.imageUrl ? (
+                  <fieldset className={styles.homepagePortraitControls}>
+                    <legend>Smart Frame</legend>
+                    <span>Fine-tune only if the automatic preview needs it.</span>
+                    <label>
+                      <span>Zoom</span>
+                      <input
+                        type="range"
+                        min="1"
+                        max="1.5"
+                        step="0.01"
+                        value={slot.portraitZoom ?? 1.18}
+                        onChange={(event) =>
+                          onHomepageMediaChange?.(slot.key, {
+                            portraitZoom: Number(event.target.value),
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      <span>Move subject up or down</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="60"
+                        step="1"
+                        value={slot.portraitFocusY ?? 20}
+                        onChange={(event) =>
+                          onHomepageMediaChange?.(slot.key, {
+                            portraitFocusY: Number(event.target.value),
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      <span>Move subject left or right</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={slot.portraitFocusX ?? 50}
+                        onChange={(event) =>
+                          onHomepageMediaChange?.(slot.key, {
+                            portraitFocusX: Number(event.target.value),
+                          })
+                        }
+                      />
+                    </label>
+                  </fieldset>
                 ) : null}
                 {allowsPhoto ? (
                   <label className={styles.searchField}>

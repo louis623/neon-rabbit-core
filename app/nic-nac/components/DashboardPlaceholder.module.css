@@ -4480,9 +4480,51 @@
 .homepageMediaPreview {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 10;
-  border-radius: 12px;
+  height: 100%;
   object-fit: cover;
+  object-position: var(--homepage-portrait-focus-x, 50%) var(--homepage-portrait-focus-y, 20%);
+  transform: scale(var(--homepage-portrait-zoom, 1.18));
+  transform-origin: var(--homepage-portrait-focus-x, 50%) var(--homepage-portrait-focus-y, 20%);
+}
+
+.homepagePortraitFramePreview {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--nic-nac-surface-input);
+}
+
+.homepagePortraitControls {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 12px;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+}
+
+.homepagePortraitControls legend {
+  color: var(--nic-nac-text-primary);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.homepagePortraitControls > span {
+  line-height: 1.35;
+}
+
+.homepagePortraitControls label {
+  display: grid;
+  gap: 4px;
+  color: var(--nic-nac-text-primary);
+  font-weight: 700;
+}
+
+.homepagePortraitControls input {
+  width: 100%;
 }
 
 .homepageMediaUploadSuccess,

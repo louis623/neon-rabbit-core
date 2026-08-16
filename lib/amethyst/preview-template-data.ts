@@ -560,6 +560,9 @@ export function mapPreviewSettingsToHomepageTemplateData(
           caption: isPortrait ? media?.caption || fallback.caption : '',
           href: isPortrait ? '#' : media?.videoUrl || '#',
           mediaUrl: isPortrait ? media?.imageUrl || undefined : undefined,
+          portraitFocusX: isPortrait ? media?.portraitFocusX : undefined,
+          portraitFocusY: isPortrait ? media?.portraitFocusY : undefined,
+          portraitZoom: isPortrait ? media?.portraitZoom : undefined,
         }
       },
     ) as AmethystHomepageTemplateData['aboutMediaSlots'],
