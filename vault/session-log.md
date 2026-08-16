@@ -4033,7 +4033,7 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 # August 16, 2026 - In-Stack Video Help Placement
 
-## Completed pending release
+## Completed and released
 
 - Moved the **Video help: links and embeds** disclosure from a full-width row into the desktop right-side media stack, directly above **Showcase video**.
 - The left portrait now spans the compact help card plus all four video-control rows; video cards use tighter padding and gaps so the two columns read as one balanced media editor. The one-column responsive order remains intact.
@@ -4042,4 +4042,5 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 - Focused Site Settings, public customer-video template, and media service suites passed: 3 files, 160 tests.
 - `npm run build` completed production compilation after the allowlisted-branch safety guard.
+- Released application commit `1ba3bbd9 fix: stack video help with media controls` as Vercel production deployment `dpl_Dj3Kzq3x3LuKX9dhdiwhb35NKWuW`. Both Sparkle Suite domains are assigned to that deployment; the canonical Site Settings route returned 200 and the apex returned the expected 307 canonical redirect.
 - Reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration. No Louis or customer session was used as a workaround.

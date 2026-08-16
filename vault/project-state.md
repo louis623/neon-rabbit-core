@@ -4,7 +4,7 @@
 
 - **Right-stack placement:** The expandable **Video help: links and embeds** card now sits inside the desktop video column directly above Showcase, rather than spanning the full Site Settings section.
 - **Balanced controls:** The portrait occupies the left column while the compact help card plus the four video controls form the adjacent right-side stack. Video cards use reduced padding and gaps; narrow screens retain a natural one-column order.
-- **Verification pending release:** focused Site Settings, customer-video template, and media service coverage passed (160 tests), and the production build compiled after the active-branch guard. Authenticated reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration; no personal or customer account should be used instead.
+- **Release and verification:** application commit `1ba3bbd9 fix: stack video help with media controls` is Vercel production deployment `dpl_Dj3Kzq3x3LuKX9dhdiwhb35NKWuW`. Focused Site Settings, customer-video template, and media service coverage passed (160 tests), the production build compiled after the active-branch guard, and `https://www.yoursparklesuite.com/nic-nac?section=site-settings` returned 200 (the apex returned its canonical 307 redirect). Authenticated reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration; no personal or customer account should be used instead.
 
 **Last updated:** August 16, 2026
 
