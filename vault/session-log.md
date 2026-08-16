@@ -4,6 +4,15 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Current recipe editing workflow
+
+- Reworked the existing Bling Kitchen recipe manager into a straightforward three-tab workflow: **Current recipes**, **Upload new recipe**, and **Edit current recipes**. The underlying update API already supported editing existing rows; the change makes that safe capability visible and understandable instead of leaving it behind an inaccessible mode.
+- Current recipes now presents each saved recipe with its food image, current visibility/category, short narrative, and an **Edit this recipe** action. The editor’s dropdown only permits selecting an existing recipe; after selection it shows the card and recipe-view photos, recipe source photos, and all saved recipe fields together for an ordinary save or removal.
+- Focused `tests/nic-nac-dashboard-placeholder.test.ts` passed (105 tests), including the new current-recipe view and loaded-photo/narrative editor contracts. `npm run build` compiled the production application after the active-branch guard. The full standalone `tsc --noEmit` remains a pre-existing broad-suite failure set and is not the project build gate.
+- Released `d31d6cc1 feat: add current recipe editor tabs` as production deployment `dpl_CmDubAkAyWu3CBf71N6HqA7uTJbH`; both Sparkle Suite aliases and both current customer domains are assigned. `https://www.yoursparklesuite.com/nic-nac?section=recipes` returned 200 and the apex redirected canonically. The authenticated reviewer UI smoke is still blocked by the known too-short reviewer token, so no personal or customer session was used.
+
+---
+
 ## August 16, 2026 - Inline announcement ticker links
 
 - Replaced the still-confusing separate linked-announcement builder with a selection-first editor: write the ticker sentence, highlight only the customer-facing words to click, paste the URL, then choose **Link selected words**. The workspace explicitly shows the highlighted phrase before applying the link and rejects a link attempt without a selection.

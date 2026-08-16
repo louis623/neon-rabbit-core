@@ -1,5 +1,16 @@
 # Project State
 
+## August 16 Recipe editor: current recipes and editing
+
+- **Three clear tabs:** The Bling Kitchen recipe area now has **Current recipes**, **Upload new recipe**, and **Edit current recipes** tabs. This keeps reviewing existing recipes separate from creating a new one while retaining one familiar tool.
+- **Existing recipes load as a complete edit package:** The current-recipes view shows each saved recipe’s food image, visibility, category, and story excerpt. Selecting **Edit this recipe** opens the recipe picker and loads the existing card photo, inside-recipe photo, source photos, title, narrative, ingredients, steps, note, visibility, crop positions, and TikTok URL into the editor.
+- **No accidental new-record path in editing:** The editing picker is explicitly for current recipes and starts with **Select a current recipe**; new recipes belong only in the Upload new recipe tab.
+- **Release and verification:** application commit `d31d6cc1 feat: add current recipe editor tabs` is Vercel production deployment `dpl_CmDubAkAyWu3CBf71N6HqA7uTJbH`. Focused recipe workspace coverage passed (105 tests) and `npm run build` compiled the production app after the allowlisted-branch safety gate. Both Sparkle Suite aliases are assigned to that deployment; the canonical `/nic-nac?section=recipes` route returned 200 and the apex returned its canonical 307. Authenticated reviewer visual smoke remains blocked by the known too-short reviewer-token configuration; no Louis or customer account was used as a workaround.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Inline announcement ticker links
 
 - **Only selected words are clickable:** The Announcement ticker editor now tells reps to write an announcement, highlight the exact words to link, paste the destination, and choose **Link selected words**. It no longer asks reps to create a separate linked announcement or understand formatting syntax.
