@@ -1244,3 +1244,7 @@ Team Management has two related but separate workflows: Start Strong onboarding 
 - **Stripe is the sole billing-management surface.** For all current and future accounts, Sparkle Suite shows a single **Stripe Billing and Payments** handoff for active customers. Stripe owns payment methods, invoices, billing history, subscription changes, and cancellation. Sparkle Suite retains only access/checkout gating needed to operate the product.
 - **No payment-link fallback for an already-paying customer.** Verify the exact Stripe customer and active subscription before attaching a portal. Never create or expose a new checkout link merely because the local billing record lacks a Stripe ID.
 - **Messaging launch gates its wallet.** Keep SMS/mobile-wallet UI and data loading hidden until customer texting/email is actually launched. The preserved implementation must not imply availability or payment responsibility before the communications tool is ready.
+
+# August 16, 2026 - Manual Vercel releases
+
+- **Sparkle Suite releases are manually triggered.** Vercel's Git deployment creation is disabled while the repository link and allowlisted production branch remain configured. A push is source provenance, not a release. For approved application work, validate first and then create one manual Vercel production deployment of the exact branch tip; verify both Sparkle Suite domains and the affected live workflow before handoff. Do not re-enable automatic Git deployment creation without Louis's explicit approval.

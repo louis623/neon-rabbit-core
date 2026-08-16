@@ -1325,3 +1325,10 @@ Verification passed:
 - Validation passed: 119 focused workspace/Nic-Nac tests and `npm run build` with the active-branch safety gate.
 - Production deployment: `dpl_392QjSeTYmG7wCio8saGH7ksGgez` (`https://sparkle-suite-orfl311rg-louis-2849s-projects.vercel.app`), serving commit `b0f5c1d2`. Both `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to it.
 - Reviewer UI smoke remains blocked: `/start` routes to the prelaunch surface with no reviewer controls, and the existing browser workspace is authenticated. No customer or Louis account was used to bypass the known reviewer-token limitation.
+
+### August 16, 2026 Manual Vercel Release Policy
+
+- Vercel project `sparkle-suite` remains linked to GitHub repository `louis623/sparkle-suite` with `codex/nic-nac-trade-hardening` as the configured production branch, but `gitProviderOptions.createDeployments` is now `disabled` by Louis's direction.
+- Git pushes preserve source provenance but do not create a deployment. Approved application changes must use one deliberate manual Vercel production deployment of the exact checked branch tip, followed by the existing alias and live-workflow smoke gates.
+- This prevents documentation/checkpoint pushes from consuming Vercel deployment capacity. Do not re-enable automatic Git deployments without Louis's explicit approval.
+- The next application release remains `c3e6a282 fix: guard unsaved recipe edits`; it is pushed but pending the Vercel daily-capacity reset. `388087c9 feat: harden recipe editing workflow` remains the live recipe release.

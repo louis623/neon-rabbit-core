@@ -43,6 +43,14 @@ need to request commit, push, or deploy separately each time. Skip any release
 step only when Louis explicitly says the work is local-only, should not be
 committed, should not be pushed, or should not be deployed.
 
+**Manual Vercel release policy (August 16, 2026):** Vercel's automatic Git
+deployment creation is disabled. A Git push records provenance only; it is not
+a release. For an approved application change, after the required local checks,
+run one manual production deployment of the exact verified branch tip, then
+complete the normal domain and live-workflow verification. Keep the Git link
+and configured production branch intact. Re-enable automatic creation only with
+Louis's explicit approval.
+
 Do not touch Chrome Web Store settings or local Sparkle Suite Chrome extension
 code. Treat live queue extension files as protected live-show material. Read
 `LIVE_EXTENSION_SAFETY.md` before any live extension discussion or handoff.

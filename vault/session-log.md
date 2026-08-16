@@ -4142,3 +4142,17 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 - Focused suites and production builds passed for each release. Public live checks confirmed canonical Sparkle Suite routes and public BlingKitchen rendering where applicable. Individual release entries above retain exact test counts, commits, deployment IDs, and domain checks.
 - The authenticated reviewer-browser path remains blocked by the known too-short reviewer token. No Louis or customer account was used to bypass it. The outstanding synthetic acceptance items are tracked in Open Items.
+
+---
+
+# August 16, 2026 - Manual Vercel Release Policy
+
+## What changed
+
+- At Louis's direction, disabled Vercel Git deployment creation for project `sparkle-suite` (`gitProviderOptions.createDeployments: disabled`). The GitHub link to `louis623/sparkle-suite` and configured production branch `codex/nic-nac-trade-hardening` remain unchanged.
+- Future pushes are source/provenance updates only. An approved application release now requires one explicit manual Vercel production deployment of the exact tested branch tip, then normal Sparkle Suite domain and workflow verification.
+
+## Verification and operational effect
+
+- Verified via the Vercel project API that automatic creation is disabled and the existing Git link/production branch remain intact. No aliases were moved and no deployment was created for this configuration change.
+- The current direct production deploy limit remains `api-deployments-free-per-day`; the pushed recipe unsaved-change guard `c3e6a282` stays pending capacity. Disabling Git-triggered builds prevents future ordinary pushes, including Open Brain documentation commits, from spending that quota.
