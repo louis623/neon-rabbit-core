@@ -222,6 +222,77 @@ function clampLimit(value: number | undefined) {
   return Math.max(1, Math.min(100, Math.trunc(value)))
 }
 
+function csvCell(value: string | null | undefined) {
+  const text = value ?? ''
+  // Customer-supplied text must never become a spreadsheet formula when a
+  // rep opens their own export in Excel or another spreadsheet app.
+  const safeText = /^[=+\-@]/.test(text) ? `'${text}` : text
+  return `"${safeText.replace(/"/g, '""')}"`
+}
+
+function csvBoolean(value: boolean) {
+  return value ? 'Yes' : 'No'
+}
+
+/**
+ * Returns a portable, rep-owned customer-list export. This intentionally
+ * includes profile fields and consent history instead of confining the list
+ * to an application-only view.
+ */
+export function formatCustomerAudienceCsv(customers: CustomerAudienceMember[]) {
+  const headers = [
+    'Name',
+    'Email',
+    'Phone',
+    'Address',
+    'Birthday',
+    'Favorite Gem or Stone',
+    'Favorite Material',
+    'Favorite Cut',
+    'Favorite Collection',
+    'Notes',
+    'Tags',
+    'SMS Consent',
+    'Email Consent',
+    'Marketing Consent',
+    'SMS Reachable',
+    'Email Reachable',
+    'Consent Date',
+    'SMS Opted Out At',
+    'Email Opted Out At',
+    'STOP Received At',
+    'Added At',
+  ]
+
+  const rows = customers.map((customer) => [
+    customer.name,
+    customer.email,
+    customer.phone,
+    customer.address,
+    customer.birthday,
+    customer.favoriteGemOrStone,
+    customer.favoriteMaterial,
+    customer.favoriteCut,
+    customer.favoriteCollection,
+    customer.notes,
+    customer.tags?.join(', ') ?? '',
+    csvBoolean(customer.smsConsent),
+    csvBoolean(customer.emailConsent),
+    csvBoolean(customer.marketingConsent),
+    csvBoolean(customer.canReceiveSms),
+    csvBoolean(customer.canReceiveEmail),
+    customer.consentDate,
+    customer.smsOptedOutAt,
+    customer.emailOptedOutAt,
+    customer.stopKeywordReceivedAt,
+    customer.createdAt,
+  ])
+
+  return [headers, ...rows]
+    .map((row) => row.map((value) => csvCell(String(value ?? ''))).join(','))
+    .join('\r\n')
+}
+
 function mapAudienceRow(row: CustomerAudienceRow): CustomerAudienceMember {
   const smsConsent = Boolean(row.sms_consent)
   const emailConsent = Boolean(row.email_consent)
@@ -323,6 +394,29 @@ async function listCustomerAudienceRows(supabase: SupabaseClient) {
 
   if (error) throw error
   return (data ?? []) as unknown as CustomerAudienceRow[]
+}
+
+async function listCustomerAudienceRowsForRep(
+  supabase: SupabaseClient,
+  repId: string,
+) {
+  const pageSize = 1000
+  const rows: CustomerAudienceRow[] = []
+
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await supabase
+      .from('customer_audience')
+      .select(CUSTOMER_AUDIENCE_SELECT_COLUMNS.join(', '))
+      .eq('rep_id', repId)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + pageSize - 1)
+
+    if (error) throw error
+
+    const page = (data ?? []) as unknown as CustomerAudienceRow[]
+    rows.push(...page)
+    if (page.length < pageSize) return rows
+  }
 }
 
 async function getCustomerAudienceRowForRep(
@@ -830,19 +924,14 @@ export async function getCustomerAudience(
     throw errors.UNAUTHORIZED('repId required')
   }
 
-  const { data, error } = await supabase
-    .from('customer_audience')
-    .select(CUSTOMER_AUDIENCE_SELECT_COLUMNS.join(', '))
-    .eq('rep_id', repId)
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-
-  const customers = ((data ?? []) as unknown as CustomerAudienceRow[]).map(
+  const customers = (await listCustomerAudienceRowsForRep(supabase, repId)).map(
     mapAudienceRow,
   )
   const channelFilter = filters.channelFilter ?? 'all'
-  const limit = clampLimit(filters.limit)
+  const limit =
+    filters.limit === null
+      ? Number.POSITIVE_INFINITY
+      : clampLimit(filters.limit)
 
   return {
     summary: summarizeAudience(customers),

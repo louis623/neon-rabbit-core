@@ -58,6 +58,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
+  Download,
   ExternalLink,
   Gem,
   Globe2,
@@ -10307,6 +10308,14 @@ export function CustomerRosterCard({
             disabled={!onImport || importState?.pending}
           />
         </label>
+        <a
+          className={styles.bulkActionButton}
+          href="/api/nic-nac/customer-audience?format=csv"
+          download
+        >
+          <Download size={16} aria-hidden="true" />
+          Download full list (CSV)
+        </a>
       </div>
       <div className={styles.metricGrid}>
         <div className={styles.metricBlock}>

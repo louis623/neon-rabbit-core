@@ -2069,6 +2069,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Filter roster')
     expect(html).toContain('Customer List')
     expect(html).toContain('Add customer')
+    expect(html).toContain('Download full list (CSV)')
+    expect(html).toContain('/api/nic-nac/customer-audience?format=csv')
     expect(html).toContain('Search customers')
     expect(html).toContain('Sort roster')
     expect(html).toContain('Newest first')

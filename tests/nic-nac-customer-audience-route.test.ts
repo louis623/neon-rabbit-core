@@ -6,6 +6,7 @@ const unsubscribeCustomerAudienceMemberMock = vi.fn()
 const createCustomerAudienceContactMock = vi.fn()
 const updateCustomerAudienceContactMock = vi.fn()
 const importCustomerAudienceContactsMock = vi.fn()
+const formatCustomerAudienceCsvMock = vi.fn()
 
 vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
@@ -25,6 +26,8 @@ vi.mock('@/lib/services/customer-audience', () => ({
     updateCustomerAudienceContactMock(...args),
   importCustomerAudienceContacts: (...args: unknown[]) =>
     importCustomerAudienceContactsMock(...args),
+  formatCustomerAudienceCsv: (...args: unknown[]) =>
+    formatCustomerAudienceCsvMock(...args),
 }))
 
 import { GET, PATCH, POST } from '@/app/api/nic-nac/customer-audience/route'
@@ -38,6 +41,7 @@ describe('GET /api/nic-nac/customer-audience', () => {
     createCustomerAudienceContactMock.mockReset()
     updateCustomerAudienceContactMock.mockReset()
     importCustomerAudienceContactsMock.mockReset()
+    formatCustomerAudienceCsvMock.mockReset()
   })
 
   it('returns the authenticated rep audience summary', async () => {
@@ -177,6 +181,46 @@ describe('GET /api/nic-nac/customer-audience', () => {
         emailUpdatedCount: 0,
       },
     })
+  })
+
+  it('downloads the complete authenticated rep customer list as a CSV', async () => {
+    const customers = [{
+      id: 'aud-1',
+      name: 'Jamie Lane',
+      phone: '+15555550101',
+      email: 'jamie@example.com',
+      smsConsent: true,
+      emailConsent: true,
+      marketingConsent: false,
+      canReceiveSms: true,
+      canReceiveEmail: true,
+      consentDate: null,
+      createdAt: '2026-08-16T12:00:00Z',
+      smsOptedOutAt: null,
+      emailOptedOutAt: null,
+      stopKeywordReceivedAt: null,
+    }]
+    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      supabase: { marker: 'supabase' },
+    })
+    getCustomerAudienceMock.mockResolvedValueOnce({ summary: {}, customers })
+    formatCustomerAudienceCsvMock.mockReturnValueOnce('Name\r\n"Jamie Lane"')
+
+    const response = await GET(
+      new Request('http://localhost/api/nic-nac/customer-audience?format=csv'),
+    )
+
+    expect(getCustomerAudienceMock).toHaveBeenCalledWith(
+      { marker: 'supabase' },
+      'rep-1',
+      { channelFilter: undefined, limit: null },
+    )
+    expect(formatCustomerAudienceCsvMock).toHaveBeenCalledWith(customers)
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toContain('text/csv')
+    expect(response.headers.get('content-disposition')).toContain('attachment;')
+    await expect(response.text()).resolves.toBe('Name\r\n"Jamie Lane"')
   })
 
   it('creates a manual contact without accepting consent fields', async () => {

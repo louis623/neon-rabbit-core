@@ -387,7 +387,8 @@ export type CustomerAudienceChannel = 'all' | 'sms' | 'email' | 'marketing'
 
 export interface GetCustomerAudienceFilters {
   channelFilter?: CustomerAudienceChannel
-  limit?: number
+  /** `null` is reserved for authenticated full-list exports. */
+  limit?: number | null
 }
 
 export interface CustomerAudienceMember {

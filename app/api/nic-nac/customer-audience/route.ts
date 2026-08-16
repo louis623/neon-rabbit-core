@@ -6,6 +6,7 @@ import {
 import { ServiceError } from '@/lib/services/errors'
 import {
   createCustomerAudienceContact,
+  formatCustomerAudienceCsv,
   getCustomerAudience,
   importCustomerAudienceContacts,
   unsubscribeCustomerAudienceMember,
@@ -43,6 +44,12 @@ function readBoolean(value: unknown) {
     )
   }
   return false
+}
+
+function readFormat(url: URL) {
+  const raw = url.searchParams.get('format')
+  if (!raw) return 'json'
+  return raw === 'csv' ? raw : null
 }
 
 function readString(value: unknown) {
@@ -105,6 +112,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url)
     const limit = readLimit(url)
     const channelFilter = readChannel(url)
+    const format = readFormat(url)
 
     if (limit === null) {
       return NextResponse.json(
@@ -120,11 +128,29 @@ export async function GET(request: Request) {
       )
     }
 
+    if (format === null) {
+      return NextResponse.json(
+        { error: 'format must be csv when provided.' },
+        { status: 400 },
+      )
+    }
+
     const { repId, supabase } = await getPaidNicNacContext()
     const audience = await getCustomerAudience(supabase, repId, {
       channelFilter,
-      limit: limit ?? undefined,
+      limit: format === 'csv' ? null : limit ?? undefined,
     })
+
+    if (format === 'csv') {
+      const date = new Date().toISOString().slice(0, 10)
+      return new Response(`\ufeff${formatCustomerAudienceCsv(audience.customers)}`, {
+        headers: {
+          'content-type': 'text/csv; charset=utf-8',
+          'content-disposition': `attachment; filename="sparkle-suite-customers-${date}.csv"`,
+          'cache-control': 'no-store, private',
+        },
+      })
+    }
 
     return NextResponse.json(audience)
   } catch (err) {
