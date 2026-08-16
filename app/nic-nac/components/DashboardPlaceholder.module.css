@@ -4866,7 +4866,8 @@
 }
 
 .recipeEditHeader,
-.recipeRemovalConfirmation {
+.recipeRemovalConfirmation,
+.recipeNavigationConfirmation {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -4880,6 +4881,18 @@
   border: 1px solid rgba(180, 35, 24, 0.24);
   border-radius: 12px;
   background: rgba(255, 243, 241, 0.9);
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px;
+}
+
+.recipeNavigationConfirmation {
+  justify-content: flex-start;
+  border: 1px solid rgba(187, 128, 0, 0.26);
+  border-radius: 12px;
+  background: rgba(255, 250, 229, 0.94);
   color: var(--nic-nac-text-primary);
   font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;

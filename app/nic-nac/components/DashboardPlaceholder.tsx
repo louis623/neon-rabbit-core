@@ -1501,6 +1501,41 @@ export function getRecipeDraftSavePayload(
   }
 }
 
+function recipeDraftFingerprint(draft: RecipeDraft) {
+  return JSON.stringify({
+    ...draft,
+    id: draft.id ?? '',
+    recipeCardImageUrls: draft.recipeCardImageUrls,
+  })
+}
+
+function hasRecipeDraftChanges(
+  draft: RecipeDraft,
+  recipes: PublicSiteRecipe[],
+) {
+  if (draft.id) {
+    const savedRecipe = recipes.find((recipe) => recipe.id === draft.id)
+    return savedRecipe
+      ? recipeDraftFingerprint(draft) !== recipeDraftFingerprint(getRecipeDraft(savedRecipe))
+      : false
+  }
+
+  return Boolean(
+    draft.title.trim() ||
+      draft.description.trim() ||
+      draft.category.trim() ||
+      draft.prepTime.trim() ||
+      draft.servings.trim() ||
+      draft.imageUrl.trim() ||
+      draft.modalImageUrl.trim() ||
+      draft.tiktokUrl.trim() ||
+      draft.ingredientsText.trim() ||
+      draft.stepsText.trim() ||
+      draft.note.trim() ||
+      draft.recipeCardImageUrls.length,
+  )
+}
+
 export function getRecipeSaveStatusText(actionState?: RecipeActionState) {
   if (actionState?.pendingKey) return 'Saving recipe changes...'
   if (actionState?.error) return 'Recipe changes need attention.'
@@ -8046,6 +8081,10 @@ export function RecipesCard({
   )
   const [isRemovalConfirmationVisible, setIsRemovalConfirmationVisible] =
     useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<{
+    tab: RecipeEditorTab
+    recipeId?: string
+  } | null>(null)
 
   if (state.status === 'error') {
     return (
@@ -8068,18 +8107,30 @@ export function RecipesCard({
   const canRemove = Boolean(draft.id)
   const isBuilderMode = activeTab === 'upload'
   const isEditMode = activeTab === 'edit'
+  const hasUnsavedChanges = hasRecipeDraftChanges(draft, state.recipes)
   const subtitle = isBuilderMode
     ? 'Upload the two customer-facing food photos, then add recipe-source photos to read and format before you review and save.'
     : isEditMode
       ? 'Review the saved food photos and recipe details, make your changes, then save them to the Pantry.'
       : 'Review the recipes already on your customer site, then choose one to edit or upload a new recipe.'
 
-  function handleTabChange(nextTab: RecipeEditorTab) {
+  function applyTabChange(nextTab: RecipeEditorTab, recipeId?: string) {
     setActiveTab(nextTab)
     setIsRemovalConfirmationVisible(false)
-    if (nextTab === 'upload') {
+    setPendingNavigation(null)
+    if (recipeId) {
+      onSelectRecipe?.(recipeId)
+    } else if (nextTab === 'upload') {
       onNewRecipe?.()
     }
+  }
+
+  function handleTabChange(nextTab: RecipeEditorTab, recipeId?: string) {
+    if (nextTab !== activeTab && hasUnsavedChanges) {
+      setPendingNavigation({ tab: nextTab, recipeId })
+      return
+    }
+    applyTabChange(nextTab, recipeId)
   }
 
   return (
@@ -8152,6 +8203,30 @@ export function RecipesCard({
             </span>
           </div>
 
+          {pendingNavigation ? (
+            <div className={styles.recipeNavigationConfirmation} role="alert">
+              <span>You have unsaved recipe changes.</span>
+              <button
+                type="button"
+                className={styles.secondaryActionButton}
+                onClick={() => setPendingNavigation(null)}
+                disabled={Boolean(pendingKey)}
+              >
+                Keep editing
+              </button>
+              <button
+                type="button"
+                className={styles.recipeRemoveConfirmButton}
+                onClick={() =>
+                  applyTabChange(pendingNavigation.tab, pendingNavigation.recipeId)
+                }
+                disabled={Boolean(pendingKey)}
+              >
+                Discard changes
+              </button>
+            </div>
+          ) : null}
+
           {activeTab === 'current' ? (
             <div className={styles.recipeCurrentPanel}>
               <div>
@@ -8180,9 +8255,8 @@ export function RecipesCard({
                           type="button"
                           className={styles.secondaryActionButton}
                           onClick={() => {
-                            onSelectRecipe?.(recipe.id)
                             setIsRemovalConfirmationVisible(false)
-                            handleTabChange('edit')
+                            handleTabChange('edit', recipe.id)
                           }}
                         >
                           Edit this recipe
