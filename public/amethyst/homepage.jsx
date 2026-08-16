@@ -1455,7 +1455,7 @@ function Wibp({ repName }) {
               <div className="hp-video-pill"><span className="pip" />TikTok · Loops</div>
               <div className="hp-video-play">▶</div>
             </div>
-          </TikTokEmbed>
+          </CustomerVideoEmbed>
         </div>
       </div>
     </section>

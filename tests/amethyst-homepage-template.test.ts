@@ -439,6 +439,9 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('getFacebookVideoEmbedUrl')
     expect(jsx).toContain('facebook.com/plugins/video.php')
     expect(jsx).toContain('function CustomerVideoEmbed')
+    expect(jsx).toMatch(
+      /<CustomerVideoEmbed[\s\S]*?dataSlot="showcase video"[\s\S]*?<\/CustomerVideoEmbed>/,
+    )
     expect(css).toContain('.hp-about-portrait-image')
     expect(css).toContain('aspect-ratio: 4 / 5')
     expect(css).toContain('object-fit: cover')
