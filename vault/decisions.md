@@ -1,5 +1,28 @@
 # Decision Log
 
+## August 16, 2026 - Video embeds follow a provider contract, not generic iframe HTML
+
+**One shared field, four explicit destinations**
+Showcase and About short-video slots accept public TikTok, YouTube, Instagram Reel/video-post, and Facebook Reel/video URLs or their official embed code. Reject other hosts at save time rather than storing a value that will create an empty or misleading customer card.
+
+**Playback claims stop at the provider boundary**
+TikTok and YouTube can use Sparkle Suite's muted, looping, no-host-pause contract. Instagram and Facebook are cross-origin native players, so their controls and playback behavior remain provider-owned. Do not add an overlay or documentation that falsely claims universal mute, loop, or pause behavior.
+
+**Workspace reference material stays visible**
+The Site Settings media guidance is a short permanent card at the top of the video stack. It must not use a chevron, a maximize/minimize affordance, or hidden instructional text.
+
+---
+
+## August 16, 2026 - Clearing a Nic-Nac conversation is a durable rep-scoped lifecycle change
+
+**Clear before rotating the browser identifier**
+The authenticated rep's current persisted conversation must be marked cleared before the browser switches to a fresh conversation ID. A clear action that only changes local state is incomplete.
+
+**Preserve operations history without reviving the thread**
+Keep cleared message rows for audit continuity, but exclude them from latest-conversation lookup and from history hydration, including when a stale conversation URL is revisited.
+
+---
+
 ## August 16, 2026 - Portrait framing is data, not a one-off CSS crop
 
 **Use automatic framing first, then give the rep the last word**

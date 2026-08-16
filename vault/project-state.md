@@ -1,5 +1,16 @@
 # Project State
 
+## August 16 session closeout: Nic-Nac durability and shared customer media
+
+- **Current production baseline:** Nic-Nac clearing is now durable across reloads and later sign-ins; customer-site media uses one shared, responsive editor with the About portrait at left and visible video guidance plus Showcase and three About-short slots at right on desktop.
+- **Shared customer-site contract:** Portrait framing is stored media data with safe defaults and rep adjustment controls, never Heather-only styling. Video slots accept only public TikTok, YouTube, Instagram, or Facebook destinations; the same renderer serves Showcase and every About short for current and future Sparkle Suite sites.
+- **Playback truthfulness:** TikTok and YouTube start muted, loop, and omit a host pause control. Instagram and Facebook use their native cross-origin players and retain provider-owned controls; Sparkle Suite does not promise controls it cannot reliably enforce.
+- **Review limitation:** The known too-short production reviewer-token configuration still prevents an authenticated synthetic browser acceptance pass. This must be repaired before closing the outstanding upload/save/playback smoke work. Do not substitute Louis's or any customer account.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Always-visible video instructions
 
 - **No disclosure control:** Replaced the unnecessary expandable Video Help control with a compact, permanently visible **Video links and embeds** instruction card at the top of the right-side video stack. There is no maximize/minimize arrow or hidden content.

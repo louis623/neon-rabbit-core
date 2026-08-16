@@ -4059,3 +4059,26 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - `npm run build` completed production compilation after the allowlisted-branch safety guard.
 - Released application commit `7dfabc06 fix: keep video instructions visible` as Vercel production deployment `dpl_EkAT2DMHngRMwR6zJSGMj5bAuwdB`. Both Sparkle Suite domains are assigned to that deployment; the canonical Site Settings route returned 200 and the apex returned the expected 307 canonical redirect.
 - Reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration. No Louis or customer session was used as a workaround.
+
+---
+
+# August 16, 2026 - Session Closeout: Nic-Nac Durability and Shared Customer Media
+
+## Delivered during this workstream
+
+- Nic-Nac now has one readable **Clear conversation** control and a personalized rep greeting. The clear operation is durable: it marks the authenticated rep's conversation as cleared, excludes it from latest-thread lookup and hydration, and keeps its rows only for audit continuity. Application release `20456551` is production deployment `dpl_EjE7aHumdvzWsfy5FJ7epz44PSGq`.
+- Shared customer-site About media was made reusable rather than Heather-specific: portrait framing is stored as focus/zoom data with automatic face-detection initialization and manual adjustment, the public card has one clean image edge, and supplied photos are not forced into an empty mat or arbitrary crop.
+- Site Settings now expresses the desktop media hierarchy directly: About portrait on the left; a compact, permanently visible **Video links and embeds** instruction card followed by Showcase and About short videos 1–3 on the right. The role-based layout falls back to one column on narrow screens.
+- The shared customer renderer and save validation support public TikTok, YouTube, Instagram Reel/video-post, and Facebook Reel/video links or official embeds. TikTok and YouTube use the controlled muted-loop/no-host-pause contract; Instagram and Facebook intentionally retain native provider controls. The final visible-help application release is `7dfabc06`, production deployment `dpl_EkAT2DMHngRMwR6zJSGMj5bAuwdB`.
+
+## Lessons retained
+
+- Treat conversation clearing as a persistence lifecycle, not a client-side ID change; stale URLs must not resurrect a cleared thread.
+- Treat responsive media layout as named slot roles, not card order or tenant-specific CSS.
+- Validate a narrow provider allowlist before save, and describe cross-origin playback capabilities honestly instead of masking provider controls with fragile overlays.
+- Keep concise instructions visible when the task requires a reference card; an expandable disclosure hid necessary context and introduced needless UI chrome.
+
+## Evidence and remaining safe review
+
+- Focused suites and production builds passed for each release. Public live checks confirmed canonical Sparkle Suite routes and public BlingKitchen rendering where applicable. Individual release entries above retain exact test counts, commits, deployment IDs, and domain checks.
+- The authenticated reviewer-browser path remains blocked by the known too-short reviewer token. No Louis or customer account was used to bypass it. The outstanding synthetic acceptance items are tracked in Open Items.

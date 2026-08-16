@@ -5,6 +5,10 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Run a synthetic reviewer customer-media acceptance pass after reviewer-token repair** - use a safe synthetic rep and disposable/test-owned public media to verify portrait upload and saved framing, each of the four allowed video providers, save validation, desktop/mobile Site Settings order, and public customer-site rendering. Confirm TikTok/YouTube follow the muted-loop/no-host-pause contract and Instagram/Facebook retain native controls. Do not use Louis's or a customer account.
+
+- [ ] **Decide whether universal playback controls require a different product model** - public Instagram and Facebook embeds are provider-owned cross-origin players. If a future requirement demands guaranteed mute, looping, or no-pause behavior across every provider, assess uploaded/hosted video or an authorized provider integration; do not ship a CSS/JavaScript overlay that pretends to control native embeds.
+
 - [ ] **Run Heather's full BlingKitchen beta acceptance pass** - `theblingkitchen.com` now points to her live customer-facing site and the recipe intake release is live. When the reviewer-token issue is repaired or an authorized safe path is available, verify her workspace recipe editor, direct image intake (outside/inside photos plus multiple private source photos), Pantry rendering, custom domain, favicon/social metadata, and customer-site navigation. Do not use Louis's personal account for state-changing testing.
 
 - [ ] **Rotate Heather's temporary password after onboarding handoff or first use** - her welcome draft contains a deliberate temporary-password placeholder only. Keep any actual credential in private operational memory, never this Git-tracked vault, and rotate it through the normal account-security flow after handoff.
