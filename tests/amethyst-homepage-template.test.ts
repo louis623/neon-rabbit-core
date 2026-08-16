@@ -11,7 +11,6 @@ import {
 import { AMETHYST_APPEARANCE_PRESETS } from '@/lib/amethyst/appearance-presets'
 
 describe('Amethyst homepage template data wiring', () => {
-  const tickerAssetVersion = '20260725-emerald-garden'
 
   it('keeps the customer-facing Nic-Nac launcher out of public Amethyst exports', () => {
     const homepage = readFileSync(
@@ -77,9 +76,15 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsxScripts.length, file).toBeGreaterThan(0)
       for (const script of jsxScripts) {
         expect(script, file).toContain('data-presets="react"')
-        expect(script, file).toContain(`v=${tickerAssetVersion}`)
+        expect(script, file).toMatch(/\?v=[^"\s]+/)
       }
     }
+
+    const homepage = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/Homepage.html'),
+      'utf8',
+    )
+    expect(homepage).toContain('homepage.jsx?v=20260816-customer-video-renderer')
   })
 
   it('keeps the shared tweaks helper scoped while exporting controls on window', () => {
