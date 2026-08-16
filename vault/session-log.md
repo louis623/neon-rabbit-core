@@ -3999,7 +3999,7 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 # August 16, 2026 - Desktop Site Settings Media Stack
 
-## Completed pending release
+## Completed and released
 
 - Reworked the shared **Homepage photos and videos** form so the About portrait photo occupies the left desktop column and all four video destinations occupy one right-side stack: Showcase video, About short video 1, About short video 2, and About short video 3.
 - The grouping uses explicit media-role classes rather than positional selectors, preserving the correct layout if slot order changes. Tablet/mobile remains one column.
@@ -4008,4 +4008,5 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 - Focused Site Settings and workspace coverage passed: 2 files, 109 tests.
 - `npm run build` completed production compilation after the allowlisted-branch safety guard.
+- Released application commit `6dec7f2f fix: group site video controls on desktop` as Vercel production deployment `dpl_CDRXgMMkSZgJfQraBY67W8fktU67`. Both Sparkle Suite domains are assigned to that deployment; the canonical live Site Settings URL returned 200 and the apex produced the expected 307 canonical redirect.
 - Reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration. No Louis or customer session was used as a workaround.

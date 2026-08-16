@@ -4,7 +4,7 @@
 
 - **Immediate visibility:** The customer-site media controls now place the About portrait photo in the left desktop column and stack **Showcase video** plus **About short video 1–3** together in the right column. Reps can see every video destination without hunting through a mixed card grid.
 - **Responsive behavior:** The layout is based on the slot roles, not their incidental position in an array. On narrower screens it returns to a straightforward one-column reading order.
-- **Verification pending release:** focused Site Settings/workspace coverage passed (109 tests), and the production build compiled after the active-branch guard. Authenticated reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration; no personal or customer account should be used instead.
+- **Release and verification:** application commit `6dec7f2f fix: group site video controls on desktop` is Vercel production deployment `dpl_CDRXgMMkSZgJfQraBY67W8fktU67`. Focused Site Settings/workspace coverage passed (109 tests), the production build compiled after the active-branch guard, and `https://www.yoursparklesuite.com/nic-nac?section=site-settings` returned 200 (the apex returned the canonical 307 redirect). Authenticated reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration; no personal or customer account should be used instead.
 
 **Last updated:** August 16, 2026
 
