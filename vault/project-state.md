@@ -1,5 +1,16 @@
 # Project State
 
+## August 16 Photo-proportional About portrait frame
+
+- **No interior mat:** The About portrait no longer forces every upload into a 3:4 container. Its rounded border now follows the uploaded image's natural aspect ratio, so there is no dark/empty gutter between the photo and its frame.
+- **Heather proof:** On the live BlingKitchen page, Heather's card and photo both measure 500 × 688px with zero horizontal or vertical inset. The full photo remains visible, while the border is tight and clean.
+- **Release:** application commit `053b4384 fix: fit about portrait to source image` is Vercel production deployment `dpl_74tnVQnAcFd74GpNroXsxJMqMW6i`. Vercel assigned `www.yoursparklesuite.com` and `yoursparklesuite.com` to that exact deployment.
+- **Verification:** 205 focused tests passed and production compilation completed. A public, no-auth browser smoke visibly confirmed the tight photo border at `https://www.yoursparklesuite.com/blingkitchen`; both Sparkle Suite aliases return 200 for that path.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Native TikTok short-card sizing and playback
 
 - **Native player dimensions:** About short cards now reserve TikTok's documented card width instead of capping at 280px: three 348 × 619px 9:16 cards at the desktop layout, two columns at narrower desktop/tablet widths, and one on mobile.

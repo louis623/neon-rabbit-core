@@ -1,5 +1,12 @@
 # Decision Log
 
+## August 16, 2026 - Portrait frames follow the supplied photo
+
+**A clean fit is more important than a forced universal ratio**
+Customer-site About portraits must not display a dark mat or empty edges merely to satisfy a preset frame. Let the image establish the card's height, keep the rounded border directly on the image, and preserve the full uploaded photo without cover-cropping.
+
+---
+
 ## August 16, 2026 - Short embeds preserve the selected video and its controls
 
 **Size for the provider's card, not an arbitrary thumbnail**

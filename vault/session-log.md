@@ -4,6 +4,15 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Photo-proportional About portrait frame
+
+- Louis identified an unacceptable dark inner mat around Heather's About portrait. The fixed 3:4 card was slightly wider than the source photo, making the contained image look inset despite the intended clean portrait treatment.
+- Removed the forced outer portrait ratio and moved the border directly to the natural-size image. The card now adopts the source image's actual geometry, retains its rounded photo edge and caption overlay, and does not crop or leave an interior frame.
+- Focused template/settings/workspace/help coverage passed: 205 tests. Production compilation passed the active-branch guard.
+- Released `053b4384 fix: fit about portrait to source image` as Vercel production deployment `dpl_74tnVQnAcFd74GpNroXsxJMqMW6i`. Public browser verification at `www.yoursparklesuite.com/blingkitchen` measured both the image and card at 500 × 688px with zero inset and visibly confirmed the clean fit. Both Sparkle Suite domains returned 200. No account was signed into or changed.
+
+---
+
 ## August 16, 2026 - Native TikTok About-card sizing and playback
 
 - Verified TikTok's official Embed Player parameters and its standard video-embed card sizing before changing the prior About row. TikTok's published embed markup uses a 325px minimum card width; the former 280px cap was too narrow.
