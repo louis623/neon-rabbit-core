@@ -2637,8 +2637,8 @@ body.bg-quartz-paper .hp-step-num {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid var(--border);
-  border-radius: inherit;
+  border: 0;
+  border-radius: 0;
   object-fit: initial;
 }
 
