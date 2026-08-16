@@ -2650,7 +2650,8 @@ body.bg-quartz-paper .hp-step-num {
    */
   object-position: center 42%;
   transform: scale(1.18);
-  transform-origin: center 42%;
+  /* Keep a comfortable amount of headroom after the subject-forward zoom. */
+  transform-origin: center 20%;
 }
 
 .hp-about-portrait-card::after {

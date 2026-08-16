@@ -435,7 +435,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toContain('object-fit: cover')
     expect(css).toContain('object-position: center 42%')
     expect(css).toContain('transform: scale(1.18)')
-    expect(css).toContain('transform-origin: center 42%')
+    expect(css).toContain('transform-origin: center 20%')
     expect(css).toContain('border-radius: 0')
     expect(css).toMatch(/\.hp-about-shorts-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/)
     expect(css).toContain('aspect-ratio: 9 / 16')
