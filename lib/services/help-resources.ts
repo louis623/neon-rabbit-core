@@ -122,6 +122,47 @@ const WORKFLOW_RESOURCES: HelpResource[] = [
     },
   }),
   helpResource({
+    id: 'embed-tiktok-video-on-customer-site',
+    type: 'workflow',
+    group: 'Setup',
+    category: 'Customer Site',
+    title: 'Embed a TikTok video on your customer-facing site',
+    summary:
+      'Add one of your TikTok videos to the homepage or About section in a few clear steps.',
+    body:
+      'Use a public TikTok video you want shoppers to see. Sparkle Suite accepts either TikTok\'s copied embed code or the full link to that individual video; a TikTok profile link will not create a video embed.',
+    goal:
+      'Show a working TikTok video in the right customer-facing spot without changing the rest of the site.',
+    useWhen:
+      'Use this when you want to feature a TikTok on the homepage or add a video to an About media spot.',
+    beforeYouStart: [
+      'The public TikTok video you want to display',
+      'A desktop or mobile browser signed in to TikTok',
+    ],
+    steps: [
+      'Open the individual TikTok video you want customers to watch.',
+      'Choose Share, then Embed, and copy the TikTok embed code. You can instead copy that individual video\'s full TikTok link.',
+      'In the Sparkle Suite workspace, open Site Settings.',
+      'Find Homepage photos and videos.',
+      'Choose Showcase video for the main homepage feature, or choose About media 1 or About media 2 for an About-section video.',
+      'Paste the TikTok embed code or full individual-video link into TikTok embed code or video URL.',
+      'Wait for the auto-save indicator to confirm the change saved.',
+      'Open Preview customer site and play the video to confirm it appears in the selected spot.',
+    ],
+    goodResult:
+      'The selected TikTok video plays on the customer-facing site in the Showcase or About location you chose.',
+    nicNacPrompt:
+      'Help me add this TikTok video to my customer-facing site. I want it in the Showcase video or About media spot.',
+    stillStuck:
+      'Give Nic-Nac the individual TikTok video link, tell it which spot you chose, and include what the preview shows. Do not send a profile link when you want a video embed.',
+    relatedFeatureIds: ['customer-site', 'account-settings', 'nic-nac'],
+    quickActions: [
+      'Open Site Settings',
+      'Paste TikTok embed code or video URL',
+      'Preview customer site',
+    ],
+  }),
+  helpResource({
     id: 'get-ready-for-live-show',
     type: 'workflow',
     group: 'Live Shows',

@@ -13,6 +13,7 @@ describe('help resources', () => {
       'Start here: Learn your Sparkle Suite workspace',
       'Finish setup and approve your customer site',
       'Update your customer-facing site',
+      'Embed a TikTok video on your customer-facing site',
       'Get ready for a live show',
       'Use Live Queue during a show',
       'Add jewelry to your Trade Board',
@@ -38,7 +39,7 @@ describe('help resources', () => {
   it('gives every workflow guide the standard operator-manual fields', () => {
     const workflows = getHelpResources().filter((resource) => resource.type === 'workflow')
 
-    expect(workflows.length).toBe(11)
+    expect(workflows.length).toBe(12)
 
     for (const workflow of workflows) {
       expect(workflow.group).toMatch(/Setup|Live Shows|Trade Board|Customers & Account|Help/)
@@ -110,6 +111,29 @@ describe('help resources', () => {
     expect(combinedText).toContain('unpacked')
     expect(combinedText).toContain('stale')
     expect(combinedText).toContain('empty')
+  })
+
+  it('gives reps a complete TikTok customer-site embed workflow', () => {
+    const guide = getHelpResources('TikTok embed customer site')
+      .find((resource) => resource.id === 'embed-tiktok-video-on-customer-site')
+
+    expect(guide).toMatchObject({
+      type: 'workflow',
+      category: 'Customer Site',
+      title: 'Embed a TikTok video on your customer-facing site',
+    })
+    expect(guide?.steps).toEqual([
+      'Open the individual TikTok video you want customers to watch.',
+      'Choose Share, then Embed, and copy the TikTok embed code. You can instead copy that individual video\'s full TikTok link.',
+      'In the Sparkle Suite workspace, open Site Settings.',
+      'Find Homepage photos and videos.',
+      'Choose Showcase video for the main homepage feature, or choose About media 1 or About media 2 for an About-section video.',
+      'Paste the TikTok embed code or full individual-video link into TikTok embed code or video URL.',
+      'Wait for the auto-save indicator to confirm the change saved.',
+      'Open Preview customer site and play the video to confirm it appears in the selected spot.',
+    ])
+    expect(guide?.body).toContain('profile link will not create a video embed')
+    expect(guide?.nicNacPrompt).toContain('Showcase video or About media spot')
   })
 
   it('keeps Live Queue guidance honest about rollout and Web Store readiness', () => {
