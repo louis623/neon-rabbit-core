@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Foolproof ticker entry controls
+
+- Replaced the raw-format burden in Customer-facing site setup with an eight-choice tap-to-add emoji picker and a two-field linked-announcement builder. A rep writes the announcement, pastes a destination URL, and selects **Add link**; no Markdown or emoji copying is required.
+- Emoji buttons preserve the current ticker cursor position. The link action is deliberately unavailable until both values are present, accepts only complete `http`/`https` destinations, and shows a direct correction for an invalid URL. The control collapses to one column on small screens.
+- Focused Site Settings and Amethyst ticker coverage passed: 142 tests. Commit `4369ffd0 feat: simplify ticker emoji and link entry` is production deployment `dpl_6HsXDFhcqfo95ojFHnznyN4nZeZz`; both Sparkle Suite aliases resolve to that exact deployment and `/nic-nac?section=site-settings` returned 200. Authenticated reviewer-browser confirmation remains blocked by the known too-short reviewer token; no personal or customer account was used.
+
+---
+
 ## August 16, 2026 - Linked announcement ticker
 
 - Replaced the generic ticker labels in Customer-facing site setup with the plain-language **Announcement ticker and Join Team page**, **Announcement ticker messages**, and **Show announcement ticker on your public site**.

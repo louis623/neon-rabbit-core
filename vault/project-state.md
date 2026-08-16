@@ -1,5 +1,15 @@
 # Project State
 
+## August 16 Foolproof ticker entry controls
+
+- **No raw formatting required:** The Announcement ticker editor now includes an eight-button emoji picker and a simple linked-announcement builder: type the customer-facing message, paste an `http`/`https` URL, then select **Add link**. The builder inserts a valid ticker item and the standard Save site settings action publishes it.
+- **Easy composition:** Emoji buttons insert at the current text cursor. The link button is unavailable until both fields are filled; invalid destinations show a plain-language correction. The link builder becomes one column on mobile.
+- **Release and verification:** application commit `4369ffd0 feat: simplify ticker emoji and link entry` is Vercel production deployment `dpl_6HsXDFhcqfo95ojFHnznyN4nZeZz`. Focused Site Settings and Amethyst ticker tests passed (142 tests); Vercel completed the production build. Both Sparkle Suite domains resolve to that exact deployment and the canonical `/nic-nac?section=site-settings` path returned 200. Authenticated reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration; no personal or customer account was used.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Linked announcement ticker
 
 - **Clear ticker controls:** Site Settings now uses **Announcement ticker and Join Team page**, **Announcement ticker messages**, and **Show announcement ticker on your public site**—removing the prior generic ticker wording.
