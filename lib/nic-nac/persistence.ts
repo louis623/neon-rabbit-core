@@ -17,7 +17,7 @@ export async function loadCanonicalHistory(
 ): Promise<UIMessage[]> {
   const { data, error } = await supabase
     .from('nic_nac_conversations')
-    .select('message_id, role, parts, status, created_at')
+    .select('message_id, role, parts, status, created_at, cleared_at')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true })
   if (error) throw error
@@ -25,6 +25,8 @@ export async function loadCanonicalHistory(
   // canonical view fed to the model — they'd surface as empty assistant
   // turns. The GET /conversation/[id] route reports them separately for UI
   // visibility; only the model should skip them.
+  if ((data ?? []).some((row) => row.cleared_at)) return []
+
   return (data ?? [])
     .filter((row) => row.role === 'user' || row.status === 'complete')
     .map((row) => {
@@ -67,12 +69,26 @@ export async function getLatestConversationId(
     .from('nic_nac_conversations')
     .select('conversation_id')
     .eq('rep_id', repId)
+    .is('cleared_at', null)
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
     .limit(1)
     .maybeSingle()
   if (error) throw error
   return (data?.conversation_id as string | undefined) ?? null
+}
+
+export async function clearConversation(
+  supabase: SupabaseClient,
+  args: { conversationId: string; repId: string },
+): Promise<void> {
+  const { error } = await supabase
+    .from('nic_nac_conversations')
+    .update({ cleared_at: new Date().toISOString() })
+    .eq('conversation_id', args.conversationId)
+    .eq('rep_id', args.repId)
+    .is('cleared_at', null)
+  if (error) throw error
 }
 
 export async function insertUserMessage(

@@ -3976,3 +3976,20 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Focused workspace/Nic-Nac coverage passed: 119 tests across `nic-nac-workspace-shell`, `nic-nac-branding`, and `nic-nac-dashboard-placeholder`. `npm run build` passed including the allowlisted-branch guard.
 - Released commit `b0f5c1d2 fix: simplify Nic-Nac conversation controls` to production deployment `dpl_392QjSeTYmG7wCio8saGH7ksGgez` (`https://sparkle-suite-orfl311rg-louis-2849s-projects.vercel.app`). Vercel confirmed both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` resolve to that deployment.
 - Browser reviewer smoke could not visually verify the authenticated workspace: `/start` redirected to the prelaunch page with no reviewer-smoke controls, and a workspace session was already authenticated. This was not bypassed with Louis’s or Heather’s account; the known reviewer-token configuration remains the blocker.
+
+---
+
+# August 16, 2026 - Durable Nic-Nac Conversation Clearing
+
+## Completed pending application release
+
+- Fixed the clear-conversation lifecycle defect: the former control only created a new browser-local conversation ID, while the server still selected the prior persisted thread on a later visit.
+- Clear now writes a durable `cleared_at` marker to all message rows belonging to the authenticated rep's current conversation. The update is rep-scoped and retains the rows for audit continuity rather than deleting messages.
+- Latest-conversation selection only considers rows whose `cleared_at` is null. Hydration also returns no messages for a cleared historical URL, preventing bookmarked or stale browser URLs from reviving cleared content.
+- Production schema migration `20260816154000_nic_nac_clear_conversations.sql` was applied before deploying application code. It adds the marker and a partial active-thread lookup index.
+
+## Validation
+
+- Focused persistence, workspace-shell, paid-route boundary, and HITL coverage passed: 4 files, 37 tests.
+- `npm run build` completed production compilation after the allowlisted-branch guard. A direct repository-wide `tsc` invocation remains red on pre-existing test-fixture typing errors unrelated to this change.
+- The authenticated reviewer-browser flow remains blocked by the known too-short reviewer-token configuration. Do not use Louis's or a customer account to work around it.

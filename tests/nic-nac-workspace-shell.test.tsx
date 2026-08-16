@@ -133,6 +133,8 @@ describe('Nic-Nac workspace shell reset', () => {
     )
 
     expect(client).toContain('onNewConversation={handleNewConversation}')
+    expect(client).toContain("/api/nic-nac/conversation/clear")
+    expect(client).toContain('Clear the persisted thread before rotating the id')
     expect(client).not.toContain('onRefreshConversation={handleRefreshConversation}')
     expect(client).not.toContain('refreshSignal={refreshSignal}')
     expect(client).not.toContain('<NicNacColumn\n                  variant="desktop"')

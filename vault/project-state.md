@@ -1,5 +1,16 @@
 # Project State
 
+## August 16 Durable Nic-Nac conversation clearing
+
+- **Durable clear:** Clear conversation now marks the signed-in rep's persisted thread as cleared before the browser rotates to a new conversation ID. A later workspace visit, reload, or sign-in cannot select that cleared thread as the latest conversation.
+- **Stale-link safety:** A prior `conversationId` URL cannot rehydrate a cleared thread either. The message rows are retained for operational audit continuity, but excluded from both latest-thread selection and client hydration.
+- **Data model:** Migration `20260816154000_nic_nac_clear_conversations.sql` adds the nullable `cleared_at` marker and a partial active-thread lookup index. It was applied to production before the application release.
+- **Verification pending release:** focused persistence, workspace shell, paid-route, and HITL tests passed (37 tests). Repository-wide test-fixture type errors remain pre-existing and unrelated. Authenticated reviewer-browser smoke is still blocked by the known too-short reviewer-token configuration; do not bypass it with Louis's or any customer account.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Smart Frame for shared About portraits
 
 - **Reusable framing:** About portrait uploads now run browser face detection when available, save the resulting focus/zoom with the photo, and offer a matching 4:5 preview plus simple Zoom, vertical, and horizontal controls. If face detection is unavailable, the system uses a clean subject-forward fallback rather than failing.

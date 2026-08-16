@@ -287,6 +287,7 @@ export default function NicNacClient({
   const chatStateRef = useRef(chatState)
   const [rolloverInFlight, setRolloverInFlight] = useState(false)
   const rolloverInFlightRef = useRef(false)
+  const [clearInFlight, setClearInFlight] = useState(false)
   const wasStreamingRef = useRef(false)
 
   useEffect(() => {
@@ -780,12 +781,33 @@ export default function NicNacClient({
       : null
   const isReady = conversationId && transport && initialMessages !== null
 
-  // "New conversation" — rotate the id, replace URL, clear local state.
-  // The chat body re-mounts via key={conversationId} so useChat resets cleanly.
-  const handleNewConversation = useCallback(() => {
-    if (chatState.isStreaming || chatState.hasPendingApproval) return
-    activateConversation(newConversationId(), [])
-  }, [activateConversation, chatState])
+  // Clear the persisted thread before rotating the id. Otherwise the latest
+  // conversation lookup can resurrect its prior messages after a new visit.
+  const handleNewConversation = useCallback(async () => {
+    if (
+      clearInFlight ||
+      chatState.isStreaming ||
+      chatState.hasPendingApproval ||
+      !conversationId
+    ) {
+      return
+    }
+    setClearInFlight(true)
+    try {
+      if (!showWorkspaceReviewState) {
+        const res = await fetch('/api/nic-nac/conversation/clear', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ conversationId }),
+        })
+        if (!res.ok) return
+      }
+      activateConversation(newConversationId(), [])
+    } finally {
+      setClearInFlight(false)
+    }
+  }, [activateConversation, chatState, clearInFlight, conversationId, showWorkspaceReviewState])
 
   const handleLaunchNicNacAction = useCallback(
     (action: WorkspaceLaunchAction) => {
@@ -822,7 +844,8 @@ export default function NicNacClient({
     [handleOpenNicNac],
   )
 
-  const newDisabled = chatState.isStreaming || chatState.hasPendingApproval || rolloverInFlight
+  const newDisabled =
+    chatState.isStreaming || chatState.hasPendingApproval || rolloverInFlight || clearInFlight
   const showReviewerSetupActions =
     reviewerSmokeVisible && isReviewerSmokeSetupState(setupState)
 

@@ -8,6 +8,7 @@ const paidNicNacRoutes = [
   'app/api/nic-nac/conversation/latest/route.ts',
   'app/api/nic-nac/conversation/rollover/route.ts',
   'app/api/nic-nac/conversation/[conversationId]/route.ts',
+  'app/api/nic-nac/conversation/clear/route.ts',
   'app/api/nic-nac/conversation-rollover/route.ts',
   'app/api/nic-nac/conversation-state/route.ts',
   'app/api/nic-nac/customer-audience/route.ts',
