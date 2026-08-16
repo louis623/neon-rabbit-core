@@ -434,6 +434,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toContain('object-fit: contain')
     expect(css).toMatch(/\.hp-about-shorts-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/)
     expect(css).toContain('aspect-ratio: 9 / 16')
+    expect(css).toContain('width: min(100%, 348px)')
+    expect(css).toContain('@media (max-width: 1100px)')
   })
 
   it('ships crawl and sharing metadata with the locked homepage export', () => {
@@ -678,8 +680,9 @@ describe('Amethyst homepage template data wiring', () => {
 
     expect(jsx).toContain('function TikTokEmbed')
     expect(jsx).toContain('https://www.tiktok.com/player/v1/${videoId}')
-    expect(jsx).toContain('autoplay=1&muted=1&loop=1&controls=0')
+    expect(jsx).toContain('autoplay=0&muted=0&loop=1&controls=0&volume_control=0')
     expect(jsx).toContain('new IntersectionObserver')
+    expect(jsx).toContain('message.type === "onPlayerReady"')
     expect(jsx).toContain('type: nextMuted ? "mute" : "unMute"')
     expect(jsx).toContain('<TikTokEmbed')
     expect(jsx).toContain('ss-tiktok-embed-fallback')

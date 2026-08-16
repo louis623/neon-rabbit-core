@@ -709,6 +709,13 @@ function TikTokEmbed({ className = "", videoUrl, title, children }) {
       setMuted(true);
       send("play");
     };
+    const handlePlayerMessage = (event) => {
+      if (event.origin !== "https://www.tiktok.com" || event.source !== frame.contentWindow) return;
+      const message = event.data;
+      if (message?.["x-tiktok-player"] === true && message.type === "onPlayerReady") {
+        playMuted();
+      }
+    };
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
@@ -721,8 +728,10 @@ function TikTokEmbed({ className = "", videoUrl, title, children }) {
     );
 
     observer.observe(frame);
+    window.addEventListener("message", handlePlayerMessage);
     frame.addEventListener("load", playMuted);
     return () => {
+      window.removeEventListener("message", handlePlayerMessage);
       frame.removeEventListener("load", playMuted);
       observer.disconnect();
     };
@@ -756,7 +765,7 @@ function TikTokEmbed({ className = "", videoUrl, title, children }) {
         allowFullScreen
         className="ss-tiktok-embed-frame"
         loading="lazy"
-        src={`https://www.tiktok.com/player/v1/${videoId}?autoplay=1&muted=1&loop=1&controls=0&description=0&music_info=0&rel=0`}
+        src={`https://www.tiktok.com/player/v1/${videoId}?autoplay=0&muted=0&loop=1&controls=0&volume_control=0&description=0&music_info=0&rel=0`}
         title={title || "TikTok video"}
       />
       <button
