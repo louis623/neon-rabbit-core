@@ -3981,7 +3981,7 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 # August 16, 2026 - Durable Nic-Nac Conversation Clearing
 
-## Completed pending application release
+## Completed and released
 
 - Fixed the clear-conversation lifecycle defect: the former control only created a new browser-local conversation ID, while the server still selected the prior persisted thread on a later visit.
 - Clear now writes a durable `cleared_at` marker to all message rows belonging to the authenticated rep's current conversation. The update is rep-scoped and retains the rows for audit continuity rather than deleting messages.
@@ -3992,4 +3992,5 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 - Focused persistence, workspace-shell, paid-route boundary, and HITL coverage passed: 4 files, 37 tests.
 - `npm run build` completed production compilation after the allowlisted-branch guard. A direct repository-wide `tsc` invocation remains red on pre-existing test-fixture typing errors unrelated to this change.
+- Released application commit `20456551 fix: persist Nic-Nac conversation clearing` as Vercel production deployment `dpl_EjE7aHumdvzWsfy5FJ7epz44PSGq`. Vercel assigned both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` to that deployment. No-account checks confirmed the canonical `/nic-nac` path returns 200, the apex produces its canonical 307 redirect, and `POST /api/nic-nac/conversation/clear` correctly returns 401 when no session is supplied.
 - The authenticated reviewer-browser flow remains blocked by the known too-short reviewer-token configuration. Do not use Louis's or a customer account to work around it.

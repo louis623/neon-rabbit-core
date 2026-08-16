@@ -5,7 +5,7 @@
 - **Durable clear:** Clear conversation now marks the signed-in rep's persisted thread as cleared before the browser rotates to a new conversation ID. A later workspace visit, reload, or sign-in cannot select that cleared thread as the latest conversation.
 - **Stale-link safety:** A prior `conversationId` URL cannot rehydrate a cleared thread either. The message rows are retained for operational audit continuity, but excluded from both latest-thread selection and client hydration.
 - **Data model:** Migration `20260816154000_nic_nac_clear_conversations.sql` adds the nullable `cleared_at` marker and a partial active-thread lookup index. It was applied to production before the application release.
-- **Verification pending release:** focused persistence, workspace shell, paid-route, and HITL tests passed (37 tests). Repository-wide test-fixture type errors remain pre-existing and unrelated. Authenticated reviewer-browser smoke is still blocked by the known too-short reviewer-token configuration; do not bypass it with Louis's or any customer account.
+- **Release and verification:** application commit `20456551 fix: persist Nic-Nac conversation clearing` is Vercel production deployment `dpl_EjE7aHumdvzWsfy5FJ7epz44PSGq`. Focused persistence, workspace shell, paid-route, and HITL tests passed (37 tests); `https://www.yoursparklesuite.com/nic-nac` returned 200, the apex returned its canonical 307 redirect, and the new protected clear endpoint returned 401 without a session. Repository-wide test-fixture type errors remain pre-existing and unrelated. Authenticated reviewer-browser smoke is still blocked by the known too-short reviewer-token configuration; do not bypass it with Louis's or any customer account.
 
 **Last updated:** August 16, 2026
 
