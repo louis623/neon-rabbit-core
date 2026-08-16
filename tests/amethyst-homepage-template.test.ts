@@ -115,6 +115,10 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsx).toContain('className="hp-ticker-sr"')
       expect(jsx).toContain('aria-hidden="true"')
       expect(jsx).toContain('aria-label="Customer site updates"')
+      expect(jsx).toContain('function parseAnnouncementTickerItems(topText)')
+      expect(jsx).toContain('target="_blank" rel="noreferrer"')
+      expect(jsx).toContain('hp-ticker-item-link')
+      expect(jsx).toContain('split(/\\n|\\|/)')
     }
     expect(css).toContain('.hp-ticker-sr')
     expect(css).toMatch(/\.hp-ticker-sr[\s\S]*?clip:\s*rect\(0 0 0 0\);/)

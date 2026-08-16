@@ -940,9 +940,24 @@ function useDynamicTickerMotion() {
   }, []);
 }
 
+function parseAnnouncementTickerItems(topText) {
+  return String(topText || "").split(/\n|\|/).map((item) => item.trim()).filter(Boolean).map((item) => {
+    const match = item.match(/^(.*?)\[([^\]]+)\]\(([^()\s]+)\)\s*$/);
+    if (!match) return { text: item, href: "" };
+    try {
+      const url = new URL(match[3], window.location.origin);
+      return /^(https?):$/.test(url.protocol)
+        ? { text: `${match[1]}${match[2]}`.trim(), href: url.href }
+        : { text: item, href: "" };
+    } catch {
+      return { text: item, href: "" };
+    }
+  });
+}
+
 function Ticker({ topText }) {
   useDynamicTickerMotion();
-  const items = topText.split("|").map(s => s.trim()).filter(Boolean);
+  const items = parseAnnouncementTickerItems(topText);
   const contentTrades = Array.isArray(CONTENT.tradeBoardTickerItems)
     ? CONTENT.tradeBoardTickerItems
         .map((item) => ({
@@ -968,20 +983,20 @@ function Ticker({ topText }) {
   return (
     <div className="hp-ticker" id="trade-board" aria-label="Customer site updates">
       <div className="hp-ticker-sr">
-        <p>Announcements: {items.join("; ")}</p>
+        <p>Announcements: {items.map((item) => item.text).join("; ")}</p>
+        {items.filter((item) => item.href).map((item) => (
+          <a key={item.href} {...linkProps(item.href)}>{item.text}</a>
+        ))}
         <p>{getLiveQueueSummary("Live Queue opens when the show starts.")}</p>
         <a {...linkProps(getTradeBoardHref())}>Browse current trade board highlights</a>
       </div>
       <div className="hp-ticker-row">
         <span className="hp-ticker-label">Announcements</span>
         <div className="hp-ticker-track" data-ticker-pps={ANNOUNCEMENT_TICKER_SPEED_PPS} aria-hidden="true">
-          {announcementTickerItems.map((it, i) => (
-            <span
-              key={i}
-              className="hp-ticker-item"
-              data-ticker-segment-start={i === 0 ? "true" : undefined}
-              data-ticker-segment-repeat-start={i === announcementSegmentLength ? "true" : undefined}
-            ><span className="dot" />{it}</span>
+          {announcementTickerItems.map((item, i) => item.href ? (
+            <a key={i} href={item.href} target="_blank" rel="noreferrer" className="hp-ticker-item hp-ticker-item-link" data-ticker-segment-start={i === 0 ? "true" : undefined} data-ticker-segment-repeat-start={i === announcementSegmentLength ? "true" : undefined}><span className="dot" />{item.text}</a>
+          ) : (
+            <span key={i} className="hp-ticker-item" data-ticker-segment-start={i === 0 ? "true" : undefined} data-ticker-segment-repeat-start={i === announcementSegmentLength ? "true" : undefined}><span className="dot" />{item.text}</span>
           ))}
         </div>
       </div>

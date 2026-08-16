@@ -7498,10 +7498,10 @@ export function SiteSettingsCard({
       </div>
 
       <div className={styles.siteSettingsSection}>
-        <div className={styles.walletSettingsTitle}>Ticker and join page</div>
+        <div className={styles.walletSettingsTitle}>Announcement ticker and Join Team page</div>
         <div className={styles.siteSettingsGrid}>
           <label className={styles.sortFieldWide}>
-            <span className={styles.searchLabel}>Ticker text</span>
+            <span className={styles.searchLabel}>Announcement ticker messages</span>
             <textarea
               className={styles.siteSettingsTextarea}
               value={draft.tickerText}
@@ -7509,11 +7509,15 @@ export function SiteSettingsCard({
                 onDraftChange?.({ tickerText: event.target.value })
               }
             />
+            <span className={styles.helperNote}>
+              Use one announcement per line. Emojis work. To make one clickable,
+              add a link like [Shop the new drop](https://example.com).
+            </span>
           </label>
         </div>
         <div className={styles.siteSettingsToggleGrid}>
           <label className={styles.walletToggleRow}>
-            <span className={styles.searchLabel}>Ticker visible</span>
+            <span className={styles.searchLabel}>Show announcement ticker on your public site</span>
             <input
               type="checkbox"
               checked={draft.tickerVisible}
