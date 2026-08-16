@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Plain-language Join Team setting
+
+- Replaced the ambiguous Site Settings checkbox label **Join page visible** with **Show the “Join My Team” recruiting page on your public site**. The setting controls the public recruiting page and its associated Join Team links, not the announcement ticker.
+- Focused Site Settings workspace coverage passed: 103 tests. The active-branch production build compiled after the font-enabled retry.
+- Released application commit `af022579 fix: clarify join team page setting` as Vercel production deployment `dpl_6ysqHQsij5ZcfALmxmxpqhGbmKwy`. Both Sparkle Suite aliases resolve to that exact deployment; `www.yoursparklesuite.com/nic-nac?section=site-settings` returned 200 and the apex canonically redirected there. Authenticated reviewer-browser verification remains blocked by the known too-short reviewer token, and no personal or customer account was used.
+
+---
+
 ## August 16, 2026 - Smart Frame for shared About portraits
 
 - Replaced the fragile one-size-only crop response with a reusable Smart Frame workflow. A new About portrait upload uses the browser Face Detector where supported to select a face-centered focus/zoom; that framing is stored with the image in site settings.

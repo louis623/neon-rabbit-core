@@ -1,5 +1,14 @@
 # Project State
 
+## August 16 Plain-language Join Team setting
+
+- **Clear site-setting label:** The former ambiguous **Join page visible** checkbox now reads **Show the “Join My Team” recruiting page on your public site**. It controls the public recruiting page and its Join Team links; it does not affect the promotional ticker.
+- **Release and verification:** application commit `af022579 fix: clarify join team page setting` is Vercel production deployment `dpl_6ysqHQsij5ZcfALmxmxpqhGbmKwy`. The focused Site Settings UI test passed (103 tests), the production build compiled after the active-branch guard, and both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` resolve to that deployment. The canonical `/nic-nac?section=site-settings` path returned 200; authenticated reviewer-browser confirmation remains blocked by the known too-short reviewer-token configuration, so no personal or customer account was used.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 session closeout: Nic-Nac durability and shared customer media
 
 - **Current production baseline:** Nic-Nac clearing is now durable across reloads and later sign-ins; customer-site media uses one shared, responsive editor with the About portrait at left and visible video guidance plus Showcase and three About-short slots at right on desktop.
