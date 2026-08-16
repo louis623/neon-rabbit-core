@@ -2641,7 +2641,16 @@ body.bg-quartz-paper .hp-step-num {
   border: 0;
   border-radius: 0;
   object-fit: cover;
-  object-position: center 60%;
+  /*
+   * A portrait source often leaves a large amount of empty headroom above the
+   * person.  The card is deliberately clipped, so a small subject-forward
+   * zoom keeps that dead space out of the first visible row without exposing
+   * a second image edge.  This applies to every rep rather than baking a
+   * special crop into one customer's image.
+   */
+  object-position: center 42%;
+  transform: scale(1.18);
+  transform-origin: center 42%;
 }
 
 .hp-about-portrait-card::after {
