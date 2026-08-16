@@ -2404,7 +2404,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain(
       'Applies only to your public customer-facing site.',
     )
-    expect(html).toContain('Join page visible')
+    expect(html).toContain('Show the “Join My Team” recruiting page on your public site')
     expect(html).toContain('Homepage photos and videos')
     expect(html).toContain('About section narrative')
     expect(html).toContain('Build this with Nic-Nac: share your story')

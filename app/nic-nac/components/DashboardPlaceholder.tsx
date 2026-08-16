@@ -7523,7 +7523,9 @@ export function SiteSettingsCard({
             />
           </label>
           <label className={styles.walletToggleRow}>
-            <span className={styles.searchLabel}>Join page visible</span>
+            <span className={styles.searchLabel}>
+              Show the “Join My Team” recruiting page on your public site
+            </span>
             <input
               type="checkbox"
               checked={draft.showJoinPage}
