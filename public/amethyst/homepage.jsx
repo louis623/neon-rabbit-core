@@ -689,7 +689,32 @@ function getYouTubeVideoId(value) {
   return watchId ? watchId[1] : "";
 }
 
-function TikTokEmbed({ className = "", videoUrl, title, children }) {
+function getInstagramEmbedUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    if (host !== "instagram.com") return "";
+    const match = url.pathname.match(/^\/(reel|reels|p)\/([\w-]+)/i);
+    if (!match) return "";
+    const resource = match[1].toLowerCase() === "reels" ? "reel" : match[1].toLowerCase();
+    return `https://www.instagram.com/${resource}/${match[2]}/embed/`;
+  } catch {
+    return "";
+  }
+}
+
+function getFacebookVideoEmbedUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    if (host !== "facebook.com" && host !== "fb.watch") return "";
+    return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url.toString())}&show_text=false&autoplay=false`;
+  } catch {
+    return "";
+  }
+}
+
+function TikTokEmbed({ className = "", videoUrl, title, children, dataSlot }) {
   const frameRef = useRef(null);
   const videoId = getTikTokVideoId(videoUrl);
   const [muted, setMuted] = useState(true);
@@ -720,8 +745,6 @@ function TikTokEmbed({ className = "", videoUrl, title, children }) {
       ([entry]) => {
         if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
           playMuted();
-        } else if (!entry.isIntersecting) {
-          send("pause");
         }
       },
       { threshold: [0, 0.5] },
@@ -758,7 +781,7 @@ function TikTokEmbed({ className = "", videoUrl, title, children }) {
   };
 
   return (
-    <div className={`ss-tiktok-embed ${className}`} data-tiktok-embed="true">
+    <div className={`ss-tiktok-embed ${className}`} data-slot={dataSlot} data-tiktok-embed="true">
       <iframe
         ref={frameRef}
         allow="autoplay; fullscreen"
@@ -776,6 +799,55 @@ function TikTokEmbed({ className = "", videoUrl, title, children }) {
       >
         {muted ? "Unmute" : "Mute"}
       </button>
+    </div>
+  );
+}
+
+function CustomerVideoEmbed({ className = "", videoUrl, title, children, dataSlot }) {
+  const tiktokVideoId = getTikTokVideoId(videoUrl);
+  const youtubeVideoId = getYouTubeVideoId(videoUrl);
+  const instagramEmbedUrl = getInstagramEmbedUrl(videoUrl);
+  const facebookEmbedUrl = getFacebookVideoEmbedUrl(videoUrl);
+
+  if (tiktokVideoId) {
+    return (
+      <TikTokEmbed className={className} dataSlot={dataSlot} title={title} videoUrl={videoUrl}>
+        {children}
+      </TikTokEmbed>
+    );
+  }
+
+  const provider = youtubeVideoId
+    ? "youtube"
+    : instagramEmbedUrl
+      ? "instagram"
+      : facebookEmbedUrl
+        ? "facebook"
+        : "";
+  const src = youtubeVideoId
+    ? `https://www.youtube-nocookie.com/embed/${youtubeVideoId}?autoplay=1&mute=1&loop=1&playlist=${youtubeVideoId}&controls=0&playsinline=1&rel=0`
+    : instagramEmbedUrl || facebookEmbedUrl;
+
+  if (!src) {
+    return (
+      <div className={`ss-customer-video-embed ss-customer-video-embed-fallback ${className}`} data-slot={dataSlot}>
+        <span className="ss-tiktok-embed-coming-soon">Coming soon</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`ss-customer-video-embed ss-customer-video-embed-${provider} ${className}`} data-slot={dataSlot} data-video-provider={provider}>
+      <iframe
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture; web-share"
+        allowFullScreen
+        className="ss-customer-video-frame"
+        loading="lazy"
+        referrerPolicy="strict-origin-when-cross-origin"
+        src={src}
+        title={title || "Customer video"}
+      />
+      {children}
     </div>
   );
 }
@@ -814,39 +886,15 @@ function AboutPortraitCard({ fallbackCaption }) {
 
 function AboutShortCard({ index }) {
   const slot = getAboutMediaSlot(index + 1);
-  const tiktokVideoId = getTikTokVideoId(slot?.href);
-  const youtubeVideoId = getYouTubeVideoId(slot?.href);
   const className = "hp-about-short-card slot";
 
-  if (tiktokVideoId) {
-    return (
-      <TikTokEmbed
-        className={className}
-        title={`About short video ${index + 1}`}
-        videoUrl={slot.href}
-      />
-    );
-  }
-
-  if (youtubeVideoId) {
-    return (
-      <div className={`${className} hp-youtube-short-embed`} data-slot={`about short ${index + 1}`}>
-        <iframe
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
-          className="hp-youtube-short-frame"
-          loading="lazy"
-          src={`https://www.youtube-nocookie.com/embed/${youtubeVideoId}?autoplay=1&mute=1&loop=1&playlist=${youtubeVideoId}&controls=1&playsinline=1&rel=0`}
-          title={`YouTube Short ${index + 1}`}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className={`${className} hp-about-media-empty`} data-slot={`about short ${index + 1}`}>
-      <span className="hp-media-coming-soon">Short video coming soon</span>
-    </div>
+    <CustomerVideoEmbed
+      className={className}
+      dataSlot={`about short ${index + 1}`}
+      title={`About short video ${index + 1}`}
+      videoUrl={slot?.href}
+    />
   );
 }
 
@@ -1382,9 +1430,10 @@ function Wibp({ repName }) {
               </div>
             </div>
           </div>
-          <TikTokEmbed
+          <CustomerVideoEmbed
             className="hp-wibp-video slot"
-            title="TikTok video"
+            dataSlot="showcase video"
+            title="Showcase video"
             videoUrl={CONTENT.showcaseVideoUrl}
           >
             <div className="hp-wibp-video-meta">

@@ -140,6 +140,23 @@ function normalizePublicMediaUrl(value: unknown) {
   return ''
 }
 
+function isSupportedPublicVideoUrl(value: string) {
+  try {
+    const host = new URL(value).hostname.toLowerCase().replace(/^www\./, '')
+    return (
+      host === 'tiktok.com' ||
+      host === 'vm.tiktok.com' ||
+      host === 'youtube.com' ||
+      host === 'youtu.be' ||
+      host === 'instagram.com' ||
+      host === 'facebook.com' ||
+      host === 'fb.watch'
+    )
+  } catch {
+    return false
+  }
+}
+
 function normalizePortraitFramingValue(
   value: unknown,
   fallback: number,
@@ -191,11 +208,11 @@ export function normalizePublicSiteMediaSlots(
       options.rejectInvalidUrls &&
       typeof row?.videoUrl === 'string' &&
       row.videoUrl.trim() &&
-      !videoUrl
+      (!videoUrl || !isSupportedPublicVideoUrl(videoUrl))
     ) {
       throw errors.INVALID_INPUT(
         `${key} video URL or embed code is invalid`,
-        `${mediaLabel} needs a valid video URL or TikTok embed code.`,
+        `${mediaLabel} needs a public TikTok, YouTube, Instagram, or Facebook video URL or embed code.`,
       )
     }
 

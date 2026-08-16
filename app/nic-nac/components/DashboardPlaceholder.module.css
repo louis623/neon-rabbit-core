@@ -4452,6 +4452,27 @@
   align-items: stretch;
 }
 
+.homepageMediaHelp {
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.64);
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 10px 12px;
+}
+
+.homepageMediaHelp summary {
+  color: var(--nic-nac-text-primary);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.homepageMediaHelp p {
+  margin: 8px 0 0;
+}
+
 .homepageMediaCard {
   display: flex;
   flex-direction: column;

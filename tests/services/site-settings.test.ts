@@ -76,6 +76,33 @@ describe('site settings service', () => {
     ])
   })
 
+  it('retains public Instagram and Facebook video links for their allowlisted players', () => {
+    expect(
+      normalizePublicSiteMediaSlots(
+        [
+          {
+            key: 'about_2',
+            videoUrl: 'https://www.instagram.com/reel/C7Example_9/',
+          },
+          {
+            key: 'about_3',
+            videoUrl: 'https://www.facebook.com/example/videos/123456789012345/',
+          },
+        ],
+        { rejectInvalidUrls: true },
+      ),
+    ).toMatchObject([
+      { key: 'showcase', videoUrl: '' },
+      { key: 'about_1', videoUrl: '' },
+      { key: 'about_2', videoUrl: 'https://www.instagram.com/reel/C7Example_9/' },
+      {
+        key: 'about_3',
+        videoUrl: 'https://www.facebook.com/example/videos/123456789012345/',
+      },
+      { key: 'about_4', videoUrl: '' },
+    ])
+  })
+
   it('rejects invalid media text instead of silently reporting it as saved', () => {
     expect(() =>
       normalizePublicSiteMediaSlots(
@@ -87,6 +114,15 @@ describe('site settings service', () => {
             videoUrl: 'not a URL or embed',
           },
         ],
+        { rejectInvalidUrls: true },
+      ),
+    ).toThrow('about_2 video URL or embed code is invalid')
+  })
+
+  it('rejects video hosts that do not have a supported customer-site player', () => {
+    expect(() =>
+      normalizePublicSiteMediaSlots(
+        [{ key: 'about_2', videoUrl: 'https://example.com/short-video' }],
         { rejectInvalidUrls: true },
       ),
     ).toThrow('about_2 video URL or embed code is invalid')

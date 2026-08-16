@@ -1,5 +1,16 @@
 # Project State
 
+## August 16 Four-provider customer video embeds
+
+- **Supported providers:** Every Showcase or About short-video slot now accepts public TikTok, YouTube, Instagram Reel/video-post, and Facebook Reel/video links or embed code. Saved URLs are restricted to those supported providers, preventing an unsupported host from appearing as an empty customer card.
+- **Provider-safe playback:** TikTok and YouTube auto-play muted, loop, and do not surface a pause control; TikTok no longer sends an offscreen pause command. Instagram and Facebook render through their native allowlisted players and retain those providers' controls rather than pretending Sparkle Suite can override them.
+- **Simplified Site Settings:** Replaced four repeated provider-specific labels with **Video link or embed** and one expandable **Video help: links and embeds** panel above the controls.
+- **Verification pending release:** focused public template, Site Settings, media validation, and Help coverage passed (180 tests), and the production build compiled after the active-branch guard. Authenticated reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration; no personal or customer account should be used instead.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Desktop Site Settings video stack
 
 - **Immediate visibility:** The customer-site media controls now place the About portrait photo in the left desktop column and stack **Showcase video** plus **About short video 1–3** together in the right column. Reps can see every video destination without hunting through a mixed card grid.

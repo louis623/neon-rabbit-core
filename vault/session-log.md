@@ -4010,3 +4010,20 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - `npm run build` completed production compilation after the allowlisted-branch safety guard.
 - Released application commit `6dec7f2f fix: group site video controls on desktop` as Vercel production deployment `dpl_CDRXgMMkSZgJfQraBY67W8fktU67`. Both Sparkle Suite domains are assigned to that deployment; the canonical live Site Settings URL returned 200 and the apex produced the expected 307 canonical redirect.
 - Reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration. No Louis or customer session was used as a workaround.
+
+---
+
+# August 16, 2026 - Four-Provider Customer Video Support
+
+## Completed pending release
+
+- Expanded shared customer-site video rendering from TikTok/YouTube-only to four explicit providers: TikTok, YouTube, Instagram Reels/video posts, and Facebook Reels/videos. The same renderer is used for Showcase and all three About short-video slots, so current and future Sparkle Suite sites share the support.
+- TikTok and YouTube now auto-play muted, loop, and expose no pause control; TikTok no longer sends an offscreen pause command. Instagram and Facebook use their native player URLs and controls; no unsupported cross-origin player command is claimed.
+- Site Settings now uses one concise **Video link or embed** label for each video field and one expandable **Video help: links and embeds** panel describing all providers, accepted input, and provider playback behavior.
+- Reject unsupported video-host links at save time instead of storing a link that would render as an empty slot.
+
+## Validation
+
+- Focused public template, Site Settings, media-validation, and Help suites passed: 4 files, 180 tests.
+- `npm run build` completed production compilation after the allowlisted-branch safety guard.
+- Reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration. No Louis or customer session was used as a workaround.

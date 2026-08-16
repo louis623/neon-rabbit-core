@@ -7612,12 +7612,18 @@ export function SiteSettingsCard({
         <div>
           <div className={styles.walletSettingsTitle}>Homepage photos and videos</div>
           <p className={styles.siteSettingsPreviewNote}>
-            Add one clean portrait photo beside your About story, then up to three
-            portrait short videos below it. Portrait photos use a clean 4:5 crop
-            that favors the subject over unused top headroom. Short videos support
-            TikTok and YouTube Shorts links.
+            Add one clean portrait photo and up to four customer videos.
           </p>
         </div>
+        <details className={styles.homepageMediaHelp}>
+          <summary>Video help: links and embeds</summary>
+          <p>
+            Use a public TikTok, YouTube Short, Instagram Reel, or Facebook Reel/video.
+            Paste its link or the platform&apos;s embed code into the video spot you want.
+            TikTok and YouTube play muted, loop, and do not show a pause control.
+            Instagram and Facebook use their native player controls.
+          </p>
+        </details>
         <div className={styles.homepageMediaGrid}>
           {(draft.homepageMediaSlots ?? EMPTY_HOMEPAGE_MEDIA_SLOTS).map((slot) => {
             const label =
@@ -7692,12 +7698,12 @@ export function SiteSettingsCard({
                 {allowsVideo ? (
                   <label className={styles.searchField}>
                     <span className={styles.searchLabel}>
-                      TikTok or YouTube Short URL
+                      Video link or embed
                     </span>
                     <input
                       className={styles.searchInput}
                       type="text"
-                      placeholder="Paste a TikTok embed code or YouTube Short link"
+                      placeholder="Paste a public video link or embed code"
                       value={slot.videoUrl}
                       onChange={(event) => {
                         const videoUrl = event.target.value
