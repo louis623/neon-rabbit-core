@@ -2427,6 +2427,23 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('data-testid="site-settings-save-status"')
   })
 
+  it('keeps the portrait beside one desktop stack containing all four video controls', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.module.css'),
+      'utf8',
+    )
+
+    expect(source).toContain('styles.homepagePortraitMediaCard')
+    expect(source).toContain('styles.homepageVideoMediaCard')
+    expect(css).toContain('grid-template-rows: repeat(4, auto)')
+    expect(css).toMatch(/\.homepagePortraitMediaCard\s*\{[\s\S]*?grid-row:\s*1\s*\/\s*span 4;/)
+    expect(css).toMatch(/\.homepageVideoMediaCard\s*\{[\s\S]*?grid-column:\s*2;/)
+  })
+
   it('shows the Site Settings header save action without auto-save copy', () => {
     const html = renderToStaticMarkup(
       createElement(SiteSettingsCard, {

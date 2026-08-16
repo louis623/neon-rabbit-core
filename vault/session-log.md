@@ -3994,3 +3994,18 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - `npm run build` completed production compilation after the allowlisted-branch guard. A direct repository-wide `tsc` invocation remains red on pre-existing test-fixture typing errors unrelated to this change.
 - Released application commit `20456551 fix: persist Nic-Nac conversation clearing` as Vercel production deployment `dpl_EjE7aHumdvzWsfy5FJ7epz44PSGq`. Vercel assigned both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` to that deployment. No-account checks confirmed the canonical `/nic-nac` path returns 200, the apex produces its canonical 307 redirect, and `POST /api/nic-nac/conversation/clear` correctly returns 401 when no session is supplied.
 - The authenticated reviewer-browser flow remains blocked by the known too-short reviewer-token configuration. Do not use Louis's or a customer account to work around it.
+
+---
+
+# August 16, 2026 - Desktop Site Settings Media Stack
+
+## Completed pending release
+
+- Reworked the shared **Homepage photos and videos** form so the About portrait photo occupies the left desktop column and all four video destinations occupy one right-side stack: Showcase video, About short video 1, About short video 2, and About short video 3.
+- The grouping uses explicit media-role classes rather than positional selectors, preserving the correct layout if slot order changes. Tablet/mobile remains one column.
+
+## Validation
+
+- Focused Site Settings and workspace coverage passed: 2 files, 109 tests.
+- `npm run build` completed production compilation after the allowlisted-branch safety guard.
+- Reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration. No Louis or customer session was used as a workaround.

@@ -7631,7 +7631,14 @@ export function SiteSettingsCard({
             const isUploading = mediaUploadKey === slot.key
 
             return (
-              <section className={styles.homepageMediaCard} key={slot.key}>
+              <section
+                className={`${styles.homepageMediaCard} ${
+                  allowsPhoto
+                    ? styles.homepagePortraitMediaCard
+                    : styles.homepageVideoMediaCard
+                }`}
+                key={slot.key}
+              >
                 <div className={styles.homepageMediaCardHeader}>
                   <strong>{label}</strong>
                   {allowsPhoto && slot.imageUrl ? <span>Photo added</span> : null}

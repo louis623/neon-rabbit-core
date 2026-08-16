@@ -1,5 +1,15 @@
 # Project State
 
+## August 16 Desktop Site Settings video stack
+
+- **Immediate visibility:** The customer-site media controls now place the About portrait photo in the left desktop column and stack **Showcase video** plus **About short video 1–3** together in the right column. Reps can see every video destination without hunting through a mixed card grid.
+- **Responsive behavior:** The layout is based on the slot roles, not their incidental position in an array. On narrower screens it returns to a straightforward one-column reading order.
+- **Verification pending release:** focused Site Settings/workspace coverage passed (109 tests), and the production build compiled after the active-branch guard. Authenticated reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration; no personal or customer account should be used instead.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Durable Nic-Nac conversation clearing
 
 - **Durable clear:** Clear conversation now marks the signed-in rep's persisted thread as cleared before the browser rotates to a new conversation ID. A later workspace visit, reload, or sign-in cannot select that cleared thread as the latest conversation.
