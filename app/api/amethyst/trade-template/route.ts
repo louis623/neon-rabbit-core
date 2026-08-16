@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { loadAmethystPreviewTemplateData } from '@/lib/amethyst/preview-template-data'
 import {
+  applyCustomDomainToTemplateData,
   applyPublicSiteSlugToTemplateData,
 } from '@/lib/amethyst/public-site-links'
 import { resolveAmethystRequestTarget } from '@/lib/amethyst/request-rep-target'
@@ -27,12 +28,16 @@ export async function GET(request: Request) {
     templateData,
     publicSiteSlug,
   )
+  const customerTemplateData = applyCustomDomainToTemplateData(
+    linkedTemplateData,
+    target.customDomain,
+  )
 
   return new NextResponse(
     buildAmethystTradeBootstrapScript(
-      linkedTemplateData.trade,
+      customerTemplateData.trade,
       listings,
-      linkedTemplateData.appearancePreset,
+      customerTemplateData.appearancePreset,
       { publicSiteSlug, repId, targeted },
     ),
     {

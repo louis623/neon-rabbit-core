@@ -56,3 +56,75 @@ export function applyPublicSiteSlugToHomepageEvents(
     })),
   }))
 }
+
+/**
+ * Customer sites served from their own domain keep visitors on that host.
+ * These links intentionally stay root-relative: the browser supplies the
+ * configured custom-domain origin, without baking a domain into stored site
+ * content or exposing an internal tenant target.
+ */
+export function applyCustomDomainToTemplateData(
+  data: AmethystPreviewTemplateData,
+  customDomain: string | null | undefined,
+): AmethystPreviewTemplateData {
+  if (!customDomain?.trim()) return data
+
+  return {
+    ...data,
+    homepage: {
+      ...data.homepage,
+      joinTeamUrl: '/join',
+      pantryPageUrl: data.homepage.pantryPageUrl ? '/in-the-pantry' : undefined,
+      footerLinks: {
+        ...data.homepage.footerLinks,
+        home: '/',
+        tradeBoard: '/trade',
+        joinTeam: data.homepage.footerLinks.joinTeam ? '/join' : undefined,
+        pastShows: '/#events',
+      },
+    },
+    trade: {
+      ...data.trade,
+      pantryPageUrl: data.trade.pantryPageUrl ? '/in-the-pantry' : undefined,
+      footerLinks: {
+        ...data.trade.footerLinks,
+        home: '/',
+        tradeBoard: '/trade',
+        joinTeam: data.trade.footerLinks.joinTeam ? '/join' : undefined,
+        pastShows: '/#events',
+      },
+    },
+    join: {
+      ...data.join,
+      pantryPageUrl: data.join.pantryPageUrl ? '/in-the-pantry' : undefined,
+      footerLinks: {
+        ...data.join.footerLinks,
+        home: '/',
+        tradeBoard: '/trade',
+        joinTeam: '/join',
+        pastShows: '/#top',
+      },
+    },
+  }
+}
+
+export function applyCustomDomainToHomepageEvents(
+  events: AmethystHomepageEventCard[],
+  customDomain: string | null | undefined,
+) {
+  if (!customDomain?.trim()) return events
+
+  return events.map((event) => ({
+    ...event,
+    collections: event.collections.map((collection) => ({
+      ...collection,
+      href: rewriteTradeHrefForCustomDomain(collection.href),
+    })),
+  }))
+}
+
+function rewriteTradeHrefForCustomDomain(href: string) {
+  if (!href.startsWith('/amethyst/Trade.html')) return href
+  const parsed = new URL(href, 'https://www.yoursparklesuite.com')
+  return `/trade${parsed.search}${parsed.hash}`
+}

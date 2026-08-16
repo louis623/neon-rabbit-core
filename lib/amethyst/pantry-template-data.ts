@@ -194,6 +194,24 @@ export function applyPublicSiteSlugToPantryTemplateData(
   }
 }
 
+export function applyCustomDomainToPantryTemplateData(
+  data: AmethystPantryTemplateData,
+  customDomain: string | null | undefined,
+): AmethystPantryTemplateData {
+  if (!customDomain?.trim()) return data
+
+  return {
+    ...data,
+    links: {
+      ...data.links,
+      home: '/',
+      trade: '/trade',
+      join: '/join',
+      pantry: '/in-the-pantry',
+    },
+  }
+}
+
 export function buildAmethystPantryBootstrapScript(
   data: AmethystPantryTemplateData = defaultAmethystPantryTemplateData,
   runtimeContext: AmethystRuntimeContext = { targeted: false },

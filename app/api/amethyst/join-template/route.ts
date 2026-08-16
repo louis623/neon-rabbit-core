@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { buildAmethystJoinBootstrapScript } from '@/lib/amethyst/join-template-data'
 import { loadAmethystPreviewTemplateData } from '@/lib/amethyst/preview-template-data'
+import { applyCustomDomainToTemplateData } from '@/lib/amethyst/public-site-links'
 import { resolveAmethystRequestTarget } from '@/lib/amethyst/request-rep-target'
 import { loadAmethystTradeBoardPreviewListings } from '@/lib/amethyst/trade-board-listings'
 
@@ -22,11 +23,15 @@ export async function GET(request: Request) {
       limit: 8,
     }),
   ])
+  const customerTemplateData = applyCustomDomainToTemplateData(
+    templateData,
+    target.customDomain,
+  )
 
   return new NextResponse(
     buildAmethystJoinBootstrapScript(
-      templateData.join,
-      templateData.appearancePreset,
+      customerTemplateData.join,
+      customerTemplateData.appearancePreset,
       { publicSiteSlug, repId, targeted },
       tradeBoardListings,
     ),

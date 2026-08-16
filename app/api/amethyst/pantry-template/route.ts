@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import {
+  applyCustomDomainToPantryTemplateData,
   applyPublicSiteSlugToPantryTemplateData,
   buildBlingKitchenPantryTemplateData,
   buildAmethystPantryBootstrapScript,
@@ -88,9 +89,13 @@ export async function GET(request: Request) {
     },
     publicSiteSlug,
   )
+  const customerTemplateData = applyCustomDomainToPantryTemplateData(
+    templateData,
+    target.customDomain,
+  )
 
   return new NextResponse(
-    buildAmethystPantryBootstrapScript(templateData, {
+    buildAmethystPantryBootstrapScript(customerTemplateData, {
       publicSiteSlug,
       repId,
       targeted,

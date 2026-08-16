@@ -9,6 +9,8 @@ import {
 import { loadAmethystPreviewTemplateData } from '@/lib/amethyst/preview-template-data'
 import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
 import {
+  applyCustomDomainToHomepageEvents,
+  applyCustomDomainToTemplateData,
   applyPublicSiteSlugToHomepageEvents,
   applyPublicSiteSlugToTemplateData,
 } from '@/lib/amethyst/public-site-links'
@@ -97,16 +99,23 @@ export async function GET(request: Request) {
     templateData,
     publicSiteSlug,
   )
-  const linkedEvents = applyPublicSiteSlugToHomepageEvents(events, publicSiteSlug)
+  const customerTemplateData = applyCustomDomainToTemplateData(
+    linkedTemplateData,
+    target.customDomain,
+  )
+  const linkedEvents = applyCustomDomainToHomepageEvents(
+    applyPublicSiteSlugToHomepageEvents(events, publicSiteSlug),
+    target.customDomain,
+  )
 
   return new NextResponse(
     buildAmethystHomepageBootstrapScript(
-      enrichAmethystHomepageFeatureData(linkedTemplateData.homepage, {
+      enrichAmethystHomepageFeatureData(customerTemplateData.homepage, {
         liveQueueSnapshot,
         tradeBoardListings,
       }),
       linkedEvents,
-      linkedTemplateData.appearancePreset,
+      customerTemplateData.appearancePreset,
       { publicSiteSlug, repId, targeted },
     ),
     {
