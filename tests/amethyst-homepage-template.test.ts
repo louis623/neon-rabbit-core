@@ -84,7 +84,7 @@ describe('Amethyst homepage template data wiring', () => {
       resolve(process.cwd(), 'public/amethyst/Homepage.html'),
       'utf8',
     )
-    expect(homepage).toContain('homepage.jsx?v=20260816-customer-video-renderer')
+    expect(homepage).toContain('homepage.jsx?v=20260816-inline-ticker-links')
   })
 
   it('keeps the shared tweaks helper scoped while exporting controls on window', () => {
@@ -124,6 +124,9 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsx).toContain('target="_blank" rel="noreferrer"')
       expect(jsx).toContain('hp-ticker-item-link')
       expect(jsx).toContain('split(/\\n|\\|/)')
+      expect(jsx).toContain('const linkPattern = /\\[([^\\]]+)\\]\\(([^()\\s]+)\\)/g')
+      expect(jsx).toContain('item.parts.map((part, partIndex) => part.href')
+      expect(jsx).not.toContain('item.href ? (')
     }
     expect(css).toContain('.hp-ticker-sr')
     expect(css).toMatch(/\.hp-ticker-sr[\s\S]*?clip:\s*rect\(0 0 0 0\);/)

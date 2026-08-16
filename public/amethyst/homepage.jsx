@@ -942,16 +942,27 @@ function useDynamicTickerMotion() {
 
 function parseAnnouncementTickerItems(topText) {
   return String(topText || "").split(/\n|\|/).map((item) => item.trim()).filter(Boolean).map((item) => {
-    const match = item.match(/^(.*?)\[([^\]]+)\]\(([^()\s]+)\)\s*$/);
-    if (!match) return { text: item, href: "" };
-    try {
-      const url = new URL(match[3], window.location.origin);
-      return /^(https?):$/.test(url.protocol)
-        ? { text: `${match[1]}${match[2]}`.trim(), href: url.href }
-        : { text: item, href: "" };
-    } catch {
-      return { text: item, href: "" };
+    const parts = [];
+    const linkPattern = /\[([^\]]+)\]\(([^()\s]+)\)/g;
+    let cursor = 0;
+    let match;
+
+    while ((match = linkPattern.exec(item))) {
+      if (match.index > cursor) parts.push({ text: item.slice(cursor, match.index), href: "" });
+      try {
+        const url = new URL(match[2], window.location.origin);
+        parts.push(/^(https?):$/.test(url.protocol)
+          ? { text: match[1], href: url.href }
+          : { text: match[0], href: "" });
+      } catch {
+        parts.push({ text: match[0], href: "" });
+      }
+      cursor = match.index + match[0].length;
     }
+
+    if (cursor < item.length) parts.push({ text: item.slice(cursor), href: "" });
+    if (parts.length === 0) parts.push({ text: item, href: "" });
+    return { text: parts.map((part) => part.text).join(""), parts };
   });
 }
 
@@ -984,8 +995,8 @@ function Ticker({ topText }) {
     <div className="hp-ticker" id="trade-board" aria-label="Customer site updates">
       <div className="hp-ticker-sr">
         <p>Announcements: {items.map((item) => item.text).join("; ")}</p>
-        {items.filter((item) => item.href).map((item) => (
-          <a key={item.href} {...linkProps(item.href)}>{item.text}</a>
+        {items.flatMap((item) => item.parts.filter((part) => part.href)).map((part, index) => (
+          <a key={`${part.href}-${index}`} {...linkProps(part.href)}>{part.text}</a>
         ))}
         <p>{getLiveQueueSummary("Live Queue opens when the show starts.")}</p>
         <a {...linkProps(getTradeBoardHref())}>Browse current trade board highlights</a>
@@ -993,10 +1004,13 @@ function Ticker({ topText }) {
       <div className="hp-ticker-row">
         <span className="hp-ticker-label">Announcements</span>
         <div className="hp-ticker-track" data-ticker-pps={ANNOUNCEMENT_TICKER_SPEED_PPS} aria-hidden="true">
-          {announcementTickerItems.map((item, i) => item.href ? (
-            <a key={i} href={item.href} target="_blank" rel="noreferrer" className="hp-ticker-item hp-ticker-item-link" data-ticker-segment-start={i === 0 ? "true" : undefined} data-ticker-segment-repeat-start={i === announcementSegmentLength ? "true" : undefined}><span className="dot" />{item.text}</a>
-          ) : (
-            <span key={i} className="hp-ticker-item" data-ticker-segment-start={i === 0 ? "true" : undefined} data-ticker-segment-repeat-start={i === announcementSegmentLength ? "true" : undefined}><span className="dot" />{item.text}</span>
+          {announcementTickerItems.map((item, i) => (
+            <span key={i} className="hp-ticker-item" data-ticker-segment-start={i === 0 ? "true" : undefined} data-ticker-segment-repeat-start={i === announcementSegmentLength ? "true" : undefined}>
+              <span className="dot" />
+              {item.parts.map((part, partIndex) => part.href ? (
+                <a key={partIndex} href={part.href} target="_blank" rel="noreferrer" className="hp-ticker-item-link">{part.text}</a>
+              ) : part.text)}
+            </span>
           ))}
         </div>
       </div>

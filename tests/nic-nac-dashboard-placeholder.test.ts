@@ -2366,6 +2366,10 @@ describe('DashboardPlaceholder', () => {
         statusMessage: 'No unsaved changes.',
       }),
     )
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
 
     expect(html).toContain('Profile basics')
     expect(html).toContain('Display name')
@@ -2406,11 +2410,13 @@ describe('DashboardPlaceholder', () => {
     )
     expect(html).toContain('Show the “Join My Team” recruiting page on your public site')
     expect(html).toContain('Announcement ticker messages')
-    expect(html).toContain('Use one announcement per line. Add emojis and clickable announcements with the tools below.')
+    expect(html).toContain('Use one announcement per line. Add emojis, then highlight only the words you want to link.')
     expect(html).toContain('Add an emoji')
-    expect(html).toContain('Add a clickable announcement')
-    expect(html).toContain('What should customers see?')
-    expect(html).toContain('Add link')
+    expect(html).toContain('Link selected words')
+    expect(html).toContain('Highlight the exact words in your announcement first.')
+    expect(html).toContain('Paste the destination link')
+    expect(source).toContain('linkSelectedTickerWords')
+    expect(source).toContain('First highlight the exact words you want customers to click.')
     expect(html).toContain('Homepage photos and videos')
     expect(html).toContain('About section narrative')
     expect(html).toContain('Build this with Nic-Nac: share your story')

@@ -7408,9 +7408,13 @@ export function SiteSettingsCard({
   onSave?: () => void
 }) {
   const tickerTextareaRef = useRef<HTMLTextAreaElement>(null)
-  const [tickerLinkText, setTickerLinkText] = useState('')
   const [tickerLinkUrl, setTickerLinkUrl] = useState('')
   const [tickerLinkError, setTickerLinkError] = useState<string | null>(null)
+  const [tickerLinkSelection, setTickerLinkSelection] = useState<{
+    start: number
+    end: number
+    text: string
+  } | null>(null)
 
   const addTickerText = (value: string) => {
     if (!onDraftChange) return
@@ -7427,16 +7431,30 @@ export function SiteSettingsCard({
     })
   }
 
-  const addLinkedTickerAnnouncement = () => {
-    const text = tickerLinkText.trim()
-    if (!text) return
+  const linkSelectedTickerWords = () => {
+    const currentValue = draft?.tickerText ?? ''
+    const selection = tickerLinkSelection
+    if (!selection || !selection.text.trim()) {
+      setTickerLinkError('First highlight the exact words you want customers to click.')
+      return
+    }
     try {
       const url = new URL(tickerLinkUrl.trim())
       if (!['http:', 'https:'].includes(url.protocol)) throw new Error('unsupported')
-      addTickerText(`${draft?.tickerText.trim() ? '\n' : ''}[${text}](${url.href})`)
-      setTickerLinkText('')
+      const linkedText = `[${selection.text}](${url.href})`
+      onDraftChange?.({
+        tickerText: `${currentValue.slice(0, selection.start)}${linkedText}${currentValue.slice(selection.end)}`,
+      })
       setTickerLinkUrl('')
       setTickerLinkError(null)
+      setTickerLinkSelection(null)
+      window.requestAnimationFrame(() => {
+        tickerTextareaRef.current?.focus()
+        tickerTextareaRef.current?.setSelectionRange(
+          selection.start + linkedText.length,
+          selection.start + linkedText.length,
+        )
+      })
     } catch {
       setTickerLinkError('Use a complete https:// or http:// link.')
     }
@@ -7541,12 +7559,24 @@ export function SiteSettingsCard({
               ref={tickerTextareaRef}
               className={styles.siteSettingsTextarea}
               value={draft.tickerText}
-              onChange={(event) =>
+              onChange={(event) => {
+                setTickerLinkSelection(null)
                 onDraftChange?.({ tickerText: event.target.value })
-              }
+              }}
+              onSelect={(event) => {
+                const textarea = event.currentTarget
+                const start = textarea.selectionStart
+                const end = textarea.selectionEnd
+                setTickerLinkSelection(
+                  start === end
+                    ? null
+                    : { start, end, text: textarea.value.slice(start, end) },
+                )
+                setTickerLinkError(null)
+              }}
             />
             <span className={styles.helperNote}>
-              Use one announcement per line. Add emojis and clickable announcements with the tools below.
+              Use one announcement per line. Add emojis, then highlight only the words you want to link.
             </span>
             <div className={styles.tickerComposer}>
               <div>
@@ -7566,28 +7596,27 @@ export function SiteSettingsCard({
                 </div>
               </div>
               <div>
-                <span className={styles.searchLabel}>Add a clickable announcement</span>
+                <span className={styles.searchLabel}>Link selected words</span>
+                <span className={styles.tickerLinkHint}>
+                  {tickerLinkSelection?.text.trim()
+                    ? `Ready to link: “${tickerLinkSelection.text}”`
+                    : 'Highlight the exact words in your announcement first.'}
+                </span>
                 <div className={styles.tickerLinkBuilder}>
-                  <input
-                    className={styles.searchInput}
-                    value={tickerLinkText}
-                    onChange={(event) => setTickerLinkText(event.target.value)}
-                    placeholder="What should customers see?"
-                  />
                   <input
                     className={styles.searchInput}
                     type="url"
                     value={tickerLinkUrl}
                     onChange={(event) => setTickerLinkUrl(event.target.value)}
-                    placeholder="https://where-it-goes.com"
+                    placeholder="Paste the destination link"
                   />
                   <button
                     type="button"
                     className={styles.tickerLinkButton}
-                    onClick={addLinkedTickerAnnouncement}
-                    disabled={!tickerLinkText.trim() || !tickerLinkUrl.trim()}
+                    onClick={linkSelectedTickerWords}
+                    disabled={!tickerLinkSelection?.text.trim() || !tickerLinkUrl.trim()}
                   >
-                    Add link
+                    Link selected words
                   </button>
                 </div>
                 {tickerLinkError ? <span className={styles.tickerLinkError}>{tickerLinkError}</span> : null}
