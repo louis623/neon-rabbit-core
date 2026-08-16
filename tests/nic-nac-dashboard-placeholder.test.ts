@@ -61,6 +61,8 @@ import {
   calculateSingleShowCalculator,
   buildTradeBoardFetchUrl,
   buildSiteRecipesFetchUrl,
+  createTickerLinkFromSelection,
+  makeTickerLinksPlainText,
   getRecipeDraft,
   getRecipeDraftSavePayload,
   getRecipeSaveStatusText,
@@ -2442,6 +2444,34 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Preview customer site')
     expect(html).toContain('No unsaved changes.')
     expect(html).toContain('data-testid="site-settings-save-status"')
+  })
+
+  it('links only the selected ticker words and can recover old whole-message links', () => {
+    const tickerText = '✨ I am live now — shop tonight!'
+    const selectionStart = tickerText.indexOf('shop tonight')
+    const selectionEnd = selectionStart + 'shop tonight'.length
+
+    expect(
+      createTickerLinkFromSelection({
+        tickerText,
+        selectionStart,
+        selectionEnd,
+        destination: 'https://shop.example.com/drop',
+      }),
+    ).toBe('✨ I am live now — [shop tonight](https://shop.example.com/drop)!')
+    expect(
+      createTickerLinkFromSelection({
+        tickerText,
+        selectionStart,
+        selectionEnd,
+        destination: 'javascript:alert(1)',
+      }),
+    ).toBeNull()
+    expect(
+      makeTickerLinksPlainText(
+        '[Shop the live drop](https://shop.example.com/drop)\n✨ New reveals tonight',
+      ),
+    ).toBe('Shop the live drop\n✨ New reveals tonight')
   })
 
   it('keeps the portrait beside one desktop stack containing all four video controls', () => {

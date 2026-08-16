@@ -1784,6 +1784,32 @@ async function preparePublicSiteMediaUpload(file: File) {
   }
 }
 
+export function createTickerLinkFromSelection(input: {
+  tickerText: string
+  selectionStart: number
+  selectionEnd: number
+  destination: string
+}) {
+  const selectedText = input.tickerText.slice(
+    input.selectionStart,
+    input.selectionEnd,
+  )
+  if (!selectedText.trim()) return null
+
+  try {
+    const url = new URL(input.destination.trim())
+    if (!['http:', 'https:'].includes(url.protocol)) return null
+    const linkedText = `[${selectedText}](${url.href})`
+    return `${input.tickerText.slice(0, input.selectionStart)}${linkedText}${input.tickerText.slice(input.selectionEnd)}`
+  } catch {
+    return null
+  }
+}
+
+export function makeTickerLinksPlainText(tickerText: string) {
+  return tickerText.replace(/\[([^\]]+)\]\([^()\s]+\)/g, '$1')
+}
+
 export function updateHomepageMediaSlot(
   draft: SiteSettingsDraft,
   key: PublicSiteMediaSlotKey,
@@ -7438,31 +7464,33 @@ export function SiteSettingsCard({
       setTickerLinkError('First highlight the exact words you want customers to click.')
       return
     }
-    try {
-      const url = new URL(tickerLinkUrl.trim())
-      if (!['http:', 'https:'].includes(url.protocol)) throw new Error('unsupported')
-      const linkedText = `[${selection.text}](${url.href})`
-      onDraftChange?.({
-        tickerText: `${currentValue.slice(0, selection.start)}${linkedText}${currentValue.slice(selection.end)}`,
-      })
+    const nextTickerText = createTickerLinkFromSelection({
+      tickerText: currentValue,
+      selectionStart: selection.start,
+      selectionEnd: selection.end,
+      destination: tickerLinkUrl,
+    })
+    if (nextTickerText) {
+      const linkedTextLength = nextTickerText.length - currentValue.length + selection.text.length
+      onDraftChange?.({ tickerText: nextTickerText })
       setTickerLinkUrl('')
       setTickerLinkError(null)
       setTickerLinkSelection(null)
       window.requestAnimationFrame(() => {
         tickerTextareaRef.current?.focus()
         tickerTextareaRef.current?.setSelectionRange(
-          selection.start + linkedText.length,
-          selection.start + linkedText.length,
+          selection.start + linkedTextLength,
+          selection.start + linkedTextLength,
         )
       })
-    } catch {
-      setTickerLinkError('Use a complete https:// or http:// link.')
+      return
     }
+    setTickerLinkError('Use a complete https:// or http:// link.')
   }
 
-  const makeTickerLinksPlainText = () => {
+  const resetTickerLinksToPlainText = () => {
     const currentValue = draft?.tickerText ?? ''
-    const plainText = currentValue.replace(/\[([^\]]+)\]\([^()\s]+\)/g, '$1')
+    const plainText = makeTickerLinksPlainText(currentValue)
     onDraftChange?.({ tickerText: plainText })
     setTickerLinkSelection(null)
     setTickerLinkUrl('')
@@ -7635,7 +7663,7 @@ export function SiteSettingsCard({
                   <button
                     type="button"
                     className={styles.tickerLinkResetButton}
-                    onClick={makeTickerLinksPlainText}
+                    onClick={resetTickerLinksToPlainText}
                   >
                     Make existing links plain text
                   </button>
