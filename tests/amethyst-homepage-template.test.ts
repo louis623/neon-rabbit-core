@@ -352,8 +352,9 @@ describe('Amethyst homepage template data wiring', () => {
     expect(script).toContain('"aboutHeadline"')
     expect(script).toContain('"aboutParagraphs"')
     expect(script).toContain('"aboutMediaSlots"')
-    expect(script).toContain('"typeLabel":"About media 1"')
-    expect(script).toContain('"typeLabel":"About media 2"')
+    expect(script).toContain('"typeLabel":"Portrait photo"')
+    expect(script).toContain('"typeLabel":"Short video 1"')
+    expect(script).toContain('"typeLabel":"Short video 3"')
     expect(script).toContain('"heroMotion"')
     expect(script).toContain('"streamLinks"')
     expect(script).toContain('"socialLinks"')
@@ -414,7 +415,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(softGlowScript).toContain('"heroMotion":"soft_glow"')
   })
 
-  it('uses two clear optional About media slots instead of a tiny three-card gallery', () => {
+  it('uses one uncropped About portrait followed by three portrait short-video cards', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
       'utf8',
@@ -424,15 +425,15 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    expect(jsx).toContain('data-slot={`about media ${index + 1}`}')
-    expect(jsx).toContain('function AboutMediaCard')
-    expect(jsx).toContain('Heather Daugherty - BlingKitchen, Ohio')
-    expect(jsx).toContain('Family recipes, kitchen tips, and Heather-style notes.')
-    expect(jsx).not.toContain('data-slot="about media 3"')
-    expect(jsx).not.toContain('hp-about-media-card-tall')
-    expect(css).toMatch(/\.hp-about-media-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/)
-    expect(css).toMatch(/\.hp-about-media-grid\s*\{[\s\S]*?grid-template-rows:\s*minmax\(420px,\s*1fr\);/)
-    expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.hp-about-media-grid[\s\S]*?grid-template-columns:\s*1fr;/)
+    expect(jsx).toContain('function AboutPortraitCard')
+    expect(jsx).toContain('function AboutShortCard')
+    expect(jsx).toContain('data-slot={`about short ${index + 1}`}')
+    expect(jsx).toContain('getYouTubeVideoId')
+    expect(jsx).toContain('youtube-nocookie.com/embed')
+    expect(css).toContain('.hp-about-portrait-image')
+    expect(css).toContain('object-fit: contain')
+    expect(css).toMatch(/\.hp-about-shorts-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/)
+    expect(css).toContain('aspect-ratio: 9 / 16')
   })
 
   it('ships crawl and sharing metadata with the locked homepage export', () => {
@@ -686,7 +687,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('ss-tiktok-embed-coming-soon')
     expect(jsx).toContain('hp-about-media-empty')
     expect(jsx).toContain('hp-media-coming-soon')
-    expect(jsx).toContain('function AboutMediaCard')
+    expect(jsx).toContain('function AboutShortCard')
     expect(jsx).not.toContain('hp-about-media-type')
     expect(jsx).not.toContain('hp-about-media-play')
     expect(jsx).not.toContain('window.open(slot.href')

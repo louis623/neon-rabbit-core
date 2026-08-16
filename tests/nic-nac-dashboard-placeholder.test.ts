@@ -2412,11 +2412,12 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Write with Nic-Nac')
     expect(html).not.toContain('Your saved About narrative will appear here.')
     expect(html).toContain('Showcase video')
-    expect(html).toContain('About media 1')
-    expect(html).toContain('About media 2')
-    expect(html.match(/TikTok embed code or video URL/g)).toHaveLength(3)
-    expect(html.match(/Upload photo/g)).toHaveLength(2)
-    expect(html).toContain('Showcase video accepts a TikTok embed or video link.')
+    expect(html).toContain('About portrait photo')
+    expect(html).toContain('About short video 1')
+    expect(html).toContain('About short video 3')
+    expect(html.match(/TikTok or YouTube Short URL/g)).toHaveLength(4)
+    expect(html.match(/Upload photo/g)).toHaveLength(1)
+    expect(html).toContain('Portrait photos always fit inside the frame instead of being forced into a crop.')
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
     expect(html).toContain('Customer-facing site setup')
@@ -2669,7 +2670,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Renews through')
   })
 
-  it('disables About media captions when the slot contains a video URL', () => {
+  it('shows captions only for the About portrait photo', () => {
     const html = renderToStaticMarkup(
       createElement(SiteSettingsCard, {
         state: SITE_SETTINGS_READY_STATE,
@@ -2681,9 +2682,14 @@ describe('DashboardPlaceholder', () => {
               key: 'about_1',
               caption: '',
               imageUrl: '',
+              videoUrl: '',
+            },
+            {
+              key: 'about_2',
+              caption: '',
+              imageUrl: '',
               videoUrl: 'https://www.tiktok.com/@sparkle/video/7412345678901234567',
             },
-            { key: 'about_2', caption: '', imageUrl: '', videoUrl: '' },
           ],
         },
         actionState: { pending: false, error: null, helperMessage: null },
@@ -2692,9 +2698,8 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).not.toContain('Captions are available for photos only.')
-    expect(html).not.toContain('caption-video-note-about_1')
-    expect(html.match(/Caption<\/span>/g)).toHaveLength(2)
+    expect(html).toContain('Photo caption')
+    expect(html.match(/Photo caption<\/span>/g)).toHaveLength(1)
   })
 
   it('shows the five-day trial deadline and preserved-work expiry message', () => {

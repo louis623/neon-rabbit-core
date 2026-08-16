@@ -527,7 +527,12 @@ export interface WalletDashboardResult {
 
 export type HeroAnimationType = 'still' | 'sparkle_rise' | 'soft_glow'
 export type CustomerSiteTemplate = 'amethyst'
-export type PublicSiteMediaSlotKey = 'showcase' | 'about_1' | 'about_2'
+export type PublicSiteMediaSlotKey =
+  | 'showcase'
+  | 'about_1'
+  | 'about_2'
+  | 'about_3'
+  | 'about_4'
 
 export interface PublicSiteMediaSlot {
   key: PublicSiteMediaSlotKey

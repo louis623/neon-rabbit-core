@@ -512,7 +512,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
   const showcaseMedia = homepageMediaSlots.find(
     (slot) => slot.key === 'showcase',
   )
-  const aboutMedia = ['about_1', 'about_2'].map((key) =>
+  const aboutMedia = ['about_1', 'about_2', 'about_3', 'about_4'].map((key) =>
     homepageMediaSlots.find((slot) => slot.key === key),
   )
   const aboutParagraphs = splitAboutNarrative(settings.aboutNarrative)
@@ -554,15 +554,12 @@ export function mapPreviewSettingsToHomepageTemplateData(
     aboutMediaSlots: defaultAmethystHomepageTemplateData.aboutMediaSlots.map(
       (fallback, index) => {
         const media = aboutMedia[index]
+        const isPortrait = index === 0
         return {
-          typeLabel: media?.videoUrl
-            ? 'TikTok or video'
-            : media?.imageUrl
-              ? 'Photo'
-              : fallback.typeLabel,
-          caption: media?.videoUrl ? '' : media?.caption || fallback.caption,
-          href: media?.videoUrl || '#',
-          mediaUrl: media?.imageUrl || undefined,
+          typeLabel: isPortrait ? 'Portrait photo' : `Short video ${index}`,
+          caption: isPortrait ? media?.caption || fallback.caption : '',
+          href: isPortrait ? '#' : media?.videoUrl || '#',
+          mediaUrl: isPortrait ? media?.imageUrl || undefined : undefined,
         }
       },
     ) as AmethystHomepageTemplateData['aboutMediaSlots'],

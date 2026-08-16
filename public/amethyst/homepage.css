@@ -2609,28 +2609,8 @@ body.bg-quartz-paper .hp-step-num {
   color: var(--fg-muted);
 }
 
-.hp-about-media-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: minmax(420px, 1fr);
-  gap: 18px;
-  min-height: 100%;
-}
-@media (max-width: 980px) {
-  .hp-about-media-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: minmax(320px, auto);
-    min-height: 0;
-  }
-}
-@media (max-width: 700px) {
-  .hp-about-media-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(2, minmax(300px, auto));
-  }
-}
-
-.hp-about-media-card {
+.hp-about-portrait-card,
+.hp-about-short-card {
   position: relative;
   overflow: hidden;
   border-radius: var(--hp-radius-card);
@@ -2640,71 +2620,87 @@ body.bg-quartz-paper .hp-step-num {
     radial-gradient(ellipse at 30% 30%, var(--hp-primary), transparent 60%),
     radial-gradient(ellipse at 70% 70%, var(--hp-accent), #0E0820 70%);
   color: white;
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  min-height: 420px;
 }
-.hp-about-media-card::before {
+
+.hp-about-portrait-card {
+  aspect-ratio: 3 / 4;
+  align-self: start;
+  justify-content: flex-end;
+  margin: 0;
+  min-height: 0;
+}
+
+.hp-about-portrait-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  background: color-mix(in oklab, var(--hp-bg-elevated) 84%, #0e0820);
+}
+
+.hp-about-portrait-card::after {
   content: "";
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 14% 18%, rgba(255,255,255,0.22), transparent 24%),
-    radial-gradient(circle at 78% 22%, rgba(255,255,255,0.14), transparent 18%),
-    radial-gradient(circle at 64% 74%, rgba(255,255,255,0.16), transparent 20%);
+  inset: auto 0 0;
+  height: 34%;
+  background: linear-gradient(transparent, rgba(14, 8, 32, 0.72));
   pointer-events: none;
 }
-.hp-about-media-card > * {
-  position: relative;
-  z-index: 1;
+
+.hp-about-shorts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  max-width: 1080px;
+  margin: 28px auto 0;
+  align-items: start;
 }
+
+.hp-about-short-card {
+  width: min(100%, 280px);
+  aspect-ratio: 9 / 16;
+  justify-self: center;
+  min-height: 0;
+}
+
+.hp-about-short-card .ss-tiktok-embed-frame,
+.hp-youtube-short-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #0e0820;
+}
+
+.hp-about-media-caption {
+  position: absolute;
+  z-index: 1;
+  right: 18px;
+  bottom: 16px;
+  left: 18px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(255,255,255,0.9);
+  text-shadow: 0 2px 12px rgba(0,0,0,0.52);
+}
+
 .hp-about-media-empty {
   align-items: center;
   justify-content: center;
 }
-.hp-about-media-type {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.12);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-}
-.hp-about-media-play {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: white;
-  color: #0E0820;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0;
-  margin-bottom: 16px;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
-}
-.hp-about-media-play::before {
-  content: "\25b6";
-  font-size: 20px;
-  line-height: 1;
-  transform: translateX(1px);
-}
-.hp-about-media-caption {
-  font-size: 13px;
-  line-height: 1.55;
-  color: rgba(255,255,255,0.8);
-  max-width: 24ch;
+
+@media (max-width: 700px) {
+  .hp-about-shorts-grid {
+    grid-template-columns: 1fr;
+    margin-top: 20px;
+  }
+
+  .hp-about-short-card {
+    width: min(100%, 320px);
+  }
 }
 
 /* ============================================================

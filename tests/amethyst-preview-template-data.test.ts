@@ -149,15 +149,27 @@ describe('Amethyst preview template data', () => {
     expect(data.showcaseImageUrl).toBe('')
     expect(data.aboutMediaSlots).toEqual([
       {
-        typeLabel: 'Photo',
+        typeLabel: 'Portrait photo',
         caption: 'At the show table',
         href: '#',
         mediaUrl: 'https://cdn.example.com/about-1.jpg',
       },
       {
-        typeLabel: 'TikTok or video',
+        typeLabel: 'Short video 1',
         caption: '',
         href: 'https://www.tiktok.com/@sparklesuitedemo/video/2',
+        mediaUrl: undefined,
+      },
+      {
+        typeLabel: 'Short video 2',
+        caption: '',
+        href: '#',
+        mediaUrl: undefined,
+      },
+      {
+        typeLabel: 'Short video 3',
+        caption: '',
+        href: '#',
         mediaUrl: undefined,
       },
     ])

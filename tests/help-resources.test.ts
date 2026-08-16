@@ -127,13 +127,13 @@ describe('help resources', () => {
       'Choose Share, then Embed, and copy the TikTok embed code. You can instead copy that individual video\'s full TikTok link.',
       'In the Sparkle Suite workspace, open Site Settings.',
       'Find Homepage photos and videos.',
-      'Choose Showcase video for the main homepage feature, or choose About media 1 or About media 2 for an About-section video.',
+      'Choose Showcase video for the main homepage feature, or choose About short video 1, 2, or 3 for a portrait video below your About story.',
       'Paste the TikTok embed code or full individual-video link into TikTok embed code or video URL.',
       'Wait for the auto-save indicator to confirm the change saved.',
       'Open Preview customer site and play the video to confirm it appears in the selected spot.',
     ])
     expect(guide?.body).toContain('profile link will not create a video embed')
-    expect(guide?.nicNacPrompt).toContain('Showcase video or About media spot')
+    expect(guide?.nicNacPrompt).toContain('Showcase video or one of my three About short-video spots')
   })
 
   it('keeps Live Queue guidance honest about rollout and Web Store readiness', () => {

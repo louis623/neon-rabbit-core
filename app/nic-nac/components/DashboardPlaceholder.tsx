@@ -1525,6 +1525,8 @@ const EMPTY_HOMEPAGE_MEDIA_SLOTS = [
   { key: 'showcase' as const, caption: '', imageUrl: '', videoUrl: '' },
   { key: 'about_1' as const, caption: '', imageUrl: '', videoUrl: '' },
   { key: 'about_2' as const, caption: '', imageUrl: '', videoUrl: '' },
+  { key: 'about_3' as const, caption: '', imageUrl: '', videoUrl: '' },
+  { key: 'about_4' as const, caption: '', imageUrl: '', videoUrl: '' },
 ]
 
 export function getSiteSettingsDraft(
@@ -7551,8 +7553,10 @@ export function SiteSettingsCard({
         <div>
           <div className={styles.walletSettingsTitle}>Homepage photos and videos</div>
           <p className={styles.siteSettingsPreviewNote}>
-            Showcase video accepts a TikTok embed or video link. About media 1
-            and 2 each accept a photo, a TikTok or video link, or both.
+            Add one clean portrait photo beside your About story, then up to three
+            portrait short videos below it. Portrait photos always fit inside the
+            frame instead of being forced into a crop. Short videos support TikTok
+            and YouTube Shorts links.
           </p>
         </div>
         <div className={styles.homepageMediaGrid}>
@@ -7561,25 +7565,26 @@ export function SiteSettingsCard({
               slot.key === 'showcase'
                 ? 'Showcase video'
                 : slot.key === 'about_1'
-                  ? 'About media 1'
-                  : 'About media 2'
+                  ? 'About portrait photo'
+                  : `About short video ${Number(slot.key.slice(-1)) - 1}`
+            const allowsPhoto = slot.key === 'about_1'
+            const allowsVideo = slot.key !== 'about_1'
             const isUploading = mediaUploadKey === slot.key
-            const hasVideoUrl = Boolean(slot.videoUrl.trim())
 
             return (
               <section className={styles.homepageMediaCard} key={slot.key}>
                 <div className={styles.homepageMediaCardHeader}>
                   <strong>{label}</strong>
-                  {slot.imageUrl ? <span>Photo added</span> : null}
+                  {allowsPhoto && slot.imageUrl ? <span>Photo added</span> : null}
                 </div>
-                {slot.imageUrl ? (
+                {allowsPhoto && slot.imageUrl ? (
                   <img
                     className={styles.homepageMediaPreview}
                     src={slot.imageUrl}
                     alt={`${label} preview`}
                   />
                 ) : null}
-                {slot.key !== 'showcase' ? (
+                {allowsPhoto ? (
                   <label className={styles.homepageMediaUploadButton}>
                     {isUploading
                       ? 'Uploading...'
@@ -7611,40 +7616,37 @@ export function SiteSettingsCard({
                     {mediaUploadFeedback.message}
                   </p>
                 ) : null}
-                <label className={styles.searchField}>
-                  <span className={styles.searchLabel}>
-                    TikTok embed code or video URL
-                  </span>
-                  <input
-                    className={styles.searchInput}
-                    type="text"
-                    placeholder="Paste a TikTok embed code or https://..."
-                    value={slot.videoUrl}
-                    onChange={(event) => {
-                      const videoUrl = event.target.value
-                      onHomepageMediaChange?.(slot.key, {
-                        videoUrl,
-                        caption: videoUrl.trim() ? '' : slot.caption,
-                      })
-                    }}
-                  />
-                </label>
-                {!hasVideoUrl ? (
+                {allowsVideo ? (
                   <label className={styles.searchField}>
-                    <span className={styles.searchLabel}>Caption</span>
+                    <span className={styles.searchLabel}>
+                      TikTok or YouTube Short URL
+                    </span>
+                    <input
+                      className={styles.searchInput}
+                      type="text"
+                      placeholder="Paste a TikTok embed code or YouTube Short link"
+                      value={slot.videoUrl}
+                      onChange={(event) => {
+                        const videoUrl = event.target.value
+                        onHomepageMediaChange?.(slot.key, { videoUrl, caption: '' })
+                      }}
+                    />
+                  </label>
+                ) : null}
+                {allowsPhoto ? (
+                  <label className={styles.searchField}>
+                    <span className={styles.searchLabel}>Photo caption</span>
                     <input
                       className={styles.searchInput}
                       maxLength={240}
                       value={slot.caption}
                       onChange={(event) =>
-                        onHomepageMediaChange?.(slot.key, {
-                          caption: event.target.value,
-                        })
+                        onHomepageMediaChange?.(slot.key, { caption: event.target.value })
                       }
                     />
                   </label>
                 ) : null}
-                {slot.key !== 'showcase' && slot.imageUrl ? (
+                {allowsPhoto && slot.imageUrl ? (
                   <button
                     type="button"
                     className={styles.homepageMediaRemoveButton}

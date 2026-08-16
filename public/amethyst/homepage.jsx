@@ -304,15 +304,6 @@ function SocialLogo({ label, shortLabel }) {
   return <span className="hp-footer-social-fallback">{shortLabel || (label || "").slice(0, 2).toUpperCase()}</span>;
 }
 
-function aboutMediaStyle(slot) {
-  if (!slot?.mediaUrl) return undefined;
-  return {
-    backgroundImage: `linear-gradient(rgba(14, 8, 32, 0.24), rgba(14, 8, 32, 0.52)), url("${slot.mediaUrl}")`,
-    backgroundPosition: "center",
-    backgroundSize: "cover",
-  };
-}
-
 function isScheduledShowLive(event, now = Date.now()) {
   const startAt = Date.parse(event?.eventTime || "");
   if (Number.isNaN(startAt)) return false;
@@ -689,6 +680,15 @@ function getTikTokVideoId(value) {
   return urlId ? urlId[1] : "";
 }
 
+function getYouTubeVideoId(value) {
+  const input = String(value || "");
+  const shortId = input.match(/(?:youtube\.com\/shorts\/|youtu\.be\/)([\w-]{6,})/i);
+  if (shortId) return shortId[1];
+
+  const watchId = input.match(/[?&]v=([\w-]{6,})/i);
+  return watchId ? watchId[1] : "";
+}
+
 function TikTokEmbed({ className = "", videoUrl, title, children }) {
   const frameRef = useRef(null);
   const videoId = getTikTokVideoId(videoUrl);
@@ -771,45 +771,67 @@ function TikTokEmbed({ className = "", videoUrl, title, children }) {
   );
 }
 
-function AboutMediaCard({ index, fallbackCaption }) {
-  const slot = getAboutMediaSlot(index);
-  const videoId = getTikTokVideoId(slot?.href);
+function AboutPortraitCard({ fallbackCaption }) {
+  const slot = getAboutMediaSlot(0);
   const hasImage = Boolean(slot?.mediaUrl);
-  const className = "hp-about-media-card slot";
-  const content = (
-    <>
-      <div className="hp-about-media-caption">{slot?.caption || fallbackCaption}</div>
-    </>
-  );
-
-  if (videoId) {
-    return (
-      <TikTokEmbed
-        className={className}
-        title={slot?.caption || "TikTok video"}
-        videoUrl={slot.href}
-      />
-    );
-  }
 
   if (!hasImage) {
     return (
-      <div
-        className={`${className} hp-about-media-empty`}
-        data-slot={`about media ${index + 1}`}
-      >
-        <span className="hp-media-coming-soon">Coming soon</span>
+      <div className="hp-about-portrait-card hp-about-media-empty slot" data-slot="about portrait">
+        <span className="hp-media-coming-soon">Portrait photo coming soon</span>
       </div>
     );
   }
 
   return (
-    <div
-      className={className}
-      data-slot={`about media ${index + 1}`}
-      style={aboutMediaStyle(slot)}
-    >
-      {content}
+    <figure className="hp-about-portrait-card slot" data-slot="about portrait">
+      <img
+        alt={slot?.caption || fallbackCaption}
+        className="hp-about-portrait-image"
+        loading="lazy"
+        src={slot.mediaUrl}
+      />
+      <figcaption className="hp-about-media-caption">
+        {slot?.caption || fallbackCaption}
+      </figcaption>
+    </figure>
+  );
+}
+
+function AboutShortCard({ index }) {
+  const slot = getAboutMediaSlot(index + 1);
+  const tiktokVideoId = getTikTokVideoId(slot?.href);
+  const youtubeVideoId = getYouTubeVideoId(slot?.href);
+  const className = "hp-about-short-card slot";
+
+  if (tiktokVideoId) {
+    return (
+      <TikTokEmbed
+        className={className}
+        title={`About short video ${index + 1}`}
+        videoUrl={slot.href}
+      />
+    );
+  }
+
+  if (youtubeVideoId) {
+    return (
+      <div className={`${className} hp-youtube-short-embed`} data-slot={`about short ${index + 1}`}>
+        <iframe
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+          className="hp-youtube-short-frame"
+          loading="lazy"
+          src={`https://www.youtube-nocookie.com/embed/${youtubeVideoId}?autoplay=1&mute=1&loop=1&playlist=${youtubeVideoId}&controls=1&playsinline=1&rel=0`}
+          title={`YouTube Short ${index + 1}`}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${className} hp-about-media-empty`} data-slot={`about short ${index + 1}`}>
+      <span className="hp-media-coming-soon">Short video coming soon</span>
     </div>
   );
 }
@@ -1433,16 +1455,12 @@ function AboutSection({ repName }) {
             </div>
           </div>
 
-          <div className="hp-about-media-grid">
-            <AboutMediaCard
-              fallbackCaption="Heather Daugherty - BlingKitchen, Ohio"
-              index={0}
-            />
-            <AboutMediaCard
-              fallbackCaption="Family recipes, kitchen tips, and Heather-style notes."
-              index={1}
-            />
-          </div>
+          <AboutPortraitCard fallbackCaption={`${repName} - ${CONTENT.businessName || "Sparkle Suite"}`} />
+        </div>
+        <div className="hp-about-shorts-grid">
+          <AboutShortCard index={0} />
+          <AboutShortCard index={1} />
+          <AboutShortCard index={2} />
         </div>
       </div>
     </section>

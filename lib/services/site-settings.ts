@@ -90,6 +90,8 @@ const PUBLIC_SITE_MEDIA_SLOT_KEYS: PublicSiteMediaSlotKey[] = [
   'showcase',
   'about_1',
   'about_2',
+  'about_3',
+  'about_4',
 ]
 
 export function getDefaultPublicSiteMediaSlots(): PublicSiteMediaSlot[] {
@@ -159,8 +161,8 @@ export function normalizePublicSiteMediaSlots(
       key === 'showcase'
         ? 'Showcase video'
         : key === 'about_1'
-          ? 'About media 1'
-          : 'About media 2'
+          ? 'About portrait photo'
+          : `About short video ${Number(key.slice(-1)) - 1}`
 
     if (
       options.rejectInvalidUrls &&
@@ -191,9 +193,12 @@ export function normalizePublicSiteMediaSlots(
 
     return {
       key,
-      caption: videoUrl ? '' : caption,
+      caption: key === 'about_1' ? caption : '',
+      // Keep legacy images in About short video 1 stored rather than silently
+      // deleting them on a settings save. New UI only exposes images for the
+      // portrait card, and the public template never renders these legacy URLs.
       imageUrl: key === 'showcase' ? '' : imageUrl,
-      videoUrl,
+      videoUrl: key === 'about_1' ? '' : videoUrl,
     }
   })
 }

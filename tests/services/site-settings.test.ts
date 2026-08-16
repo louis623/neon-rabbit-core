@@ -47,7 +47,7 @@ describe('site settings service', () => {
       normalizePublicSiteMediaSlots(
         [
           {
-            key: 'about_1',
+            key: 'about_2',
             caption: 'Live reveal',
             imageUrl: '',
             videoUrl:
@@ -62,10 +62,17 @@ describe('site settings service', () => {
         key: 'about_1',
         caption: '',
         imageUrl: '',
+        videoUrl: '',
+      },
+      {
+        key: 'about_2',
+        caption: '',
+        imageUrl: '',
         videoUrl:
           'https://www.tiktok.com/@sparkle/video/7412345678901234567',
       },
-      { key: 'about_2', caption: '', imageUrl: '', videoUrl: '' },
+      { key: 'about_3', caption: '', imageUrl: '', videoUrl: '' },
+      { key: 'about_4', caption: '', imageUrl: '', videoUrl: '' },
     ])
   })
 
@@ -127,6 +134,8 @@ describe('site settings service', () => {
       showJoinPage: true,
       customerSiteTemplate: 'amethyst',
       appearancePreset: 'sparkle_suite_morganite',
+      aboutHeading: '',
+      aboutSubheading: '',
       socialHandles: {
         instagram: '@sparklebysasha',
       },
@@ -135,6 +144,8 @@ describe('site settings service', () => {
         { key: 'showcase', caption: '', imageUrl: '', videoUrl: '' },
         { key: 'about_1', caption: '', imageUrl: '', videoUrl: '' },
         { key: 'about_2', caption: '', imageUrl: '', videoUrl: '' },
+        { key: 'about_3', caption: '', imageUrl: '', videoUrl: '' },
+        { key: 'about_4', caption: '', imageUrl: '', videoUrl: '' },
       ],
     })
   })
@@ -243,6 +254,8 @@ describe('site settings service', () => {
           },
           { key: 'about_1', caption: '', imageUrl: '', videoUrl: '' },
           { key: 'about_2', caption: '', imageUrl: '', videoUrl: '' },
+          { key: 'about_3', caption: '', imageUrl: '', videoUrl: '' },
+          { key: 'about_4', caption: '', imageUrl: '', videoUrl: '' },
         ],
       },
       { onConflict: 'rep_id' },
