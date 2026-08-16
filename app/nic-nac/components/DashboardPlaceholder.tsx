@@ -24,6 +24,7 @@ import type {
   UpsertJoinTeamMemberInput,
   JewelryDatabaseResult,
   PublicSiteRecipe,
+  PublicSiteMediaSlot,
   PublicSiteMediaSlotKey,
   RepMessagesDashboardResult,
   SiteSettingsDashboardResult,
@@ -1521,7 +1522,7 @@ function readFileAsDataUrl(file: File) {
   })
 }
 
-const EMPTY_HOMEPAGE_MEDIA_SLOTS = [
+const EMPTY_HOMEPAGE_MEDIA_SLOTS: PublicSiteMediaSlot[] = [
   { key: 'showcase' as const, caption: '', imageUrl: '', videoUrl: '' },
   { key: 'about_1' as const, caption: '', imageUrl: '', videoUrl: '' },
   { key: 'about_2' as const, caption: '', imageUrl: '', videoUrl: '' },
