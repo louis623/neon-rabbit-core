@@ -2417,7 +2417,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('About short video 3')
     expect(html.match(/TikTok or YouTube Short URL/g)).toHaveLength(4)
     expect(html.match(/Upload photo/g)).toHaveLength(1)
-    expect(html).toContain('Portrait photos always fit inside the frame instead of being forced into a crop.')
+    expect(html).toContain('Portrait photos use a clean 4:5 crop that favors the subject over unused top headroom.')
     expect(html).toContain('Instagram')
     expect(html).toContain('Facebook')
     expect(html).toContain('Customer-facing site setup')

@@ -2625,6 +2625,7 @@ body.bg-quartz-paper .hp-step-num {
 }
 
 .hp-about-portrait-card {
+  aspect-ratio: 4 / 5;
   align-self: start;
   justify-content: flex-end;
   margin: 0;
@@ -2636,10 +2637,11 @@ body.bg-quartz-paper .hp-step-num {
 .hp-about-portrait-image {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   border: 0;
   border-radius: 0;
-  object-fit: initial;
+  object-fit: cover;
+  object-position: center 60%;
 }
 
 .hp-about-portrait-card::after {

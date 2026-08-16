@@ -7554,9 +7554,9 @@ export function SiteSettingsCard({
           <div className={styles.walletSettingsTitle}>Homepage photos and videos</div>
           <p className={styles.siteSettingsPreviewNote}>
             Add one clean portrait photo beside your About story, then up to three
-            portrait short videos below it. Portrait photos always fit inside the
-            frame instead of being forced into a crop. Short videos support TikTok
-            and YouTube Shorts links.
+            portrait short videos below it. Portrait photos use a clean 4:5 crop
+            that favors the subject over unused top headroom. Short videos support
+            TikTok and YouTube Shorts links.
           </p>
         </div>
         <div className={styles.homepageMediaGrid}>

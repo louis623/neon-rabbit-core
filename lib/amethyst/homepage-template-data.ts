@@ -211,7 +211,7 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
     {
       typeLabel: 'Portrait photo',
       caption:
-        'Your portrait photo appears beside your About story without a forced crop.',
+        'Your portrait photo appears beside your About story in a clean, subject-focused 4:5 crop.',
       href: '#',
     },
     {
