@@ -305,6 +305,8 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Platform and Dashboard
 
+- [ ] **Deploy final recipe unsaved-change guard when Vercel capacity resets** - commit `c3e6a282 fix: guard unsaved recipe edits` is pushed on `codex/nic-nac-trade-hardening` but Vercel rejected a direct production deploy on August 16 with `api-deployments-free-per-day`. The prior recipe hardening commit `388087c9` is live. Before retrying, read the four vault files, verify the exact branch tip, deploy it to production, confirm both Sparkle Suite aliases, and smoke `/nic-nac?section=recipes`; do not manually move aliases or use Louis/customer accounts.
+
 - [ ] **Dashboard Step 5** — SEO/GEO checklist with Readdy prompt buttons
 - [ ] **Command center: billing details** — add billing details per client card
 - [ ] **Command center: System tab** — add System tab

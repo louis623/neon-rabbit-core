@@ -1,5 +1,17 @@
 # Project State
 
+## August 16 Recipe editor audit and hardening
+
+- **Simpler navigation released:** Removed the redundant **Edit current recipes** tab. The recipe area now starts with **Current recipes** and **Upload new recipe**; each current recipe’s **Edit this recipe** button opens that recipe directly, with a return path to the gallery.
+- **Audited data-flow repair released:** Recipe-source image URLs now persist on the recipe itself, so a reopened recipe retains its readable source-card photos for later editing or reformatting. The new `recipe_source_image_urls` column is additive, defaults to an empty list, and does not alter or delete existing recipes. Source-photo URLs are validated as `http`/`https`, and tool-driven recipe updates preserve them unless a replacement list is intentionally supplied.
+- **Destructive-action hardening released:** Removing a recipe now requires a second explicit confirmation. No recipe rows were removed during this audit or release.
+- **Pending safety follow-up:** Commit `c3e6a282 fix: guard unsaved recipe edits` adds a clear keep-editing/discard-changes gate before a rep leaves unfinished recipe work. It is pushed but not yet in production because Vercel rejected an additional deployment with `api-deployments-free-per-day` (daily deployment limit). Do not describe this guard as live until production capacity returns.
+- **Released application baseline:** commit `388087c9 feat: harden recipe editing workflow` is production deployment `dpl_BLstSy7RpntTweaFMw5nFkYszeQg`, with both Sparkle Suite aliases and current customer domains attached. The additive Supabase migration `20260816200000_ss_persist_recipe_source_images.sql` is applied in production. Focused recipe UI, service, and Nic-Nac tool coverage passed (116 tests); the production build compiled successfully through TypeScript. Canonical `/nic-nac?section=recipes` returned 200, the apex returned its canonical 307, and `www.theblingkitchen.com` returned 200. Authenticated reviewer visual smoke remains blocked by the known too-short reviewer token; no Louis or customer account was used.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Recipe editor: current recipes and editing
 
 - **Three clear tabs:** The Bling Kitchen recipe area now has **Current recipes**, **Upload new recipe**, and **Edit current recipes** tabs. This keeps reviewing existing recipes separate from creating a new one while retaining one familiar tool.

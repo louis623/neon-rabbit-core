@@ -4,6 +4,15 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Recipe editor audit and resilience pass
+
+- Audit evidence from Heather's current recipe gallery showed the **Edit current recipes** tab was redundant because every recipe card already presents **Edit this recipe**. Released `388087c9 feat: harden recipe editing workflow` removes that third tab while retaining the Current recipes gallery, direct edit actions, and a clear return path from the editor.
+- The audit found a real persistence gap: recipe-source images were uploaded and used to form a draft, but were not stored in `public_site_recipes`, so reopening a saved recipe lost that source context. Migration `20260816200000_ss_persist_recipe_source_images.sql` adds an empty-by-default JSON array only; it was applied safely with no recipe deletion or content rewrite. The service now returns and saves those URLs, validates them, and does not erase them when a Nic-Nac recipe-tool update omits them.
+- Recipe deletion now requires a second explicit confirmation. No recipe was removed as part of this work. Focused recipe UI, persistence, and Nic-Nac tool tests passed: 3 files, 116 tests. Production build compilation passed after the active-branch guard. `www.yoursparklesuite.com/nic-nac?section=recipes` returned 200, the apex redirected canonically, and the live Bling Kitchen domain returned 200. Production deployment `dpl_BLstSy7RpntTweaFMw5nFkYszeQg` serves application commit `388087c9` and has both Sparkle Suite aliases plus customer domains.
+- A final safety commit, `c3e6a282 fix: guard unsaved recipe edits`, adds a keep-editing/discard-changes confirmation before leaving unfinished recipe work. It is pushed but **not released**: Vercel rejected the direct deploy with `api-deployments-free-per-day` after the Git integration did not enqueue a second deployment. Do not use the unsaved-change guard as live proof until Vercel capacity allows an exact-tip deployment. Reviewer visual smoke remains blocked by the known too-short reviewer token; no personal or customer account was used.
+
+---
+
 ## August 16, 2026 - Current recipe editing workflow
 
 - Reworked the existing Bling Kitchen recipe manager into a straightforward three-tab workflow: **Current recipes**, **Upload new recipe**, and **Edit current recipes**. The underlying update API already supported editing existing rows; the change makes that safe capability visible and understandable instead of leaving it behind an inaccessible mode.
