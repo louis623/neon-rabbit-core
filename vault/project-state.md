@@ -1,5 +1,15 @@
 # Project State
 
+## August 16 Single-edge About portrait correction
+
+- **Top-edge repair:** Removed the nested border and nested radius from the portrait image. The outer card is now the only rounded clipping edge; the photo itself has a 0px border and 0px inner radius.
+- **Release:** application commit `d4c47322 fix: remove nested about portrait border` is Vercel production deployment `dpl_74ECqMSV6MsG636AEUNzJQexqkkL`.
+- **Verification:** 205 focused tests passed. A public live browser check on `https://www.yoursparklesuite.com/blingkitchen` confirmed the single 24px outer clip with no second image border or inset; no account was signed into or changed.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Photo-proportional About portrait frame
 
 - **No interior mat:** The About portrait no longer forces every upload into a 3:4 container. Its rounded border now follows the uploaded image's natural aspect ratio, so there is no dark/empty gutter between the photo and its frame.

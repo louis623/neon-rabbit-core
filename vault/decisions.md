@@ -1,5 +1,11 @@
 # Decision Log
 
+## August 16, 2026 - A portrait gets exactly one visual edge
+
+Use a single rounded outer clip for the About portrait. Do not add a second image border or nested radius inside it; that creates an offset, doubled top edge.
+
+---
+
 ## August 16, 2026 - Portrait frames follow the supplied photo
 
 **A clean fit is more important than a forced universal ratio**

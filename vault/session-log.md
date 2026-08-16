@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Single-edge About portrait correction
+
+- Follow-up inspection showed the remaining visible defect was the photo carrying its own rounded border inside the rounded portrait container. That double treatment made the top edge look offset.
+- Removed the image's border and radius. The outer portrait card retains one 24px clip and the photo fills it directly.
+- Released `d4c47322 fix: remove nested about portrait border` as Vercel production deployment `dpl_74ECqMSV6MsG636AEUNzJQexqkkL`. Focused coverage remained 205 passing tests. Public live browser inspection confirmed the outer clip is 24px and the image border/radius are both 0px; no account was used.
+
+---
+
 ## August 16, 2026 - Photo-proportional About portrait frame
 
 - Louis identified an unacceptable dark inner mat around Heather's About portrait. The fixed 3:4 card was slightly wider than the source photo, making the contained image look inset despite the intended clean portrait treatment.
