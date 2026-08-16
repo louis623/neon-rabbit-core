@@ -4750,9 +4750,46 @@
   align-items: start;
 }
 
+.recipeEditorTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.recipeEditorTab {
+  min-height: 38px;
+  flex: 1 1 180px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--nic-nac-text-secondary);
+  cursor: pointer;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 8px 12px;
+}
+
+.recipeEditorTab:hover,
+.recipeEditorTab:focus-visible {
+  background: rgba(238, 44, 155, 0.1);
+  color: var(--nic-nac-text-primary);
+}
+
+.recipeEditorTabActive {
+  background: var(--nic-nac-surface-input);
+  box-shadow: 0 1px 5px rgba(64, 41, 36, 0.12);
+  color: var(--nic-nac-text-primary);
+}
+
 .recipeBuilderPanel,
 .recipeDraftPreview,
 .recipeManualEditPanel,
+.recipeCurrentPanel,
 .recipeSourcePanel {
   display: grid;
   gap: 12px;
@@ -4761,6 +4798,71 @@
   border: 1px solid rgba(64, 41, 36, 0.1);
   background: rgba(255, 255, 255, 0.62);
   padding: 12px;
+}
+
+.recipeCurrentPanel {
+  display: grid;
+  gap: 14px;
+}
+
+.recipeCurrentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 12px;
+}
+
+.recipeCurrentCard {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
+  overflow: hidden;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 8px;
+}
+
+.recipeCurrentCard > img,
+.recipeCurrentImageFallback {
+  width: 96px;
+  height: 96px;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 10px;
+  background: var(--nic-nac-surface-dashboard-placeholder);
+}
+
+.recipeCurrentCard > img {
+  display: block;
+  object-fit: cover;
+}
+
+.recipeCurrentImageFallback {
+  display: grid;
+  place-items: center;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.recipeCurrentCardBody {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+}
+
+.recipeCurrentCardBody p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .recipeModeSelect {

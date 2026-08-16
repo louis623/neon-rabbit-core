@@ -2285,6 +2285,9 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(html).toContain('Recipes')
+    expect(html).toContain('Current recipes')
+    expect(html).toContain('Upload new recipe')
+    expect(html).toContain('Edit current recipes')
     expect(html).not.toContain('Pantry order')
     expect(html).not.toContain('Add recipe')
     expect(html).toContain('Bling Kitchen Chicken Dip')
@@ -2309,7 +2312,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Replace photo')
     expect(html).toContain('Remove photo')
     expect(html).not.toContain('Upload image')
-    expect(html).not.toContain('Recipe to edit')
+    expect(html).not.toContain('Choose a recipe to edit')
     expect(html).not.toContain('TikTok URL')
     expect(html).toContain('Save recipe')
     expect(html.match(/Save recipe/g)).toHaveLength(1)
@@ -2317,7 +2320,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('data-testid="recipes-save-status"')
   })
 
-  it('renders the saved recipe editor with compact edit fields', () => {
+  it('renders the existing-recipe editor with its current photos and narrative fields', () => {
     const html = renderToStaticMarkup(
       createElement(RecipesCard, {
         state: RECIPES_READY_STATE,
@@ -2332,8 +2335,11 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(html).toContain('Recipe editor')
-    expect(html).toContain('Recipe to edit')
-    expect(html).toContain('New manual recipe')
+    expect(html).toContain('Current recipes')
+    expect(html).toContain('Upload new recipe')
+    expect(html).toContain('Edit current recipes')
+    expect(html).toContain('Choose a recipe to edit')
+    expect(html).toContain('Select a current recipe')
     expect(html).toContain('Bling Kitchen Chicken Dip')
     expect(html).toContain('Hidden Draft Dessert')
     expect(html).toContain('Title')
@@ -2350,13 +2356,33 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Card crop position')
     expect(html).toContain('Modal crop position')
     expect(html).toContain('TikTok URL')
+    expect(html).toContain('Outside food photo for Pantry card')
+    expect(html).toContain('Inside food photo for recipe view')
+    expect(html).toContain('Recipe-source photos')
     expect(html).toContain('Save recipe')
     expect(html.match(/Save recipe/g)).toHaveLength(1)
     expect(html).toContain('Remove recipe')
     expect(html).not.toContain('Advanced edit')
-    expect(html).not.toContain('Recipe-card photos')
+    expect(html).not.toContain('New manual recipe')
     expect(html).not.toContain('Recipe Preview')
     expect(html).not.toContain('Build recipe with Nic-Nac')
+  })
+
+  it('renders a current-recipes view that opens each recipe for editing', () => {
+    const html = renderToStaticMarkup(
+      createElement(RecipesCard, {
+        state: RECIPES_READY_STATE,
+        draft: getRecipeDraft(),
+        initialTab: 'current',
+      }),
+    )
+
+    expect(html).toContain('Recipes on your site')
+    expect(html).toContain('Choose a recipe to review its current photo and story')
+    expect(html).toContain('Bling Kitchen Chicken Dip')
+    expect(html).toContain('Hidden Draft Dessert')
+    expect(html).toContain('Edit this recipe')
+    expect(html.match(/Edit this recipe/g)).toHaveLength(2)
   })
 
   it('renders the site settings card with profile, copy, and social controls', () => {

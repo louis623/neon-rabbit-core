@@ -733,6 +733,7 @@ const BLING_KITCHEN_RECIPE_CATEGORIES = [
 ]
 
 type RecipeEditorMode = 'builder' | 'manual'
+type RecipeEditorTab = 'current' | 'upload' | 'edit'
 
 type AudienceResponsePayload = {
   summary: CustomerAudienceSummary
@@ -8012,6 +8013,7 @@ export function RecipesCard({
   draft,
   actionState,
   initialEditorMode = 'builder',
+  initialTab,
   statusMessage,
   onDraftChange,
   onSelectRecipe,
@@ -8025,6 +8027,7 @@ export function RecipesCard({
   draft: RecipeDraft
   actionState?: RecipeActionState
   initialEditorMode?: RecipeEditorMode
+  initialTab?: RecipeEditorTab
   statusMessage?: string | null
   onDraftChange?: (patch: Partial<RecipeDraft>) => void
   onSelectRecipe?: (recipeId: string) => void
@@ -8037,8 +8040,9 @@ export function RecipesCard({
   ) => Promise<void> | void
   onBuildDraft?: () => void
 }) {
-  const [editorMode, setEditorMode] =
-    useState<RecipeEditorMode>(initialEditorMode)
+  const [activeTab, setActiveTab] = useState<RecipeEditorTab>(
+    initialTab ?? (initialEditorMode === 'manual' ? 'edit' : 'upload'),
+  )
 
   if (state.status === 'error') {
     return (
@@ -8059,11 +8063,12 @@ export function RecipesCard({
 
   const pendingKey = actionState?.pendingKey
   const canRemove = Boolean(draft.id)
-  const isBuilderMode = editorMode === 'builder'
+  const isBuilderMode = activeTab === 'upload'
+  const isEditMode = activeTab === 'edit'
 
-  function handleEditorModeChange(nextMode: RecipeEditorMode) {
-    setEditorMode(nextMode)
-    if (nextMode === 'builder') {
+  function handleTabChange(nextTab: RecipeEditorTab) {
+    setActiveTab(nextTab)
+    if (nextTab === 'upload') {
       onNewRecipe?.()
     }
   }
@@ -8110,6 +8115,36 @@ export function RecipesCard({
 
       <div className={styles.recipeEditorLayout}>
         <div className={styles.siteSettingsSection}>
+          <div className={styles.recipeEditorTabs} role="tablist" aria-label="Recipe editor">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'current'}
+              className={`${styles.recipeEditorTab}${activeTab === 'current' ? ` ${styles.recipeEditorTabActive}` : ''}`}
+              onClick={() => handleTabChange('current')}
+            >
+              Current recipes
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isBuilderMode}
+              className={`${styles.recipeEditorTab}${isBuilderMode ? ` ${styles.recipeEditorTabActive}` : ''}`}
+              onClick={() => handleTabChange('upload')}
+            >
+              Upload new recipe
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isEditMode}
+              className={`${styles.recipeEditorTab}${isEditMode ? ` ${styles.recipeEditorTabActive}` : ''}`}
+              onClick={() => handleTabChange('edit')}
+            >
+              Edit current recipes
+            </button>
+          </div>
+
           <div className={styles.calendarHeader}>
             <span className={styles.rosterTag}>Recipe editor</span>
             <span className={styles.rosterTag}>
@@ -8117,7 +8152,49 @@ export function RecipesCard({
             </span>
           </div>
 
-          {isBuilderMode ? (
+          {activeTab === 'current' ? (
+            <div className={styles.recipeCurrentPanel}>
+              <div>
+                <div className={styles.walletSettingsTitle}>Recipes on your site</div>
+                <div className={styles.siteSettingsPreviewNote}>
+                  Choose a recipe to review its current photo and story, or open it to make changes.
+                </div>
+              </div>
+              {state.recipes.length > 0 ? (
+                <div className={styles.recipeCurrentGrid}>
+                  {state.recipes.map((recipe) => (
+                    <article className={styles.recipeCurrentCard} key={recipe.id}>
+                      {recipe.imageUrl ? (
+                        <img src={recipe.imageUrl} alt={recipe.imageAlt || recipe.title} />
+                      ) : (
+                        <div className={styles.recipeCurrentImageFallback}>No food photo</div>
+                      )}
+                      <div className={styles.recipeCurrentCardBody}>
+                        <div className={styles.recipeListTitle}>{recipe.title}</div>
+                        <div className={styles.recipeListMeta}>
+                          {recipe.isVisible ? 'Visible in Pantry' : 'Hidden draft'}
+                          {recipe.category ? ` · ${recipe.category}` : ''}
+                        </div>
+                        {recipe.description ? <p>{recipe.description}</p> : null}
+                        <button
+                          type="button"
+                          className={styles.secondaryActionButton}
+                          onClick={() => {
+                            onSelectRecipe?.(recipe.id)
+                            handleTabChange('edit')
+                          }}
+                        >
+                          Edit this recipe
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.emptyState}>No recipes have been added yet. Use Upload new recipe to add the first one.</div>
+              )}
+            </div>
+          ) : isBuilderMode ? (
           <>
           <div className={styles.recipeBuilderPanel}>
             <label className={styles.searchField}>
@@ -8261,7 +8338,7 @@ export function RecipesCard({
           <div className={styles.recipeManualEditPanel}>
             <div className={styles.siteSettingsGrid}>
               <label className={styles.sortFieldWide}>
-                <span className={styles.searchLabel}>Recipe to edit</span>
+                <span className={styles.searchLabel}>Choose a recipe to edit</span>
                 <select
                   className={styles.searchInput}
                   value={draft.id ?? ''}
@@ -8269,12 +8346,10 @@ export function RecipesCard({
                     const recipeId = event.target.value
                     if (recipeId) {
                       onSelectRecipe?.(recipeId)
-                    } else {
-                      onNewRecipe?.()
                     }
                   }}
                 >
-                  <option value="">New manual recipe</option>
+                  <option value="">Select a current recipe</option>
                   {state.recipes.map((recipe) => (
                     <option value={recipe.id} key={recipe.id}>
                       {recipe.title}
@@ -8282,6 +8357,45 @@ export function RecipesCard({
                   ))}
                 </select>
               </label>
+            </div>
+
+            {draft.id ? (
+              <>
+            <div className={styles.recipeBuilderImageGrid}>
+              <RecipeImageField
+                label="Outside food photo for Pantry card"
+                field="imageUrl"
+                imageUrl={draft.imageUrl}
+                imageAlt={draft.imageAlt || draft.title}
+                pendingKey={pendingKey}
+                onDraftChange={onDraftChange}
+                onUploadImage={onUploadImage}
+              />
+              <RecipeImageField
+                label="Inside food photo for recipe view"
+                field="modalImageUrl"
+                imageUrl={draft.modalImageUrl}
+                imageAlt={draft.imageAlt || draft.title}
+                pendingKey={pendingKey}
+                onDraftChange={onDraftChange}
+                onUploadImage={onUploadImage}
+              />
+            </div>
+
+            <RecipeCardSourceUploader
+              imageUrls={draft.recipeCardImageUrls}
+              pendingKey={pendingKey}
+              onRemoveImage={(imageUrl) =>
+                onDraftChange?.({
+                  recipeCardImageUrls: draft.recipeCardImageUrls.filter(
+                    (url) => url !== imageUrl,
+                  ),
+                })
+              }
+              onUploadImage={(file) => onUploadImage?.('recipeCardImageUrls', file)}
+            />
+
+            <div className={styles.siteSettingsGrid}>
               <label className={styles.searchField}>
                 <span className={styles.searchLabel}>Title</span>
                 <input
@@ -8465,6 +8579,12 @@ export function RecipesCard({
                 Remove recipe
               </button>
             </div>
+              </>
+            ) : (
+              <div className={styles.emptyState}>
+                Select a current recipe above. Its photos, story, ingredients, steps, and settings will load here for editing.
+              </div>
+            )}
           </div>
           )}
         </div>
