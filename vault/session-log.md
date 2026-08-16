@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Smart Frame for shared About portraits
+
+- Replaced the fragile one-size-only crop response with a reusable Smart Frame workflow. A new About portrait upload uses the browser Face Detector where supported to select a face-centered focus/zoom; that framing is stored with the image in site settings.
+- The workspace now shows the exact 4:5 public composition and exposes compact Zoom, vertical, and horizontal adjustments as a safe fallback for photos without a detectable face or a rep's preferred composition. The public template consumes the saved values; legacy photos retain the shared subject-forward fallback.
+- Heather's public BlingKitchen portrait was rechecked with the shared fallback. The image has one outer rounded clip, remains filled edge-to-edge, removes the former cabinet-heavy first row, and preserves her visible hairline. No per-customer exception was added.
+- Focused coverage: 185 tests across homepage templates, preview mapping, Site Settings normalization, and workspace UI. The first production attempt failed on a TypeScript inference issue in the empty media-slot constant; commit `4237eb97` corrected it, and Vercel then completed TypeScript and the production build.
+- Released the Smart Frame work as production deployment `dpl_HSAU4RuDtU9w7fbWd1rE2jdH6yqH` from application tip `4237eb97`. `www.yoursparklesuite.com` and `yoursparklesuite.com` are aliases of that deployment. Public visual verification stayed no-auth; the reviewer-token limitation remains unchanged.
+
+---
+
 ## August 16, 2026 - Single-edge About portrait correction
 
 - Follow-up inspection showed the remaining visible defect was the photo carrying its own rounded border inside the rounded portrait container. That double treatment made the top edge look offset.

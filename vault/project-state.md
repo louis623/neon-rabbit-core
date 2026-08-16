@@ -1,5 +1,16 @@
 # Project State
 
+## August 16 Smart Frame for shared About portraits
+
+- **Reusable framing:** About portrait uploads now run browser face detection when available, save the resulting focus/zoom with the photo, and offer a matching 4:5 preview plus simple Zoom, vertical, and horizontal controls. If face detection is unavailable, the system uses a clean subject-forward fallback rather than failing.
+- **Shared contract:** The public card reads the saved framing for each photo; Heather continues to use the same fallback framing as every existing photo, not a Heather-only CSS exception.
+- **Release:** application commits `bf32df46`, `cd7979ba`, `f976df2a`, and the production TypeScript correction `4237eb97` are Vercel production deployment `dpl_HSAU4RuDtU9w7fbWd1rE2jdH6yqH`.
+- **Verification:** 185 focused template/settings/workspace tests passed. Vercel's production build passed TypeScript and the live public check at `https://www.yoursparklesuite.com/blingkitchen` confirmed the subject-forward portrait with no nested edge; no account was signed into or changed. Both Sparkle Suite aliases belong to the deployment.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Single-edge About portrait correction
 
 - **Top-edge repair:** Removed the nested border and nested radius from the portrait image. The outer card is now the only rounded clipping edge; the photo itself has a 0px border and 0px inner radius.

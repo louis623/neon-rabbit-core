@@ -64,10 +64,10 @@ future work.
   the production build, both live domains, and production logs passed at
   application checkpoint `8f6f5b6`.
 - [ ] **Complete homepage-media authenticated reviewer smoke** - the current
-  contract is one uncropped 3:4 About portrait plus three 9:16 TikTok/YouTube
+  contract is one Smart Frame 4:5 About portrait plus three 9:16 TikTok/YouTube
   short-video cards, with the Showcase video separate. Public production visual
-  inspection passed on commit `8c28cd78`; the remaining authenticated synthetic
-  click-through, including one photo upload and a short-video save, is blocked
+  inspection passed on commit `4237eb97`; the remaining authenticated synthetic
+  click-through, including face-detected photo upload/framing save and a short-video save, is blocked
   because production's configured reviewer token is shorter than the enforced
   12-character minimum. Repair that environment secret with explicit release
   coordination, redeploy, then repeat the safe reviewer flow. Do not use

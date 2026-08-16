@@ -1,5 +1,15 @@
 # Decision Log
 
+## August 16, 2026 - Portrait framing is data, not a one-off CSS crop
+
+**Use automatic framing first, then give the rep the last word**
+On upload, use the browser Face Detector when it is available to initialize portrait focus and zoom. Store that framing with the media slot so the public card, preview, and future site renders agree. If detection is unavailable or misjudges a non-face subject, retain a clean fallback and let the rep fine-tune with compact controls; never require Louis to request code changes for an ordinary image composition.
+
+**Existing sites use the same safe fallback**
+Do not create a Heather-specific selector or image exception. Existing portrait slots without saved framing use the shared subject-forward defaults until a rep opens Site Settings and saves an adjustment.
+
+---
+
 ## August 16, 2026 - A portrait gets exactly one visual edge
 
 Use a single rounded outer clip for the About portrait. Do not add a second image border or nested radius inside it; that creates an offset, doubled top edge.
