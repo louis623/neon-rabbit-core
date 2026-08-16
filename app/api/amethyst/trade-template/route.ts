@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { loadAmethystPreviewTemplateData } from '@/lib/amethyst/preview-template-data'
+import { resolveAmethystRequestCustomDomainHost } from '@/lib/amethyst/host-routing'
 import {
   applyCustomDomainToTemplateData,
   applyPublicSiteSlugToTemplateData,
@@ -13,6 +14,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   const target = resolveAmethystRequestTarget(request)
+  const requestCustomDomain = resolveAmethystRequestCustomDomainHost(request)
   const repId = target.repId ?? target.customDomain
   const targeted = target.targeted
   const publicSiteSlug = target.publicSiteSlug
@@ -30,7 +32,7 @@ export async function GET(request: Request) {
   )
   const customerTemplateData = applyCustomDomainToTemplateData(
     linkedTemplateData,
-    target.customDomain,
+    requestCustomDomain,
   )
 
   return new NextResponse(

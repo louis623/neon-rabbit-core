@@ -8,6 +8,7 @@ import {
 } from '@/lib/amethyst/homepage-template-data'
 import { loadAmethystPreviewTemplateData } from '@/lib/amethyst/preview-template-data'
 import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
+import { resolveAmethystRequestCustomDomainHost } from '@/lib/amethyst/host-routing'
 import {
   applyCustomDomainToHomepageEvents,
   applyCustomDomainToTemplateData,
@@ -70,6 +71,7 @@ async function resolveHomepageFeatureRepId(lookupTarget: {
 
 export async function GET(request: Request) {
   const target = resolveAmethystRequestTarget(request)
+  const requestCustomDomain = resolveAmethystRequestCustomDomainHost(request)
   const repId = target.repId ?? target.customDomain
   const targeted = target.targeted
   const publicSiteSlug = target.publicSiteSlug
@@ -101,11 +103,11 @@ export async function GET(request: Request) {
   )
   const customerTemplateData = applyCustomDomainToTemplateData(
     linkedTemplateData,
-    target.customDomain,
+    requestCustomDomain,
   )
   const linkedEvents = applyCustomDomainToHomepageEvents(
     applyPublicSiteSlugToHomepageEvents(events, publicSiteSlug),
-    target.customDomain,
+    requestCustomDomain,
   )
 
   return new NextResponse(

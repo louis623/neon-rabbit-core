@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server'
 
 import { buildAmethystJoinBootstrapScript } from '@/lib/amethyst/join-template-data'
 import { loadAmethystPreviewTemplateData } from '@/lib/amethyst/preview-template-data'
+import { resolveAmethystRequestCustomDomainHost } from '@/lib/amethyst/host-routing'
 import { applyCustomDomainToTemplateData } from '@/lib/amethyst/public-site-links'
 import { resolveAmethystRequestTarget } from '@/lib/amethyst/request-rep-target'
 import { loadAmethystTradeBoardPreviewListings } from '@/lib/amethyst/trade-board-listings'
 
 export async function GET(request: Request) {
   const target = resolveAmethystRequestTarget(request)
+  const requestCustomDomain = resolveAmethystRequestCustomDomainHost(request)
   const repId = target.repId ?? target.customDomain
   const targeted = target.targeted
   const publicSiteSlug = target.publicSiteSlug
@@ -25,7 +27,7 @@ export async function GET(request: Request) {
   ])
   const customerTemplateData = applyCustomDomainToTemplateData(
     templateData,
-    target.customDomain,
+    requestCustomDomain,
   )
 
   return new NextResponse(

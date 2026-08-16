@@ -9,6 +9,7 @@ import {
   mapPublicSiteRecipeToPantryRecipe,
 } from '@/lib/amethyst/pantry-template-data'
 import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
+import { resolveAmethystRequestCustomDomainHost } from '@/lib/amethyst/host-routing'
 import { resolveAmethystRequestTarget } from '@/lib/amethyst/request-rep-target'
 import { BLING_KITCHEN_PROFILE } from '@/lib/bling-kitchen/profile'
 import { getSiteSettingsDashboard } from '@/lib/services/site-settings'
@@ -31,6 +32,7 @@ function isBlingKitchenTarget(
 
 export async function GET(request: Request) {
   const target = resolveAmethystRequestTarget(request)
+  const requestCustomDomain = resolveAmethystRequestCustomDomainHost(request)
   const rawRepId = target.repId ?? target.customDomain
   const targeted = target.targeted
   const publicSiteSlug = target.publicSiteSlug
@@ -91,7 +93,7 @@ export async function GET(request: Request) {
   )
   const customerTemplateData = applyCustomDomainToPantryTemplateData(
     templateData,
-    target.customDomain,
+    requestCustomDomain,
   )
 
   return new NextResponse(

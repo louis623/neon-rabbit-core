@@ -4,6 +4,7 @@ import {
   resolveAmethystRequestRepId,
   resolveAmethystRequestTarget,
 } from '@/lib/amethyst/request-rep-target'
+import { resolveAmethystRequestCustomDomainHost } from '@/lib/amethyst/host-routing'
 
 describe('Amethyst request rep target', () => {
   it('reads an explicit customer target from the API query string', () => {
@@ -88,6 +89,17 @@ describe('Amethyst request rep target', () => {
       source: 'custom-domain',
       targeted: true,
     })
+  })
+
+  it('retains the request custom domain when an internal rep target is present', () => {
+    const request = new Request(
+      'https://theblingkitchen.com/api/amethyst/homepage-template?c=theblingkitchen.com',
+    )
+
+    expect(resolveAmethystRequestTarget(request).repId).toBe('theblingkitchen.com')
+    expect(resolveAmethystRequestCustomDomainHost(request)).toBe(
+      'theblingkitchen.com',
+    )
   })
 
   it('ignores the canonical Sparkle Suite platform host so slug pages do not become custom-domain lookups', () => {
