@@ -1,5 +1,15 @@
 # Project State
 
+## August 16 Shared customer-site homepage recovery
+
+- **System-wide fault repaired:** A mismatched closing tag in the shared `public/amethyst/homepage.jsx` Showcase-video component prevented every customer homepage from compiling in the browser. It affected Workspace previews, `www` slug routes, and custom customer domains alike—not a Heather- or Brittany-specific failure.
+- **Cache recovery included:** The homepage script had a fixed stale cache key, so the first code-only repair could still load the broken browser-cached script. `Homepage.html` now uses `homepage.jsx?v=20260816-customer-video-renderer`, ensuring every public route receives the repaired shared asset.
+- **Release and verification:** application commits `5475f06e fix: restore customer site homepage rendering` and `61a72945 fix: refresh customer site renderer cache` are Vercel production deployment `dpl_8HpwSpt4L1Zxo6Ub7Y8x2SbEou5D`. The deployment owns both Sparkle Suite aliases and the current customer domains. Expanded public-site coverage passed (74 tests), JSX parsing passed, and production build passed. Live no-auth browser checks confirmed rendered page content at `/blingkitchen` and `/brittwithbling`; live response checks confirmed the fresh cache key on those routes and `https://theblingkitchen.com/`.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Foolproof ticker entry controls
 
 - **No raw formatting required:** The Announcement ticker editor now includes an eight-button emoji picker and a simple linked-announcement builder: type the customer-facing message, paste an `http`/`https` URL, then select **Add link**. The builder inserts a valid ticker item and the standard Save site settings action publishes it.

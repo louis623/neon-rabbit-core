@@ -4,6 +4,15 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Shared customer-site homepage outage recovery
+
+- Diagnosed the blank Workspace preview and direct customer-site failure as one shared browser-side JSX error, not a per-rep or preview-only problem. The Showcase component opened as `<CustomerVideoEmbed>` but was closed as `</TikTokEmbed>`, so every customer homepage loading `public/amethyst/homepage.jsx` failed to compile.
+- Git history attributes the bad tag to the earlier shared social-video renderer commit `eed217d1`; the ticker emoji/link commits did not modify the shared homepage file. The application repair is `5475f06e fix: restore customer site homepage rendering`, with a matching-tag regression assertion and a standalone JSX parse check.
+- The initial repaired production deployment still reproduced the blank page because the static homepage script retained its long-lived `v=20260725-emerald-garden` cache key. Commit `61a72945 fix: refresh customer site renderer cache` advances it to `v=20260816-customer-video-renderer` and updates route/static-asset coverage so future homepage renderer changes cannot silently reuse the old cache key.
+- Expanded no-auth verification passed: 74 focused shared-template, static-asset, slug-route, BlingKitchen, and Britt with Bling tests; JSX parsing; and the production build. Production deployment `dpl_8HpwSpt4L1Zxo6Ub7Y8x2SbEou5D` serves both Sparkle Suite aliases plus the current customer domains. Live checks confirmed the fresh script key and correct shared closing tag on `www` BlingKitchen, `www` Britt with Bling, Heather's `theblingkitchen.com`, and the apex route. Browser rendering showed substantive live content on both `/blingkitchen` and `/brittwithbling`. No account was signed in or changed.
+
+---
+
 ## August 16, 2026 - Foolproof ticker entry controls
 
 - Replaced the raw-format burden in Customer-facing site setup with an eight-choice tap-to-add emoji picker and a two-field linked-announcement builder. A rep writes the announcement, pastes a destination URL, and selects **Add link**; no Markdown or emoji copying is required.
