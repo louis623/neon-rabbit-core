@@ -4028,3 +4028,18 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - `npm run build` completed production compilation after the allowlisted-branch safety guard.
 - Released application commit `eed217d1 feat: support social short video embeds` as Vercel production deployment `dpl_9HgGBM56eLRfa543qWXvhwtJvRn1`. Both Sparkle Suite domains are assigned to that deployment; the canonical Site Settings route and the live BlingKitchen customer page both returned 200, and the apex Site Settings URL returned the expected 307 canonical redirect.
 - Reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration. No Louis or customer session was used as a workaround.
+
+---
+
+# August 16, 2026 - In-Stack Video Help Placement
+
+## Completed pending release
+
+- Moved the **Video help: links and embeds** disclosure from a full-width row into the desktop right-side media stack, directly above **Showcase video**.
+- The left portrait now spans the compact help card plus all four video-control rows; video cards use tighter padding and gaps so the two columns read as one balanced media editor. The one-column responsive order remains intact.
+
+## Validation
+
+- Focused Site Settings, public customer-video template, and media service suites passed: 3 files, 160 tests.
+- `npm run build` completed production compilation after the allowlisted-branch safety guard.
+- Reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration. No Louis or customer session was used as a workaround.

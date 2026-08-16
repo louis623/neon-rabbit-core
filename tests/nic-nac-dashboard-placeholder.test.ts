@@ -2441,9 +2441,11 @@ describe('DashboardPlaceholder', () => {
 
     expect(source).toContain('styles.homepagePortraitMediaCard')
     expect(source).toContain('styles.homepageVideoMediaCard')
-    expect(css).toContain('grid-template-rows: repeat(4, auto)')
-    expect(css).toMatch(/\.homepagePortraitMediaCard\s*\{[\s\S]*?grid-row:\s*1\s*\/\s*span 4;/)
+    expect(source).toContain('<div className={styles.homepageMediaGrid}>\n          <details className={styles.homepageMediaHelp}>')
+    expect(css).toContain('grid-template-rows: repeat(5, auto)')
+    expect(css).toMatch(/\.homepagePortraitMediaCard\s*\{[\s\S]*?grid-row:\s*1\s*\/\s*span 5;/)
     expect(css).toMatch(/\.homepageVideoMediaCard\s*\{[\s\S]*?grid-column:\s*2;/)
+    expect(css).toMatch(/\.homepageMediaHelp\s*\{[\s\S]*?grid-column:\s*2;/)
   })
 
   it('shows the Site Settings header save action without auto-save copy', () => {

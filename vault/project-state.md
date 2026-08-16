@@ -1,5 +1,15 @@
 # Project State
 
+## August 16 In-stack Site Settings video help
+
+- **Right-stack placement:** The expandable **Video help: links and embeds** card now sits inside the desktop video column directly above Showcase, rather than spanning the full Site Settings section.
+- **Balanced controls:** The portrait occupies the left column while the compact help card plus the four video controls form the adjacent right-side stack. Video cards use reduced padding and gaps; narrow screens retain a natural one-column order.
+- **Verification pending release:** focused Site Settings, customer-video template, and media service coverage passed (160 tests), and the production build compiled after the active-branch guard. Authenticated reviewer-browser visual smoke remains blocked by the known too-short reviewer-token configuration; no personal or customer account should be used instead.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Four-provider customer video embeds
 
 - **Supported providers:** Every Showcase or About short-video slot now accepts public TikTok, YouTube, Instagram Reel/video-post, and Facebook Reel/video links or embed code. Saved URLs are restricted to those supported providers, preventing an unsupported host from appearing as an empty customer card.
