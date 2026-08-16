@@ -1,5 +1,18 @@
 # Decision Log
 
+## August 16, 2026 - About media is a portrait plus three short videos
+
+**One uncropped representative image**
+The About photo is a dedicated 3:4 portrait slot. Render it with `object-fit: contain`, not a cover background, so the uploaded subject is preserved rather than algorithmically cropped.
+
+**Three video-specific cards form the second row**
+The shared customer-site template always renders three 9:16 About short-video cards below the story and portrait. TikTok and YouTube Shorts are supported now; the Showcase video continues to be a separate homepage feature.
+
+**Layout is shared, never Heather-only**
+The structure belongs to the common customer-site template and Site Settings data model. It applies to current customer sites on release and is the standard for all future Sparkle Suite sites.
+
+---
+
 ## August 15, 2026 - An About section is structured customer-site content
 
 **Save the representation the rep supplied**

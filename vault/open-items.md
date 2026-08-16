@@ -63,16 +63,15 @@ future work.
   retain their established 46-pixels-per-second pace. Six suites (107 tests),
   the production build, both live domains, and production logs passed at
   application checkpoint `8f6f5b6`.
-- [ ] **Complete homepage-media live reviewer smoke** - the current contract is
-  Showcase TikTok/video only; About media 1 and 2 are photo or TikTok/video;
-  captions appear only for photo cards; and About narrative authoring routes
-  through Nic-Nac. Focused tests, production builds, production aliases, and a
-  read-only authenticated visual inspection passed through final commit
-  `778bbe3e`. The remaining live synthetic-browser click-through is blocked
+- [ ] **Complete homepage-media authenticated reviewer smoke** - the current
+  contract is one uncropped 3:4 About portrait plus three 9:16 TikTok/YouTube
+  short-video cards, with the Showcase video separate. Public production visual
+  inspection passed on commit `977c8eb5`; the remaining authenticated synthetic
+  click-through, including one photo upload and a short-video save, is blocked
   because production's configured reviewer token is shorter than the enforced
   12-character minimum. Repair that environment secret with explicit release
-  coordination, redeploy, then repeat the live UI check and one photo upload.
-  Do not use Louis's personal account.
+  coordination, redeploy, then repeat the safe reviewer flow. Do not use
+  Louis's personal account.
 - [ ] **Set the protected admin/demo account's live-show name** - a read-only
   August 1 lookup confirmed `louis@neonrabbit.net` has `Louis Chapman` in both
   rep-name and business-name fields and no separate setup live-show name. The

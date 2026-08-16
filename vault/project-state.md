@@ -1,5 +1,17 @@
 # Project State
 
+## August 16 Shared About portrait and short-video layout
+
+- **All customer sites:** The shared customer-site About section now has one clean portrait photo beside the rep story and three portrait-format short-video cards beneath it. This is the default for current and future Sparkle Suite customer sites.
+- **No forced photo crop:** The About portrait is rendered as an image with `object-fit: contain`, preserving the full uploaded photo inside a standard 3:4 portrait frame instead of cutting off the person or subject.
+- **Video support and controls:** Site Settings exposes one **About portrait photo** upload plus **About short video 1–3**. Each short accepts TikTok embed/link input or a YouTube Short link; the existing Showcase video remains separate.
+- **Release:** application commit `977c8eb5 feat: add portrait about video row` is Vercel production deployment `dpl_9z8wEmPMtZFYwHpabAT9RN7ggW8r`. Vercel assigned `www.yoursparklesuite.com`, `yoursparklesuite.com`, and configured customer domains to that exact deployment.
+- **Verification:** 205 focused template/settings/workspace/help tests passed, and the production build completed. Public browser inspection on `https://www.yoursparklesuite.com/blingkitchen` visibly confirmed **Meet Heather**, the contained 3:4 portrait (`object-fit: contain`), and three 9:16 short cards. No Workspace, customer, or Control Center account was used.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Customer-list action uniformity
 
 - **Compact primary actions:** Customer List now groups Add customer, Import spreadsheet, and Download full list (CSV) in one compact action set instead of spreading them across the heading row.

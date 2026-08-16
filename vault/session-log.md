@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Shared About portrait and short-video layout
+
+- Replaced the shared two-card About-media gallery with a clean editorial layout: the rep narrative and one portrait photo in the top row, followed by three 9:16 short-video cards.
+- The portrait uses a real `<img>` with `object-fit: contain` in a 3:4 frame, so uploads are not cover-cropped. This applies immediately to all existing customer sites and remains the default for future sites.
+- Site Settings now separates one portrait-photo upload from three video-specific About slots. TikTok embeds/links and YouTube Short links are supported; the existing Showcase video remains independent. The rep-facing TikTok guide now names the three About short-video choices.
+- Focused coverage passed: 205 tests across homepage templates, settings normalization, the workspace UI, and Help & Resources. `npm run build` completed its allowlisted-branch production compilation; the broad standalone `tsc --noEmit` still reports pre-existing test-fixture typing errors outside this change.
+- Released `977c8eb5 feat: add portrait about video row` as Vercel production deployment `dpl_9z8wEmPMtZFYwHpabAT9RN7ggW8r`. Both Sparkle Suite aliases and Heather’s custom domain are assigned. A public, no-auth browser check on `www.yoursparklesuite.com/blingkitchen` confirmed `Meet Heather`, a contained portrait, and three 9:16 short placeholders; the review tab remains open for handoff.
+
+---
+
 ## August 16, 2026 - Customer-list action uniformity
 
 - Refined the three Customer List controls—Add customer, Import spreadsheet, and Download full list (CSV)—into one compact, equal-size action group.
