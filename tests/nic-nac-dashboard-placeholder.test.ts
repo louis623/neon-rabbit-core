@@ -2417,6 +2417,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Paste the destination link')
     expect(source).toContain('linkSelectedTickerWords')
     expect(source).toContain('First highlight the exact words you want customers to click.')
+    expect(source).toContain('makeTickerLinksPlainText')
+    expect(source).toContain('Make existing links plain text')
     expect(html).toContain('Homepage photos and videos')
     expect(html).toContain('About section narrative')
     expect(html).toContain('Build this with Nic-Nac: share your story')

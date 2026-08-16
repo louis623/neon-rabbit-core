@@ -4721,6 +4721,20 @@
   opacity: 0.55;
 }
 
+.tickerLinkResetButton {
+  margin-top: 8px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--nic-nac-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .tickerLinkError {
   display: block;
   margin-top: 6px;

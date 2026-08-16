@@ -7460,6 +7460,18 @@ export function SiteSettingsCard({
     }
   }
 
+  const makeTickerLinksPlainText = () => {
+    const currentValue = draft?.tickerText ?? ''
+    const plainText = currentValue.replace(/\[([^\]]+)\]\([^()\s]+\)/g, '$1')
+    onDraftChange?.({ tickerText: plainText })
+    setTickerLinkSelection(null)
+    setTickerLinkUrl('')
+    setTickerLinkError(null)
+    window.requestAnimationFrame(() => tickerTextareaRef.current?.focus())
+  }
+
+  const hasTickerLinks = /\[[^\]]+\]\([^()\s]+\)/.test(draft?.tickerText ?? '')
+
   if (state.status === 'error') {
     return (
       <div className={styles.rosterFallback}>
@@ -7619,6 +7631,20 @@ export function SiteSettingsCard({
                     Link selected words
                   </button>
                 </div>
+                {hasTickerLinks ? (
+                  <button
+                    type="button"
+                    className={styles.tickerLinkResetButton}
+                    onClick={makeTickerLinksPlainText}
+                  >
+                    Make existing links plain text
+                  </button>
+                ) : null}
+                {hasTickerLinks ? (
+                  <span className={styles.tickerLinkHint}>
+                    This fixes an older ticker link that made a whole message clickable. Your words stay; only the old link is removed.
+                  </span>
+                ) : null}
                 {tickerLinkError ? <span className={styles.tickerLinkError}>{tickerLinkError}</span> : null}
               </div>
             </div>
