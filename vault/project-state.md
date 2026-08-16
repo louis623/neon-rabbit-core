@@ -1,5 +1,15 @@
 # Project State
 
+## August 16 Inline announcement ticker links
+
+- **Only selected words are clickable:** The Announcement ticker editor now tells reps to write an announcement, highlight the exact words to link, paste the destination, and choose **Link selected words**. It no longer asks reps to create a separate linked announcement or understand formatting syntax.
+- **Public renderer follows the selection:** Homepage, Trade, and Join ticker parsers now preserve non-linked text and render only marked link segments as anchors. A ticker line can therefore say, for example, `Shop the new drop today` with only `new drop` clickable.
+- **Release and verification:** application commit `5439e54e feat: simplify inline ticker links` is Vercel production deployment `dpl_AdbCsmz12jh3zqmPVZYzrA9YftQL`. Focused Site Settings plus shared Homepage/Trade/Join/static-route coverage passed (199 tests), all three JSX exports parsed, and the production build passed. Both Sparkle Suite aliases and current customer domains resolve to the deployment; live response checks confirmed the new `homepage.jsx?v=20260816-inline-ticker-links` asset at both Sparkle Suite aliases and `theblingkitchen.com`, while a fresh no-auth BlingKitchen browser reload rendered normally. Authenticated reviewer visual confirmation remains blocked by the known too-short reviewer-token configuration; no account was used.
+
+**Last updated:** August 16, 2026
+
+---
+
 ## August 16 Shared customer-site homepage recovery
 
 - **System-wide fault repaired:** A mismatched closing tag in the shared `public/amethyst/homepage.jsx` Showcase-video component prevented every customer homepage from compiling in the browser. It affected Workspace previews, `www` slug routes, and custom customer domains alike—not a Heather- or Brittany-specific failure.

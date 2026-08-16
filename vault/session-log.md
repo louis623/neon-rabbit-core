@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 16, 2026 - Inline announcement ticker links
+
+- Replaced the still-confusing separate linked-announcement builder with a selection-first editor: write the ticker sentence, highlight only the customer-facing words to click, paste the URL, then choose **Link selected words**. The workspace explicitly shows the highlighted phrase before applying the link and rejects a link attempt without a selection.
+- Reworked the shared public ticker renderer in Homepage, Trade, and Join from one `href` per entire announcement into safe text/link parts. It now renders only each approved `http`/`https` marked phrase as an anchor; the surrounding announcement remains ordinary ticker text. Existing whole-message links stay compatible, but reps can now create precise inline links without syntax.
+- Bumped the shared homepage asset to `v=20260816-inline-ticker-links` so public browsers cannot reuse the earlier cache. Commit `5439e54e feat: simplify inline ticker links` is production deployment `dpl_AdbCsmz12jh3zqmPVZYzrA9YftQL`; both Sparkle Suite aliases and current customer domains are attached. 199 focused tests, parsing for all three JSX exports, and the production build passed. Live no-auth response checks confirmed the fresh asset on both aliases and `theblingkitchen.com`; a fresh BlingKitchen reload rendered 7,458 characters of page content. Authenticated reviewer smoke remains unavailable because of the known too-short reviewer token, so no account was signed in or changed.
+
+---
+
 ## August 16, 2026 - Shared customer-site homepage outage recovery
 
 - Diagnosed the blank Workspace preview and direct customer-site failure as one shared browser-side JSX error, not a per-rep or preview-only problem. The Showcase component opened as `<CustomerVideoEmbed>` but was closed as `</TikTokEmbed>`, so every customer homepage loading `public/amethyst/homepage.jsx` failed to compile.
