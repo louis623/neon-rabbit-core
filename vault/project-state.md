@@ -1371,6 +1371,12 @@ Verification passed:
 - Added the static Vercel configuration `git.deploymentEnabled: false` in `vercel.json`, preserving the GitHub connection, production branch, domains, cron configuration, and current production release. This makes Git pushes provenance-only; approved application releases remain manual Vercel production deployments of the exact verified branch tip.
 - Verified the configuration commit `c0a66a9f` after the Git webhook window: Vercel created no deployment, and both Sparkle Suite aliases plus active customer domains remained on manual release `dpl_J7VDyXPynjJntQtX5Kn95QABA3qW`.
 
+### August 17, 2026 Recipe editor one-level back navigation
+
+- An open existing-recipe editor now presents the workspace-level action as **Back to current recipes**, rather than **Back to Tools**. It returns to Heather's Current recipes gallery without leaving the Recipes tool. The normal tool-level back action remains **Back to Tools**.
+- Released exact application commit `1fad6ff3 fix: keep recipe editor back navigation one level deep` manually as Vercel production deployment `dpl_SHhz5jAzNoYZEhy1WwuttV599MUs` (`https://sparkle-suite-6x3cv666n-louis-2849s-projects.vercel.app`). It owns both Sparkle Suite aliases and all active customer domains.
+- Focused recipe-workspace coverage passed (106 tests) and local/Vercel production builds passed. No-auth checks returned 200 for canonical Workspace, BlingKitchen Pantry, both BlingKitchen hostnames, and Bri's Glowtique; the Sparkle Suite apex canonically redirects to www. The authenticated reviewer browser remains blocked by the known too-short token, with no personal/customer session used.
+
 ### August 17, 2026 No-Bake Treats consolidation
 
 - Heather's public Pantry and recipe editor no longer offer `No-Bake Treats`; no-bake recipes belong in `Baking & Sweets`. The saved recipe service, AI draft builder, public template mapper, default fixture data, and editor choices normalize the removed label into `Baking & Sweets` so it cannot return through an old payload or model response.

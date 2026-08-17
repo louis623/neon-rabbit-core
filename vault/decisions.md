@@ -1257,6 +1257,10 @@ Team Management has two related but separate workflows: Start Strong onboarding 
 - **Existing content editing is a guarded continuation of creation.** Existing recipes should open in the same structured editor used for new recipes, with all stored public/private fields restored. Persist private source materials deliberately, require a second confirmation before deletion, and warn before navigation can discard unfinished edits. Audit/process hardening must not remove customer content.
 - **A deployment quota makes release discipline a product safeguard.** One manual deployment of the exact tested tip is the release unit. Documentation pushes are not releases, and automatic Git builds must remain disabled so they cannot exhaust capacity or create an unclear sequence of competing deployments.
 
+# August 17, 2026 - Recipe editor navigation
+
+- **Back actions preserve the nearest meaningful workspace level.** When an existing recipe editor is open, the workspace shell must return to **Current recipes**, not skip directly to the broader Tools menu. The label must name that actual destination. The Tools back action remains appropriate only once the user is at the recipe tool's top level.
+
 # August 17, 2026 - Pantry recipe categories
 
 - **Baking & Sweets is the single public home for desserts and baked goods.** New recipe drafts, editor saves, and public rendering normalize legacy `Baking` and `Dessert` into `Baking & Sweets`; do not reintroduce the legacy labels as selectable categories.

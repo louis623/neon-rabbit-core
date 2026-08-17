@@ -4259,6 +4259,17 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 ---
 
+---
+
+# August 17, 2026 - Recipe editor back navigation fixed
+
+- Louis reported that the top workspace back action shown while editing an existing Heather recipe skipped the Current recipes gallery and went straight to Tools. The visible editor already had a one-step return, but its state was internal to the recipe card while the workspace shell only saw the enclosing Recipes section.
+- Lifted the recipe editor tab state to the workspace boundary. While an existing recipe is open, the shell now labels the action **Back to current recipes** and returns to the current-recipe gallery. On the gallery or new-recipe builder, the regular tool-level **Back to Tools** behavior is unchanged. Re-entering Recipes starts at the current-recipe gallery.
+- Verified with `tests/nic-nac-dashboard-placeholder.test.ts` (106 passing) and `npm run build` on allowlisted branch `codex/nic-nac-trade-hardening`. Committed/pushed `1fad6ff3 fix: keep recipe editor back navigation one level deep`.
+- Manually released that exact tip as Ready deployment `dpl_SHhz5jAzNoYZEhy1WwuttV599MUs` / `https://sparkle-suite-6x3cv666n-louis-2849s-projects.vercel.app`. It owns www, apex, BlingKitchen, and Bri's Glowtique aliases. No-auth smoke: canonical Workspace 200, apex canonical redirect, both BlingKitchen Pantry hostnames 200, and both Bri hostnames 200. Reviewer visual verification remains blocked by the known too-short token; no browser tabs were closed and no Louis/customer account was used.
+
+---
+
 # August 17, 2026 - No-Bake Treats moved into Baking & Sweets
 
 - Louis requested removal of the Pantry's No-Bake Treats section, with all recipes moved into Baking & Sweets.
