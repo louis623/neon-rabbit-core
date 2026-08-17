@@ -726,7 +726,6 @@ const BLING_KITCHEN_RECIPE_CATEGORIES = [
   'Baking & Sweets',
   'Italian Classics',
   'Weeknight Dinners',
-  'No-Bake Treats',
   'Drinks & Extras',
   'Holiday Favorites',
   'Breakfast',

@@ -117,6 +117,7 @@ describe('BlingKitchen hybrid public site contract', () => {
       'Baking & Sweets',
     )
     expect(defaultAmethystPantryTemplateData.categoryOrder).not.toContain('Dessert')
+    expect(defaultAmethystPantryTemplateData.categoryOrder).not.toContain('No-Bake Treats')
     expect(defaultAmethystPantryTemplateData.featuredCategoryGroups[0]?.categories).toEqual([
       'Baking & Sweets',
     ])
@@ -134,6 +135,11 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(defaultAmethystPantryTemplateData.recipes[0]).toMatchObject({
       category: 'Baking & Sweets',
     })
+    expect(
+      defaultAmethystPantryTemplateData.recipes.find(
+        (recipe) => recipe.title === 'Sweet & Salty Clusters',
+      ),
+    ).toMatchObject({ category: 'Baking & Sweets' })
   })
 
   it('serializes Pantry recipes and route links for the runtime page', () => {

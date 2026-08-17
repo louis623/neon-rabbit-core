@@ -167,7 +167,7 @@ describe('site recipes service', () => {
     })
   })
 
-  it('consolidates legacy baking and dessert labels into Baking & Sweets', async () => {
+  it('consolidates legacy baking, dessert, and no-bake labels into Baking & Sweets', async () => {
     const query = makeWriteQuery({
       id: 'recipe-4',
       rep_id: 'rep-1',
@@ -197,7 +197,7 @@ describe('site recipes service', () => {
 
     await upsertPublicSiteRecipe(supabase, 'rep-1', {
       title: 'Peanut Butter Cookies',
-      category: 'Dessert',
+      category: 'No-Bake Treats',
     })
 
     expect(query.insert).toHaveBeenCalledWith(

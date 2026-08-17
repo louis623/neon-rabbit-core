@@ -49,6 +49,14 @@ describe('site recipe draft builder', () => {
     })
   })
 
+  it('consolidates a no-bake category into Baking & Sweets', () => {
+    expect(
+      parseSiteRecipeDraftModelText(
+        '{"title":"Sweet & Salty Clusters","category":"No-Bake Treats"}',
+      ).category,
+    ).toBe('Baking & Sweets')
+  })
+
   it('sends recipe-card and display images to the model without saving', async () => {
     const generateTextImpl = vi.fn().mockResolvedValue({
       text: JSON.stringify({

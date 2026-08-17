@@ -64,7 +64,7 @@ export interface AmethystPantryTemplateData {
 }
 
 function normalizePantryRecipeCategory(category: string) {
-  return category === 'Baking' || category === 'Dessert'
+  return category === 'Baking' || category === 'Dessert' || category === 'No-Bake Treats'
     ? 'Baking & Sweets'
     : category
 }
@@ -93,7 +93,6 @@ export const defaultAmethystPantryTemplateData: AmethystPantryTemplateData = {
     'Baking & Sweets',
     'Italian Classics',
     'Weeknight Dinners',
-    'No-Bake Treats',
     'Drinks & Extras',
     'Holiday Favorites',
     'Breakfast',
@@ -112,9 +111,8 @@ export const defaultAmethystPantryTemplateData: AmethystPantryTemplateData = {
     },
     {
       title: 'Extras & Celebrations',
-      subtitle: 'No-bake treats, breakfast, drinks, and holiday favorites.',
+      subtitle: 'Breakfast, drinks, and holiday favorites.',
       categories: [
-        'No-Bake Treats',
         'Drinks & Extras',
         'Holiday Favorites',
         'Breakfast',

@@ -98,7 +98,7 @@ export const recipes = [
     id: 4,
     title: "Sweet & Salty Clusters",
     description: "A dangerously good mix of salty-crunchy and sweet-smooth — Ghirardelli chocolate, dry roasted peanuts, and crushed Ruffles potato chips come together in the most addictive no-bake treat you'll ever make.",
-    category: "No-Bake Treats",
+    category: "Baking & Sweets",
     prepTime: "20 minutes",
     servings: 60,
     image: "https://bqhzfkgkjyuhlsozpylf.supabase.co/storage/v1/object/public/public-site-media/9a971c05-3631-443e-bcb8-4e9a26e15885/recipes/a0370512-d5da-4662-80e2-dc6fa39b34d0-sweet___salty_clusters-image-url.jpg",
