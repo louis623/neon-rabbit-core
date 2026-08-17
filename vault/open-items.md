@@ -323,6 +323,8 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Tools and Integrations
 
+- [ ] **Reconnect Gmail to Louis's Neon Rabbit mailbox** - the current Gmail connector profile is `louischapman1@gmail.com`, but Louis needs `louis@neonrabbit.net`. Disconnect the former and connect the latter through the integration UI before any email work. Once confirmed, search Heather's messages and attachments for The Perfect Oatmeal Cookie, Cheesy Tortilla Soup, Soft and Fluffy Dinner Rolls, Mom's Apple Betty, and Banana Coffee Cake. Do not treat the prior no-match result from the wrong mailbox as evidence.
+
 - [ ] **Launch customer messaging deliberately before re-enabling the SMS wallet** - Messages remains `Coming soon`; before exposing email/text actions or any SMS wallet/recharge UI, confirm provider readiness, consent/opt-out handling, support workflow, safe reviewer smoke, and user-facing copy.
 - [ ] **Google Meet transcription tool** — select a tool
 - [ ] **Cal.com intake form** — add "biggest current challenge" question

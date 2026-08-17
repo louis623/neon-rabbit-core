@@ -4257,10 +4257,6 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - The project API retained `gitProviderOptions.createDeployments: "disabled"`, but Vercel's current configuration contract uses `git.deploymentEnabled`. Added `"git": { "deploymentEnabled": false }` to the existing root `vercel.json` to disable Git-triggered deployments on all branches while preserving the linked repository and manual deployment path.
 - Verified the configuration commit `c0a66a9f` after the Git webhook window: no new Vercel deployment was created, and the current manual release `dpl_J7VDyXPynjJntQtX5Kn95QABA3qW` retained `www.yoursparklesuite.com`, `yoursparklesuite.com`, BlingKitchen, and Bri's Glowtique aliases.
 
----
-
----
-
 # August 17, 2026 - Recipe editor back navigation fixed
 
 - Louis reported that the top workspace back action shown while editing an existing Heather recipe skipped the Current recipes gallery and went straight to Tools. The visible editor already had a one-step return, but its state was internal to the recipe card while the workspace shell only saw the enclosing Recipes section.
@@ -4287,3 +4283,11 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Production inspection identified one affected Heather/BlingKitchen record: `Sweet & Salty Clusters`, visible. Its category alone was updated with an exact row/rep/category guard; recipe content, image, sort order, and visibility remain unchanged.
 - Removed No-Bake Treats from editor and public category groups; all legacy `Baking`, `Dessert`, and `No-Bake Treats` values now normalize to Baking & Sweets in save, AI-draft, and template paths.
 - Application commit `dc2624c4` was released manually as `dpl_HtdnTBiCnvQSRSGXxFSsx66QyTg8`. Four focused files passed 125 tests and local/Vercel builds passed. Live public template data includes the moved recipe and no No-Bake Treats entry; canonical recipe route returned 200, apex returned 307, and BlingKitchen Pantry returned 200. Reviewer-browser visual smoke remains unavailable due to the known too-short token; no Louis/customer session was used.
+
+---
+
+# August 17, 2026 - Gmail connector identity boundary
+
+- Louis asked to locate Heather's source recipes for The Perfect Oatmeal Cookie, Cheesy Tortilla Soup, Soft and Fluffy Dinner Rolls, Mom's Apple Betty, and Banana Coffee Cake in `louis@neonrabbit.net`.
+- The connector profile instead identified `louischapman1@gmail.com`. A title search there found no matches, but that result does **not** answer the requested Neon Rabbit mailbox search and must not be used as recipe evidence.
+- Louis explicitly requested disconnecting the incorrect account and connecting `louis@neonrabbit.net`. The currently available Gmail connector API has mailbox search/read/write operations but no connection, disconnection, OAuth, or account-switch control. Reconnect the Gmail integration to the intended account before any further mailbox work; then repeat the exact-title and attachment-aware recipe search. No email was sent, altered, archived, or deleted.

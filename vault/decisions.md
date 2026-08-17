@@ -1265,6 +1265,10 @@ Team Management has two related but separate workflows: Start Strong onboarding 
 
 - **Recipe-card calls to action belong to a shared footer.** Within a responsive recipe grid, cards must be full-height columns with the narrative at the top and prep/servings plus **View Recipe** anchored at the bottom. Use flexible space inside the card body; do not pad or rewrite recipe narratives merely to imitate consistent card height.
 
+# August 17, 2026 - Connected mailbox identity
+
+- **Verify the connector account before treating mailbox search as evidence.** A connected Gmail tool may be authenticated to a different mailbox than the one Louis asks about. Confirm the profile address first; if it does not match, do not infer a negative result from that mailbox, and do not substitute its content for the requested account. Account connection changes require a callable connection control or direct user action in the integration UI.
+
 # August 17, 2026 - Pantry recipe categories
 
 - **Baking & Sweets is the single public home for desserts and baked goods.** New recipe drafts, editor saves, and public rendering normalize legacy `Baking` and `Dessert` into `Baking & Sweets`; do not reintroduce the legacy labels as selectable categories.

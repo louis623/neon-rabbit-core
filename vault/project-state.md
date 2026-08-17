@@ -13,6 +13,7 @@
 - **Recipe editor hardening:** current recipes have direct edit actions, source-card photos persist through reopening/editing, deleting requires a second confirmation, and leaving unsaved work requires an explicit keep-editing/discard-changes decision. No recipes were removed during the work.
 - **Release operations:** Vercel Git deployment creation is disabled. Pushes retain source provenance but do not deploy. The recipe safety follow-up was released manually after capacity returned as `dpl_36ubbhUBQf2WqvcyiSTh8TAsYBcw` from application-containing tip `27e62249`; the later documentation commit does not change the release artifact.
 - **Ongoing limitation:** authenticated reviewer-browser acceptance remains blocked by the known too-short reviewer-token configuration. Never substitute Louis's or a customer's authenticated session.
+- **Gmail connector account is wrong for Neon Rabbit mail:** the currently connected Gmail connector reports `louischapman1@gmail.com`, not `louis@neonrabbit.net`. Do not search, read, send, or claim results for the Neon Rabbit mailbox through that connector. The available Gmail tools in this session expose no connect/disconnect/account-switch action; Louis must reconnect it to the intended account before mailbox work resumes.
 
 **Last updated:** August 17, 2026
 
