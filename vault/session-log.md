@@ -4255,4 +4255,4 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 - Audit in the user-opened GitHub/Vercel tabs confirmed the repository branch is correct. The Vercel UI/history showed paired deployments for the same SHA: one manual (`louis-2849`) and one GitHub-sourced (`github/louis623`).
 - The project API retained `gitProviderOptions.createDeployments: "disabled"`, but Vercel's current configuration contract uses `git.deploymentEnabled`. Added `"git": { "deploymentEnabled": false }` to the existing root `vercel.json` to disable Git-triggered deployments on all branches while preserving the linked repository and manual deployment path.
-- Verification requirement: after pushing this configuration, confirm the Git push does not create a Vercel deployment. No production alias should move for this operational configuration change.
+- Verified the configuration commit `c0a66a9f` after the Git webhook window: no new Vercel deployment was created, and the current manual release `dpl_J7VDyXPynjJntQtX5Kn95QABA3qW` retained `www.yoursparklesuite.com`, `yoursparklesuite.com`, BlingKitchen, and Bri's Glowtique aliases.
