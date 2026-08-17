@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 17, 2026 - BlingKitchen public recipe detail format audit
+
+- Audited the 25 live BlingKitchen recipe records through the production database using only recipe completeness markers. Every record already has the data required for Heather's intended reader experience: title/summary, category, time, servings, card image, TikTok URL, ingredients, steps, and Heather's note. A missing dedicated inside-recipe image is safely covered by the existing card-image fallback. No recipe row or customer content was changed.
+- Rebuilt the single shared Pantry modal renderer to use the approved hierarchy: a full-width recipe hero; title, description, category, time, and servings; then a responsive three-column reading layout for **Watch Heather make it**, **What You'll Need** plus **How to Make It**, and **Heather's Note**. Existing and future recipe records use that same renderer, and the Pantry asset cache key is now `20260817-recipe-detail-layout`.
+- Focused public-site tests passed (2 files, 11 tests), `npm run build` completed successfully, and `git diff --check` was clean. Application commit `e1a3ff33 fix: standardize BlingKitchen recipe detail layout` was pushed and manually released as `dpl_9zu1cNZ1GUEgeeWXpyDg97KmGkWN`. Both Sparkle Suite aliases and active customer domains are attached to that deployment. No-auth live checks confirmed the fresh asset at the canonical route and `theblingkitchen.com/in-the-pantry`; a browser smoke opened Chocolate-Dipped Strawberries and visibly verified the hero, video, ingredients, method, and note arrangement. The authenticated reviewer token limitation remains unresolved and was not bypassed.
+
+---
+
 ## August 17, 2026 - Temporary Heather recipe-audit checks
 
 - Added a compact **Audited** checkbox to every card in the Current recipes gallery, immediately above **Edit this recipe**. It gives Heather a simple audit marker without turning a temporary review task into a recipe-content change.
