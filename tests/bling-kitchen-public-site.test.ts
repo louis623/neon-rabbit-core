@@ -255,12 +255,16 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(pantryHtml).toContain('class="bk-pantry-page"')
     expect(pantryHtml).toContain('data-template-src="/api/amethyst/pantry-template"')
     expect(pantryHtml).toContain('pantry.jsx?v=20260817-baking-and-sweets')
+    expect(pantryHtml).toContain(
+      'pantry.css?v=20260817-recipe-card-footer-alignment',
+    )
     expect(pantryCss).toContain(
       'body.bg-moonstone-charcoal .bk-filter-bar button:not(.is-active)',
     )
     expect(pantryCss).toContain('body.surface-silver-pearl .bk-recipe-body > p')
     expect(pantryCss).toContain('body.surface-silver-pearl .bk-recipe-meta span')
     expect(pantryCss).toContain('.bk-recipe-detail-grid')
+    expect(pantryCss).toContain('.bk-recipe-body .bk-recipe-meta')
   })
 
   it('uses standard public SEO text for Home/Trade/Join and Pantry-specific text for Pantry', () => {

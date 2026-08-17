@@ -240,6 +240,9 @@ button {
 }
 
 .bk-recipe-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   overflow: hidden;
   background: var(--bk-paper);
   border: 1px solid var(--bk-line);
@@ -270,6 +273,9 @@ button {
 }
 
 .bk-recipe-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 20px;
 }
 
@@ -293,6 +299,10 @@ button {
   flex-wrap: wrap;
   gap: 8px;
   margin: 16px 0;
+}
+
+.bk-recipe-body .bk-recipe-meta {
+  margin-top: auto;
 }
 
 .bk-recipe-meta span,
