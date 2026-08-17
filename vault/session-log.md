@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 17, 2026 - Temporary Heather recipe-audit checks
+
+- Added a compact **Audited** checkbox to every card in the Current recipes gallery, immediately above **Edit this recipe**. It gives Heather a simple audit marker without turning a temporary review task into a recipe-content change.
+- Audit checks are stored only in the active browser, keyed by recipe ID. They persist through refreshes but never alter the recipe row, public Pantry output, or database. Remove the aid when Heather completes this pass.
+- Focused `tests/nic-nac-dashboard-placeholder.test.ts` passed (105 tests); the local and Vercel production builds passed. Commit `ab12e076 feat: add temporary recipe audit checks` was manually released as `dpl_ErugKgQ9nzPKn3M6FLM6D5VerB6t`. Both Sparkle Suite aliases and active customer domains are assigned to that deployment; `www.yoursparklesuite.com/nic-nac?section=recipes` returned 200 and the apex canonically redirected. Authenticated reviewer visual verification remains blocked by the known too-short reviewer token, so no personal or customer account was used.
+
+---
+
 ## August 16, 2026 - Recipe editor audit and resilience pass
 
 - Audit evidence from Heather's current recipe gallery showed the **Edit current recipes** tab was redundant because every recipe card already presents **Edit this recipe**. Released `388087c9 feat: harden recipe editing workflow` removes that third tab while retaining the Current recipes gallery, direct edit actions, and a clear return path from the editor.
