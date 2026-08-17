@@ -82,18 +82,20 @@ export const defaultAmethystPantryTemplateData: AmethystPantryTemplateData = {
   recipes: blingKitchenRecipes,
   categoryOrder: [
     'Baking',
+    'Dessert',
     'Italian Classics',
     'Weeknight Dinners',
     'No-Bake Treats',
     'Drinks & Extras',
     'Holiday Favorites',
     'Breakfast',
+    'Appetizer',
   ],
   featuredCategoryGroups: [
     {
       title: 'Baking & Sweets',
       subtitle: 'Celebration desserts, cookies, breads, and family treats.',
-      categories: ['Baking'],
+      categories: ['Baking', 'Dessert'],
     },
     {
       title: 'Dinners & Mains',

@@ -113,6 +113,10 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(BLING_KITCHEN_RECIPE_COUNT).toBe(26)
     expect(defaultAmethystPantryTemplateData.recipeCount).toBe(26)
     expect(defaultAmethystPantryTemplateData.recipes).toHaveLength(26)
+    expect(defaultAmethystPantryTemplateData.categoryOrder).toContain('Dessert')
+    expect(defaultAmethystPantryTemplateData.featuredCategoryGroups[0]?.categories).toContain(
+      'Dessert',
+    )
     expect(recipes.map((recipe) => recipe.title)).toEqual(
       expect.arrayContaining([
         'Chocolate-Dipped Strawberries',
@@ -230,13 +234,15 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(pantryJsx).toContain('How to Make It')
     expect(pantryJsx).toContain("Watch Heather make it")
     expect(pantryJsx).toContain('bk-recipe-detail-grid')
+    expect(pantryJsx).toContain('const ungroupedRecipes')
+    expect(pantryJsx).toContain("More from Heather's Pantry")
     expect(pantryJsx).toContain('https://www.tiktok.com/player/v1/${videoId}')
     expect(pantryJsx).toContain('autoplay=1&muted=1&loop=1&controls=0')
     expect(pantryJsx).toContain('new IntersectionObserver')
     expect(pantryJsx).toContain('type: nextMuted ? "mute" : "unMute"')
     expect(pantryHtml).toContain('class="bk-pantry-page"')
     expect(pantryHtml).toContain('data-template-src="/api/amethyst/pantry-template"')
-    expect(pantryHtml).toContain('pantry.jsx?v=20260817-recipe-detail-layout')
+    expect(pantryHtml).toContain('pantry.jsx?v=20260817-pantry-category-groups')
     expect(pantryCss).toContain(
       'body.bg-moonstone-charcoal .bk-filter-bar button:not(.is-active)',
     )

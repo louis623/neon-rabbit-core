@@ -289,6 +289,14 @@ function PantryPage() {
     ? recipes
     : recipes.filter((recipe) => recipe.category === selectedCategory);
   const groups = Array.isArray(CONTENT.featuredCategoryGroups) ? CONTENT.featuredCategoryGroups : [];
+  const groupedCategories = useMemo(
+    () => new Set(groups.flatMap((group) => Array.isArray(group.categories) ? group.categories : [])),
+    [groups],
+  );
+  const ungroupedRecipes = useMemo(
+    () => recipes.filter((recipe) => !groupedCategories.has(recipe.category)),
+    [recipes, groupedCategories],
+  );
 
   return (
     <div className="bk-pantry-shell">
@@ -339,14 +347,27 @@ function PantryPage() {
         </div>
 
         {selectedCategory === "All" ? (
-          groups.map((group) => (
+          <>
+          {groups.map((group) => (
             <RecipeGroup
               key={group.title}
               group={group}
               recipes={recipes.filter((recipe) => (group.categories || []).includes(recipe.category))}
               onOpen={setActiveRecipe}
             />
-          ))
+          ))}
+          {ungroupedRecipes.length ? (
+            <RecipeGroup
+              key="ungrouped-recipes"
+              group={{
+                title: "More from Heather's Pantry",
+                subtitle: "Fresh recipes and kitchen favorites from Heather.",
+              }}
+              recipes={ungroupedRecipes}
+              onOpen={setActiveRecipe}
+            />
+          ) : null}
+          </>
         ) : (
           <section className="bk-recipe-group">
             <div className="bk-section-heading">
