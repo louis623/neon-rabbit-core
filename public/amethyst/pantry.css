@@ -342,10 +342,8 @@ button {
 
 .bk-modal {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr);
-  width: min(1040px, 100%);
-  max-height: min(92vh, 900px);
+  width: min(1240px, 100%);
+  max-height: min(94vh, 980px);
   overflow: auto;
   background: #fff;
   border-radius: 8px;
@@ -365,20 +363,19 @@ button {
   cursor: pointer;
 }
 
-.bk-modal-media {
-  min-height: 100%;
+.bk-modal-hero {
+  height: clamp(220px, 31vh, 340px);
   background: #eee;
 }
 
-.bk-modal-media img {
+.bk-modal-hero img {
   width: 100%;
   height: 100%;
-  min-height: 460px;
   object-fit: cover;
 }
 
 .bk-modal-body {
-  padding: clamp(24px, 4vw, 44px);
+  padding: clamp(24px, 4vw, 42px);
 }
 
 .bk-modal-description,
@@ -389,7 +386,7 @@ button {
 
 .bk-video-frame {
   position: relative;
-  margin: 22px 0;
+  margin: 12px 0 0;
   overflow: hidden;
   border-radius: 8px;
   background: #111;
@@ -398,7 +395,7 @@ button {
 .bk-video-frame iframe {
   display: block;
   width: 100%;
-  min-height: 520px;
+  min-height: 460px;
   border: 0;
 }
 
@@ -427,35 +424,67 @@ button {
   outline-offset: 2px;
 }
 
-.bk-recipe-columns {
+.bk-recipe-detail-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  grid-template-columns: minmax(210px, 0.78fr) minmax(260px, 1.08fr) minmax(210px, 0.78fr);
+  gap: 18px;
+  align-items: start;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px dashed rgba(111, 45, 168, 0.32);
 }
 
-.bk-recipe-columns h3,
+.bk-recipe-detail-grid h3,
 .bk-note h3 {
   margin: 0 0 12px;
+  font-family: var(--bk-heading-font);
+  font-size: 1.22rem;
 }
 
-.bk-recipe-columns ul,
-.bk-recipe-columns ol {
+.bk-recipe-video,
+.bk-recipe-method,
+.bk-note {
+  min-width: 0;
+  border: 1px dashed rgba(111, 45, 168, 0.28);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.bk-recipe-video > p {
+  margin: 0;
+  color: var(--bk-muted);
+  line-height: 1.65;
+}
+
+.bk-recipe-method ul,
+.bk-recipe-method ol {
   margin: 0;
   padding-left: 20px;
   color: var(--bk-muted);
   line-height: 1.6;
 }
 
-.bk-recipe-columns li + li {
+.bk-recipe-method li + li {
   margin-top: 8px;
 }
 
 .bk-note {
-  margin-top: 24px;
-  padding: 18px;
-  border: 1px solid rgba(111, 45, 168, 0.18);
-  border-radius: 8px;
-  background: #fff9f1;
+  margin: 0;
+  background: #fff2d8;
+}
+
+.bk-recipe-method-divider {
+  margin: 20px 0;
+  border-top: 1px dashed rgba(111, 45, 168, 0.32);
+  color: var(--bk-plum);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  line-height: 0;
+  text-align: center;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 0;
 }
 
 body.bg-suite-paper {
@@ -598,8 +627,7 @@ body.btn-moonstone-lift .bk-recipe-action:hover {
   }
 
   .bk-intro,
-  .bk-modal,
-  .bk-recipe-columns {
+  .bk-recipe-detail-grid {
     grid-template-columns: 1fr;
   }
 

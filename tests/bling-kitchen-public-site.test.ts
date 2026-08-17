@@ -226,17 +226,23 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(pantryJsx).toContain('appearancePreset')
     expect(pantryJsx).toContain('recipe.tiktokUrl')
     expect(pantryJsx).toContain('function TikTokRecipePlayer')
+    expect(pantryJsx).toContain("What You'll Need")
+    expect(pantryJsx).toContain('How to Make It')
+    expect(pantryJsx).toContain("Watch Heather make it")
+    expect(pantryJsx).toContain('bk-recipe-detail-grid')
     expect(pantryJsx).toContain('https://www.tiktok.com/player/v1/${videoId}')
     expect(pantryJsx).toContain('autoplay=1&muted=1&loop=1&controls=0')
     expect(pantryJsx).toContain('new IntersectionObserver')
     expect(pantryJsx).toContain('type: nextMuted ? "mute" : "unMute"')
     expect(pantryHtml).toContain('class="bk-pantry-page"')
     expect(pantryHtml).toContain('data-template-src="/api/amethyst/pantry-template"')
+    expect(pantryHtml).toContain('pantry.jsx?v=20260817-recipe-detail-layout')
     expect(pantryCss).toContain(
       'body.bg-moonstone-charcoal .bk-filter-bar button:not(.is-active)',
     )
     expect(pantryCss).toContain('body.surface-silver-pearl .bk-recipe-body > p')
     expect(pantryCss).toContain('body.surface-silver-pearl .bk-recipe-meta span')
+    expect(pantryCss).toContain('.bk-recipe-detail-grid')
   })
 
   it('uses standard public SEO text for Home/Trade/Join and Pantry-specific text for Pantry', () => {

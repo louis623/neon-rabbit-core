@@ -178,7 +178,7 @@ function RecipeModal({ recipe, onClose }) {
     <div className="bk-modal-backdrop" role="presentation" onClick={onClose}>
       <div className="bk-modal" role="dialog" aria-modal="true" aria-labelledby="bk-modal-title" onClick={(event) => event.stopPropagation()}>
         <button type="button" className="bk-modal-close" aria-label="Close recipe" onClick={onClose}>x</button>
-        <div className="bk-modal-media">
+        <div className="bk-modal-hero">
           <img src={getRecipeImage(recipe)} alt="" style={{ objectPosition: recipe.modalImagePosition || recipe.imagePosition || "center" }} />
         </div>
         <div className="bk-modal-body">
@@ -189,27 +189,31 @@ function RecipeModal({ recipe, onClose }) {
             <span>{recipe.prepTime}</span>
             <span>{recipe.servings} servings</span>
           </div>
-          {videoId && <TikTokRecipePlayer title={recipe.title} videoId={videoId} />}
-          <div className="bk-recipe-columns">
-            <section>
-              <h3>Ingredients</h3>
+          <div className="bk-recipe-detail-grid">
+            <section className="bk-recipe-video">
+              <h3>Watch Heather make it</h3>
+              {videoId ? (
+                <TikTokRecipePlayer title={recipe.title} videoId={videoId} />
+              ) : (
+                <p>This recipe is ready to make from the instructions below.</p>
+              )}
+            </section>
+            <section className="bk-recipe-method">
+              <h3>What You'll Need</h3>
               <ul>
                 {(recipe.ingredients || []).map((item, index) => <li key={index}>{item}</li>)}
               </ul>
-            </section>
-            <section>
-              <h3>Steps</h3>
+              <div className="bk-recipe-method-divider">Then</div>
+              <h3>How to Make It</h3>
               <ol>
                 {(recipe.steps || []).map((item, index) => <li key={index}>{item}</li>)}
               </ol>
             </section>
-          </div>
-          {note && (
             <aside className="bk-note">
               <h3>Heather's Note</h3>
-              <p>{note}</p>
+              <p>{note || 'Heather is sharing this recipe straight from her kitchen.'}</p>
             </aside>
-          )}
+          </div>
         </div>
       </div>
     </div>
