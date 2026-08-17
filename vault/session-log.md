@@ -4248,3 +4248,11 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Authenticated visual reviewer smoke is still blocked by the known too-short reviewer token. No personal or customer session and no existing browser tab was used as a workaround.
 - Note: Git push unexpectedly spawned `dpl_9Q6b18uhJiLEog9UASNBALx75W8W` from commit `62263b3`, even though automatic Vercel Git deployment creation is documented as disabled. It remained unaliased; preserve this evidence and audit the setting separately.
 - The follow-up documentation push then queued another Git-created production deployment (`sparkle-suite-g2edlg0xp-louis-2849s-projects.vercel.app`), confirming this is not a one-off. It was removed before it built or received aliases; do not treat documentation pushes as releases.
+
+---
+
+# August 17, 2026 - Git deployment creation repaired
+
+- Audit in the user-opened GitHub/Vercel tabs confirmed the repository branch is correct. The Vercel UI/history showed paired deployments for the same SHA: one manual (`louis-2849`) and one GitHub-sourced (`github/louis623`).
+- The project API retained `gitProviderOptions.createDeployments: "disabled"`, but Vercel's current configuration contract uses `git.deploymentEnabled`. Added `"git": { "deploymentEnabled": false }` to the existing root `vercel.json` to disable Git-triggered deployments on all branches while preserving the linked repository and manual deployment path.
+- Verification requirement: after pushing this configuration, confirm the Git push does not create a Vercel deployment. No production alias should move for this operational configuration change.
