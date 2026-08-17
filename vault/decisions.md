@@ -1256,3 +1256,8 @@ Team Management has two related but separate workflows: Start Strong onboarding 
 - **Customer-site failures are shared-system incidents until disproven.** When a public preview and more than one customer domain fail together, inspect shared renderer assets, compile errors, and cache keys first. Verify at multiple representative tenant routes and a custom domain; never apply a customer-specific patch to mask a shared regression.
 - **Existing content editing is a guarded continuation of creation.** Existing recipes should open in the same structured editor used for new recipes, with all stored public/private fields restored. Persist private source materials deliberately, require a second confirmation before deletion, and warn before navigation can discard unfinished edits. Audit/process hardening must not remove customer content.
 - **A deployment quota makes release discipline a product safeguard.** One manual deployment of the exact tested tip is the release unit. Documentation pushes are not releases, and automatic Git builds must remain disabled so they cannot exhaust capacity or create an unclear sequence of competing deployments.
+
+# August 17, 2026 - Pantry recipe categories
+
+- **Baking & Sweets is the single public home for desserts and baked goods.** New recipe drafts, editor saves, and public rendering normalize legacy `Baking` and `Dessert` into `Baking & Sweets`; do not reintroduce the legacy labels as selectable categories.
+- **An All view must have a visibility-safe fallback.** Fixed editorial groups can improve presentation, but any visible recipe whose category is new or unexpected must render in an explicit catch-all group rather than silently disappear.

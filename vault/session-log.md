@@ -4219,3 +4219,21 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 ## Known verification boundary
 
 - The supported authenticated reviewer flow remains unavailable because of the known too-short reviewer-token configuration. No Louis or customer account was used as a substitute; the outstanding visual acceptance remains explicitly tracked as a platform limitation.
+
+---
+
+# August 17, 2026 - BlingKitchen Pantry category consolidation
+
+## Request and resolution
+
+- Louis requested that the `Desserts` category be removed in favor of one `Baking & Sweets` category covering desserts, baked goods, and sweets.
+- During the release check, the earlier report that Peanut Butter Cookies did not appear was traced to a category-rendering omission. The record was already saved and public, but the Pantry All view had only fixed category groups and excluded legacy `Dessert`.
+- Consolidated the category end-to-end and added a public ungrouped-recipe fallback. Updated only Heather/BlingKitchen rows in the two legacy categories (14 records), preserving recipe body content and public flags.
+
+## Release evidence
+
+- Application commits: `e451bffe feat: consolidate Pantry baking categories`, followed by `80185d3c fix: type recipe category normalization` after Vercel exposed a narrow TypeScript `unknown` normalization error. The failed deployment `dpl_7WmjvYXPZubjUoMcKGhChvZgX4mx` never received aliases.
+- Final manual production deployment: `dpl_8DG2YAcoerFtpYsUMqtDYh5BvcQU`, Ready, exact application tip `80185d3c`.
+- Focused coverage: 4 files, 124 passing tests (`bling-kitchen-public-site`, recipe draft builder, site-recipes service, and Nic-Nac dashboard placeholder).
+- Live no-auth verification: `www.yoursparklesuite.com/blingkitchen/in-the-pantry` returned 200 with `pantry.jsx?v=20260817-baking-and-sweets`; its bootstrap data contained `Bakery Style Thick Peanut Butter Cookies` and `Baking & Sweets`, with no `Dessert`. `theblingkitchen.com/in-the-pantry` returned 200; the Sparkle Suite apex canonicalized to www with 307.
+- The authenticated reviewer-browser path remains intentionally untested because its token configuration is still too short. No browser tabs were closed and no Louis/customer account was used.

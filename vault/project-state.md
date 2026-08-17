@@ -1351,3 +1351,10 @@ Verification passed:
 - Git pushes preserve source provenance but do not create a deployment. Approved application changes must use one deliberate manual Vercel production deployment of the exact checked branch tip, followed by the existing alias and live-workflow smoke gates.
 - This prevents documentation/checkpoint pushes from consuming Vercel deployment capacity. Do not re-enable automatic Git deployments without Louis's explicit approval.
 - The next application release remains `c3e6a282 fix: guard unsaved recipe edits`; it is pushed but pending the Vercel daily-capacity reset. `388087c9 feat: harden recipe editing workflow` remains the live recipe release.
+
+### August 17, 2026 Pantry category consolidation
+
+- Heather's public Pantry now has one `Baking & Sweets` category for desserts, baked goods, and sweets. The editor, AI recipe-draft normalization, saved-recipe service, and public template all normalize legacy `Baking` and `Dessert` values to that category.
+- The initial Peanut Butter Cookies report was a visibility grouping defect, not a failed save: `Bakery Style Thick Peanut Butter Cookies` was a visible saved record, but its old `Dessert` category was not rendered by the All view's fixed groups. The public renderer now also includes a safe "More from Heather's Pantry" fallback for any future unrecognized category so an otherwise-visible recipe cannot disappear.
+- Updated the 14 existing BlingKitchen records previously categorized `Baking` or `Dessert` to `Baking & Sweets`; recipe content, visibility, images, and ordering were preserved.
+- Released application tip `80185d3c fix: type recipe category normalization` manually as Vercel production deployment `dpl_8DG2YAcoerFtpYsUMqtDYh5BvcQU` (`https://sparkle-suite-8edaobbgm-louis-2849s-projects.vercel.app`). It owns both Sparkle Suite aliases and the BlingKitchen custom domain. Public no-auth verification confirmed the cache-busted Pantry asset, the Peanut Butter Cookies entry, `Baking & Sweets`, no legacy `Dessert` category, 200 responses for www and BlingKitchen, and the apex canonical redirect.
