@@ -2362,6 +2362,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Inside food photo for recipe view')
     expect(html).toContain('Recipe-source photos')
     expect(html).toContain('https://cdn.example.com/chicken-card.jpg')
+    expect(html).toContain('Read source photos and replace details')
+    expect(html).toContain('rebuild this draft before you save it to the Pantry')
     expect(html).toContain('Save recipe')
     expect(html.match(/Save recipe/g)).toHaveLength(1)
     expect(html).toContain('Remove recipe')

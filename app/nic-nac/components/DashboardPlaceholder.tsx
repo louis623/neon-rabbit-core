@@ -4041,7 +4041,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         helperMessage:
           draft.warnings && draft.warnings.length > 0
             ? `Recipe formatted. Check: ${draft.warnings.join(' ')}`
-            : 'Recipe formatted. Review it, then save when it looks right.',
+            : 'Source photos read. Recipe details were replaced in this draft; review them, then save when they look right.',
       })
     } catch (error) {
       setRecipeActionState({
@@ -8144,7 +8144,7 @@ export function RecipesCard({
   const subtitle = isBuilderMode
     ? 'Upload the two customer-facing food photos, then add recipe-source photos to read and format before you review and save.'
     : isEditMode
-      ? 'Review the saved food photos and recipe details, make your changes, then save them to the Pantry.'
+      ? 'Upload recipe-source photos, then use Read source photos and replace details to rebuild this draft before you save it to the Pantry.'
       : 'Review the recipes already on your customer site, then choose one to edit or upload a new recipe.'
 
   function applyTabChange(nextTab: RecipeEditorTab, recipeId?: string) {
@@ -8192,7 +8192,7 @@ export function RecipesCard({
           >
             {statusMessage ?? getRecipeSaveStatusText(actionState)}
           </span>
-          {isBuilderMode ? (
+          {isBuilderMode || isEditMode ? (
             <button
               type="button"
               className={styles.siteSettingsSaveButton}
@@ -8201,7 +8201,9 @@ export function RecipesCard({
             >
               {pendingKey === 'build-draft'
                 ? 'Reading recipe photos...'
-                : 'Read and format recipe'}
+                : isEditMode
+                  ? 'Read source photos and replace details'
+                  : 'Read and format recipe'}
             </button>
           ) : null}
         </div>
