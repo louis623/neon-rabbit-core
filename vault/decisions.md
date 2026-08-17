@@ -1261,6 +1261,10 @@ Team Management has two related but separate workflows: Start Strong onboarding 
 
 - **Back actions preserve the nearest meaningful workspace level.** When an existing recipe editor is open, the workspace shell must return to **Current recipes**, not skip directly to the broader Tools menu. The label must name that actual destination. The Tools back action remains appropriate only once the user is at the recipe tool's top level.
 
+# August 17, 2026 - Pantry card vertical rhythm
+
+- **Recipe-card calls to action belong to a shared footer.** Within a responsive recipe grid, cards must be full-height columns with the narrative at the top and prep/servings plus **View Recipe** anchored at the bottom. Use flexible space inside the card body; do not pad or rewrite recipe narratives merely to imitate consistent card height.
+
 # August 17, 2026 - Pantry recipe categories
 
 - **Baking & Sweets is the single public home for desserts and baked goods.** New recipe drafts, editor saves, and public rendering normalize legacy `Baking` and `Dessert` into `Baking & Sweets`; do not reintroduce the legacy labels as selectable categories.

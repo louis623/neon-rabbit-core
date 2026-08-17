@@ -4270,6 +4270,17 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 ---
 
+---
+
+# August 17, 2026 - Pantry recipe card footer alignment
+
+- Louis requested that the prep time, servings, and View Recipe control align along the bottom of each recipe card, letting variable-length narratives use the visual slack instead of shifting the action controls upward.
+- Updated the shared Pantry card CSS only: grid cards stretch as full-height flex columns, the body fills remaining space, and the recipe metadata gets automatic top margin before the action. No recipe records, wording, images, or user interactions changed. Bumped only the Pantry stylesheet cache key.
+- Verified `tests/bling-kitchen-public-site.test.ts` and `tests/bling-kitchen-recipes-db-loader.test.ts` (11 passing), plus the local production build. Committed/pushed `a9f32d14 fix: align Pantry recipe card footers`.
+- Manually released exact commit `a9f32d14` as Ready deployment `dpl_9N9iscB6KZsD9UMnhWjkEnxWEFxH` / `https://sparkle-suite-8y93vz37z-louis-2849s-projects.vercel.app`. It owns www, apex, and customer aliases. Live checks found the footer-alignment cache key on Heather's custom Pantry and 200 responses for canonical Sparkle Suite Pantry and BlingKitchen Pantry; apex canonicalizes to www. Reviewer visual acceptance remains blocked by the known too-short token, with no Louis/customer account or browser tab used.
+
+---
+
 # August 17, 2026 - No-Bake Treats moved into Baking & Sweets
 
 - Louis requested removal of the Pantry's No-Bake Treats section, with all recipes moved into Baking & Sweets.

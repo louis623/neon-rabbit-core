@@ -1377,6 +1377,12 @@ Verification passed:
 - Released exact application commit `1fad6ff3 fix: keep recipe editor back navigation one level deep` manually as Vercel production deployment `dpl_SHhz5jAzNoYZEhy1WwuttV599MUs` (`https://sparkle-suite-6x3cv666n-louis-2849s-projects.vercel.app`). It owns both Sparkle Suite aliases and all active customer domains.
 - Focused recipe-workspace coverage passed (106 tests) and local/Vercel production builds passed. No-auth checks returned 200 for canonical Workspace, BlingKitchen Pantry, both BlingKitchen hostnames, and Bri's Glowtique; the Sparkle Suite apex canonically redirects to www. The authenticated reviewer browser remains blocked by the known too-short token, with no personal/customer session used.
 
+### August 17, 2026 Pantry recipe card footer alignment
+
+- Recipe cards now use a full-height column layout: title and narrative stay at the top, variable empty space stays between the narrative and footer, and the prep time, servings, and **View Recipe** action align at the bottom across each Pantry grid row. Recipe content and interactions are unchanged.
+- Released exact application commit `a9f32d14 fix: align Pantry recipe card footers` manually as Vercel production deployment `dpl_9N9iscB6KZsD9UMnhWjkEnxWEFxH` (`https://sparkle-suite-8y93vz37z-louis-2849s-projects.vercel.app`). It owns both Sparkle Suite aliases plus active customer domains.
+- Focused public Pantry tests passed (11 tests); local and Vercel production builds passed. Live no-auth checks confirmed Heather's cache-busted footer-alignment stylesheet, canonical Sparkle Suite Pantry 200, expected apex canonicalization, and `theblingkitchen.com/in-the-pantry` 200. Reviewer visual smoke remains blocked by the known too-short token; no personal/customer account was used.
+
 ### August 17, 2026 No-Bake Treats consolidation
 
 - Heather's public Pantry and recipe editor no longer offer `No-Bake Treats`; no-bake recipes belong in `Baking & Sweets`. The saved recipe service, AI draft builder, public template mapper, default fixture data, and editor choices normalize the removed label into `Baking & Sweets` so it cannot return through an old payload or model response.
