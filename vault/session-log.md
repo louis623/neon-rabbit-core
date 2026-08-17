@@ -4237,3 +4237,13 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Focused coverage: 4 files, 124 passing tests (`bling-kitchen-public-site`, recipe draft builder, site-recipes service, and Nic-Nac dashboard placeholder).
 - Live no-auth verification: `www.yoursparklesuite.com/blingkitchen/in-the-pantry` returned 200 with `pantry.jsx?v=20260817-baking-and-sweets`; its bootstrap data contained `Bakery Style Thick Peanut Butter Cookies` and `Baking & Sweets`, with no `Dessert`. `theblingkitchen.com/in-the-pantry` returned 200; the Sparkle Suite apex canonicalized to www with 307.
 - The authenticated reviewer-browser path remains intentionally untested because its token configuration is still too short. No browser tabs were closed and no Louis/customer account was used.
+
+---
+
+# August 17, 2026 - Recipe save action moved to header
+
+- Louis requested that the save control in both recipe creation and current-recipe editing be moved beside the recipe-reading control and clearly identify that it publishes the recipe.
+- Replaced the two mode-specific bottom buttons with one mode-aware top action: **Save to live site**, immediately after **Read and format recipe** in the builder and **Read source photos and replace details** in the editor. The handler and disabled/pending guard are the existing `onSave` contract; only placement and wording changed.
+- Commit `62263b35` passed `tests/nic-nac-dashboard-placeholder.test.ts` (105 tests) and the local production build. Manual production deployment `dpl_J7VDyXPynjJntQtX5Kn95QABA3qW` passed the Vercel build and owns www, apex, and active customer domains. No-auth live checks: canonical recipe route 200, apex 307 to canonical, BlingKitchen Pantry 200.
+- Authenticated visual reviewer smoke is still blocked by the known too-short reviewer token. No personal or customer session and no existing browser tab was used as a workaround.
+- Note: Git push unexpectedly spawned `dpl_9Q6b18uhJiLEog9UASNBALx75W8W` from commit `62263b3`, even though automatic Vercel Git deployment creation is documented as disabled. It remained unaliased; preserve this evidence and audit the setting separately.
