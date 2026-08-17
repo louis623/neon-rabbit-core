@@ -113,10 +113,13 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(BLING_KITCHEN_RECIPE_COUNT).toBe(26)
     expect(defaultAmethystPantryTemplateData.recipeCount).toBe(26)
     expect(defaultAmethystPantryTemplateData.recipes).toHaveLength(26)
-    expect(defaultAmethystPantryTemplateData.categoryOrder).toContain('Dessert')
-    expect(defaultAmethystPantryTemplateData.featuredCategoryGroups[0]?.categories).toContain(
-      'Dessert',
+    expect(defaultAmethystPantryTemplateData.categoryOrder).toContain(
+      'Baking & Sweets',
     )
+    expect(defaultAmethystPantryTemplateData.categoryOrder).not.toContain('Dessert')
+    expect(defaultAmethystPantryTemplateData.featuredCategoryGroups[0]?.categories).toEqual([
+      'Baking & Sweets',
+    ])
     expect(recipes.map((recipe) => recipe.title)).toEqual(
       expect.arrayContaining([
         'Chocolate-Dipped Strawberries',
@@ -127,6 +130,9 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(recipes[0]).toMatchObject({
       category: 'Baking',
       tiktokUrl: expect.stringContaining('tiktok.com/@blingkitchen/video/'),
+    })
+    expect(defaultAmethystPantryTemplateData.recipes[0]).toMatchObject({
+      category: 'Baking & Sweets',
     })
   })
 
@@ -242,7 +248,7 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(pantryJsx).toContain('type: nextMuted ? "mute" : "unMute"')
     expect(pantryHtml).toContain('class="bk-pantry-page"')
     expect(pantryHtml).toContain('data-template-src="/api/amethyst/pantry-template"')
-    expect(pantryHtml).toContain('pantry.jsx?v=20260817-pantry-category-groups')
+    expect(pantryHtml).toContain('pantry.jsx?v=20260817-baking-and-sweets')
     expect(pantryCss).toContain(
       'body.bg-moonstone-charcoal .bk-filter-bar button:not(.is-active)',
     )

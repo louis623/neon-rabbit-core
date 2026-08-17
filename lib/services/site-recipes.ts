@@ -161,7 +161,7 @@ function buildPatch(repId: string, input: UpsertPublicSiteRecipeInput) {
     title,
     slug,
     description: normalizeText(input.description),
-    category: normalizeText(input.category),
+    category: normalizeRecipeCategory(input.category),
     prep_time: normalizeText(input.prepTime),
     ...(servings !== undefined ? { servings } : {}),
     image_url: normalizeOptionalUrl(input.imageUrl, 'imageUrl'),
@@ -184,6 +184,13 @@ function buildPatch(repId: string, input: UpsertPublicSiteRecipeInput) {
         }
       : {}),
   }
+}
+
+function normalizeRecipeCategory(value: unknown) {
+  const category = normalizeText(value)
+  return category === 'Baking' || category === 'Dessert'
+    ? 'Baking & Sweets'
+    : category
 }
 
 export async function getPublicSiteRecipes(

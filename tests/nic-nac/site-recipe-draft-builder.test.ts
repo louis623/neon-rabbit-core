@@ -38,7 +38,7 @@ describe('site recipe draft builder', () => {
     ).toEqual({
       title: 'Chocolate-Dipped Strawberries',
       description: 'Sweet and simple.',
-      category: 'Dessert',
+      category: 'Baking & Sweets',
       prepTime: '20 minutes',
       servings: 12,
       ingredients: ['Strawberries', 'Chocolate'],

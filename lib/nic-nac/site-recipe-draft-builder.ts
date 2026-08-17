@@ -73,7 +73,7 @@ function normalizeDraft(value: z.infer<typeof recipeDraftSchema>): BuiltSiteReci
   return {
     title: normalizeText(value.title, 160),
     description: normalizeText(value.description),
-    category: normalizeText(value.category, 80),
+    category: normalizeRecipeCategory(value.category),
     prepTime: normalizeText(value.prepTime, 80),
     servings: value.servings,
     ingredients: normalizeList(value.ingredients),
@@ -82,6 +82,13 @@ function normalizeDraft(value: z.infer<typeof recipeDraftSchema>): BuiltSiteReci
     imageAlt: normalizeText(value.imageAlt, 160),
     warnings: normalizeList(value.warnings),
   }
+}
+
+function normalizeRecipeCategory(value: string) {
+  const category = normalizeText(value, 80)
+  return category === 'Baking' || category === 'Dessert'
+    ? 'Baking & Sweets'
+    : category
 }
 
 export function parseSiteRecipeDraftModelText(text: string): BuiltSiteRecipeDraft {
@@ -122,7 +129,7 @@ ${imageRoster}
 
 Use recipe_card images as the source of truth for ingredients and instructions. Use display_photo images only to understand the finished food and write image alt text. Do not reject recipe-card photos for being plain or handwritten if they are readable. Only warn when a recipe card is unreadable or a display photo is genuinely unsuitable for a public recipe page.
 
-Write in the same warm, practical BlingKitchen style as Heather's current Pantry recipes. If prep time, servings, or category are not visible, infer a reasonable value and include a warning. Return JSON only with this exact shape:
+Write in the same warm, practical BlingKitchen style as Heather's current Pantry recipes. Use the exact category **Baking & Sweets** for every dessert, baked good, cookie, candy, pie, cake, or sweet treat. If prep time, servings, or category are not visible, infer a reasonable value and include a warning. Return JSON only with this exact shape:
 {
   "title": "string",
   "description": "string",

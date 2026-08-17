@@ -167,6 +167,44 @@ describe('site recipes service', () => {
     })
   })
 
+  it('consolidates legacy baking and dessert labels into Baking & Sweets', async () => {
+    const query = makeWriteQuery({
+      id: 'recipe-4',
+      rep_id: 'rep-1',
+      title: 'Peanut Butter Cookies',
+      slug: 'peanut-butter-cookies',
+      description: '',
+      category: 'Baking & Sweets',
+      prep_time: '',
+      servings: null,
+      image_url: '',
+      image_alt: '',
+      image_position: 'center',
+      modal_image_url: '',
+      modal_image_position: 'center',
+      tiktok_url: '',
+      ingredients: [],
+      steps: [],
+      note: '',
+      sort_order: 0,
+      is_visible: true,
+      source_recipe_id: '',
+      recipe_source_image_urls: [],
+      created_at: null,
+      updated_at: null,
+    })
+    const supabase = makeSupabaseClient(query)
+
+    await upsertPublicSiteRecipe(supabase, 'rep-1', {
+      title: 'Peanut Butter Cookies',
+      category: 'Dessert',
+    })
+
+    expect(query.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ category: 'Baking & Sweets' }),
+    )
+  })
+
   it('patches existing recipes by rep and id', async () => {
     vi.setSystemTime(new Date('2026-06-19T13:30:00.000Z'))
     const query = makeWriteQuery({

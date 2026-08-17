@@ -723,14 +723,13 @@ type SiteRecipeBuilderDraft = {
 }
 
 const BLING_KITCHEN_RECIPE_CATEGORIES = [
-  'Baking',
+  'Baking & Sweets',
   'Italian Classics',
   'Weeknight Dinners',
   'No-Bake Treats',
   'Drinks & Extras',
   'Holiday Favorites',
   'Breakfast',
-  'Dessert',
   'Appetizer',
 ]
 
@@ -1451,7 +1450,10 @@ export function getRecipeDraft(recipe?: PublicSiteRecipe | null): RecipeDraft {
     title: recipe?.title ?? '',
     slug: recipe?.slug ?? '',
     description: recipe?.description ?? '',
-    category: recipe?.category ?? '',
+    category:
+      recipe?.category === 'Baking' || recipe?.category === 'Dessert'
+        ? 'Baking & Sweets'
+        : recipe?.category ?? '',
     prepTime: recipe?.prepTime ?? '',
     servings:
       typeof recipe?.servings === 'number' && Number.isFinite(recipe.servings)

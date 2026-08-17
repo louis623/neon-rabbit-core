@@ -63,6 +63,12 @@ export interface AmethystPantryTemplateData {
   }
 }
 
+function normalizePantryRecipeCategory(category: string) {
+  return category === 'Baking' || category === 'Dessert'
+    ? 'Baking & Sweets'
+    : category
+}
+
 export const defaultAmethystPantryTemplateData: AmethystPantryTemplateData = {
   publicSiteVariant: 'bling_kitchen_hybrid',
   appearancePreset: DEFAULT_AMETHYST_APPEARANCE_PRESET,
@@ -79,10 +85,12 @@ export const defaultAmethystPantryTemplateData: AmethystPantryTemplateData = {
   heroImageUrl: BLING_KITCHEN_PROFILE.pantryHeroImageUrl,
   sourceSite: BLING_KITCHEN_PROFILE.sourceSite,
   recipeCount: BLING_KITCHEN_RECIPE_COUNT,
-  recipes: blingKitchenRecipes,
+  recipes: blingKitchenRecipes.map((recipe) => ({
+    ...recipe,
+    category: normalizePantryRecipeCategory(recipe.category),
+  })),
   categoryOrder: [
-    'Baking',
-    'Dessert',
+    'Baking & Sweets',
     'Italian Classics',
     'Weeknight Dinners',
     'No-Bake Treats',
@@ -95,7 +103,7 @@ export const defaultAmethystPantryTemplateData: AmethystPantryTemplateData = {
     {
       title: 'Baking & Sweets',
       subtitle: 'Celebration desserts, cookies, breads, and family treats.',
-      categories: ['Baking', 'Dessert'],
+      categories: ['Baking & Sweets'],
     },
     {
       title: 'Dinners & Mains',
@@ -132,7 +140,7 @@ export function mapPublicSiteRecipeToPantryRecipe(
     id: recipe.id,
     title: recipe.title,
     description: recipe.description,
-    category: recipe.category,
+    category: normalizePantryRecipeCategory(recipe.category),
     prepTime: recipe.prepTime,
     servings: recipe.servings,
     image: recipe.imageUrl,
