@@ -1261,3 +1261,4 @@ Team Management has two related but separate workflows: Start Strong onboarding 
 
 - **Baking & Sweets is the single public home for desserts and baked goods.** New recipe drafts, editor saves, and public rendering normalize legacy `Baking` and `Dessert` into `Baking & Sweets`; do not reintroduce the legacy labels as selectable categories.
 - **An All view must have a visibility-safe fallback.** Fixed editorial groups can improve presentation, but any visible recipe whose category is new or unexpected must render in an explicit catch-all group rather than silently disappear.
+- **No-bake is a recipe trait, not a public Pantry category.** No-bake desserts and treats belong in `Baking & Sweets`; do not reintroduce `No-Bake Treats` as an editor option, AI output, stored category, or public grouping.

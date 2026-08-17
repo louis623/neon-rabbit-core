@@ -4256,3 +4256,12 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Audit in the user-opened GitHub/Vercel tabs confirmed the repository branch is correct. The Vercel UI/history showed paired deployments for the same SHA: one manual (`louis-2849`) and one GitHub-sourced (`github/louis623`).
 - The project API retained `gitProviderOptions.createDeployments: "disabled"`, but Vercel's current configuration contract uses `git.deploymentEnabled`. Added `"git": { "deploymentEnabled": false }` to the existing root `vercel.json` to disable Git-triggered deployments on all branches while preserving the linked repository and manual deployment path.
 - Verified the configuration commit `c0a66a9f` after the Git webhook window: no new Vercel deployment was created, and the current manual release `dpl_J7VDyXPynjJntQtX5Kn95QABA3qW` retained `www.yoursparklesuite.com`, `yoursparklesuite.com`, BlingKitchen, and Bri's Glowtique aliases.
+
+---
+
+# August 17, 2026 - No-Bake Treats moved into Baking & Sweets
+
+- Louis requested removal of the Pantry's No-Bake Treats section, with all recipes moved into Baking & Sweets.
+- Production inspection identified one affected Heather/BlingKitchen record: `Sweet & Salty Clusters`, visible. Its category alone was updated with an exact row/rep/category guard; recipe content, image, sort order, and visibility remain unchanged.
+- Removed No-Bake Treats from editor and public category groups; all legacy `Baking`, `Dessert`, and `No-Bake Treats` values now normalize to Baking & Sweets in save, AI-draft, and template paths.
+- Application commit `dc2624c4` was released manually as `dpl_HtdnTBiCnvQSRSGXxFSsx66QyTg8`. Four focused files passed 125 tests and local/Vercel builds passed. Live public template data includes the moved recipe and no No-Bake Treats entry; canonical recipe route returned 200, apex returned 307, and BlingKitchen Pantry returned 200. Reviewer-browser visual smoke remains unavailable due to the known too-short token; no Louis/customer session was used.
