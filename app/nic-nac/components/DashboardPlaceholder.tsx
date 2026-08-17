@@ -2436,6 +2436,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         ? 'home'
         : getInitialWorkspaceSection(window.location.search)),
     )
+  const [recipeEditorTab, setRecipeEditorTab] =
+    useState<RecipeEditorTab>('current')
   const [workspacePreview, setWorkspacePreview] = useState<WorkspacePreviewState>({
     mode: 'workspace',
   })
@@ -5493,15 +5495,15 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           sections={SECONDARY_WORKSPACE_SECTIONS.filter(
             (section) => section.key !== 'recipes' || hasRecipeWorkspaceAccess,
           )}
-          onSectionChange={(section) =>
-            setActiveSection(
-              resolveWorkspaceSectionForAccess(
-                section,
-                hasPaidWorkspace,
-                hasRecipeWorkspaceAccess,
-              ),
+          onSectionChange={(section) => {
+            const nextSection = resolveWorkspaceSectionForAccess(
+              section,
+              hasPaidWorkspace,
+              hasRecipeWorkspaceAccess,
             )
-          }
+            if (nextSection === 'recipes') setRecipeEditorTab('current')
+            setActiveSection(nextSection)
+          }}
         />
       )
     }
@@ -5662,7 +5664,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             state={recipesState}
             draft={recipeDraft}
             actionState={recipeActionState}
+            activeTab={recipeEditorTab}
             statusMessage={getRecipeSaveStatusText(recipeActionState)}
+            onActiveTabChange={setRecipeEditorTab}
             onDraftChange={handleRecipeDraftChange}
             onSelectRecipe={handleSelectRecipe}
             onNewRecipe={handleNewRecipeDraft}
@@ -5728,6 +5732,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const renderedSection = renderActiveWorkspaceSection()
   const showConceptHome = activeSection === 'home'
   const workspaceBackDestination = getWorkspaceBackDestination(activeSection)
+  const isRecipeDetailOpen =
+    activeSection === 'recipes' && recipeEditorTab === 'edit'
   const homeTradeRequestsCount = tradeRequestsState.requests?.length ?? 0
   const homeCleanupCount = tradeSwapCleanupState.items?.length ?? 0
   const homeFulfillmentCount = fulfillmentQueueState.items?.length ?? 0
@@ -5829,12 +5835,20 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                   onClick={() => {
                     setWorkspacePreview({ mode: 'workspace' })
                     setPreviewUnavailableMessage(null)
-                    setActiveSection(workspaceBackDestination.section)
+                    if (isRecipeDetailOpen) {
+                      setRecipeEditorTab('current')
+                    } else {
+                      setActiveSection(workspaceBackDestination.section)
+                    }
                   }}
-                  aria-label={`Back to ${workspaceBackDestination.label}`}
+                  aria-label={`Back to ${
+                    isRecipeDetailOpen ? 'current recipes' : workspaceBackDestination.label
+                  }`}
                 >
                   <ChevronLeft aria-hidden="true" />
-                  <span>Back to {workspaceBackDestination.label}</span>
+                  <span>
+                    Back to {isRecipeDetailOpen ? 'current recipes' : workspaceBackDestination.label}
+                  </span>
                 </button>
               ) : null}
               {renderedSection}
@@ -8051,9 +8065,11 @@ export function RecipesCard({
   state,
   draft,
   actionState,
+  activeTab: controlledActiveTab,
   initialEditorMode = 'builder',
   initialTab,
   statusMessage,
+  onActiveTabChange,
   onDraftChange,
   onSelectRecipe,
   onNewRecipe,
@@ -8065,9 +8081,11 @@ export function RecipesCard({
   state: RecipesState
   draft: RecipeDraft
   actionState?: RecipeActionState
+  activeTab?: RecipeEditorTab
   initialEditorMode?: RecipeEditorMode
   initialTab?: RecipeEditorTab
   statusMessage?: string | null
+  onActiveTabChange?: (tab: RecipeEditorTab) => void
   onDraftChange?: (patch: Partial<RecipeDraft>) => void
   onSelectRecipe?: (recipeId: string) => void
   onNewRecipe?: () => void
@@ -8079,9 +8097,10 @@ export function RecipesCard({
   ) => Promise<void> | void
   onBuildDraft?: () => void
 }) {
-  const [activeTab, setActiveTab] = useState<RecipeEditorTab>(
+  const [uncontrolledActiveTab, setUncontrolledActiveTab] = useState<RecipeEditorTab>(
     initialTab ?? (initialEditorMode === 'manual' ? 'edit' : 'current'),
   )
+  const activeTab = controlledActiveTab ?? uncontrolledActiveTab
   const [isRemovalConfirmationVisible, setIsRemovalConfirmationVisible] =
     useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<{
@@ -8149,7 +8168,8 @@ export function RecipesCard({
       : 'Review the recipes already on your customer site, then choose one to edit or upload a new recipe.'
 
   function applyTabChange(nextTab: RecipeEditorTab, recipeId?: string) {
-    setActiveTab(nextTab)
+    if (controlledActiveTab === undefined) setUncontrolledActiveTab(nextTab)
+    onActiveTabChange?.(nextTab)
     setIsRemovalConfirmationVisible(false)
     setPendingNavigation(null)
     if (recipeId) {

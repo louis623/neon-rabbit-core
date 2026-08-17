@@ -2380,6 +2380,21 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Build recipe with Nic-Nac')
   })
 
+  it('lets the workspace return an open recipe editor to current recipes', () => {
+    const html = renderToStaticMarkup(
+      createElement(RecipesCard, {
+        state: RECIPES_READY_STATE,
+        draft: getRecipeDraft(RECIPES_READY_STATE.recipes[0]),
+        initialEditorMode: 'manual',
+        activeTab: 'current',
+      }),
+    )
+
+    expect(html).toContain('Recipes on your site')
+    expect(html).toContain('Edit this recipe')
+    expect(html).not.toContain('Editing Bling Kitchen Chicken Dip')
+  })
+
   it('renders a current-recipes view that opens each recipe for editing', () => {
     const html = renderToStaticMarkup(
       createElement(RecipesCard, {
