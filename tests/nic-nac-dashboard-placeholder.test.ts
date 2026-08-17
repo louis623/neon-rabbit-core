@@ -2317,8 +2317,11 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Upload image')
     expect(html).not.toContain('Choose a recipe to edit')
     expect(html).not.toContain('TikTok URL')
-    expect(html).toContain('Save recipe')
-    expect(html.match(/Save recipe/g)).toHaveLength(1)
+    expect(html).toContain('Save to live site')
+    expect(html.match(/Save to live site/g)).toHaveLength(1)
+    expect(html.indexOf('recipes-read-and-format-button')).toBeLessThan(
+      html.indexOf('recipes-save-live-button'),
+    )
     expect(html).not.toContain('Remove recipe')
     expect(html).toContain('data-testid="recipes-save-status"')
   })
@@ -2364,8 +2367,11 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('https://cdn.example.com/chicken-card.jpg')
     expect(html).toContain('Read source photos and replace details')
     expect(html).toContain('rebuild this draft before you save it to the Pantry')
-    expect(html).toContain('Save recipe')
-    expect(html.match(/Save recipe/g)).toHaveLength(1)
+    expect(html).toContain('Save to live site')
+    expect(html.match(/Save to live site/g)).toHaveLength(1)
+    expect(html.indexOf('recipes-read-and-format-button')).toBeLessThan(
+      html.indexOf('recipes-save-live-button'),
+    )
     expect(html).toContain('Remove recipe')
     expect(html).not.toContain('Yes, remove recipe')
     expect(html).not.toContain('Advanced edit')

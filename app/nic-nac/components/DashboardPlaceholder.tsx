@@ -8198,6 +8198,7 @@ export function RecipesCard({
             <button
               type="button"
               className={styles.siteSettingsSaveButton}
+              data-testid="recipes-read-and-format-button"
               onClick={onBuildDraft}
               disabled={Boolean(pendingKey)}
             >
@@ -8206,6 +8207,17 @@ export function RecipesCard({
                 : isEditMode
                   ? 'Read source photos and replace details'
                   : 'Read and format recipe'}
+            </button>
+          ) : null}
+          {isBuilderMode || isEditMode ? (
+            <button
+              type="button"
+              className={styles.siteSettingsSaveButton}
+              data-testid="recipes-save-live-button"
+              onClick={onSave}
+              disabled={Boolean(pendingKey)}
+            >
+              {pendingKey === 'save' ? 'Saving to live site...' : 'Save to live site'}
             </button>
           ) : null}
         </div>
@@ -8414,16 +8426,6 @@ export function RecipesCard({
               onUploadImage={(file) => onUploadImage?.('recipeCardImageUrls', file)}
             />
 
-            <div className={styles.recipeBuilderActions}>
-              <button
-                type="button"
-                className={styles.siteSettingsSaveButton}
-                onClick={onSave}
-                disabled={Boolean(pendingKey)}
-              >
-                {pendingKey === 'save' ? 'Saving...' : 'Save recipe'}
-              </button>
-            </div>
           </div>
 
           <div className={styles.recipeDraftPreview}>
@@ -8684,14 +8686,6 @@ export function RecipesCard({
             </div>
 
             <div className={styles.actionRow}>
-              <button
-                type="button"
-                className={styles.siteSettingsSaveButton}
-                onClick={onSave}
-                disabled={Boolean(pendingKey)}
-              >
-                {pendingKey === 'save' ? 'Saving...' : 'Save recipe'}
-              </button>
               {isRemovalConfirmationVisible ? (
                 <div className={styles.recipeRemovalConfirmation} role="alert">
                   <span>Remove “{draft.title}” permanently?</span>
