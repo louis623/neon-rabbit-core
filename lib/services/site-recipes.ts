@@ -186,7 +186,7 @@ function buildPatch(repId: string, input: UpsertPublicSiteRecipeInput) {
   }
 }
 
-function normalizeRecipeCategory(value: unknown) {
+function normalizeRecipeCategory(value: string | null | undefined) {
   const category = normalizeText(value)
   return category === 'Baking' || category === 'Dessert'
     ? 'Baking & Sweets'
