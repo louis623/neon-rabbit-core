@@ -5,6 +5,8 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Reconcile the recipe draft model-unavailable route assertion** - `tests/nic-nac-site-recipes-route.test.ts` still expects an earlier OpenAI-billing-specific message while the protected draft endpoint deliberately returns the current generic temporary-unavailability response. Update the intended contract and test together; do not weaken the safe 503 behavior or use a personal/customer account to exercise it.
+
 - [ ] **Remove the temporary Heather recipe-audit checks after the current audit** - the browser-local **Audited** boxes in Current recipes are intentionally temporary. Remove them only after Heather confirms her current recipe pass is complete; they do not change recipe data or the public Pantry.
 
 - [ ] **Run a synthetic reviewer customer-media acceptance pass after reviewer-token repair** - use a safe synthetic rep and disposable/test-owned public media to verify portrait upload and saved framing, each of the four allowed video providers, save validation, desktop/mobile Site Settings order, and public customer-site rendering. Confirm TikTok/YouTube follow the muted-loop/no-host-pause contract and Instagram/Facebook retain native controls. Do not use Louis's or a customer account.

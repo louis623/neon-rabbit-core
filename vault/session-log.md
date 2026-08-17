@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 17, 2026 - Recipe-source rebuild for existing Pantry recipes
+
+- Diagnosed Heather's Chocolate Chip Cookies issue as a UI availability gap, not a source-photo persistence or model-reading failure: the existing **Read and format recipe** handler already replaces the editable draft fields, but it was displayed only in the new-recipe upload mode. A saved recipe in edit mode showed the source photos but offered no way to run the reader again.
+- Released the edit-mode control **Read source photos and replace details**. It calls the same protected draft endpoint and replaces recipe title, description, category, prep time, servings, ingredients, steps, note, and image alt text only in the editor's unsaved draft. Saved source photos stay attached, and the separate **Save recipe** button remains the only publishing action. The label and helper text make that replacement/review/save sequence explicit for Heather and future recipe updates.
+- `tests/nic-nac-dashboard-placeholder.test.ts` passed (105 tests) and the production build passed. The broader recipe route suite has one pre-existing assertion mismatch for the safe model-unavailable message: the route returns the current generic temporary-unavailability copy while that test expects an earlier OpenAI-billing-specific string. It is unrelated to this UI trigger and is recorded as a follow-up below. Commit `ac1dba71 fix: enable recipe source rebuild in editor` was manually released as `dpl_4igyTHMuroRcraEpuaqcPVQJFkpu`; both Sparkle Suite aliases, BlingKitchen, and Bri's Glowtique aliases point to it. Canonical `/nic-nac?section=recipes` returned 200, the apex canonically redirected, and `theblingkitchen.com/in-the-pantry` returned 200. Authenticated reviewer visual smoke remains blocked by the known too-short reviewer token; no account was used.
+
+---
+
 ## August 17, 2026 - BlingKitchen public recipe detail format audit
 
 - Audited the 25 live BlingKitchen recipe records through the production database using only recipe completeness markers. Every record already has the data required for Heather's intended reader experience: title/summary, category, time, servings, card image, TikTok URL, ingredients, steps, and Heather's note. A missing dedicated inside-recipe image is safely covered by the existing card-image fallback. No recipe row or customer content was changed.
