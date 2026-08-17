@@ -4171,3 +4171,27 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Focused recipe coverage passed: 3 files, 116 tests. The local production build and Vercel production build both passed.
 - The exact live `https://www.yoursparklesuite.com/nic-nac?section=recipes` route returned 200. The apex produced the expected canonical 307 redirect, and `https://theblingkitchen.com/` returned 200.
 - Authenticated visual acceptance remains blocked by the known too-short reviewer-token configuration. No Louis or customer account/session was used to work around it.
+
+---
+
+# August 17, 2026 - Session Closeout: ticker, shared site recovery, recipes, and release discipline
+
+## Delivered
+
+- Reworded the formerly unclear Join control to clearly describe the public **Join My Team** recruiting page. Kept the announcement ticker as its own clearly named customer-facing control.
+- Turned ticker composition into a visible, low-friction workflow: an emoji picker; a link builder with URL validation; exact-word link selection; and a recovery action for accidental all-message links. Public Homepage, Trade, and Join renderers preserve non-linked text and link only the selected segment.
+- Diagnosed the blank customer-site previews as a shared homepage renderer compilation failure rather than a Heather/Brittany problem. Repaired the mismatched JSX and cache-busted the script so old browser assets could not preserve the failure. Checked both representative slug routes and Heather's custom domain.
+- Simplified and hardened recipe editing without deleting any recipes: redundant navigation removed, direct edit actions retained, recipe-source photos persisted, destructive removal gained a second confirmation, and unsaved work gained an explicit keep-editing/discard choice.
+- Moved release execution to manual-only Vercel deployments. After capacity returned, manually released the complete recipe safety tip as `dpl_36ubbhUBQf2WqvcyiSTh8TAsYBcw`; local/Vercel builds and the focused 116-test recipe suite passed, and live canonical/apex/customer-domain checks passed.
+
+## Reusable lessons
+
+- If a rep must ask what a setting means, the label is not finished; describe the public result, not an internal implementation term.
+- For content tools, user-friendly controls must prevent malformed content by construction and offer a safe repair path for legacy content.
+- A failure reported on multiple tenant sites calls for system-level diagnosis and cache-aware verification, even if one customer first reports it.
+- Content-management hardening should protect stored customer content and unfinished work; it is not authorization to delete or silently reset records.
+- Git history and production promotion are distinct operations. Manual deployment removes duplicate automated builds, but production provenance, aliases, and live-path verification remain mandatory.
+
+## Known verification boundary
+
+- The supported authenticated reviewer flow remains unavailable because of the known too-short reviewer-token configuration. No Louis or customer account was used as a substitute; the outstanding visual acceptance remains explicitly tracked as a platform limitation.

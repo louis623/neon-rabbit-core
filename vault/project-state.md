@@ -1,5 +1,17 @@
 # Project State
 
+## August 16-17, 2026 Session Closeout
+
+- **Site Settings clarity and ticker composition:** the ambiguous recruiting control is now clearly named **Show the “Join My Team” recruiting page on your public site**. The separate **Announcement ticker** has a built-in emoji picker, plain-language link controls, selection-only linking, safe `http`/`https` validation, and a repair action for legacy whole-message links.
+- **Shared customer-site reliability:** a malformed shared Homepage JSX asset affected every workspace preview, slug route, and custom domain. The repair fixed the shared component and bumped the asset cache key; system-wide checks included Heather/Bling Kitchen and Brittany routes rather than treating the symptom as one customer-site issue.
+- **Recipe editor hardening:** current recipes have direct edit actions, source-card photos persist through reopening/editing, deleting requires a second confirmation, and leaving unsaved work requires an explicit keep-editing/discard-changes decision. No recipes were removed during the work.
+- **Release operations:** Vercel Git deployment creation is disabled. Pushes retain source provenance but do not deploy. The recipe safety follow-up was released manually after capacity returned as `dpl_36ubbhUBQf2WqvcyiSTh8TAsYBcw` from application-containing tip `27e62249`; the later documentation commit does not change the release artifact.
+- **Ongoing limitation:** authenticated reviewer-browser acceptance remains blocked by the known too-short reviewer-token configuration. Never substitute Louis's or a customer's authenticated session.
+
+**Last updated:** August 17, 2026
+
+---
+
 ## August 16 Recipe editor audit and hardening
 
 - **Simpler navigation released:** Removed the redundant **Edit current recipes** tab. The recipe area now starts with **Current recipes** and **Upload new recipe**; each current recipe’s **Edit this recipe** button opens that recipe directly, with a return path to the gallery.

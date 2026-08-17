@@ -1248,3 +1248,11 @@ Team Management has two related but separate workflows: Start Strong onboarding 
 # August 16, 2026 - Manual Vercel releases
 
 - **Sparkle Suite releases are manually triggered.** Vercel's Git deployment creation is disabled while the repository link and allowlisted production branch remain configured. A push is source provenance, not a release. For approved application work, validate first and then create one manual Vercel production deployment of the exact branch tip; verify both Sparkle Suite domains and the affected live workflow before handoff. Do not re-enable automatic Git deployment creation without Louis's explicit approval.
+
+# August 16-17, 2026 - Customer-site editing and release lessons
+
+- **Name settings after their visible customer outcome.** A checkbox label must say which public page or surface it controls. The recruiting-page visibility setting and announcement ticker are separate concepts and must remain independently named.
+- **Rich ticker content must be composed, not encoded.** Reps should choose an emoji and create a link through visible controls. When a message includes a link, the editor must attach it only to intentionally selected words and provide a one-click way to make a legacy all-message link plain text before repairing it.
+- **Customer-site failures are shared-system incidents until disproven.** When a public preview and more than one customer domain fail together, inspect shared renderer assets, compile errors, and cache keys first. Verify at multiple representative tenant routes and a custom domain; never apply a customer-specific patch to mask a shared regression.
+- **Existing content editing is a guarded continuation of creation.** Existing recipes should open in the same structured editor used for new recipes, with all stored public/private fields restored. Persist private source materials deliberately, require a second confirmation before deletion, and warn before navigation can discard unfinished edits. Audit/process hardening must not remove customer content.
+- **A deployment quota makes release discipline a product safeguard.** One manual deployment of the exact tested tip is the release unit. Documentation pushes are not releases, and automatic Git builds must remain disabled so they cannot exhaust capacity or create an unclear sequence of competing deployments.
