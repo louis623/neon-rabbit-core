@@ -4156,3 +4156,18 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 
 - Verified via the Vercel project API that automatic creation is disabled and the existing Git link/production branch remain intact. No aliases were moved and no deployment was created for this configuration change.
 - The current direct production deploy limit remains `api-deployments-free-per-day`; the pushed recipe unsaved-change guard `c3e6a282` stays pending capacity. Disabling Git-triggered builds prevents future ordinary pushes, including Open Brain documentation commits, from spending that quota.
+
+---
+
+# August 17, 2026 - Recipe editor safety follow-up released manually
+
+## Release
+
+- Vercel capacity was available again, so the pending unsaved-edit guard was released with one deliberate manual production deployment of exact branch tip `27e62249` (including application commit `c3e6a282 fix: guard unsaved recipe edits`).
+- Deployment `dpl_36ubbhUBQf2WqvcyiSTh8TAsYBcw` / `https://sparkle-suite-eziqsw5mq-louis-2849s-projects.vercel.app` is Ready and owns `www.yoursparklesuite.com`, `yoursparklesuite.com`, `theblingkitchen.com`, `www.theblingkitchen.com`, `brisglowtique.com`, and `www.brisglowtique.com`.
+
+## Verification
+
+- Focused recipe coverage passed: 3 files, 116 tests. The local production build and Vercel production build both passed.
+- The exact live `https://www.yoursparklesuite.com/nic-nac?section=recipes` route returned 200. The apex produced the expected canonical 307 redirect, and `https://theblingkitchen.com/` returned 200.
+- Authenticated visual acceptance remains blocked by the known too-short reviewer-token configuration. No Louis or customer account/session was used to work around it.

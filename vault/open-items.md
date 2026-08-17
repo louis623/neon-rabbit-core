@@ -305,7 +305,7 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Platform and Dashboard
 
-- [ ] **Deploy final recipe unsaved-change guard when Vercel capacity resets** - commit `c3e6a282 fix: guard unsaved recipe edits` is pushed on `codex/nic-nac-trade-hardening` but Vercel rejected a direct production deploy on August 16 with `api-deployments-free-per-day`. The prior recipe hardening commit `388087c9` is live. Vercel Git deployment creation is now disabled, so use one manual production deployment of the exact verified branch tip after capacity resets; then confirm both Sparkle Suite aliases and smoke `/nic-nac?section=recipes`. Do not manually move aliases or use Louis/customer accounts.
+- [x] **Deploy final recipe unsaved-change guard after Vercel capacity reset** - completed August 17. Exact branch tip `27e62249`, including `c3e6a282 fix: guard unsaved recipe edits`, was manually released as `dpl_36ubbhUBQf2WqvcyiSTh8TAsYBcw`. Both Sparkle Suite aliases and active customer domains point to it; focused recipe coverage and production builds passed, and `/nic-nac?section=recipes` returned 200. Reviewer-browser visual smoke remains blocked by the known too-short reviewer token; no Louis/customer session was used.
 
 - [ ] **Dashboard Step 5** — SEO/GEO checklist with Readdy prompt buttons
 - [ ] **Command center: billing details** — add billing details per client card
