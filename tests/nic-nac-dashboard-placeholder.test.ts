@@ -2387,6 +2387,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Hidden Draft Dessert')
     expect(html).toContain('Edit this recipe')
     expect(html.match(/Edit this recipe/g)).toHaveLength(2)
+    expect(html).toContain('Audited')
+    expect(html.match(/type="checkbox"/g)).toHaveLength(2)
     expect(html).not.toContain('Edit current recipes')
   })
 

@@ -88,6 +88,8 @@ const CollectionIntakeTool = dynamic(() =>
   import('./CollectionIntakeTool').then((module) => module.CollectionIntakeTool),
 )
 
+const RECIPE_AUDIT_STORAGE_KEY = 'sparkle-suite:recipe-audit'
+
 // Texting and email updates are not launched yet. Keep the wallet implementation
 // intact for that release, but do not expose prepaid SMS spend or recharge controls.
 const CUSTOMER_MESSAGING_LAUNCHED = false
@@ -8085,6 +8087,37 @@ export function RecipesCard({
     tab: RecipeEditorTab
     recipeId?: string
   } | null>(null)
+  const [auditedRecipeIds, setAuditedRecipeIds] = useState<string[]>([])
+  const [hasLoadedRecipeAudit, setHasLoadedRecipeAudit] = useState(false)
+
+  useEffect(() => {
+    try {
+      const storedAudit = window.localStorage.getItem(RECIPE_AUDIT_STORAGE_KEY)
+      const parsedAudit = storedAudit ? JSON.parse(storedAudit) : []
+      if (Array.isArray(parsedAudit)) {
+        setAuditedRecipeIds(
+          parsedAudit.filter((recipeId): recipeId is string => typeof recipeId === 'string'),
+        )
+      }
+    } catch {
+      // A temporary audit aid should never block the recipe editor.
+    } finally {
+      setHasLoadedRecipeAudit(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!hasLoadedRecipeAudit) return
+
+    try {
+      window.localStorage.setItem(
+        RECIPE_AUDIT_STORAGE_KEY,
+        JSON.stringify(auditedRecipeIds),
+      )
+    } catch {
+      // Keep the current-session checkmarks usable if browser storage is unavailable.
+    }
+  }, [auditedRecipeIds, hasLoadedRecipeAudit])
 
   if (state.status === 'error') {
     return (
@@ -8131,6 +8164,14 @@ export function RecipesCard({
       return
     }
     applyTabChange(nextTab, recipeId)
+  }
+
+  function toggleRecipeAudit(recipeId: string) {
+    setAuditedRecipeIds((currentIds) =>
+      currentIds.includes(recipeId)
+        ? currentIds.filter((currentId) => currentId !== recipeId)
+        : [...currentIds, recipeId],
+    )
   }
 
   return (
@@ -8251,6 +8292,14 @@ export function RecipesCard({
                           {recipe.category ? ` · ${recipe.category}` : ''}
                         </div>
                         {recipe.description ? <p>{recipe.description}</p> : null}
+                        <label className={styles.recipeAuditToggle}>
+                          <input
+                            type="checkbox"
+                            checked={auditedRecipeIds.includes(recipe.id)}
+                            onChange={() => toggleRecipeAudit(recipe.id)}
+                          />
+                          <span>Audited</span>
+                        </label>
                         <button
                           type="button"
                           className={styles.secondaryActionButton}

@@ -4865,6 +4865,26 @@
   -webkit-line-clamp: 3;
 }
 
+.recipeAuditToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.recipeAuditToggle input {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: var(--nic-nac-accent);
+  cursor: pointer;
+}
+
 .recipeEditHeader,
 .recipeRemovalConfirmation,
 .recipeNavigationConfirmation {
