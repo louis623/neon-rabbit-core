@@ -1,5 +1,21 @@
 # Decision Log
 
+## August 17, 2026 - Sparkle Suite Message Center is receive-only and workspace-only
+
+**Reps receive; trusted operators publish**
+Reps cannot compose, reply, broadcast, or message one another. Louis, explicitly designated internal agents, and approved automations are the only senders. This boundary must be enforced in UI, API, service, and RLS—not merely by hiding controls.
+
+**Standalone in-app delivery first**
+The Message Center lives inside the Sparkle Suite workspace and opens from the persistent header with an unread badge. This phase has no email, SMS, browser push, or customer-facing delivery.
+
+**One application-owned publishing path**
+Owner messages, agent actions, customer-signup notices, monthly reports, and resource announcements use one audited publishing service with frozen audiences, scoped sender capabilities, idempotency, and a retryable outbox. Agents and automations do not insert message rows directly.
+
+**Published content creates updates**
+Saving a Help, FAQ, blog, or video draft does not notify reps. Publishing a new resource or a published revision creates one linked Message Center update. Monthly reports are immutable per-rep snapshots and include reliable tracked metrics plus birthdays in the new current month.
+
+---
+
 ## August 17, 2026 - Sparkle Suite Trade Boards do not redirect TikTok Shop LIVE purchases
 
 **A Trade Board is operational support, not a TikTok LIVE purchase escape hatch**

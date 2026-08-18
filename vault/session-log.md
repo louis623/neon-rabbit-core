@@ -4,6 +4,15 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 17, 2026 - Message Center and Resource Library implementation plan
+
+- Audited the existing Sparkle Suite foundations and found a dormant `rep_messages` table/service/API and hidden `Messages / Notifications` workspace card. The old card is marked Coming soon and contains a rep-to-Neon-Rabbit backup support composer, so it does not satisfy the newly clarified receive-only contract.
+- Created the phased implementation plan at `docs/superpowers/plans/2026-08-17-sparkle-suite-message-center-and-resources.md`. It reuses valid read/unread groundwork while moving toward normalized publications and per-rep deliveries, strict receive-only RLS, owner/operator publishing, scoped agent/automation senders, and a retryable idempotent outbox.
+- Locked four implementation slices: header Message Center plus Control Center Communications Console; new public Customer List signup messages; immutable beginning-of-month metric and birthday reports; and a versioned Blog/Video/FAQ/Help Resource Library with publish-triggered announcements.
+- No application, database, browser, Vercel, or production state changed. This was planning/Open Brain work only; `artifacts/` and `test-results/` remain untouched.
+
+---
+
 ## August 17, 2026 - LIVE commerce channel research and guardrails
 
 - Researched current first-party TikTok LIVE, TikTok Shop, TikTok Business, and YouTube guidance after evaluating whether reps could show a QR code during LIVE selling to direct viewers to their Sparkle Suite Trade Board. No application, account, customer, browser-login, or production state was changed.

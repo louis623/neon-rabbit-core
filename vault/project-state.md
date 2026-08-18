@@ -1,5 +1,17 @@
 # Project State
 
+## August 17, 2026 Session - Message Center and Resource Library plan
+
+- **Receive-only Message Center planned:** Reps receive only; Louis, designated internal agents, and approved automations are the only senders. The surface is standalone inside Sparkle Suite with no email, SMS, or external push delivery.
+- **Header placement and secure boundary:** Message Center opens from a persistent workspace-header button with an unread badge. The dormant rep support composer will be removed at both UI and API layers, and RLS will restrict reps to reading and updating only their own delivery state.
+- **Four releasable slices:** (1) receive-only inbox plus Control Center Communications Console, (2) new public Customer List signup notices, (3) immutable beginning-of-month reports with reliable tracked metrics and current-month birthdays, and (4) database-backed Blog/Video resources plus FAQ/Help update announcements.
+- **Application-owned sender architecture:** Owner, agent, and automation messages use one audited publishing service with frozen audiences, sender capabilities, idempotency, and a durable retryable outbox. Agents never write message rows directly.
+- **Plan:** `docs/superpowers/plans/2026-08-17-sparkle-suite-message-center-and-resources.md`.
+
+**Last updated:** August 17, 2026
+
+---
+
 ## August 17, 2026 Session - live-commerce channel research
 
 - **TikTok LIVE is not a Trade Board purchase funnel:** TikTok's current LIVE guidance says that, in markets where TikTok Shop is available, commercial LIVE content directing people off-platform to buy is For You ineligible and may receive reduced visibility. TikTok Shop's seller guidance specifically cautions against purchase prompts through external websites, links, usernames, messaging services, or QR-code/link callouts. Do not position a Sparkle Suite Trade Board QR code, background URL, or spoken "scan/go to my website to buy or claim" CTA inside a BP selling LIVE as a workaround.
