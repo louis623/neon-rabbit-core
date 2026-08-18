@@ -5,6 +5,10 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Obtain Bomb Party's written YouTube LIVE channel and checkout policy before enabling/supporting it** - ask current BP Support or consult the current rep back office: may an independent Party Rep sell/reveal BP inventory through YouTube Live; which checkout/order method is approved; and are YouTube Shopping, a personal/external store, or a Sparkle Suite Trade Board permitted? Do not describe a BP YouTube selling workflow as supported, build a public CTA, or route transactions there until the answer is in writing.
+
+- [ ] **Define a compliant TikTok LIVE / Sparkle Suite Trade Board playbook** - preserve TikTok Shop's native product-link purchase flow during Shop-enabled lives. The playbook must explicitly prohibit Trade Board QR codes, background URLs, or spoken directions to scan/visit a website to buy or claim items during the LIVE; use Sparkle Suite for rep operations and lawful post-show customer follow-up. Include TikTok commercial-disclosure requirements and an eligibility check for any native profile/destination-link use.
+
 - [ ] **Reconcile the recipe draft model-unavailable route assertion** - `tests/nic-nac-site-recipes-route.test.ts` still expects an earlier OpenAI-billing-specific message while the protected draft endpoint deliberately returns the current generic temporary-unavailability response. Update the intended contract and test together; do not weaken the safe 503 behavior or use a personal/customer account to exercise it.
 
 - [ ] **Remove the temporary Heather recipe-audit checks after the current audit** - the browser-local **Audited** boxes in Current recipes are intentionally temporary. Remove them only after Heather confirms her current recipe pass is complete; they do not change recipe data or the public Pantry.

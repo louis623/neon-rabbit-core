@@ -4,6 +4,15 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 17, 2026 - LIVE commerce channel research and guardrails
+
+- Researched current first-party TikTok LIVE, TikTok Shop, TikTok Business, and YouTube guidance after evaluating whether reps could show a QR code during LIVE selling to direct viewers to their Sparkle Suite Trade Board. No application, account, customer, browser-login, or production state was changed.
+- Established that a QR code or verbal prompt directing viewers to scan/go to a website to buy or claim Trade Board pieces is not a safe TikTok LIVE tactic. In TikTok Shop markets, TikTok states that LIVE content directing users off-platform to purchase is For You ineligible; its Seller guidance specifically says to avoid external purchase prompts via websites, links, usernames, messaging services, and QR-code/link callouts. The correct product posture is native Shop purchase links during a Shop-enabled LIVE, with Sparkle Suite supporting rep operations and post-show follow-up rather than serving as the in-LIVE purchase redirect.
+- Recorded the narrow safe distinction: an official profile website link and certain TikTok-native destination-link tools exist for eligible verified businesses, but availability is conditional and commercial content must use TikTok's disclosure control. Neither is a basis to evade Shop traffic rules.
+- Confirmed that YouTube technically supports selling in LIVE through eligible channels' connected stores, product shelves, tagged/pinned products, and external retailer checkout. This does **not** authorize BP reps to sell BP inventory through YouTube, a personal checkout, or a Sparkle Suite Trade Board. The current Bomb Party agreement/back-office policy must provide written approval of the exact channel and ordering method before Sparkle Suite presents that workflow as supported. Any YouTube LIVE also needs licensed/original music because YouTube scans streams for copyright matches.
+
+---
+
 ## August 17, 2026 - Recipe-source rebuild for existing Pantry recipes
 
 - Diagnosed Heather's Chocolate Chip Cookies issue as a UI availability gap, not a source-photo persistence or model-reading failure: the existing **Read and format recipe** handler already replaces the editable draft fields, but it was displayed only in the new-recipe upload mode. A saved recipe in edit mode showed the source photos but offered no way to run the reader again.

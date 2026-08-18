@@ -1,5 +1,16 @@
 # Project State
 
+## August 17, 2026 Session - live-commerce channel research
+
+- **TikTok LIVE is not a Trade Board purchase funnel:** TikTok's current LIVE guidance says that, in markets where TikTok Shop is available, commercial LIVE content directing people off-platform to buy is For You ineligible and may receive reduced visibility. TikTok Shop's seller guidance specifically cautions against purchase prompts through external websites, links, usernames, messaging services, or QR-code/link callouts. Do not position a Sparkle Suite Trade Board QR code, background URL, or spoken "scan/go to my website to buy or claim" CTA inside a BP selling LIVE as a workaround.
+- **TikTok-safe role for Sparkle Suite:** Keep the Trade Board as the rep's operations and post-show customer experience. For Shop-enabled rep LIVEs, use native Shop product links for purchase intent; customer follow-up can use normal opted-in rep channels after the LIVE. A profile website link or TikTok-native destination link may be appropriate only when the account, market, and campaign are eligible, with commercial disclosure enabled where required.
+- **YouTube is a viable technical channel, pending BP authorization:** YouTube supports LIVE product shelves, pinned products, and external retailer checkout for eligible channels. It does not impose TikTok Shop's equivalent general off-platform-LIVE restriction. However, whether an independent Bomb Party rep may use YouTube Live, a personal/external checkout, YouTube Shopping, or Sparkle Suite's Trade Board for BP orders is governed by current Bomb Party policy, not YouTube alone. Do not claim or build that sales path until Bomb Party confirms the exact approved channel and checkout method in writing.
+- **Operational reminder:** Use licensed/original music in any YouTube LIVE; YouTube scans live streams for copyrighted content and may interrupt/terminate a stream. Do not confuse TikTok's internal QR-code tools (e.g. ad-preview/authorization codes) with permission to place an external purchase QR code in a consumer-facing LIVE.
+
+**Last updated:** August 17, 2026
+
+---
+
 ## August 16-17, 2026 Session Closeout
 
 - **Recipe-source rebuild in editor:** The saved-recipe editor now exposes **Read source photos and replace details** whenever a recipe has source photos. It reuses the existing image-reading draft endpoint to replace the title, story, category, time, servings, ingredients, steps, Heather's note, and alt text in the local editable draft. Source photos remain saved; nothing is published until the rep separately selects **Save recipe**. This fixes the missing edit-mode trigger reported while Heather was revising Chocolate Chip Cookies and makes the established formatting flow available for future revisions as well as new recipes.

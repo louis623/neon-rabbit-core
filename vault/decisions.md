@@ -1,5 +1,23 @@
 # Decision Log
 
+## August 17, 2026 - Sparkle Suite Trade Boards do not redirect TikTok Shop LIVE purchases
+
+**A Trade Board is operational support, not a TikTok LIVE purchase escape hatch**
+For a TikTok Shop-enabled BP selling LIVE, do not place a Trade Board QR code, background URL, or spoken call to scan/visit a site to buy or claim pieces. TikTok's current LIVE and Seller guidance treats off-platform purchase direction as a distribution/compliance risk. Native TikTok Shop product links carry the live purchase CTA; Sparkle Suite remains the rep workspace and post-show customer/support surface.
+
+**Use only declared, native link surfaces when a campaign is eligible**
+An official profile website link or TikTok destination link may be used only when TikTok makes it available for that account/market and the use conforms to disclosure and product rules. Do not implement disguised text, QR workarounds, redirect chains, or scripts intended to defeat platform enforcement.
+
+## August 17, 2026 - YouTube LIVE support awaits Bomb Party's written channel approval
+
+**Platform capability is not supplier authorization**
+YouTube can technically host commerce LIVE streams with external retailer checkout and eligible product tagging. Sparkle Suite must not label a BP YouTube sale or Trade Board checkout path supported until Bomb Party confirms that independent Party Reps may use YouTube Live and identifies the exact allowed order/checkout method.
+
+**Protect the stream as well as the sale flow**
+Any eventual YouTube LIVE guidance must require original or properly licensed audio and normal advertising/endorsement disclosure. A copyright or community-guideline issue can interrupt or end a live stream.
+
+---
+
 ## August 16, 2026 - Video embeds follow a provider contract, not generic iframe HTML
 
 **One shared field, four explicit destinations**
