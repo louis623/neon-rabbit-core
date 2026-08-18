@@ -1,9 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const createAdminClientMock = vi.fn()
+const dispatchWorkspaceMessages = vi.fn()
 
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: (...args: unknown[]) => createAdminClientMock(...args),
+}))
+vi.mock('@/lib/services/workspace-message-dispatch', () => ({
+  dispatchWorkspaceMessageAutomationAfterResponse: (...args: unknown[]) =>
+    dispatchWorkspaceMessages(...args),
 }))
 
 import { POST } from '@/app/api/amethyst/customer-audience/route'
@@ -130,6 +135,7 @@ describe('POST /api/amethyst/customer-audience', () => {
 
   beforeEach(() => {
     createAdminClientMock.mockReset()
+    dispatchWorkspaceMessages.mockReset()
     process.env.NEXT_PUBLIC_SUPABASE_URL = originalSupabaseUrl
     process.env.SUPABASE_SERVICE_ROLE_KEY = originalServiceRoleKey
     process.env.AMETHYST_HOMEPAGE_PREVIEW_EMAIL = originalHomepagePreviewEmail
@@ -170,8 +176,13 @@ describe('POST /api/amethyst/customer-audience', () => {
         sms_consent: true,
         email_consent: true,
         marketing_consent: true,
+        record_source: 'customer_site_signup',
       }),
     )
+    expect(dispatchWorkspaceMessages).toHaveBeenCalledWith({
+      supabase: client,
+      source: 'customer_signup',
+    })
     expect(response.status).toBe(201)
     await expect(response.json()).resolves.toEqual({
       ok: true,

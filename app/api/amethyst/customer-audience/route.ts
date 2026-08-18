@@ -6,6 +6,7 @@ import { ServiceError } from '@/lib/services/errors'
 import { createCustomerAudienceSignup } from '@/lib/services/customer-audience'
 import type { CustomerAudienceSignupInput } from '@/lib/services/types'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { dispatchWorkspaceMessageAutomationAfterResponse } from '@/lib/services/workspace-message-dispatch'
 
 function readString(value: unknown) {
   return typeof value === 'string' ? value : ''
@@ -97,6 +98,10 @@ export async function POST(request: Request) {
     }
 
     await createCustomerAudienceSignup(admin, rep.id, payload)
+    dispatchWorkspaceMessageAutomationAfterResponse({
+      supabase: admin,
+      source: 'customer_signup',
+    })
 
     return NextResponse.json({ ok: true }, { status: 201 })
   } catch (error) {

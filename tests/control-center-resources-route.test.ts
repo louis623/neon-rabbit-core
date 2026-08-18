@@ -5,6 +5,7 @@ const createAdmin = vi.fn(() => ({ marker: 'admin' }))
 const listResources = vi.fn()
 const publishResource = vi.fn()
 const publishMessage = vi.fn()
+const dispatchWorkspaceMessages = vi.fn()
 
 vi.mock('@/lib/supabase/operator-auth', () => ({
   AuthError: class AuthError extends Error {},
@@ -20,6 +21,10 @@ vi.mock('@/lib/services/workspace-resources', () => ({
 vi.mock('@/lib/services/workspace-messages', () => ({
   publishWorkspaceMessage: (...args: unknown[]) => publishMessage(...args),
 }))
+vi.mock('@/lib/services/workspace-message-dispatch', () => ({
+  dispatchWorkspaceMessageAutomationAfterResponse: (...args: unknown[]) =>
+    dispatchWorkspaceMessages(...args),
+}))
 
 import { GET, POST } from '@/app/api/control-center/resources/route'
 
@@ -29,6 +34,7 @@ describe('Control Center resources route', () => {
     listResources.mockReset()
     publishResource.mockReset()
     publishMessage.mockReset()
+    dispatchWorkspaceMessages.mockReset()
     getAccess.mockResolvedValue({ operator: { email: 'louis@neonrabbit.net' } })
   })
 
@@ -68,6 +74,10 @@ describe('Control Center resources route', () => {
         }),
       }),
     )
+    expect(dispatchWorkspaceMessages).toHaveBeenCalledWith({
+      supabase: { marker: 'admin' },
+      source: 'resource_publish',
+    })
   })
 
   it('rejects invalid resource payloads before service mutation', async () => {

@@ -6,6 +6,7 @@ import {
   WORKSPACE_RESOURCE_TYPES,
 } from '@/lib/services/workspace-resources'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { dispatchWorkspaceMessageAutomationAfterResponse } from '@/lib/services/workspace-message-dispatch'
 import {
   AuthError,
   getControlCenterAccess,
@@ -71,6 +72,10 @@ export async function POST(request: Request) {
         actorKind: 'owner',
         actor: operator.email,
       },
+    })
+    dispatchWorkspaceMessageAutomationAfterResponse({
+      supabase: admin,
+      source: 'resource_publish',
     })
 
     return NextResponse.json({ ok: true, ...result }, { status: 201 })
