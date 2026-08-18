@@ -1,5 +1,13 @@
 # Decision Log
 
+## August 18, 2026 - In-app browser failure is not a user-restart problem
+
+**Preserve the requested browser surface while the runtime is broken**
+
+The Codex in-app browser is the required surface when Louis asks to open Sparkle Suite in Codex. On August 18, the bundled Browser plugin changed from `26.810.52044` to `26.814.41407`, and bootstrap then failed with a trusted-RPC dependency path error for `browser-service.mjs`. Louis had already restarted the computer before the retry. Do not reflexively ask for another restart, do not fall back to Chrome, and do not bypass the problem by using Louis's or a customer’s authenticated session. Investigate the Codex/plugin trusted-path lifecycle and resume the requested in-app-browser action only when that surface reconnects.
+
+---
+
 ## August 17, 2026 - Hobby-safe Message Center dispatch
 
 **Immediate best effort plus durable daily recovery**

@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 18, 2026 - Message Center closeout and Codex browser runtime lesson
+
+- Confirmed the August 17 Message Center/Resource Library release is already documented as the live baseline. No application, database, user-account, or production mutation occurred in this follow-up session.
+- Earlier in this session, Codex successfully opened separate in-app tabs for the Sparkle Suite workspace (`/nic-nac`) and Control Center (`/control-center`).
+- A later attempt coincided with a bundled Browser-plugin refresh from `26.810.52044` to `26.814.41407`. The new in-app-browser bootstrap repeatedly failed before tab discovery with: `Trusted RPC dependency must resolve within a configured trusted code path: .../browser-service.mjs`.
+- Louis had restarted his computer immediately before the retry. This is evidence against framing the issue as a missed restart or user setup problem. Treat it as a Codex/plugin runtime trusted-path handoff problem, keep the user-requested in-app-browser constraint, and do not substitute Chrome or touch an inherited Louis/customer session.
+- `artifacts/` and `test-results/` remain untracked local QA output. Keep them out of normal commits unless a later task deliberately needs to preserve a specific artifact.
+
+---
+
 ## August 17, 2026 - Message Center and Resource Library implementation and release
 
 - Implemented normalized Message Center publications/deliveries, strict receive-only RLS/column grants, scoped sender capabilities, audit events, exact audience freezing, safe structured content/links, idempotency, and a stale-claim-recovering outbox. Legitimate legacy owner-to-rep history is backfilled; rep-to-owner compose is not.

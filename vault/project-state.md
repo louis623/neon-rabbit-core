@@ -1,5 +1,16 @@
 # Project State
 
+## August 18, 2026 Session - Codex in-app browser recovery note
+
+- **Message Center release remains the current live baseline:** no application, database, account, or production state changed in this follow-up session.
+- **Codex in-app browser issue is local-runtime lifecycle, not user error:** two tabs were successfully opened earlier for `/nic-nac` and `/control-center`. After Codex refreshed its bundled Browser plugin from `26.810.52044` to `26.814.41407`, the browser bootstrap repeatedly failed with `Trusted RPC dependency must resolve within a configured trusted code path` for the newly installed `browser-service.mjs`.
+- **Important lesson:** Louis had already restarted the computer immediately before the retry. Do not ask him to restart again as the default response. Treat this as a Codex/plugin trusted-path handoff defect; preserve the in-app-browser constraint, do not fall back to Chrome, and do not use an authenticated Louis/customer session to work around reviewer smoke.
+- **Local QA residue:** `artifacts/` and `test-results/` are untracked local test output. They are not part of the product release and should not be committed without a deliberate reason.
+
+**Last updated:** August 18, 2026
+
+---
+
 ## August 17, 2026 Session - Message Center and Resource Library released
 
 - **Receive-only Message Center is live:** reps open it from the workspace header and can read/unread/archive only their own deliveries. Rep compose/reply routes and grants are closed; Help retains its separate support-report workflow.
