@@ -50,7 +50,7 @@ export function BugHuntPanel({ initialItems }: { initialItems: BugHuntItem[] }) 
       if (!response.ok || !payload.item) throw new Error(payload.error ?? 'Unable to add the task.')
       setItems((current) => [payload.item!, ...current])
       setForm({ title: '', itemType: 'bug', owner: '', details: '' })
-      setMessage('Task added to Bug Hunt and Updates.')
+      setMessage('Task added to Task List.')
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Unable to add the task.')
     } finally {
@@ -60,10 +60,10 @@ export function BugHuntPanel({ initialItems }: { initialItems: BugHuntItem[] }) 
 
   return (
     <details className="group/bug-hunt control-center-panel scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm" id="bug-hunt-updates">
-      <summary aria-label="Expand Bug Hunt and Updates" className="control-center-summary flex cursor-pointer list-none flex-col gap-3 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between">
+      <summary aria-label="Expand Task List" className="control-center-summary flex cursor-pointer list-none flex-col gap-3 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">Bug Hunt and Updates</h2>
+            <h2 className="text-lg font-semibold">Task List</h2>
             <ChevronDown aria-hidden="true" className="h-5 w-5 text-slate-500 transition group-open/bug-hunt:rotate-180" />
           </div>
           <p className="mt-1 text-sm text-slate-600">Private operator backlog for bugs, improvements, content work, research, and operational follow-ups.</p>
@@ -94,7 +94,7 @@ export function BugHuntPanel({ initialItems }: { initialItems: BugHuntItem[] }) 
                 </div>
               </article>
             ))}
-            {visibleItems.length === 0 ? <p className="py-6 text-sm text-slate-500">No matching Bug Hunt items.</p> : null}
+            {visibleItems.length === 0 ? <p className="py-6 text-sm text-slate-500">No matching tasks.</p> : null}
           </div>
         </div>
         <form className="h-fit rounded-lg border border-slate-200 bg-slate-50 p-4" onSubmit={addItem}>

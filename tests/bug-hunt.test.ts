@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { normalizeBugHuntItem } from '@/lib/control-center/bug-hunt'
 
-describe('Bug Hunt and Updates', () => {
+describe('Control Center Task List', () => {
   it('normalizes durable operator tasks for the Control Center', () => {
     expect(normalizeBugHuntItem({
       id: 'task-1',

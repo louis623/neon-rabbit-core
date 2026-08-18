@@ -34,6 +34,10 @@ and historical archive; do not depend on it for active instructions.
 
 ## Default Release Rule
 
+## Task List Terminology
+
+Within Sparkle Suite, Louis's **Task List** (and any reference to the **bug tracker**) means the active, durable **Task List** in the live Sparkle Suite Control Center. Use it for items Louis plans to build, update, or troubleshoot. Do not substitute the repository's `vault\open-items.md` unless Louis explicitly asks to update that separate planning document.
+
 Every approved Sparkle Suite code or content change includes committing the
 legitimate session changes, pushing the current branch, deploying the exact
 branch tip to Vercel production, confirming both `https://www.yoursparklesuite.com`
