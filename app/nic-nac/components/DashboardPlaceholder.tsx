@@ -26,7 +26,6 @@ import type {
   PublicSiteRecipe,
   PublicSiteMediaSlot,
   PublicSiteMediaSlotKey,
-  RepMessagesDashboardResult,
   SiteSettingsDashboardResult,
   SiteAnalyticsDashboardResult,
   SiteAppearancePreset,
@@ -66,6 +65,7 @@ import {
   HelpCircle,
   Images,
   LogOut,
+  Mail,
   MessagesSquare,
   RadioTower,
   Search,
@@ -78,6 +78,7 @@ import {
 } from 'lucide-react'
 import { SparkleSeal } from '@/app/prelaunch/_components/PrelaunchVisuals'
 import type { WorkspaceLaunchAction } from '@/lib/nic-nac/workspace-launch-actions'
+import type { WorkspaceResource } from '@/lib/services/workspace-resources'
 import { WorkspaceShell } from './WorkspaceShell'
 import type { WorkspaceSectionTab } from './WorkspaceSectionTabs'
 import { NicNacHomeWorkspaceCard } from './NicNacHomeWorkspaceCard'
@@ -86,6 +87,16 @@ import styles from './DashboardPlaceholder.module.css'
 
 const CollectionIntakeTool = dynamic(() =>
   import('./CollectionIntakeTool').then((module) => module.CollectionIntakeTool),
+)
+
+const WorkspaceResourceLibrary = dynamic(() =>
+  import('./WorkspaceResourceLibrary').then((module) => module.default),
+)
+
+const WorkspaceResourceLibraryView = dynamic(() =>
+  import('./WorkspaceResourceLibrary').then(
+    (module) => module.WorkspaceResourceLibraryView,
+  ),
 )
 
 const RECIPE_AUDIT_STORAGE_KEY = 'sparkle-suite:recipe-audit'
@@ -166,10 +177,15 @@ const SECONDARY_WORKSPACE_SECTIONS = [
   },
   {
     key: 'messages',
-    label: 'Messages',
+    label: 'Message Center',
     shortLabel: 'Messages',
     icon: MessagesSquare,
-    comingSoon: true,
+  },
+  {
+    key: 'resources',
+    label: 'Blog & Video Resources',
+    shortLabel: 'Resources',
+    icon: BookOpen,
   },
   {
     key: 'site-settings',
@@ -579,15 +595,198 @@ type JewelryLibraryState = {
   facets?: JewelryLibraryFacets
 }
 
+export type WorkspaceMessageBodyBlock = {
+  type: 'paragraph' | 'heading' | 'metric' | 'list'
+  text?: string
+  label?: string
+  value?: string | number
+  items?: string[]
+}
+
+export type WorkspaceMessageSummary = {
+  id: string
+  deliveryId?: string
+  publicationId?: string
+  senderDisplayName?: string
+  title?: string | null
+  subject?: string | null
+  summary?: string | null
+  body: string | WorkspaceMessageBodyBlock[]
+  category?: string | null
+  priority?: string | null
+  actionLabel?: string | null
+  actionUrl?: string | null
+  deliveredAt?: string
+  createdAt?: string
+  messageType?: string
+  direction?: string
+  isRead: boolean
+  readAt: string | null
+  archivedAt?: string | null
+  isArchived?: boolean
+}
+
+type MessagesInbox = {
+  unreadCount: number
+  messages: WorkspaceMessageSummary[]
+  nextCursor?: string | null
+}
+
 type MessagesState = {
   status: 'loading' | 'ready' | 'error'
-  inbox?: RepMessagesDashboardResult
+  inbox?: MessagesInbox
 }
 
 type MessagesActionState = {
   pendingKey: string | null
   error: string | null
   helperMessage: string | null
+}
+
+const REVIEW_MESSAGE_FIXTURES: WorkspaceMessageSummary[] = [
+  {
+    id: 'review-message-customer-signup',
+    deliveryId: 'review-message-customer-signup',
+    messageType: 'announcement',
+    direction: 'nr_to_rep',
+    subject: 'New customer joined your list',
+    title: 'New customer joined your list',
+    summary: 'Jamie signed up through your customer site.',
+    body: 'Their contact preferences are ready in your Customer List.',
+    category: 'customer_activity',
+    priority: 'normal',
+    actionLabel: 'Open customer list',
+    actionUrl: '/nic-nac?section=customer-list',
+    isRead: false,
+    readAt: null,
+    archivedAt: null,
+    createdAt: '2026-08-17T14:30:00.000Z',
+  },
+  {
+    id: 'review-message-monthly-report',
+    deliveryId: 'review-message-monthly-report',
+    messageType: 'monthly_report',
+    direction: 'nr_to_rep',
+    subject: 'Your July business report is ready',
+    title: 'Your July business report is ready',
+    summary: 'Last month at a glance, plus customer birthdays coming up in August.',
+    body: [
+      { type: 'heading', text: 'Last month at a glance' },
+      { type: 'metric', label: 'New customers', value: 8 },
+      { type: 'metric', label: 'Trade requests', value: 4 },
+      { type: 'heading', text: 'Birthdays this month' },
+      { type: 'list', items: ['Jamie — August 12', 'Morgan — August 28'] },
+    ],
+    category: 'monthly_report',
+    priority: 'important',
+    actionLabel: 'View birthday customers',
+    actionUrl: '/nic-nac?section=customer-list&filter=birthdays',
+    isRead: false,
+    readAt: null,
+    archivedAt: null,
+    createdAt: '2026-08-01T13:00:00.000Z',
+  },
+  {
+    id: 'review-message-help-update',
+    deliveryId: 'review-message-help-update',
+    messageType: 'announcement',
+    direction: 'nr_to_rep',
+    subject: 'Trade Board help was updated',
+    title: 'Trade Board help was updated',
+    summary: 'The request and fulfillment steps now include clearer follow-up guidance.',
+    body: 'Open Help & Resources to see what changed.',
+    category: 'help_update',
+    priority: 'action_required',
+    actionLabel: 'Read the updated guide',
+    actionUrl: '/nic-nac?section=help-resources',
+    isRead: false,
+    readAt: null,
+    archivedAt: null,
+    createdAt: '2026-07-29T15:00:00.000Z',
+  },
+  {
+    id: 'review-message-blog',
+    deliveryId: 'review-message-blog',
+    messageType: 'newsletter',
+    direction: 'nr_to_rep',
+    subject: 'New blog: Five thoughtful customer follow-ups',
+    title: 'New blog: Five thoughtful customer follow-ups',
+    summary: 'Practical ways to stay helpful after a live show.',
+    body: 'This resource is now available from Workspace Tools.',
+    category: 'blog',
+    priority: 'normal',
+    actionLabel: 'Read the blog',
+    actionUrl: '/nic-nac?section=resources',
+    isRead: true,
+    readAt: '2026-07-25T16:00:00.000Z',
+    archivedAt: null,
+    createdAt: '2026-07-25T15:00:00.000Z',
+  },
+  {
+    id: 'review-message-video',
+    deliveryId: 'review-message-video',
+    messageType: 'announcement',
+    direction: 'nr_to_rep',
+    subject: 'New video: Prepare your next show',
+    title: 'New video: Prepare your next show',
+    summary: 'A quick walkthrough for planning a smooth live show.',
+    body: 'The video remains available in your Resource Library.',
+    category: 'video',
+    priority: 'normal',
+    actionLabel: 'Watch the video',
+    actionUrl: '/nic-nac?section=resources',
+    isRead: true,
+    readAt: '2026-07-22T16:00:00.000Z',
+    archivedAt: '2026-07-24T16:00:00.000Z',
+    createdAt: '2026-07-22T15:00:00.000Z',
+  },
+]
+
+const REVIEW_RESOURCE_FIXTURES: WorkspaceResource[] = [
+  {
+    id: 'review-resource-blog',
+    resourceKey: 'thoughtful-customer-follow-ups',
+    resourceType: 'blog',
+    title: 'Five thoughtful customer follow-ups',
+    summary: 'Practical ways to stay helpful after a live show.',
+    body: 'Use these prompts to make follow-up feel personal, useful, and easy to repeat.',
+    category: 'Customer relationships',
+    tags: ['customers', 'follow-up'],
+    thumbnailUrl: null,
+    videoProvider: null,
+    videoUrl: null,
+    actionUrl: '/nic-nac?section=resources&resource=thoughtful-customer-follow-ups',
+    status: 'published',
+    version: 1,
+    changeSummary: 'New customer follow-up guide.',
+    isFeatured: true,
+    authorLabel: 'Sparkle Suite',
+    publishedAt: '2026-08-17T16:00:00.000Z',
+  },
+  {
+    id: 'review-resource-video',
+    resourceKey: 'prepare-your-next-show',
+    resourceType: 'video',
+    title: 'Prepare your next show',
+    summary: 'A quick walkthrough for planning a smooth live show.',
+    body: 'A step-by-step show preparation video.',
+    category: 'Live shows',
+    tags: ['show planning', 'video'],
+    thumbnailUrl: null,
+    videoProvider: 'youtube',
+    videoUrl: 'https://www.youtube.com/watch?v=review-smoke',
+    actionUrl: 'https://www.youtube.com/watch?v=review-smoke',
+    status: 'published',
+    version: 1,
+    changeSummary: 'New show preparation video.',
+    isFeatured: false,
+    authorLabel: 'Sparkle Suite',
+    publishedAt: '2026-08-16T16:00:00.000Z',
+  },
+]
+
+function getActiveUnreadMessageCount(messages: WorkspaceMessageSummary[]) {
+  return messages.filter((message) => !message.isRead && !message.archivedAt).length
 }
 
 type TeamManagementAccess = {
@@ -798,7 +997,7 @@ type JewelryLibraryResponsePayload =
       items?: JewelryDatabaseResult[]
       facets?: Partial<JewelryLibraryFacets>
     }
-type MessagesResponsePayload = RepMessagesDashboardResult
+type MessagesResponsePayload = MessagesInbox
 type TeamManagementResponsePayload = {
   access: TeamManagementAccess
   participants?: TeamOnboardingParticipant[]
@@ -2672,8 +2871,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     status: reviewWorkspaceMode ? 'ready' : 'loading',
     inbox: reviewWorkspaceMode
       ? {
-          unreadCount: 0,
-          messages: [],
+          unreadCount: getActiveUnreadMessageCount(REVIEW_MESSAGE_FIXTURES),
+          messages: REVIEW_MESSAGE_FIXTURES,
         }
       : undefined,
   })
@@ -2747,9 +2946,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const [libraryFilters, setLibraryFilters] = useState<JewelryLibraryFilters>(
     EMPTY_JEWELRY_LIBRARY_FILTERS,
   )
-  const [supportSubject, setSupportSubject] = useState('Need help from Neon Rabbit')
-  const [supportBody, setSupportBody] = useState('')
-
   async function loadRepProfile(signal?: AbortSignal) {
     const response = await fetch('/api/nic-nac/me', {
       credentials: 'include',
@@ -2964,18 +3160,36 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadMessages(signal?: AbortSignal) {
-    const response = await fetch('/api/nic-nac/messages?limit=10', {
-      credentials: 'include',
-      signal,
-    })
-    if (!response.ok) {
-      throw new Error(`messages request failed: ${response.status}`)
+    const loadInbox = async (archived: boolean) => {
+      const params = new URLSearchParams({
+        limit: '100',
+        archived: String(archived),
+      })
+      const response = await fetch(`/api/nic-nac/messages?${params.toString()}`, {
+        credentials: 'include',
+        signal,
+      })
+      if (!response.ok) {
+        throw new Error(`messages request failed: ${response.status}`)
+      }
+      return (await response.json()) as MessagesResponsePayload
     }
 
-    const payload = (await response.json()) as MessagesResponsePayload
+    const [activeInbox, archivedInbox] = await Promise.all([
+      loadInbox(false),
+      loadInbox(true),
+    ])
+    const messagesByDelivery = new Map<string, WorkspaceMessageSummary>()
+    for (const message of [...activeInbox.messages, ...archivedInbox.messages]) {
+      messagesByDelivery.set(message.deliveryId || message.id, message)
+    }
     setMessagesState({
       status: 'ready',
-      inbox: payload,
+      inbox: {
+        ...activeInbox,
+        unreadCount: activeInbox.unreadCount,
+        messages: Array.from(messagesByDelivery.values()),
+      },
     })
   }
 
@@ -4704,37 +4918,108 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  async function handleMarkMessageRead(messageId: string) {
+  async function patchMessageDelivery(
+    deliveryId: string,
+    patch: { read?: boolean; archived?: boolean },
+  ) {
+    const response = await fetch('/api/nic-nac/messages', {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ deliveryId, ...patch }),
+    })
+    const payload = (await response.json().catch(() => null)) as
+      | { error?: string }
+      | null
+    if (!response.ok) {
+      throw new Error(payload?.error || 'Unable to update that message right now.')
+    }
+  }
+
+  async function handleUpdateMessage(
+    message: WorkspaceMessageSummary,
+    patch: { read?: boolean; archived?: boolean },
+  ) {
+    const deliveryId = message.deliveryId || message.id
+    const action =
+      patch.archived === true
+        ? 'archive'
+        : patch.archived === false
+          ? 'unarchive'
+          : patch.read === false
+            ? 'unread'
+            : 'read'
     setMessagesActionState({
-      pendingKey: `read:${messageId}`,
+      pendingKey: `${action}:${deliveryId}`,
       error: null,
       helperMessage: null,
     })
 
-    try {
-      const response = await fetch('/api/nic-nac/messages', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          action: 'mark_read',
-          messageId,
-        }),
+    if (reviewWorkspaceMode) {
+      const now = new Date().toISOString()
+      setMessagesState((current) => {
+        const messages = (current.inbox?.messages ?? []).map((currentMessage) =>
+          (currentMessage.deliveryId || currentMessage.id) === deliveryId
+            ? {
+                ...currentMessage,
+                isRead:
+                  typeof patch.read === 'boolean' ? patch.read : currentMessage.isRead,
+                readAt:
+                  patch.read === true
+                    ? now
+                    : patch.read === false
+                      ? null
+                      : currentMessage.readAt,
+                archivedAt:
+                  patch.archived === true
+                    ? now
+                    : patch.archived === false
+                      ? null
+                      : currentMessage.archivedAt,
+              }
+            : currentMessage,
+        )
+        return {
+          status: 'ready',
+          inbox: {
+            ...(current.inbox ?? { unreadCount: 0 }),
+            unreadCount: getActiveUnreadMessageCount(messages),
+            messages,
+          },
+        }
       })
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null
-      if (!response.ok) {
-        throw new Error(payload?.error || 'Unable to update that message right now.')
-      }
+      setMessagesActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage:
+          action === 'archive'
+            ? 'Message archived.'
+            : action === 'unarchive'
+              ? 'Message returned to your inbox.'
+              : action === 'unread'
+                ? 'Message marked unread.'
+                : 'Message marked read.',
+      })
+      return
+    }
 
+    try {
+      await patchMessageDelivery(deliveryId, patch)
       await loadMessages()
       setMessagesActionState({
         pendingKey: null,
         error: null,
-        helperMessage: 'Message marked read.',
+        helperMessage:
+          action === 'archive'
+            ? 'Message archived.'
+            : action === 'unarchive'
+              ? 'Message returned to your inbox.'
+              : action === 'unread'
+                ? 'Message marked unread.'
+                : 'Message marked read.',
       })
     } catch (error) {
+      await loadMessages().catch(() => undefined)
       setMessagesActionState({
         pendingKey: null,
         error:
@@ -4746,45 +5031,63 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  async function handleCreateSupportRequest() {
+  async function handleMarkAllMessagesRead() {
+    const unreadMessages = (messagesState.inbox?.messages ?? []).filter(
+      (message) => !message.isRead && !message.archivedAt,
+    )
+    if (unreadMessages.length === 0) return
+
     setMessagesActionState({
-      pendingKey: 'support-request',
+      pendingKey: 'read:all',
       error: null,
       helperMessage: null,
     })
 
-    try {
-      const response = await fetch('/api/nic-nac/messages', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          action: 'create_support_request',
-          subject: supportSubject,
-          body: supportBody,
-        }),
+    if (reviewWorkspaceMode) {
+      const now = new Date().toISOString()
+      setMessagesState((current) => {
+        const messages = (current.inbox?.messages ?? []).map((message) =>
+          message.archivedAt || message.isRead
+            ? message
+            : { ...message, isRead: true, readAt: now },
+        )
+        return {
+          status: 'ready',
+          inbox: {
+            ...(current.inbox ?? { unreadCount: 0 }),
+            unreadCount: 0,
+            messages,
+          },
+        }
       })
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null
-      if (!response.ok) {
-        throw new Error(payload?.error || 'Unable to send that support note right now.')
-      }
+      setMessagesActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: `${unreadMessages.length} message${unreadMessages.length === 1 ? '' : 's'} marked read.`,
+      })
+      return
+    }
 
-      setSupportBody('')
+    try {
+      await Promise.all(
+        unreadMessages.map((message) =>
+          patchMessageDelivery(message.deliveryId || message.id, { read: true }),
+        ),
+      )
       await loadMessages()
       setMessagesActionState({
         pendingKey: null,
         error: null,
-        helperMessage: 'Support message sent to Neon Rabbit.',
+        helperMessage: `${unreadMessages.length} message${unreadMessages.length === 1 ? '' : 's'} marked read.`,
       })
     } catch (error) {
+      await loadMessages().catch(() => undefined)
       setMessagesActionState({
         pendingKey: null,
         error:
           error instanceof Error
             ? error.message
-            : 'Unable to send that support note right now.',
+            : 'Unable to mark all messages read right now.',
         helperMessage: null,
       })
     }
@@ -5367,7 +5670,15 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       publicSiteUrl={customerSparkleSiteUrl}
       publicSiteDisplay={customerSparkleSiteDisplay}
       liveQueueSyncCode={currentLiveQueueSyncCode}
+      unreadMessageCount={messagesState.inbox?.unreadCount ?? 0}
+      messagesLoading={messagesState.status === 'loading'}
+      messagesActive={activeSection === 'messages'}
       onOpenPublicSite={handleOpenCustomerSitePreview}
+      onOpenMessages={() => {
+        setWorkspacePreview({ mode: 'workspace' })
+        setPreviewUnavailableMessage(null)
+        setActiveSection('messages')
+      }}
       onGoHome={() => {
         setWorkspacePreview({ mode: 'workspace' })
         setPreviewUnavailableMessage(null)
@@ -5542,13 +5853,22 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           <MessagesCenterCard
             state={messagesState}
             actionState={messagesActionState}
-            supportSubject={supportSubject}
-            supportBody={supportBody}
-            onSupportSubjectChange={setSupportSubject}
-            onSupportBodyChange={setSupportBody}
-            onCreateSupportRequest={handleCreateSupportRequest}
-            onMarkRead={handleMarkMessageRead}
+            onUpdateMessage={handleUpdateMessage}
+            onMarkAllRead={handleMarkAllMessagesRead}
+            onRetry={() => void loadMessages()}
           />
+        </div>
+      )
+    }
+
+    if (canRenderWorkspaceSections && activeSection === 'resources') {
+      return (
+        <div className={styles.workspaceSectionStack}>
+          {reviewWorkspaceMode ? (
+            <WorkspaceResourceLibraryView resources={REVIEW_RESOURCE_FIXTURES} />
+          ) : (
+            <WorkspaceResourceLibrary />
+          )}
         </div>
       )
     }
@@ -5860,13 +6180,17 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
 }
 
-function WorkspaceAppHeader({
+export function WorkspaceAppHeader({
   repName,
   showName,
   publicSiteUrl,
   publicSiteDisplay,
   liveQueueSyncCode,
+  unreadMessageCount,
+  messagesLoading,
+  messagesActive,
   onOpenPublicSite,
+  onOpenMessages,
   onGoHome,
 }: {
   repName: string
@@ -5874,7 +6198,11 @@ function WorkspaceAppHeader({
   publicSiteUrl: string | null
   publicSiteDisplay: string
   liveQueueSyncCode?: string | null
+  unreadMessageCount: number
+  messagesLoading?: boolean
+  messagesActive?: boolean
   onOpenPublicSite: () => void
+  onOpenMessages: () => void
   onGoHome: () => void
 }) {
   const [logoutBusy, setLogoutBusy] = useState(false)
@@ -5971,6 +6299,28 @@ function WorkspaceAppHeader({
         </div>
       </div>
       <div className={styles.appHeaderActions}>
+        <button
+          type="button"
+          className={`${styles.appMessageButton} ${
+            messagesActive ? styles.appMessageButtonActive : ''
+          }`}
+          onClick={onOpenMessages}
+          aria-current={messagesActive ? 'page' : undefined}
+          aria-label={
+            unreadMessageCount > 0
+              ? `Open Message Center, ${unreadMessageCount} unread message${unreadMessageCount === 1 ? '' : 's'}`
+              : 'Open Message Center'
+          }
+          title="Message Center"
+        >
+          <Mail aria-hidden="true" />
+          <span className={styles.appMessageButtonLabel}>Messages</span>
+          {!messagesLoading && unreadMessageCount > 0 ? (
+            <span className={styles.appMessageBadge} aria-hidden="true">
+              {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+            </span>
+          ) : null}
+        </button>
         <details className={styles.appProfileMenu}>
           <summary
             className={styles.appProfile}
@@ -6929,121 +7279,359 @@ function JewelryLibraryResultCard({
   )
 }
 
-function MessagesCenterCard({
+export type MessageCenterFilter =
+  | 'all'
+  | 'unread'
+  | 'reports'
+  | 'updates'
+  | 'resources'
+  | 'archived'
+
+const MESSAGE_CENTER_FILTERS: readonly {
+  key: MessageCenterFilter
+  label: string
+}[] = [
+  { key: 'all', label: 'All' },
+  { key: 'unread', label: 'Unread' },
+  { key: 'reports', label: 'Reports' },
+  { key: 'updates', label: 'Updates' },
+  { key: 'resources', label: 'Resources' },
+  { key: 'archived', label: 'Archived' },
+]
+
+const MESSAGE_CATEGORY_LABELS: Record<string, string> = {
+  customer_activity: 'Customer activity',
+  business_update: 'Business update',
+  monthly_report: 'Monthly report',
+  platform_update: 'Platform update',
+  help_update: 'Help update',
+  blog: 'Blog',
+  video: 'Video',
+  announcement: 'Announcement',
+}
+
+const MESSAGE_PRIORITY_LABELS: Record<string, string> = {
+  important: 'Important',
+  action_required: 'Action needed',
+}
+
+function getMessageCategory(message: WorkspaceMessageSummary) {
+  return message.category || message.messageType || 'announcement'
+}
+
+function isResourceMessage(message: WorkspaceMessageSummary) {
+  const category = getMessageCategory(message)
+  return category === 'blog' || category === 'video'
+}
+
+function isReportMessage(message: WorkspaceMessageSummary) {
+  return getMessageCategory(message) === 'monthly_report'
+}
+
+function isUpdateMessage(message: WorkspaceMessageSummary) {
+  const category = getMessageCategory(message)
+  return (
+    category === 'platform_update' ||
+    category === 'business_update' ||
+    category === 'help_update' ||
+    category === 'announcement' ||
+    category === 'newsletter' ||
+    category === 'support_response'
+  )
+}
+
+export function filterMessageCenterMessages(
+  messages: WorkspaceMessageSummary[],
+  filter: MessageCenterFilter,
+) {
+  return messages.filter((message) => {
+    if (filter === 'archived') return Boolean(message.archivedAt)
+    if (message.archivedAt) return false
+    if (filter === 'unread') return !message.isRead
+    if (filter === 'reports') return isReportMessage(message)
+    if (filter === 'updates') return isUpdateMessage(message)
+    if (filter === 'resources') return isResourceMessage(message)
+    return true
+  })
+}
+
+export function getSafeMessageActionUrl(value: string | null | undefined) {
+  const href = value?.trim()
+  if (!href) return null
+  if (href.startsWith('/') && !href.startsWith('//')) return href
+  try {
+    const parsed = new URL(href)
+    return parsed.protocol === 'https:' ? parsed.toString() : null
+  } catch {
+    return null
+  }
+}
+
+function MessageBodyContent({
+  body,
+}: {
+  body: WorkspaceMessageSummary['body']
+}) {
+  if (typeof body === 'string') {
+    return body ? <p className={styles.messageBody}>{body}</p> : null
+  }
+
+  return (
+    <div className={styles.messageStructuredBody}>
+      {body.map((block, index) => {
+        const key = `${block.type}:${index}`
+        if (block.type === 'heading') {
+          return block.text ? <h3 key={key}>{block.text}</h3> : null
+        }
+        if (block.type === 'metric') {
+          return (
+            <div className={styles.messageMetric} key={key}>
+              <span>{block.label || 'Metric'}</span>
+              <strong>{block.value ?? 'Not tracked for this month'}</strong>
+            </div>
+          )
+        }
+        if (block.type === 'list') {
+          return block.items && block.items.length > 0 ? (
+            <ul key={key}>
+              {block.items.map((item, itemIndex) => (
+                <li key={`${key}:${itemIndex}`}>{item}</li>
+              ))}
+            </ul>
+          ) : null
+        }
+        return block.text ? <p key={key}>{block.text}</p> : null
+      })}
+    </div>
+  )
+}
+
+export function MessagesCenterCard({
   state,
   actionState,
-  supportSubject,
-  supportBody,
-  onSupportSubjectChange,
-  onSupportBodyChange,
-  onCreateSupportRequest,
-  onMarkRead,
+  onUpdateMessage,
+  onMarkAllRead,
+  onRetry,
 }: {
   state: MessagesState
   actionState: MessagesActionState
-  supportSubject: string
-  supportBody: string
-  onSupportSubjectChange: (value: string) => void
-  onSupportBodyChange: (value: string) => void
-  onCreateSupportRequest: () => void
-  onMarkRead: (messageId: string) => void
+  onUpdateMessage: (
+    message: WorkspaceMessageSummary,
+    patch: { read?: boolean; archived?: boolean },
+  ) => void
+  onMarkAllRead: () => void
+  onRetry: () => void
 }) {
+  const [filter, setFilter] = useState<MessageCenterFilter>('all')
+  const messages = state.inbox?.messages ?? []
+  const visibleMessages = filterMessageCenterMessages(messages, filter)
+  const unreadCount = state.inbox?.unreadCount ?? 0
+
   return (
-    <div className={styles.workspacePanel}>
-      <div className={styles.workspaceSectionHeader}>
+    <section className={`${styles.workspacePanel} ${styles.messageCenter}`}>
+      <div className={styles.messageCenterHeader}>
         <div>
-          <div className={styles.cardTitle}>Messages / Notifications</div>
-          <div className={styles.cardSubtitle}>
-            Monthly reports, Neon Rabbit announcements, and the backup support lane.
-          </div>
+          <span className={styles.messageCenterEyebrow}>Receive-only inbox</span>
+          <h1 className={styles.cardTitle}>Message Center</h1>
+          <p className={styles.cardSubtitle}>
+            Business reports, customer activity, resources, and Sparkle Suite updates.
+          </p>
         </div>
-        <span className={styles.rosterTag}>
-          {state.status === 'ready' && state.inbox
-            ? `${state.inbox.unreadCount} unread`
-            : 'Loading'}
-        </span>
+        <div className={styles.messageCenterHeaderActions}>
+          <span className={styles.messageUnreadSummary} aria-live="polite">
+            {state.status === 'loading'
+              ? 'Loading messages'
+              : `${unreadCount} unread`}
+          </span>
+          <button
+            type="button"
+            className={styles.messageMarkAllButton}
+            disabled={
+              state.status !== 'ready' ||
+              unreadCount === 0 ||
+              actionState.pendingKey !== null
+            }
+            onClick={onMarkAllRead}
+          >
+            {actionState.pendingKey === 'read:all' ? 'Saving…' : 'Mark all read'}
+          </button>
+        </div>
       </div>
-      {actionState.error ? <div className={styles.actionError}>{actionState.error}</div> : null}
-      {actionState.helperMessage ? (
-        <div className={styles.helperMessage}>{actionState.helperMessage}</div>
+
+      <div className={styles.messageFilterBar} aria-label="Filter messages">
+        {MESSAGE_CENTER_FILTERS.map((option) => {
+          const count = filterMessageCenterMessages(messages, option.key).length
+          return (
+            <button
+              key={option.key}
+              type="button"
+              className={`${styles.messageFilterButton} ${
+                filter === option.key ? styles.messageFilterButtonActive : ''
+              }`}
+              aria-pressed={filter === option.key}
+              onClick={() => setFilter(option.key)}
+            >
+              {option.label}
+              {option.key === 'unread' || option.key === 'archived' ? (
+                <span>{count}</span>
+              ) : null}
+            </button>
+          )
+        })}
+      </div>
+
+      {actionState.error ? (
+        <div className={styles.actionError} role="alert">
+          {actionState.error}
+        </div>
       ) : null}
-      {state.status === 'ready' && state.inbox ? (
-        <>
-          <div className={styles.messageList}>
-            {state.inbox.messages.length > 0 ? (
-              state.inbox.messages.map((message) => (
-                <div key={message.id} className={styles.messageRow}>
-                  <div className={styles.customerIdentity}>
-                    <div className={styles.customerName}>
-                      {message.subject || MESSAGE_TYPE_LABELS[message.messageType]}
+      {actionState.helperMessage ? (
+        <div className={styles.helperMessage} aria-live="polite">
+          {actionState.helperMessage}
+        </div>
+      ) : null}
+
+      {state.status === 'error' ? (
+        <div className={styles.messageEmptyState} role="alert">
+          <Mail aria-hidden="true" />
+          <strong>Messages could not load</strong>
+          <span>Try again to reconnect to your inbox.</span>
+          <button type="button" className={styles.actionButton} onClick={onRetry}>
+            Try again
+          </button>
+        </div>
+      ) : state.status === 'ready' && state.inbox ? (
+        <div className={styles.messageList}>
+          {visibleMessages.length > 0 ? (
+            visibleMessages.map((message) => {
+              const deliveryId = message.deliveryId || message.id
+              const category = getMessageCategory(message)
+              const categoryLabel =
+                MESSAGE_CATEGORY_LABELS[category] ||
+                MESSAGE_TYPE_LABELS[message.messageType ?? ''] ||
+                'Update'
+              const priorityLabel = message.priority
+                ? MESSAGE_PRIORITY_LABELS[message.priority]
+                : null
+              const actionUrl = getSafeMessageActionUrl(message.actionUrl)
+              const actionPending =
+                actionState.pendingKey?.endsWith(`:${deliveryId}`) ?? false
+              const title =
+                message.title ||
+                message.subject ||
+                MESSAGE_TYPE_LABELS[message.messageType ?? ''] ||
+                'Sparkle Suite update'
+              const messageDate = message.deliveredAt || message.createdAt || null
+
+              return (
+                <article
+                  key={deliveryId}
+                  className={`${styles.messageCard} ${
+                    message.isRead ? styles.messageCardRead : styles.messageCardUnread
+                  }`}
+                  aria-label={`${message.isRead ? 'Read' : 'Unread'} message: ${title}`}
+                >
+                  <div className={styles.messageCardAccent} aria-hidden="true" />
+                  <div className={styles.messageCardBody}>
+                    <div className={styles.messageMetadata}>
+                      {!message.isRead ? (
+                        <span className={styles.messageUnreadDot}>New</span>
+                      ) : null}
+                      <span className={styles.messageCategoryBadge}>{categoryLabel}</span>
+                      {priorityLabel ? (
+                        <span
+                          className={`${styles.messagePriorityBadge} ${
+                            message.priority === 'action_required'
+                              ? styles.messagePriorityBadgeAction
+                              : ''
+                          }`}
+                        >
+                          {priorityLabel}
+                        </span>
+                      ) : null}
+                      <time dateTime={messageDate ?? undefined}>
+                        {formatCompactDateTime(messageDate)}
+                      </time>
                     </div>
-                    <div className={styles.customerDate}>
-                      {MESSAGE_TYPE_LABELS[message.messageType]} - {formatCompactDateTime(message.createdAt)}
-                    </div>
-                    <div className={styles.helperNote}>{message.body}</div>
+                    <h2 className={styles.messageTitle}>{title}</h2>
+                    {message.summary ? (
+                      <p className={styles.messageSummary}>{message.summary}</p>
+                    ) : null}
+                    {typeof message.body !== 'string' || message.body !== message.summary ? (
+                      <MessageBodyContent body={message.body} />
+                    ) : null}
+                    {actionUrl ? (
+                      actionUrl.startsWith('/') ? (
+                        <Link className={styles.messageActionLink} href={actionUrl}>
+                          {message.actionLabel || 'Open update'}
+                          <ChevronRight aria-hidden="true" />
+                        </Link>
+                      ) : (
+                        <a
+                          className={styles.messageActionLink}
+                          href={actionUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {message.actionLabel || 'Open update'}
+                          <ExternalLink aria-hidden="true" />
+                        </a>
+                      )
+                    ) : null}
                   </div>
-                  <div className={styles.actionRow}>
-                    {message.isRead ? (
-                      <span className={styles.timelineItem}>Read</span>
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.actionButton}
-                        disabled={actionState.pendingKey === `read:${message.id}`}
-                        onClick={() => onMarkRead(message.id)}
-                      >
-                        {actionState.pendingKey === `read:${message.id}`
-                          ? 'Saving...'
+                  <div className={styles.messageCardActions}>
+                    <button
+                      type="button"
+                      className={styles.messageSecondaryAction}
+                      disabled={actionPending || actionState.pendingKey === 'read:all'}
+                      onClick={() =>
+                        onUpdateMessage(message, { read: !message.isRead })
+                      }
+                    >
+                      {actionPending
+                        ? 'Saving…'
+                        : message.isRead
+                          ? 'Mark unread'
                           : 'Mark read'}
-                      </button>
-                    )}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.messageSecondaryAction}
+                      disabled={actionPending || actionState.pendingKey === 'read:all'}
+                      onClick={() =>
+                        onUpdateMessage(message, { archived: !message.archivedAt })
+                      }
+                    >
+                      {message.archivedAt ? 'Return to inbox' : 'Archive'}
+                    </button>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className={styles.emptyState}>No messages in the dashboard yet.</div>
-            )}
-          </div>
-          <div className={styles.emailComposer}>
-            <div className={styles.walletSettingsTitle}>Backup support request</div>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Subject</span>
-              <input
-                type="text"
-                className={`${styles.searchInput} ph-no-capture`}
-                value={supportSubject}
-                onChange={(event) => onSupportSubjectChange(event.target.value)}
-              />
-            </label>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>What do you need help with?</span>
-              <textarea
-                className={`${styles.emailComposerTextarea} ph-no-capture`}
-                value={supportBody}
-                onChange={(event) => onSupportBodyChange(event.target.value)}
-              />
-            </label>
-            <div className={styles.actionRow}>
-              <button
-                type="button"
-                className={styles.actionButton}
-                disabled={actionState.pendingKey === 'support-request'}
-                onClick={onCreateSupportRequest}
-              >
-                {actionState.pendingKey === 'support-request'
-                  ? 'Sending...'
-                  : 'Send support request'}
-              </button>
+                </article>
+              )
+            })
+          ) : (
+            <div className={styles.messageEmptyState}>
+              <Mail aria-hidden="true" />
+              <strong>
+                {filter === 'all'
+                  ? 'Your inbox is clear'
+                  : `No ${filter} messages`}
+              </strong>
+              <span>
+                {filter === 'archived'
+                  ? 'Messages you archive will stay available here.'
+                  : 'New Sparkle Suite messages will appear here when they arrive.'}
+              </span>
             </div>
-          </div>
-        </>
+          )}
+        </div>
       ) : (
-        <div className={styles.cardFill}>
+        <div className={styles.messageLoadingState} aria-label="Loading Message Center">
           <div className={styles.loadingLine} />
           <div className={styles.loadingLineShort} />
+          <div className={styles.loadingLine} />
         </div>
       )}
-    </div>
+    </section>
   )
 }
 

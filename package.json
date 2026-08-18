@@ -34,6 +34,7 @@
     "smoke:launch:local-temp-demo": "tsx scripts/smoke-local-with-temporary-demo-password.ts",
     "smoke:customer-flow": "tsx scripts/smoke-customer-flow.ts",
     "smoke:support-report": "tsx scripts/smoke-support-report.ts",
+    "smoke:workspace-messages": "tsx scripts/smoke-workspace-message-center.ts",
     "pressure:support-system": "tsx scripts/pressure-support-system.ts",
     "pressure:referral-system": "tsx scripts/pressure-referral-system.ts",
     "smoke:launch:preview-protected": "tsx scripts/smoke-demo-readiness.ts --launch --target preview --categories protected_preview_routes --json --write-report",

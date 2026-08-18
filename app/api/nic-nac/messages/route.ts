@@ -1,37 +1,38 @@
 import { NextResponse } from 'next/server'
-import {
-  getPaidNicNacContext,
-  AuthError,
-} from '@/lib/nic-nac/auth'
+import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
 import {
-  createRepSupportMessage,
-  getRepMessages,
-  markRepMessageRead,
-} from '@/lib/services/rep-messages'
+  listRepWorkspaceMessages,
+  updateRepWorkspaceMessageDelivery,
+} from '@/lib/services/workspace-messages'
+import {
+  WORKSPACE_MESSAGE_CATEGORIES,
+  type WorkspaceMessageCategory,
+} from '@/lib/services/workspace-message-permissions'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 function readLimit(url: URL) {
   const raw = url.searchParams.get('limit')
-  if (!raw) return undefined
+  if (!raw) return 25
+  if (!/^\d+$/.test(raw)) return null
   const parsed = Number.parseInt(raw, 10)
-  return Number.isFinite(parsed) ? parsed : null
+  return parsed >= 1 && parsed <= 100 ? parsed : null
 }
 
-function readType(value: string | null) {
-  if (!value) return undefined
-  if (
-    value === 'monthly_report' ||
-    value === 'newsletter' ||
-    value === 'announcement' ||
-    value === 'support_request' ||
-    value === 'support_response'
-  ) {
-    return value
-  }
+function readBoolean(value: string | null) {
+  if (value === null) return false
+  if (value === 'true') return true
+  if (value === 'false') return false
   return null
+}
+
+function readCategory(value: string | null) {
+  if (!value) return undefined
+  return WORKSPACE_MESSAGE_CATEGORIES.includes(value as WorkspaceMessageCategory)
+    ? (value as WorkspaceMessageCategory)
+    : null
 }
 
 function serviceErrorResponse(error: ServiceError) {
@@ -41,27 +42,49 @@ function serviceErrorResponse(error: ServiceError) {
   )
 }
 
+function methodNotAllowed() {
+  return NextResponse.json(
+    {
+      code: 'REP_MESSAGE_CENTER_RECEIVE_ONLY',
+      error: 'The rep Message Center is receive-only.',
+    },
+    { status: 405, headers: { Allow: 'GET, PATCH' } },
+  )
+}
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
     const limit = readLimit(url)
-    const messageType = readType(url.searchParams.get('type'))
-    const unreadOnly = url.searchParams.get('unread') === 'true'
+    const category = readCategory(url.searchParams.get('category'))
+    const unreadOnly = readBoolean(url.searchParams.get('unread'))
+    const archived = readBoolean(url.searchParams.get('archived'))
+    const cursor = url.searchParams.get('cursor')?.trim() || undefined
 
     if (limit === null) {
-      return NextResponse.json({ error: 'limit must be a whole number.' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'limit must be a whole number between 1 and 100.' },
+        { status: 400 },
+      )
     }
-    if (messageType === null) {
-      return NextResponse.json({ error: 'type is invalid.' }, { status: 400 })
+    if (category === null) {
+      return NextResponse.json({ error: 'category is invalid.' }, { status: 400 })
+    }
+    if (unreadOnly === null || archived === null) {
+      return NextResponse.json(
+        { error: 'unread and archived must be true or false.' },
+        { status: 400 },
+      )
     }
 
     const { repId, supabase } = await getPaidNicNacContext()
-    const result = await getRepMessages(supabase, repId, {
-      limit: limit ?? undefined,
-      messageType,
+    const result = await listRepWorkspaceMessages(supabase, repId, {
+      limit,
+      cursor,
+      category,
       unreadOnly,
+      archived,
     })
-
     return NextResponse.json(result)
   } catch (error) {
     if (error instanceof AuthError) {
@@ -72,30 +95,38 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function PATCH(request: Request) {
   try {
     const body = await request.json()
-    const action = typeof body?.action === 'string' ? body.action.trim() : ''
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'Invalid request payload.' }, { status: 400 })
+    }
+    const deliveryId =
+      typeof body.deliveryId === 'string' ? body.deliveryId.trim() : ''
+    const read = body.read
+    const archived = body.archived
+    if (
+      !deliveryId ||
+      (read === undefined && archived === undefined) ||
+      (read !== undefined && typeof read !== 'boolean') ||
+      (archived !== undefined && typeof archived !== 'boolean')
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            'deliveryId and at least one boolean read or archived state are required.',
+        },
+        { status: 400 },
+      )
+    }
+
     const { repId, supabase } = await getPaidNicNacContext()
-
-    if (action === 'create_support_request') {
-      const result = await createRepSupportMessage(supabase, repId, {
-        subject: typeof body?.subject === 'string' ? body.subject : '',
-        body: typeof body?.body === 'string' ? body.body : '',
-      })
-      return NextResponse.json({ ok: true, result })
-    }
-
-    if (action === 'mark_read') {
-      const messageId = typeof body?.messageId === 'string' ? body.messageId.trim() : ''
-      const result = await markRepMessageRead(supabase, repId, messageId)
-      return NextResponse.json({ ok: true, result })
-    }
-
-    return NextResponse.json(
-      { error: 'action must be create_support_request or mark_read.' },
-      { status: 400 },
-    )
+    const result = await updateRepWorkspaceMessageDelivery(supabase, repId, {
+      deliveryId,
+      read,
+      archived,
+    })
+    return NextResponse.json({ ok: true, result })
   } catch (error) {
     if (error instanceof SyntaxError) {
       return NextResponse.json({ error: 'Invalid request payload.' }, { status: 400 })
@@ -106,4 +137,16 @@ export async function POST(request: Request) {
     if (error instanceof ServiceError) return serviceErrorResponse(error)
     throw error
   }
+}
+
+export async function POST() {
+  return methodNotAllowed()
+}
+
+export async function PUT() {
+  return methodNotAllowed()
+}
+
+export async function DELETE() {
+  return methodNotAllowed()
 }

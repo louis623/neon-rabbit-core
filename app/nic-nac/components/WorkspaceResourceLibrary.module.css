@@ -1,0 +1,257 @@
+.library {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid rgba(115, 80, 140, 0.18);
+  border-radius: 1.1rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 239, 251, 0.96));
+  box-shadow: 0 12px 30px rgba(53, 29, 68, 0.08);
+}
+
+.header h2 {
+  margin: 0.2rem 0 0.35rem;
+  color: #352143;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.55rem, 3vw, 2.2rem);
+}
+
+.header p {
+  margin: 0;
+  color: #6a5971;
+}
+
+.header > svg {
+  width: 2rem;
+  height: 2rem;
+  color: #8b5aa2;
+}
+
+.eyebrow {
+  color: #8b5aa2;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.filters {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.filter,
+.filterActive {
+  border: 1px solid rgba(104, 73, 123, 0.22);
+  border-radius: 999px;
+  padding: 0.55rem 0.85rem;
+  background: #fff;
+  color: #5a4267;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filterActive {
+  border-color: #77508c;
+  background: #68437b;
+  color: #fff;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: min(100%, 18rem);
+  border: 1px solid rgba(104, 73, 123, 0.22);
+  border-radius: 0.8rem;
+  padding: 0.55rem 0.7rem;
+  background: #fff;
+  color: #806b89;
+}
+
+.search svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #352143;
+  font: inherit;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 1rem;
+}
+
+.card {
+  overflow: hidden;
+  border: 1px solid rgba(95, 69, 111, 0.16);
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(54, 35, 65, 0.07);
+}
+
+.art {
+  position: relative;
+  display: grid;
+  min-height: 9rem;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, #efe1f4, #fbf7fc);
+  color: #805196;
+}
+
+.art img {
+  width: 100%;
+  height: 9rem;
+  object-fit: cover;
+}
+
+.art > svg {
+  width: 2.7rem;
+  height: 2.7rem;
+}
+
+.art span {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
+  background: #fff;
+  color: #744786;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.cardBody {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+}
+
+.cardBody h3,
+.cardBody p {
+  margin: 0;
+}
+
+.cardBody h3 {
+  color: #382643;
+  font-size: 1.05rem;
+}
+
+.cardBody p {
+  color: #6a5b70;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.meta {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.meta span {
+  border-radius: 999px;
+  padding: 0.2rem 0.45rem;
+  background: #f4edf7;
+  color: #775487;
+  font-size: 0.67rem;
+  font-weight: 800;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.2rem;
+}
+
+.cardFooter small {
+  color: #897991;
+}
+
+.cardFooter a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #714087;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cardFooter a svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.articleDetails {
+  border-top: 1px solid rgba(95, 69, 111, 0.13);
+  padding-top: 0.7rem;
+  color: #5f4c68;
+  font-size: 0.88rem;
+}
+
+.articleDetails summary {
+  width: fit-content;
+  cursor: pointer;
+  color: #714087;
+  font-weight: 800;
+}
+
+.articleDetails div {
+  margin-top: 0.7rem;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.state,
+.error {
+  margin: 0;
+  border-radius: 0.8rem;
+  padding: 1rem;
+  background: #f7f2f9;
+  color: #6b5a73;
+}
+
+.error {
+  background: #fff0f2;
+  color: #8b2f43;
+}
+
+@media (max-width: 640px) {
+  .toolbar,
+  .search {
+    width: 100%;
+  }
+
+  .search {
+    min-width: 0;
+  }
+}

@@ -457,6 +457,72 @@
   margin-left: auto;
 }
 
+.appMessageButton {
+  position: relative;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(115, 69, 202, 0.14);
+  border-radius: 12px;
+  background: rgba(248, 245, 255, 0.78);
+  color: #4b3478;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 850;
+  padding: 7px 11px;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.appMessageButton:hover,
+.appMessageButton:focus-visible,
+.appMessageButtonActive {
+  border-color: rgba(216, 22, 132, 0.3);
+  background: rgba(255, 239, 248, 0.94);
+  color: #c61775;
+}
+
+.appMessageButton:hover {
+  transform: translateY(-1px);
+}
+
+.appMessageButton:focus-visible {
+  outline: 2px solid rgba(115, 69, 202, 0.3);
+  outline-offset: 2px;
+}
+
+.appMessageButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.appMessageButtonLabel {
+  line-height: 1;
+}
+
+.appMessageBadge {
+  min-width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #e2198f;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(226, 25, 143, 0.28);
+  font-size: 0.61rem;
+  font-weight: 900;
+  line-height: 1;
+  padding: 0 4px;
+}
+
 .appHeaderReferences {
   display: inline-flex;
   align-items: stretch;
@@ -1955,18 +2021,397 @@
 .messageList {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+
+.messageCenter {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.messageCenterHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--nic-nac-border);
+}
+
+.messageCenterEyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--nic-nac-accent);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.messageCenterHeaderActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
-.messageRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) auto auto;
-  gap: 12px;
+.messageUnreadSummary {
+  display: inline-flex;
   align-items: center;
-  border-radius: 14px;
-  padding: 12px;
+  min-height: 34px;
+  border-radius: 999px;
+  background: rgba(115, 69, 202, 0.08);
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 850;
+  padding: 7px 11px;
+}
+
+.messageMarkAllButton,
+.messageSecondaryAction {
+  min-height: 34px;
+  border: 1px solid rgba(115, 69, 202, 0.2);
+  border-radius: 999px;
   background: var(--nic-nac-surface-primary);
+  color: var(--nic-nac-accent);
+  cursor: pointer;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 850;
+  padding: 7px 12px;
+}
+
+.messageMarkAllButton:hover,
+.messageMarkAllButton:focus-visible,
+.messageSecondaryAction:hover,
+.messageSecondaryAction:focus-visible {
+  border-color: rgba(216, 22, 132, 0.34);
+  background: rgba(255, 242, 249, 0.9);
+  color: var(--nic-nac-accent-hover);
+  outline: none;
+}
+
+.messageMarkAllButton:focus-visible,
+.messageSecondaryAction:focus-visible {
+  box-shadow: 0 0 0 3px rgba(115, 69, 202, 0.14);
+}
+
+.messageMarkAllButton:disabled,
+.messageSecondaryAction:disabled {
+  cursor: default;
+  opacity: 0.48;
+}
+
+.messageFilterBar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 2px 1px 5px;
+  scrollbar-width: thin;
+}
+
+.messageFilterButton {
+  flex: 0 0 auto;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--nic-nac-text-secondary);
+  cursor: pointer;
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 850;
+  padding: 7px 12px;
+}
+
+.messageFilterButton span {
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(115, 69, 202, 0.1);
+  font-size: 9px;
+  padding: 0 4px;
+}
+
+.messageFilterButton:hover,
+.messageFilterButton:focus-visible {
+  background: rgba(115, 69, 202, 0.07);
+  color: var(--nic-nac-text-primary);
+  outline: none;
+}
+
+.messageFilterButton:focus-visible {
+  box-shadow: 0 0 0 2px rgba(115, 69, 202, 0.2);
+}
+
+.messageFilterButtonActive {
+  border-color: rgba(115, 69, 202, 0.16);
+  background: rgba(115, 69, 202, 0.11);
+  color: var(--nic-nac-accent);
+}
+
+.messageCard {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  overflow: hidden;
   border: 1px solid var(--nic-nac-border);
+  border-radius: 18px;
+  background: var(--nic-nac-surface-primary);
+  box-shadow: 0 10px 28px rgba(54, 34, 29, 0.045);
+  padding: 16px 16px 16px 20px;
+}
+
+.messageCardUnread {
+  border-color: rgba(216, 22, 132, 0.22);
+  background:
+    radial-gradient(circle at 96% 5%, rgba(238, 44, 155, 0.08), transparent 13rem),
+    var(--nic-nac-surface-primary);
+  box-shadow: 0 12px 32px rgba(216, 22, 132, 0.08);
+}
+
+.messageCardRead {
+  background: color-mix(in srgb, var(--nic-nac-surface-primary) 82%, transparent);
+}
+
+.messageCardAccent {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: transparent;
+}
+
+.messageCardUnread .messageCardAccent {
+  background: linear-gradient(180deg, #ff4cae, #7545ce);
+}
+
+.messageCardBody {
+  min-width: 0;
+}
+
+.messageMetadata {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 8px;
+  color: var(--nic-nac-text-muted);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.messageUnreadDot,
+.messageCategoryBadge,
+.messagePriorityBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.035em;
+  line-height: 1;
+  padding: 5px 8px;
+  text-transform: uppercase;
+}
+
+.messageUnreadDot {
+  background: #e2198f;
+  color: #fff;
+}
+
+.messageCategoryBadge {
+  background: rgba(115, 69, 202, 0.1);
+  color: var(--nic-nac-accent);
+}
+
+.messagePriorityBadge {
+  background: rgba(255, 183, 77, 0.16);
+  color: #875109;
+}
+
+.messagePriorityBadgeAction {
+  background: rgba(211, 47, 47, 0.1);
+  color: #a12b42;
+}
+
+.messageTitle {
+  margin: 0;
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-serif), Georgia, serif;
+  font-size: clamp(17px, 2vw, 21px);
+  font-weight: 750;
+  line-height: 1.18;
+}
+
+.messageSummary,
+.messageBody {
+  margin: 7px 0 0;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.messageSummary {
+  color: var(--nic-nac-text-primary);
+  font-weight: 750;
+}
+
+.messageStructuredBody {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.messageStructuredBody h3,
+.messageStructuredBody p,
+.messageStructuredBody ul {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.messageStructuredBody h3 {
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.messageStructuredBody p,
+.messageStructuredBody li {
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.messageStructuredBody ul {
+  display: grid;
+  gap: 4px;
+  padding-left: 18px;
+}
+
+.messageMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--nic-nac-border);
+  border-radius: 12px;
+  background: rgba(248, 245, 255, 0.56);
+  padding: 10px 11px;
+}
+
+.messageMetric span {
+  color: var(--nic-nac-text-muted);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.messageMetric strong {
+  color: var(--nic-nac-text-primary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.messageActionLink {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 12px;
+  color: var(--nic-nac-accent);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.messageActionLink:hover,
+.messageActionLink:focus-visible {
+  color: var(--nic-nac-accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.messageActionLink:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid rgba(115, 69, 202, 0.24);
+  outline-offset: 3px;
+}
+
+.messageActionLink svg {
+  width: 14px;
+  height: 14px;
+}
+
+.messageCardActions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 250px;
+}
+
+.messageEmptyState,
+.messageLoadingState {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px dashed rgba(115, 69, 202, 0.18);
+  border-radius: 18px;
+  background: rgba(248, 245, 255, 0.42);
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 24px;
+  text-align: center;
+}
+
+.messageEmptyState svg {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 3px;
+  color: var(--nic-nac-accent);
+}
+
+.messageEmptyState strong {
+  color: var(--nic-nac-text-primary);
+  font-size: 14px;
+}
+
+.messageLoadingState {
+  align-items: stretch;
+  min-height: 210px;
+  gap: 14px;
 }
 
 .resourceList {
@@ -5645,6 +6090,24 @@
 }
 
 .main[data-workspace-skin='black_diamond'] :where(
+  .messageCard,
+  .messageEmptyState,
+  .messageLoadingState,
+  .messageMarkAllButton,
+  .messageSecondaryAction
+) {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(244, 207, 98, 0.2);
+  color: #f8efe4;
+}
+
+.main[data-workspace-skin='black_diamond'] .messageCardUnread {
+  background:
+    radial-gradient(circle at 96% 5%, rgba(238, 44, 155, 0.16), transparent 13rem),
+    rgba(255, 255, 255, 0.055);
+}
+
+.main[data-workspace-skin='black_diamond'] :where(
   .workspacePanel,
   .walletCard,
   .calendarCard,
@@ -5944,6 +6407,27 @@
 
   .appHeaderActions {
     gap: 6px;
+  }
+
+  .appMessageButton {
+    width: 40px;
+    min-height: 40px;
+    padding: 0;
+  }
+
+  .appMessageButtonLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .appMessageBadge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
   }
 
   .appHeaderReferences {
@@ -6290,6 +6774,26 @@
   }
 
   .messageRow {
+    grid-template-columns: 1fr;
+  }
+
+  .messageCenterHeader,
+  .messageCard {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .messageCenterHeaderActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .messageCardActions {
+    justify-content: flex-start;
+    max-width: none;
+  }
+
+  .messageStructuredBody {
     grid-template-columns: 1fr;
   }
 

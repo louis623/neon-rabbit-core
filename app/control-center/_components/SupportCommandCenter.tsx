@@ -418,8 +418,26 @@ export function SupportCommandCenter({
               <p className="px-2 pb-2 text-xs font-bold uppercase tracking-wide text-slate-500">
                 Control Center Options
               </p>
+              <Link
+                className="flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-violet-800 hover:bg-violet-50"
+                href="/control-center/messages"
+              >
+                Messages
+                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs text-violet-700">
+                  New
+                </span>
+              </Link>
+              <Link
+                className="mt-1 flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-violet-800 hover:bg-violet-50"
+                href="/control-center/resources"
+              >
+                Resources
+                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs text-violet-700">
+                  Publisher
+                </span>
+              </Link>
               <a
-                className="flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
+                className="mt-1 flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
                 href="#support-tickets"
               >
                 Trouble Tickets

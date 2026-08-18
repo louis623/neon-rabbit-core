@@ -13,6 +13,7 @@ import {
   HelpResourcesCard,
   JewelryLibraryCard,
   LiveQueueTool,
+  MessagesCenterCard,
   ReferralProgramCard,
   RecipesCard,
   CustomerRosterCard,
@@ -41,6 +42,8 @@ import {
   shouldShowWorkspaceLoadingSkeleton,
   shouldShowWorkspaceAccessNotice,
   filterRosterCustomers,
+  filterMessageCenterMessages,
+  getSafeMessageActionUrl,
   getWalletBannerMessage,
   getWalletLoadOptions,
   getCustomerOutreachActions,
@@ -68,6 +71,7 @@ import {
   getRecipeSaveStatusText,
   getJewelryLibrarySearchErrorMessage,
   type DashboardPlaceholderProps,
+  type WorkspaceMessageSummary,
   formatHeaderRepName,
   formatHeaderRepShow,
   formatHeaderShowName,
@@ -782,7 +786,8 @@ describe('DashboardPlaceholder', () => {
     expect(getInitialWorkspaceSection('?section=team-management')).toBe('team-management')
     expect(getInitialWorkspaceSection('?section=collection-intake')).toBe('more')
     expect(getInitialWorkspaceSection('?section=customer-list')).toBe('customer-list')
-    expect(getInitialWorkspaceSection('?section=messages')).toBe('more')
+    expect(getInitialWorkspaceSection('?section=messages')).toBe('messages')
+    expect(getInitialWorkspaceSection('?section=resources')).toBe('resources')
     expect(getInitialWorkspaceSection('?section=unknown')).toBe('home')
     expect(getInitialWorkspaceSection('?onboarding=self-serve-started')).toBe(
       'home',
@@ -819,7 +824,8 @@ describe('DashboardPlaceholder', () => {
     expect(isComingSoonWorkspaceSection('team-management')).toBe(false)
     expect(isComingSoonWorkspaceSection('collection-intake')).toBe(true)
     expect(isComingSoonWorkspaceSection('customer-list')).toBe(false)
-    expect(isComingSoonWorkspaceSection('messages')).toBe(true)
+    expect(isComingSoonWorkspaceSection('messages')).toBe(false)
+    expect(isComingSoonWorkspaceSection('resources')).toBe(false)
     expect(isComingSoonWorkspaceSection('jewelry-library')).toBe(false)
     expect(isComingSoonWorkspaceSection('recipes')).toBe(false)
     expect(resolveWorkspaceSectionForAccess('recipes', true, false)).toBe(
@@ -836,6 +842,7 @@ describe('DashboardPlaceholder', () => {
     )
     expect(resolveWorkspaceSectionForAccess('collection-intake', true)).toBe('more')
     expect(resolveWorkspaceSectionForAccess('customer-list', true)).toBe('customer-list')
+    expect(resolveWorkspaceSectionForAccess('resources', true)).toBe('resources')
   })
 
   it('only shows Recipes for Heather BlingKitchen workspaces', () => {
@@ -1307,6 +1314,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('aria-label="Copy public site address"')
     expect(html).toContain('Live Queue code')
     expect(html).toContain('MHF-7342')
+    expect(html).toContain('aria-label="Open Message Center, 3 unread messages"')
+    expect(html).toContain('title="Message Center"')
     expect(html).not.toContain('Secret Rep ID Number')
     expect(html).not.toContain('>Rep<')
     expect(html).not.toContain('>Show<')
@@ -1318,10 +1327,163 @@ describe('DashboardPlaceholder', () => {
     expect(css).toContain('.appBrand')
     expect(css).toContain('.appHeaderReferences')
     expect(css).toContain('.appHeaderCopyButton')
+    expect(css).toContain('.appMessageButton')
+    expect(css).toContain('.appMessageBadge')
     expect(css).toContain('.appProfile')
     expect(css).not.toContain('.appSearch')
     expect(css).not.toContain('.appSearchInput')
     expect(css).not.toContain('grid-template-columns: minmax(180px, 0.8fr) minmax(280px, 1.35fr) minmax(220px, 0.9fr);')
+  })
+
+  it('renders a receive-only Message Center with filters and delivery-state controls', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    const messages: WorkspaceMessageSummary[] = [
+      {
+        id: 'delivery-report',
+        deliveryId: 'delivery-report',
+        title: 'Your July report',
+        summary: 'A quick look at last month and August birthdays.',
+        body: [
+          { type: 'heading', text: 'Last month at a glance' },
+          { type: 'metric', label: 'New customers', value: 8 },
+          { type: 'list', items: ['Jamie — August 12', 'Morgan — August 28'] },
+        ],
+        category: 'monthly_report',
+        priority: 'important',
+        actionLabel: 'Open customer list',
+        actionUrl: '/nic-nac?section=customer-list',
+        isRead: false,
+        readAt: null,
+        archivedAt: null,
+        deliveredAt: '2026-08-01T12:00:00.000Z',
+      },
+      {
+        id: 'delivery-video',
+        deliveryId: 'delivery-video',
+        messageType: 'announcement',
+        direction: 'nr_to_rep',
+        subject: 'New video resource',
+        body: 'Watch the new customer follow-up walkthrough.',
+        category: 'video',
+        priority: 'normal',
+        actionLabel: 'Watch video',
+        actionUrl: 'https://www.yoursparklesuite.com/resources/customer-follow-up',
+        isRead: true,
+        readAt: '2026-08-03T13:00:00.000Z',
+        archivedAt: '2026-08-04T13:00:00.000Z',
+        createdAt: '2026-08-03T12:00:00.000Z',
+      },
+    ]
+    const html = renderToStaticMarkup(
+      createElement(MessagesCenterCard, {
+        state: {
+          status: 'ready',
+          inbox: { unreadCount: 1, messages },
+        },
+        actionState: { pendingKey: null, error: null, helperMessage: null },
+        onUpdateMessage: vi.fn(),
+        onMarkAllRead: vi.fn(),
+        onRetry: vi.fn(),
+      }),
+    )
+
+    expect(html).toContain('Receive-only inbox')
+    expect(html).toContain('Message Center')
+    expect(html).toContain('Business reports, customer activity, resources')
+    expect(html).toContain('aria-label="Filter messages"')
+    expect(html).toContain('>All<')
+    expect(html).toContain('>Unread<span')
+    expect(html).toContain('>Reports<')
+    expect(html).toContain('>Updates<')
+    expect(html).toContain('>Resources<')
+    expect(html).toContain('>Archived<span')
+    expect(html).toContain('Your July report')
+    expect(html).toContain('A quick look at last month and August birthdays.')
+    expect(html).toContain('Last month at a glance')
+    expect(html).toContain('New customers')
+    expect(html).toContain('Jamie — August 12')
+    expect(html).toContain('Important')
+    expect(html).toContain('Mark all read')
+    expect(html).toContain('Mark read')
+    expect(html).toContain('Archive')
+    expect(html).toContain('href="/nic-nac?section=customer-list"')
+    expect(html).not.toContain('Backup support request')
+    expect(html).not.toContain('Send support request')
+    expect(html).not.toContain('Reply')
+    expect(source).not.toContain('create_support_request')
+    expect(source).toContain("method: 'PATCH'")
+    expect(source).toContain('body: JSON.stringify({ deliveryId, ...patch })')
+  })
+
+  it('shows Blog & Video Resources as an available Workspace Tool', () => {
+    const toolsHtml = renderToStaticMarkup(
+      createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
+        reviewWorkspaceMode: true,
+        initialSectionOverride: 'more',
+      }),
+    )
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(toolsHtml).toContain('Blog &amp; Video Resources')
+    expect(source).toContain("key: 'resources'")
+    expect(source).toContain("activeSection === 'resources'")
+    expect(source).toContain('<WorkspaceResourceLibrary />')
+  })
+
+  it('filters inbox categories and accepts only safe message actions', () => {
+    const baseMessage: WorkspaceMessageSummary = {
+      id: 'delivery-base',
+      messageType: 'announcement',
+      direction: 'nr_to_rep',
+      subject: 'Update',
+      body: 'Update body',
+      isRead: true,
+      readAt: '2026-08-01T12:00:00.000Z',
+      createdAt: '2026-08-01T12:00:00.000Z',
+    }
+    const messages: WorkspaceMessageSummary[] = [
+      { ...baseMessage, id: 'report', category: 'monthly_report', isRead: false },
+      { ...baseMessage, id: 'help', category: 'help_update' },
+      { ...baseMessage, id: 'blog', category: 'blog' },
+      { ...baseMessage, id: 'archived', category: 'video', archivedAt: '2026-08-02T00:00:00.000Z' },
+    ]
+
+    expect(filterMessageCenterMessages(messages, 'all').map((message) => message.id)).toEqual([
+      'report',
+      'help',
+      'blog',
+    ])
+    expect(filterMessageCenterMessages(messages, 'unread').map((message) => message.id)).toEqual([
+      'report',
+    ])
+    expect(filterMessageCenterMessages(messages, 'reports').map((message) => message.id)).toEqual([
+      'report',
+    ])
+    expect(filterMessageCenterMessages(messages, 'updates').map((message) => message.id)).toEqual([
+      'help',
+    ])
+    expect(filterMessageCenterMessages(messages, 'resources').map((message) => message.id)).toEqual([
+      'blog',
+    ])
+    expect(filterMessageCenterMessages(messages, 'archived').map((message) => message.id)).toEqual([
+      'archived',
+    ])
+
+    expect(getSafeMessageActionUrl('/nic-nac?section=customer-list')).toBe(
+      '/nic-nac?section=customer-list',
+    )
+    expect(getSafeMessageActionUrl('https://www.yoursparklesuite.com/resources')).toBe(
+      'https://www.yoursparklesuite.com/resources',
+    )
+    expect(getSafeMessageActionUrl('javascript:alert(1)')).toBeNull()
+    expect(getSafeMessageActionUrl('http://example.com')).toBeNull()
+    expect(getSafeMessageActionUrl('//example.com/path')).toBeNull()
   })
 
   it('keeps the workspace shell on the Morganite Sparkle Suite skin regardless of saved or draft appearance rows', () => {

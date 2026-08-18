@@ -1,117 +1,153 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const getAuthenticatedNicNacContextMock = vi.fn()
-const getRepMessagesMock = vi.fn()
-const createRepSupportMessageMock = vi.fn()
-const markRepMessageReadMock = vi.fn()
+const getPaidNicNacContextMock = vi.fn()
+const listRepWorkspaceMessagesMock = vi.fn()
+const updateRepWorkspaceMessageDeliveryMock = vi.fn()
 
 vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
-  getAuthenticatedNicNacContext: (...args: unknown[]) =>
-    getAuthenticatedNicNacContextMock(...args),
-  getPaidNicNacContext: (...args: unknown[]) =>
-    getAuthenticatedNicNacContextMock(...args),
+  getPaidNicNacContext: (...args: unknown[]) => getPaidNicNacContextMock(...args),
 }))
 
-vi.mock('@/lib/services/rep-messages', () => ({
-  getRepMessages: (...args: unknown[]) => getRepMessagesMock(...args),
-  createRepSupportMessage: (...args: unknown[]) =>
-    createRepSupportMessageMock(...args),
-  markRepMessageRead: (...args: unknown[]) => markRepMessageReadMock(...args),
+vi.mock('@/lib/services/workspace-messages', () => ({
+  listRepWorkspaceMessages: (...args: unknown[]) =>
+    listRepWorkspaceMessagesMock(...args),
+  updateRepWorkspaceMessageDelivery: (...args: unknown[]) =>
+    updateRepWorkspaceMessageDeliveryMock(...args),
 }))
 
-import { GET, POST } from '@/app/api/nic-nac/messages/route'
+import { DELETE, GET, PATCH, POST, PUT } from '@/app/api/nic-nac/messages/route'
 
-describe('messages route', () => {
+describe('receive-only rep Message Center route', () => {
   beforeEach(() => {
-    getAuthenticatedNicNacContextMock.mockReset()
-    getRepMessagesMock.mockReset()
-    createRepSupportMessageMock.mockReset()
-    markRepMessageReadMock.mockReset()
+    getPaidNicNacContextMock.mockReset()
+    listRepWorkspaceMessagesMock.mockReset()
+    updateRepWorkspaceMessageDeliveryMock.mockReset()
   })
 
-  it('returns the authenticated rep message center payload', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
+  it('lists only the authenticated rep deliveries with filters and pagination', async () => {
+    getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
-      rep: { id: 'rep-1' },
-      supabase: { marker: 'supabase' },
+      supabase: { marker: 'authed-supabase' },
     })
-    getRepMessagesMock.mockResolvedValueOnce({
+    listRepWorkspaceMessagesMock.mockResolvedValueOnce({
       unreadCount: 1,
-      messages: [{ id: 'msg-1' }],
+      nextCursor: 'next',
+      messages: [{ id: 'delivery-1', deliveryId: 'delivery-1' }],
     })
 
     const response = await GET(
-      new Request('http://localhost/api/nic-nac/messages?limit=10&type=announcement'),
+      new Request(
+        'http://localhost/api/nic-nac/messages?limit=10&category=announcement&unread=true&archived=false&cursor=c1',
+      ),
     )
 
-    expect(getRepMessagesMock).toHaveBeenCalledWith(
-      { marker: 'supabase' },
+    expect(listRepWorkspaceMessagesMock).toHaveBeenCalledWith(
+      { marker: 'authed-supabase' },
       'rep-1',
       {
         limit: 10,
-        messageType: 'announcement',
-        unreadOnly: false,
+        cursor: 'c1',
+        category: 'announcement',
+        unreadOnly: true,
+        archived: false,
       },
     )
     expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      unreadCount: 1,
+      nextCursor: 'next',
+    })
   })
 
-  it('creates a backup support request message', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
-      repId: 'rep-1',
-      rep: { id: 'rep-1' },
-      supabase: { marker: 'supabase' },
-    })
-    createRepSupportMessageMock.mockResolvedValueOnce({ id: 'msg-2' })
+  it.each([
+    'limit=0',
+    'limit=101',
+    'limit=2.5',
+    'category=support_request',
+    'unread=yes',
+    'archived=1',
+  ])('rejects invalid list query %s before authentication', async (query) => {
+    const response = await GET(
+      new Request(`http://localhost/api/nic-nac/messages?${query}`),
+    )
+    expect(response.status).toBe(400)
+    expect(getPaidNicNacContextMock).not.toHaveBeenCalled()
+  })
 
-    const response = await POST(
+  it('updates only read/archive state on the authenticated rep delivery', async () => {
+    getPaidNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      supabase: { marker: 'authed-supabase' },
+    })
+    updateRepWorkspaceMessageDeliveryMock.mockResolvedValueOnce({
+      deliveryId: 'delivery-1',
+      isRead: true,
+      isArchived: true,
+    })
+
+    const response = await PATCH(
       new Request('http://localhost/api/nic-nac/messages', {
-        method: 'POST',
+        method: 'PATCH',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          action: 'create_support_request',
-          subject: 'Need help with a late package',
-          body: 'Customer needs an update before Friday.',
+          deliveryId: 'delivery-1',
+          read: true,
+          archived: true,
         }),
       }),
     )
 
-    expect(createRepSupportMessageMock).toHaveBeenCalledWith(
-      { marker: 'supabase' },
+    expect(updateRepWorkspaceMessageDeliveryMock).toHaveBeenCalledWith(
+      { marker: 'authed-supabase' },
       'rep-1',
-      {
-        subject: 'Need help with a late package',
-        body: 'Customer needs an update before Friday.',
-      },
+      { deliveryId: 'delivery-1', read: true, archived: true },
     )
     expect(response.status).toBe(200)
   })
 
-  it('marks a message as read', async () => {
-    getAuthenticatedNicNacContextMock.mockResolvedValueOnce({
-      repId: 'rep-1',
-      rep: { id: 'rep-1' },
-      supabase: { marker: 'supabase' },
-    })
-    markRepMessageReadMock.mockResolvedValueOnce({ id: 'msg-1', isRead: true })
-
-    const response = await POST(
+  it.each([
+    {},
+    { deliveryId: 'delivery-1' },
+    { deliveryId: 'delivery-1', read: 'true' },
+    { deliveryId: 'delivery-1', archived: 1 },
+    { deliveryId: '', read: true },
+    { deliveryId: 'delivery-1', action: 'reply', body: 'hello' },
+  ])('rejects invalid or compose-like patch payload %#', async (body) => {
+    const response = await PATCH(
       new Request('http://localhost/api/nic-nac/messages', {
-        method: 'POST',
+        method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          action: 'mark_read',
-          messageId: 'msg-1',
-        }),
+        body: JSON.stringify(body),
       }),
     )
+    expect(response.status).toBe(400)
+    expect(getPaidNicNacContextMock).not.toHaveBeenCalled()
+  })
 
-    expect(markRepMessageReadMock).toHaveBeenCalledWith(
-      { marker: 'supabase' },
-      'rep-1',
-      'msg-1',
+  it('rejects malformed JSON without authenticating', async () => {
+    const response = await PATCH(
+      new Request('http://localhost/api/nic-nac/messages', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: '{',
+      }),
     )
-    expect(response.status).toBe(200)
+    expect(response.status).toBe(400)
+    expect(getPaidNicNacContextMock).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['POST', POST],
+    ['PUT', PUT],
+    ['DELETE', DELETE],
+  ] as const)('returns 405 for rep %s attempts', async (_method, handler) => {
+    const response = await handler()
+    expect(response.status).toBe(405)
+    expect(response.headers.get('allow')).toBe('GET, PATCH')
+    await expect(response.json()).resolves.toMatchObject({
+      code: 'REP_MESSAGE_CENTER_RECEIVE_ONLY',
+    })
+    expect(getPaidNicNacContextMock).not.toHaveBeenCalled()
   })
 })

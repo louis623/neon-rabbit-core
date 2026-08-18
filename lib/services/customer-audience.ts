@@ -496,6 +496,7 @@ export async function createCustomerAudienceSignup(
     .from('customer_audience')
     .insert({
       rep_id: repId,
+      record_source: 'customer_site_signup',
       ...profile,
       sms_consent: input.smsConsent,
       email_consent: input.emailConsent,
