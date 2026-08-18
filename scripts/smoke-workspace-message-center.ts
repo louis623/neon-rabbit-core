@@ -30,6 +30,28 @@ const manualKey = `${runId}:manual`
 const signupKey = `${runId}:signup`
 const resourceKey = `${runId}-resource`
 const publicationIds: string[] = []
+const keepFixtures = process.argv.includes('--keep')
+const resetOnly = process.argv.includes('--reset-only')
+
+async function resetAllSmokeFixtures() {
+  const { data: publications } = await supabase
+    .from('workspace_message_publications')
+    .select('id')
+    .like('idempotency_key', 'workspace-message-smoke-%')
+  const ids = (publications ?? []).map((row) => String(row.id))
+  if (ids.length) {
+    await supabase.from('workspace_message_audit_events').delete().in('publication_id', ids)
+    await supabase.from('workspace_message_publications').delete().in('id', ids)
+  }
+  await supabase
+    .from('workspace_message_outbox')
+    .delete()
+    .like('idempotency_key', 'workspace-message-smoke-%')
+  await supabase
+    .from('workspace_resources')
+    .delete()
+    .like('resource_key', 'workspace-message-smoke-%')
+}
 
 async function cleanup() {
   const { data: publications } = await supabase
@@ -156,13 +178,24 @@ async function main() {
   }
 }
 
-main()
+const operation = resetOnly
+  ? resetAllSmokeFixtures().then(() => ({ ok: true, reset: 'completed' }))
+  : main()
+
+operation
   .then(async (result) => {
-    await cleanup()
-    console.log(JSON.stringify({ ...result, cleanup: 'completed' }))
+    if (!keepFixtures && !resetOnly) await cleanup()
+    console.log(
+      JSON.stringify({
+        ...result,
+        ...(resetOnly
+          ? {}
+          : { cleanup: keepFixtures ? 'retained_for_ui_smoke' : 'completed' }),
+      }),
+    )
   })
   .catch(async (error) => {
     console.error(error instanceof Error ? error.message : String(error))
-    await cleanup()
+    if (!keepFixtures) await cleanup()
     process.exitCode = 1
   })

@@ -1,5 +1,17 @@
 # Project State
 
+## August 17, 2026 Session - Message Center and Resource Library released
+
+- **Receive-only Message Center is live:** reps open it from the workspace header and can read/unread/archive only their own deliveries. Rep compose/reply routes and grants are closed; Help retains its separate support-report workflow.
+- **Control Center publishing is live:** `/control-center/messages` supports frozen all-active or selected audiences, drafts, previews, explicit mass-send confirmation, and delivery/read history. `/control-center/resources` publishes versioned Blog/Video/FAQ/Help content.
+- **Automations are durable:** public customer-site signup inserts atomically enqueue one owning-rep message; resource revisions enqueue linked announcements; a post-response worker gives both an immediate best-effort send, and a daily Hobby-compatible cron recovers failures and creates timezone-aware monthly snapshots/reports with current-month birthdays.
+- **Release:** application commit `6e44ee20`, packaging guard `507d8da1`, and Hobby dispatch fix `9497b117` are production deployment `dpl_29K7Gb6FbyQEnQtugA8FgG3T6bDP` / `sparkle-suite-cizv4tivz-louis-2849s-projects.vercel.app`. Both Sparkle Suite aliases and all current Bri's Glowtique/Bling Kitchen aliases resolve to it.
+- **Verification:** 211 focused feature tests passed before the Hobby adjustment; the adjustment's 18 focused tests and final production build passed. Production DB smoke verified selected delivery, read/archive, signup automation, resource versioning, and cleanup. Live HTTP/auth-boundary checks and Vercel error-log checks passed. Authenticated synthetic UI acceptance remains blocked because the in-app browser inherited a customer session; it was stopped read-only without changes.
+
+**Last updated:** August 17, 2026
+
+---
+
 ## August 17, 2026 Session - Message Center and Resource Library plan
 
 - **Receive-only Message Center planned:** Reps receive only; Louis, designated internal agents, and approved automations are the only senders. The surface is standalone inside Sparkle Suite with no email, SMS, or external push delivery.

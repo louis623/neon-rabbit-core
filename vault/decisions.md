@@ -1,5 +1,15 @@
 # Decision Log
 
+## August 17, 2026 - Hobby-safe Message Center dispatch
+
+**Immediate best effort plus durable daily recovery**
+Vercel Hobby permits only daily cron schedules. Customer signup and resource publication therefore schedule a bounded outbox worker with Next `after()` after the successful HTTP response; this keeps the business mutation non-blocking while normally delivering promptly. The outbox remains authoritative, and the 18:00 UTC daily cron retries failures and evaluates due monthly reports across supported US timezones.
+
+**Synthetic-only production smoke**
+Production Message Center mutation smoke targets only `sparkle-reviewer+` accounts, uses deterministic `workspace-message-smoke-` identifiers, and has exact cleanup/reset. If a browser inherits Louis's or a customer session, stop without interaction rather than treating that account as reviewer evidence.
+
+---
+
 ## August 17, 2026 - Sparkle Suite Message Center is receive-only and workspace-only
 
 **Reps receive; trusted operators publish**

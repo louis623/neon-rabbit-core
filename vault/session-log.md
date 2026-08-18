@@ -4,6 +4,18 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 17, 2026 - Message Center and Resource Library implementation and release
+
+- Implemented normalized Message Center publications/deliveries, strict receive-only RLS/column grants, scoped sender capabilities, audit events, exact audience freezing, safe structured content/links, idempotency, and a stale-claim-recovering outbox. Legitimate legacy owner-to-rep history is backfilled; rep-to-owner compose is not.
+- Added the persistent rep header inbox with unread badge, all/unread/report/update/resource/archive filters, structured monthly cards/lists, safe actions, synthetic reviewer fixtures, and Blog/Video Resources under Workspace Tools. Added owner-only Communications Console and versioned Resource Publisher routes in Control Center.
+- Public customer signups now atomically enqueue a privacy-minimized owning-rep event. Monthly snapshots are immutable per rep/month and include durable metrics plus current-month birthdays. Resource revisions atomically enqueue Blog/Video/FAQ/Help announcements.
+- Vercel Hobby rejected the original ten-minute cron before deployment. Reworked dispatch to use Next `after()` for immediate best-effort signup/resource processing and a once-daily 18:00 UTC durable recovery/monthly scheduler; final local and Vercel builds passed.
+- Applied production migrations `20260818010000` and `20260818110000`. Database smoke on `sparkle-reviewer+local@neonrabbit.net` verified one selected delivery, read/archive persistence, one queued signup publication, resource versioning, and exact cleanup.
+- Released exact tip `9497b117` as `dpl_29K7Gb6FbyQEnQtugA8FgG3T6bDP`. `www` returned 200, apex 307 to `www`, protected Control Center routes redirected to login, rep APIs and cron rejected unauthenticated requests, all Bri's Glowtique/Bling Kitchen aliases returned 200, and recent production error logs were empty.
+- Authenticated live UI smoke was stopped when the in-app browser retained a customer session rather than switching to the synthetic reviewer. No click or customer mutation occurred; the temporary tab was closed and all synthetic Message Center fixtures were reset. Local rendered desktop/mobile reviewer QA had already passed.
+
+---
+
 ## August 17, 2026 - Message Center and Resource Library implementation plan
 
 - Audited the existing Sparkle Suite foundations and found a dormant `rep_messages` table/service/API and hidden `Messages / Notifications` workspace card. The old card is marked Coming soon and contains a rep-to-Neon-Rabbit backup support composer, so it does not satisfy the newly clarified receive-only contract.
