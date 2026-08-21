@@ -1,7 +1,7 @@
 # Sparkle Finder Open Items
 
-- Must fix in Sparkle Suite: implement and deploy `GET /api/public/finder/reps` using the implementation-ready contract in `docs/handoffs/2026-08-21-sparkle-suite-reps-endpoint.md`. It must return HTTP `200` JSON with `reps: []` when no reps qualify and automatically include active, discoverable, non-demo reps even when they have no board, show, or Finder account. The Finder health check now intentionally fails while the live Suite route returns `404`.
-- After the Suite Reps endpoint is live, rerun `npm exec tsx scripts/check-sparkle-suite-finder-api.ts` and a real signed-in production smoke on `https://yoursparklefinder.com/reps`; confirm the first eligible Suite rep appears automatically and favorite add/remove persists.
+- Automatic Reps endpoint completed: Suite commit `7d373f44`, migration `20260821191500_ss_finder_rep_directory_visibility.sql`, and production deployment `dpl_AwjMxR9w5C3DmMvtMeuZBWn94Fym` now return Heather/BlingKitchen from `GET /api/public/finder/reps`; Finder's live contract checker passes with `REPS=1` and demos remain hidden.
+- Remaining release follow-up: run one read-only signed-in production visual check on `https://yoursparklefinder.com/reps` when an appropriate Finder demo/reviewer session is available. Run favorite add/remove persistence only with an explicitly designated smoke account because it mutates that account's saved reps. The standard local release smoke now validates the live Heather feed and rejects fixture fallback.
 
 - Future Codex sessions should be opened from `C:\Users\louis\sparkle-finder-repo` with Workspace write enabled.
 - Keep new durable project memory in repo-local `vault/`.

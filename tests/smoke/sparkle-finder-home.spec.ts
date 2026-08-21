@@ -12,6 +12,7 @@ const sparkleSuiteFinderBaseUrl = (
 )
   .trim()
   .replace(/\/+$/, "");
+const expectLiveReps = process.env.SPARKLE_FINDER_SMOKE_EXPECT_LIVE_REPS === "true";
 
 const smokeTexts = [
   "Sparkle Finder",
@@ -204,10 +205,20 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByRole("heading", { name: "Sparkle Suite Reps" })).toBeVisible();
     await expect(page.getByText("Browse reps, check show times, and save your favorites.")).toBeVisible();
     await expect(page.getByPlaceholder("Search reps")).toBeVisible();
-    await expect(page.getByText("Lindsay Lucas")).toBeVisible();
-    await expect(page.getByText("Sierra Sparkle Studio")).toBeVisible();
-    await expect(page.getByText("Upcoming").first()).toBeVisible();
-    await expect(page.locator('a[href^="/rep-boards?rep="]').first()).toBeVisible();
+    if (expectLiveReps) {
+      await expect(page.getByText("Heather", { exact: true })).toBeVisible();
+      await expect(page.getByText("BlingKitchen", { exact: true })).toBeVisible();
+      await expect(page.getByText("No show scheduled", { exact: true })).toBeVisible();
+      await expect(page.locator('a[href="https://www.yoursparklesuite.com/blingkitchen"]')).toBeVisible();
+      await expect(page.locator('a[href="https://www.yoursparklesuite.com/blingkitchen/trade"]')).toBeVisible();
+      await expect(page.getByText("Lindsay Lucas")).toHaveCount(0);
+      await expect(page.getByText("Sierra Sparkle Studio")).toHaveCount(0);
+    } else {
+      await expect(page.getByText("Lindsay Lucas")).toBeVisible();
+      await expect(page.getByText("Sierra Sparkle Studio")).toBeVisible();
+      await expect(page.getByText("Upcoming").first()).toBeVisible();
+      await expect(page.locator('a[href^="/rep-boards?rep="]').first()).toBeVisible();
+    }
     await expectNoGuardrailCopy(page);
     await expectNoExampleLinksOnCurrentPage(page);
     await page.waitForTimeout(750);

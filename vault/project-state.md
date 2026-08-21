@@ -14,7 +14,7 @@ Future Codex sessions should open this repo directly with Workspace write enable
 
 ## Recent Session Context
 
-- August 21, 2026: The Finder Reps directory now treats Sparkle Suite as the automatic source of public rep profiles and distinguishes a healthy empty feed from an unavailable integration. Finder-owned aggregate favorite counts are private, bounded, and database-backed; the Free five-rep cap is also enforced by RLS. The Finder side is ready, but the live Suite route `/api/public/finder/reps` still returns `404` and remains the blocking cross-repo dependency before real reps can appear.
+- August 21, 2026: The automatic Sparkle Suite-to-Finder Reps feed is live. Sparkle Suite now exposes a safe, service-backed `GET /api/public/finder/reps` route with explicit server-managed visibility, no demo/reviewer leakage, canonical customer-site/Trade Board links, and safe next-show data. Heather/BlingKitchen is the sole initial public rep because she is the one confirmed real active beta rep; normal future real-rep provisioning opts in automatically, while reviewer/demo paths remain hidden. Finder's live contract checker reports `REPS=1`. Finder-owned aggregate favorite counts remain private, bounded, and database-backed, with the Free five-rep cap enforced by RLS.
 
 - Sparkle Finder silver showcase workflow was simplified for phone-first use.
 - Advanced showcase/profile controls were removed from the main customer flow in favor of simple cards, simple panels, and Nic-Nac-led help.

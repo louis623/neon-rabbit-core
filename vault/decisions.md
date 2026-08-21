@@ -6,6 +6,12 @@ Decision: The Reps directory automatically consumes eligible public rep profiles
 
 Reason: Rep discovery is a shared-data integration, not a second onboarding funnel. Keeping favorite identities private inside Finder preserves the separate customer auth boundary while still allowing anonymous aggregate ranking for signed-in Finder customers.
 
+## 2026-08-21 - Suite Controls Public Rep Visibility Fail-Closed
+
+Decision: Sparkle Suite owns a server-managed `finder_directory_visible` flag that defaults to false. Normal real-rep provisioning enables it automatically; reviewer, demo, fixture, and reset paths explicitly keep it false. Existing accounts are not exposed merely because they have a subscription, trial, public-site slug, board, or show. Heather/BlingKitchen is the sole initial backfill based on confirmed current real usage.
+
+Reason: The Suite database contains demo/reviewer and historical accounts that cannot be safely distinguished by subscription alone. Explicit fail-closed visibility prevents accidental public disclosure while preserving automatic population for newly provisioned real reps.
+
 ## 2026-07-04 - Bling Vault Shares The App Canvas
 
 Decision: The signed-in Bling Vault/collection section should use the same mobile-first app canvas as the opening home and guided Find sections. It should not expand back into the older wide dashboard layout on desktop.

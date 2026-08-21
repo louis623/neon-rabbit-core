@@ -49,6 +49,7 @@ async function main() {
       {
         SPARKLE_FINDER_BASE_URL: baseUrl,
         SPARKLE_FINDER_SCREENSHOT_DIR: screenshotDir,
+        SPARKLE_FINDER_SMOKE_EXPECT_LIVE_REPS: "true",
       },
     );
 
