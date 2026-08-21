@@ -12,6 +12,7 @@
 - Removed broken preview avatar paths so preview reps use the initials fallback without 404s.
 - Verification before commit: lint passed; focused Reps tests passed (`144`); full suite passed (`39` files, `529` tests); production build passed; mobile 390px and desktop rendered checks passed with no horizontal overflow or console errors. The corrected live Suite contract check fails as expected until the missing Suite endpoint is deployed.
 - Commit `871d805` was pushed and deployed Ready as `dpl_5jUiewmWKyqiPrjgCvJi8Eqmu9Qd`, with both `https://yoursparklefinder.com` and `https://sparkle-finder-dev.vercel.app` attached. Live route checks returned `200`, the custom-domain anonymous Reps gate rendered without browser errors, and the full Playwright smoke passed (`18` passed, `2` optional live-data checks skipped) after stale homepage assertions were aligned with the approved coming-soon landing.
+- Reconfirmed the live Suite Reps route still returns `404` HTML, then added `docs/handoffs/2026-08-21-sparkle-suite-reps-endpoint.md` with the exact public payload, eligibility/privacy rules, search/limit behavior, required Suite tests, rollout sequence, and Finder acceptance gate needed to finish the cross-repo integration without reintroducing manual Finder onboarding.
 
 ## 2026-07-04
 
