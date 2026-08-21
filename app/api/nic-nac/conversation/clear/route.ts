@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
-import { clearConversation } from '@/lib/nic-nac/persistence'
+import { clearActiveConversationsForRep } from '@/lib/nic-nac/persistence'
 import { ServiceError } from '@/lib/services/errors'
 
 export const runtime = 'nodejs'
@@ -32,6 +32,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'missing_conversation_id' }, { status: 400 })
   }
 
-  await clearConversation(ctx.supabase, { conversationId, repId: ctx.repId })
-  return NextResponse.json({ cleared: true })
+  const clearedConversationIds = await clearActiveConversationsForRep(
+    ctx.supabase,
+    ctx.repId,
+  )
+  return NextResponse.json({
+    cleared: true,
+    clearedConversationIds,
+  })
 }

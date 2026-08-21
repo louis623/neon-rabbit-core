@@ -78,17 +78,31 @@ export async function getLatestConversationId(
   return (data?.conversation_id as string | undefined) ?? null
 }
 
-export async function clearConversation(
+// A workspace can accumulate more than one active conversation when a tab is
+// restored from an old URL or two devices are used at once. Clearing only the
+// ID held by the current client leaves the other thread eligible for the
+// "latest" lookup and lets old history reappear on the next sign-in. Retire
+// every currently active thread for this rep, while retaining every row for
+// audit continuity.
+export async function clearActiveConversationsForRep(
   supabase: SupabaseClient,
-  args: { conversationId: string; repId: string },
-): Promise<void> {
-  const { error } = await supabase
+  repId: string,
+): Promise<string[]> {
+  const { data, error } = await supabase
     .from('nic_nac_conversations')
     .update({ cleared_at: new Date().toISOString() })
-    .eq('conversation_id', args.conversationId)
-    .eq('rep_id', args.repId)
+    .eq('rep_id', repId)
     .is('cleared_at', null)
+    .select('conversation_id')
   if (error) throw error
+
+  return Array.from(
+    new Set(
+      ((data ?? []) as Array<{ conversation_id?: string | null }>)
+        .map((row) => row.conversation_id?.trim())
+        .filter((conversationId): conversationId is string => Boolean(conversationId)),
+    ),
+  )
 }
 
 export async function insertUserMessage(

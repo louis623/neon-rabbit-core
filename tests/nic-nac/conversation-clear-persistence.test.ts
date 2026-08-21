@@ -1,35 +1,45 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
-  clearConversation,
+  clearActiveConversationsForRep,
   getLatestConversationId,
   loadCanonicalHistory,
 } from '@/lib/nic-nac/persistence'
 
 describe('Nic-Nac cleared conversation persistence', () => {
-  it('marks every row in the owned thread as cleared instead of deleting it', async () => {
-    const complete = Promise.resolve({ error: null })
+  it('marks every active thread owned by the rep as cleared instead of deleting it', async () => {
+    const complete = Promise.resolve({
+      data: [
+        { conversation_id: 'conversation-current' },
+        { conversation_id: 'conversation-old' },
+        { conversation_id: 'conversation-current' },
+      ],
+      error: null,
+    })
     const query = {
       update: vi.fn(),
       eq: vi.fn(),
       is: vi.fn(),
+      select: vi.fn(),
     }
     query.update.mockReturnValue(query)
     query.eq.mockReturnValue(query)
     query.is.mockReturnValue(complete)
+    query.is.mockReturnValue(query)
+    query.select.mockReturnValue(complete)
     const supabase = { from: vi.fn(() => query) }
 
-    await clearConversation(supabase as never, {
-      conversationId: 'conversation-1',
-      repId: 'rep-1',
-    })
+    await expect(
+      clearActiveConversationsForRep(supabase as never, 'rep-1'),
+    ).resolves.toEqual(['conversation-current', 'conversation-old'])
 
     expect(supabase.from).toHaveBeenCalledWith('nic_nac_conversations')
     expect(query.update).toHaveBeenCalledWith(
       expect.objectContaining({ cleared_at: expect.any(String) }),
     )
-    expect(query.eq).toHaveBeenNthCalledWith(1, 'conversation_id', 'conversation-1')
-    expect(query.eq).toHaveBeenNthCalledWith(2, 'rep_id', 'rep-1')
+    expect(query.eq).toHaveBeenCalledWith('rep_id', 'rep-1')
+    expect(query.eq).not.toHaveBeenCalledWith('conversation_id', expect.anything())
     expect(query.is).toHaveBeenCalledWith('cleared_at', null)
+    expect(query.select).toHaveBeenCalledWith('conversation_id')
   })
 
   it('does not select a cleared thread as the rep’s latest conversation', async () => {
