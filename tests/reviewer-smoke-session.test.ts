@@ -111,6 +111,7 @@ function makeReviewerAdmin() {
       eventDelete,
       audienceUpsert,
       eventUpsert,
+      repUpdate,
     },
   }
 }
@@ -189,6 +190,19 @@ describe('reviewer smoke session reset', () => {
         stripe_livemode: false,
       }),
       { onConflict: 'rep_id' },
+    )
+  })
+
+  it('always keeps the synthetic reviewer out of the public Finder directory', async () => {
+    const { admin, spies } = makeReviewerAdmin()
+
+    await resetReviewerSmokeSession('dashboard_unlocked', admin as never)
+
+    expect(spies.repUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'active',
+        finder_directory_visible: false,
+      }),
     )
   })
 

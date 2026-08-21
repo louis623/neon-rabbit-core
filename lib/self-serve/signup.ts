@@ -15,6 +15,7 @@ export interface SelfServeWorkspaceAccount {
   email: string
   displayName: string
   referralCode?: string | null
+  finderDirectoryVisible: boolean
 }
 
 const selfServeSignupSchema = z.object({
@@ -169,6 +170,7 @@ export async function createSelfServeWorkspaceForAuthUser(
       template_id: 'default',
       status: 'onboarding',
       referral_code: ownReferralCode,
+      finder_directory_visible: account.finderDirectoryVisible,
     })
     .select('id, auth_user_id, email')
     .single()
@@ -320,6 +322,7 @@ export async function createSelfServeSignup(
         email: signup.email,
         displayName: signup.displayName,
         referralCode: signup.referralCode,
+        finderDirectoryVisible: true,
       },
       admin,
     )

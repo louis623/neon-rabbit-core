@@ -184,6 +184,7 @@ async function upsertRep(
     shop_link: BRITT_WITH_BLING_PROFILE.shopUrl,
     template_id: 'default',
     status: 'active',
+    finder_directory_visible: true,
   }
 
   if (existingRep) {

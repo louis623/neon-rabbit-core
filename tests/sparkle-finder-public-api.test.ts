@@ -8,6 +8,8 @@ import {
   mapSparkleFinderAvailabilityListingRow,
   mapSparkleFinderDesignRow,
   loadPublicFinderEligibleRepIds,
+  listSparkleFinderPublicReps,
+  mapSparkleFinderDirectoryRows,
   parseSparkleFinderLimit,
 } from '@/lib/sparkle-finder/public-api'
 
@@ -517,5 +519,196 @@ describe('Sparkle Finder public API contract helpers', () => {
     expect(parseSparkleFinderLimit('500', 24, 50)).toBe(50)
     expect(parseSparkleFinderLimit('0', 24, 50)).toBeNull()
     expect(parseSparkleFinderLimit('abc', 24, 50)).toBeNull()
+    expect(parseSparkleFinderLimit('10abc', 24, 50)).toBeNull()
+    expect(parseSparkleFinderLimit('1.5', 24, 50)).toBeNull()
+  })
+
+  it('reads the public rep directory only through the bounded service-role RPC', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: [
+        {
+          rep_id: 'rep-heather',
+          display_name: 'Heather',
+          business_name: 'BlingKitchen',
+          avatar_url: null,
+          public_site_slug: 'blingkitchen',
+          next_show_id: null,
+          next_show_name: null,
+          next_show_starts_at: null,
+          next_show_status: null,
+          next_show_duration_minutes: null,
+        },
+      ],
+      error: null,
+    })
+
+    await expect(
+      listSparkleFinderPublicReps({
+        limit: 500,
+        query: '  Heather  ',
+        supabase: { rpc } as never,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        repId: 'rep-heather',
+        displayName: 'Heather',
+        customerSiteUrl: 'https://www.yoursparklesuite.com/blingkitchen',
+        repBoardUrl: 'https://www.yoursparklesuite.com/blingkitchen/trade',
+      }),
+    ])
+    expect(rpc).toHaveBeenCalledWith(
+      'list_sparkle_finder_public_reps',
+      {
+        p_limit: 200,
+        p_query: 'Heather',
+        p_as_of: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      },
+    )
+  })
+
+  it('maps visible reps without requiring a site, board, avatar, state, or show', () => {
+    const reps = mapSparkleFinderDirectoryRows(
+      [
+        {
+          rep_id: 'rep-heather',
+          display_name: ' Heather ',
+          business_name: ' BlingKitchen ',
+          avatar_url: 'https://cdn.example.test/heather.png',
+          public_site_slug: 'BlingKitchen',
+          next_show_id: null,
+          next_show_name: null,
+          next_show_starts_at: null,
+          next_show_status: null,
+          next_show_duration_minutes: null,
+        },
+        {
+          rep_id: 'rep-no-site',
+          display_name: 'New Rep',
+          business_name: null,
+          avatar_url: 'http://unsafe.example.test/avatar.png',
+          public_site_slug: null,
+          next_show_id: null,
+          next_show_name: null,
+          next_show_starts_at: null,
+          next_show_status: null,
+          next_show_duration_minutes: null,
+        },
+        {
+          rep_id: 'rep-heather',
+          display_name: 'Duplicate Heather',
+          business_name: 'Should not duplicate',
+          avatar_url: null,
+          public_site_slug: null,
+          next_show_id: null,
+          next_show_name: null,
+          next_show_starts_at: null,
+          next_show_status: null,
+          next_show_duration_minutes: null,
+        },
+      ],
+      '2026-08-21T17:00:00.000Z',
+    )
+
+    expect(reps).toEqual([
+      {
+        repId: 'rep-heather',
+        displayName: 'Heather',
+        businessName: 'BlingKitchen',
+        avatarUrl: 'https://cdn.example.test/heather.png',
+        state: null,
+        customerSiteUrl: 'https://www.yoursparklesuite.com/blingkitchen',
+        repBoardUrl: 'https://www.yoursparklesuite.com/blingkitchen/trade',
+        nextShow: null,
+      },
+      {
+        repId: 'rep-no-site',
+        displayName: 'New Rep',
+        businessName: null,
+        avatarUrl: null,
+        state: null,
+        customerSiteUrl: null,
+        repBoardUrl: null,
+        nextShow: null,
+      },
+    ])
+    expect(JSON.stringify(reps)).not.toContain('auth_user_id')
+    expect(JSON.stringify(reps)).not.toContain('email')
+    expect(JSON.stringify(reps)).not.toContain('phone')
+    expect(JSON.stringify(reps)).not.toContain('favoriteCount')
+  })
+
+  it('keeps only current live or future scheduled directory shows', () => {
+    const base = {
+      business_name: null,
+      avatar_url: null,
+      public_site_slug: null,
+    }
+    const reps = mapSparkleFinderDirectoryRows(
+      [
+        {
+          ...base,
+          rep_id: 'rep-current-live',
+          display_name: 'Current Live',
+          next_show_id: 'show-current-live',
+          next_show_name: 'Current Live Show',
+          next_show_starts_at: '2026-08-21T16:30:00.000Z',
+          next_show_status: 'live',
+          next_show_duration_minutes: 60,
+        },
+        {
+          ...base,
+          rep_id: 'rep-stale-live',
+          display_name: 'Stale Live',
+          next_show_id: 'show-stale-live',
+          next_show_name: 'Stale Live Show',
+          next_show_starts_at: '2026-08-21T15:00:00.000Z',
+          next_show_status: 'live',
+          next_show_duration_minutes: 60,
+        },
+        {
+          ...base,
+          rep_id: 'rep-future',
+          display_name: 'Future Show',
+          next_show_id: 'show-future',
+          next_show_name: 'Friday Sparkle',
+          next_show_starts_at: '2026-08-21T20:00:00-04:00',
+          next_show_status: 'scheduled',
+          next_show_duration_minutes: 90,
+        },
+        {
+          ...base,
+          rep_id: 'rep-past',
+          display_name: 'Past Show',
+          next_show_id: 'show-past',
+          next_show_name: 'Past Sparkle',
+          next_show_starts_at: '2026-08-21T16:00:00.000Z',
+          next_show_status: 'scheduled',
+          next_show_duration_minutes: 60,
+        },
+      ],
+      '2026-08-21T17:00:00.000Z',
+    )
+
+    expect(reps.map((rep) => rep.repId)).toEqual([
+      'rep-current-live',
+      'rep-future',
+      'rep-past',
+      'rep-stale-live',
+    ])
+    expect(reps[0]?.nextShow).toEqual({
+      showId: 'show-current-live',
+      showName: 'Current Live Show',
+      startsAt: '2026-08-21T16:30:00.000Z',
+      status: 'live',
+      customerSiteUrl: null,
+      durationMinutes: 60,
+    })
+    expect(reps.find((rep) => rep.repId === 'rep-future')?.nextShow).toMatchObject({
+      showId: 'show-future',
+      status: 'scheduled',
+      durationMinutes: 90,
+    })
+    expect(reps.find((rep) => rep.repId === 'rep-stale-live')?.nextShow).toBeNull()
+    expect(reps.find((rep) => rep.repId === 'rep-past')?.nextShow).toBeNull()
   })
 })

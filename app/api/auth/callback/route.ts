@@ -74,6 +74,7 @@ export async function GET(request: Request) {
       email: user.email,
       displayName: getSelfServeDisplayNameFromAuthUser(user),
       referralCode: requestUrl.searchParams.get('ref'),
+      finderDirectoryVisible: true,
     },
     admin,
     { allowCreate: selfServeSignupCallback && selfServeOpen },

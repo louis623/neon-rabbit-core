@@ -133,6 +133,7 @@ describe('POST /api/self-serve/signup', () => {
         template_id: 'default',
         status: 'onboarding',
         referral_code: expect.stringMatching(/^SS-[A-HJ-NP-Z2-9]{6}$/),
+        finder_directory_visible: true,
       }),
     )
     expect(admin.siteSettingsUpsert).toHaveBeenCalledWith(
@@ -208,6 +209,7 @@ describe('POST /api/self-serve/signup', () => {
     expect(admin.repsInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         referral_code: expect.stringMatching(/^SS-[A-HJ-NP-Z2-9]{6}$/),
+        finder_directory_visible: true,
       }),
     )
     expect(admin.setupSessionUpsert).toHaveBeenCalledWith(

@@ -175,6 +175,7 @@ describe('prelaunch client account provisioning', () => {
       social_handles: {},
       template_id: 'default',
       status: 'active',
+      finder_directory_visible: true,
     })
     expect(upsertSetupSession).toHaveBeenCalledWith(
       expect.objectContaining({

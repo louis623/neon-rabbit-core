@@ -259,6 +259,7 @@ describe('GET /api/auth/callback', () => {
         template_id: 'default',
         status: 'onboarding',
         referral_code: expect.stringMatching(/^SS-[A-HJ-NP-Z2-9]{6}$/),
+        finder_directory_visible: true,
       }),
     )
     expect(admin.siteSettingsUpsert).toHaveBeenCalledWith(

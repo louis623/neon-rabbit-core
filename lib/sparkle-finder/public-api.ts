@@ -17,6 +17,20 @@ type FinderRepSingle = {
   custom_domain: string | null
   public_site_slug: string | null
   status: string | null
+  finder_directory_visible?: boolean | null
+}
+
+export type FinderDirectoryRpcRow = {
+  rep_id: string
+  display_name: string | null
+  business_name: string | null
+  avatar_url: string | null
+  public_site_slug: string | null
+  next_show_id: string | null
+  next_show_name: string | null
+  next_show_starts_at: string | null
+  next_show_status: string | null
+  next_show_duration_minutes: number | null
 }
 
 type FinderDesignRow = {
@@ -56,6 +70,7 @@ export type FinderLeadShowRow = {
   event_time: string
   title: string | null
   status: string
+  duration_minutes?: number | null
 }
 
 type FinderShowRow = FinderLeadShowRow
@@ -142,6 +157,26 @@ export interface SparkleFinderLiveShow {
   customerSiteUrl: string
 }
 
+export interface SparkleFinderDirectoryShow {
+  showId: string
+  showName: string
+  startsAt: string
+  status: 'scheduled' | 'live'
+  customerSiteUrl: string | null
+  durationMinutes: number | null
+}
+
+export interface SparkleFinderDirectoryRep {
+  repId: string
+  displayName: string
+  businessName: string | null
+  avatarUrl: string | null
+  state: string | null
+  customerSiteUrl: string | null
+  repBoardUrl: string | null
+  nextShow: SparkleFinderDirectoryShow | null
+}
+
 export interface SparkleFinderCatalogListOptions {
   query?: string
   jewelryType?: FinderJewelryType
@@ -175,6 +210,12 @@ export interface SparkleFinderLiveShowsOptions {
   supabase?: SupabaseClient
 }
 
+export interface SparkleFinderDirectoryOptions {
+  query?: string
+  limit?: number
+  supabase?: SupabaseClient
+}
+
 const FINDER_CATALOG_SELECT =
   'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, created_at, collection:collections(name, collection_year)'
 
@@ -185,7 +226,7 @@ const FINDER_LISTING_SELECT = `
 `
 
 const FINDER_LIVE_SHOW_SELECT =
-  'id, rep_id, event_time, title, status, rep:reps(id, display_name, business_name, profile_photo_url, custom_domain, public_site_slug, status)'
+  'id, rep_id, event_time, title, status, duration_minutes, rep:reps(id, display_name, business_name, profile_photo_url, custom_domain, public_site_slug, status)'
 
 export const DEFAULT_FINDER_CATALOG_LIMIT = 24
 export const MAX_FINDER_CATALOG_LIMIT = 50
@@ -194,6 +235,8 @@ export const DEFAULT_FINDER_AVAILABILITY_LIMIT = 24
 export const MAX_FINDER_AVAILABILITY_LIMIT = 50
 export const DEFAULT_FINDER_LIVE_SHOW_LIMIT = 50
 export const MAX_FINDER_LIVE_SHOW_LIMIT = 100
+export const DEFAULT_FINDER_REP_DIRECTORY_LIMIT = 50
+export const MAX_FINDER_REP_DIRECTORY_LIMIT = 200
 
 const TYPE_MAP: Record<JewelryType, FinderJewelryType> = {
   RG: 'ring',
@@ -217,7 +260,9 @@ export function parseSparkleFinderLimit(
   max: number,
 ): number | null {
   if (!rawLimit) return fallback
-  const parsed = Number.parseInt(rawLimit, 10)
+  const normalized = rawLimit.trim()
+  if (!/^\d+$/.test(normalized)) return null
+  const parsed = Number.parseInt(normalized, 10)
   if (!Number.isInteger(parsed) || parsed < 1) return null
   return Math.min(parsed, max)
 }
@@ -411,6 +456,33 @@ export async function listSparkleFinderLiveShows(
 
   const rows = await loadFinderLiveShowRows(supabase, eligibleRepIds, limit)
   return mapSparkleFinderLiveShowRows(rows).slice(0, limit)
+}
+
+export async function listSparkleFinderPublicReps(
+  options: SparkleFinderDirectoryOptions = {},
+): Promise<SparkleFinderDirectoryRep[]> {
+  if (!isFinderSupabaseConfigured(options.supabase)) return []
+
+  const supabase = options.supabase ?? createAdminClient()
+  const limit = Math.min(
+    Math.max(options.limit ?? DEFAULT_FINDER_REP_DIRECTORY_LIMIT, 1),
+    MAX_FINDER_REP_DIRECTORY_LIMIT,
+  )
+  const asOf = new Date().toISOString()
+  const queryText = options.query?.trim().slice(0, 100) || null
+  const { data, error } = await supabase.rpc(
+    'list_sparkle_finder_public_reps',
+    {
+      p_limit: limit,
+      p_query: queryText,
+      p_as_of: asOf,
+    },
+  )
+  if (error) throw error
+  return mapSparkleFinderDirectoryRows(
+    (data ?? []) as unknown as FinderDirectoryRpcRow[],
+    asOf,
+  ).slice(0, limit)
 }
 
 async function loadCatalogDesignRows(
@@ -744,7 +816,7 @@ async function loadNextShowsByRepId(supabase: SupabaseClient, repIds: string[]) 
   const now = new Date().toISOString()
   const liveResult = await supabase
     .from('calendar_events')
-    .select('id, rep_id, event_time, title, status')
+    .select('id, rep_id, event_time, title, status, duration_minutes')
     .in('rep_id', repIds)
     .eq('status', 'live')
     .order('event_time', { ascending: true })
@@ -752,7 +824,7 @@ async function loadNextShowsByRepId(supabase: SupabaseClient, repIds: string[]) 
 
   const { data, error } = await supabase
     .from('calendar_events')
-    .select('id, rep_id, event_time, title, status')
+    .select('id, rep_id, event_time, title, status, duration_minutes')
     .in('rep_id', repIds)
     .eq('status', 'scheduled')
     .gte('event_time', now)
@@ -836,8 +908,18 @@ export function mapFinderShowRowsToNextShows(
 }
 
 function isFinderLeadShowRow(row: FinderShowRow, nowIso: string) {
-  if (row.status === 'live') return true
-  return row.status === 'scheduled' && row.event_time >= nowIso
+  const startsAtMs = Date.parse(row.event_time)
+  const nowMs = Date.parse(nowIso)
+  if (!Number.isFinite(startsAtMs) || !Number.isFinite(nowMs)) return false
+
+  if (row.status === 'live') {
+    const durationMinutes = normalizeFinderDurationMinutes(
+      row.duration_minutes ?? null,
+    ) ?? 60
+    return startsAtMs <= nowMs && startsAtMs + durationMinutes * 60_000 > nowMs
+  }
+
+  return row.status === 'scheduled' && startsAtMs >= nowMs
 }
 
 export function mapSparkleFinderLiveShowRows(
@@ -874,6 +956,114 @@ export function mapSparkleFinderLiveShowRows(
         customerSiteUrl: buildFinderCustomerSiteUrl(rep),
       }
     })
+}
+
+export function mapSparkleFinderDirectoryRows(
+  rows: FinderDirectoryRpcRow[],
+  nowIso = new Date().toISOString(),
+): SparkleFinderDirectoryRep[] {
+  const reps = new Map<string, SparkleFinderDirectoryRep>()
+
+  for (const row of rows) {
+    const repId = row.rep_id?.trim()
+    const displayName = row.display_name?.trim()
+    if (!repId || !displayName || reps.has(repId)) continue
+
+    const slug = getFinderValidatedPublicSiteSlug(row.public_site_slug)
+    const customerSiteUrl = slug ? buildPublicSiteUrl(slug) : null
+
+    reps.set(repId, {
+      repId,
+      displayName,
+      businessName: row.business_name?.trim() || null,
+      avatarUrl: normalizeFinderPublicHttpsUrl(row.avatar_url),
+      state: null,
+      customerSiteUrl,
+      repBoardUrl: customerSiteUrl ? `${customerSiteUrl}/trade` : null,
+      nextShow: mapSparkleFinderDirectoryShow(row, nowIso),
+    })
+  }
+
+  return Array.from(reps.values()).sort((left, right) => {
+    const leftRank = left.nextShow?.status === 'live' ? 0 : left.nextShow ? 1 : 2
+    const rightRank = right.nextShow?.status === 'live' ? 0 : right.nextShow ? 1 : 2
+    if (leftRank !== rightRank) return leftRank - rightRank
+
+    const leftTime = left.nextShow?.startsAt ?? ''
+    const rightTime = right.nextShow?.startsAt ?? ''
+    if (leftTime !== rightTime) {
+      if (!leftTime) return 1
+      if (!rightTime) return -1
+      return leftTime.localeCompare(rightTime)
+    }
+
+    const nameOrder = left.displayName.localeCompare(right.displayName, 'en', {
+      sensitivity: 'base',
+    })
+    return nameOrder || left.repId.localeCompare(right.repId)
+  })
+}
+
+function mapSparkleFinderDirectoryShow(
+  row: FinderDirectoryRpcRow,
+  nowIso: string,
+): SparkleFinderDirectoryShow | null {
+  const showId = row.next_show_id?.trim()
+  const showName = row.next_show_name?.trim()
+  const startsAt = row.next_show_starts_at?.trim()
+  const status =
+    row.next_show_status === 'live' || row.next_show_status === 'scheduled'
+      ? row.next_show_status
+      : null
+  if (!showId || !showName || !startsAt || !status) return null
+
+  const startsAtMs = Date.parse(startsAt)
+  const nowMs = Date.parse(nowIso)
+  if (!Number.isFinite(startsAtMs) || !Number.isFinite(nowMs)) return null
+
+  const durationMinutes = normalizeFinderDurationMinutes(
+    row.next_show_duration_minutes,
+  )
+  if (status === 'scheduled' && startsAtMs < nowMs) return null
+  if (status === 'live') {
+    const effectiveDurationMinutes = durationMinutes ?? 60
+    const endsAtMs = startsAtMs + effectiveDurationMinutes * 60_000
+    if (startsAtMs > nowMs || endsAtMs <= nowMs) return null
+  }
+
+  return {
+    showId,
+    showName,
+    startsAt: new Date(startsAtMs).toISOString(),
+    status,
+    customerSiteUrl: null,
+    durationMinutes,
+  }
+}
+
+function normalizeFinderDurationMinutes(value: number | null) {
+  if (!Number.isFinite(value) || value === null || value <= 0) return null
+  return Math.floor(value)
+}
+
+function normalizeFinderPublicHttpsUrl(value: string | null) {
+  const raw = value?.trim()
+  if (!raw) return null
+
+  try {
+    const url = new URL(raw)
+    if (
+      url.protocol !== 'https:' ||
+      url.username ||
+      url.password ||
+      url.port
+    ) {
+      return null
+    }
+    return url.toString()
+  } catch {
+    return null
+  }
 }
 
 export function filterListingsWithNextShows<T extends { rep_id: string }>(
@@ -945,7 +1135,11 @@ function hasFinderResolvablePublicSite(rep: FinderRepSingle) {
 }
 
 function getFinderResolvablePublicSiteSlug(rep: FinderRepSingle) {
-  const slug = rep.public_site_slug?.trim().toLowerCase() ?? ''
+  return getFinderValidatedPublicSiteSlug(rep.public_site_slug)
+}
+
+function getFinderValidatedPublicSiteSlug(value: string | null) {
+  const slug = value?.trim().toLowerCase() ?? ''
   return validatePublicSiteSlug(slug).ok ? slug : null
 }
 

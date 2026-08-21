@@ -160,6 +160,7 @@ async function upsertRep(
     streaming_links: streamingLinks,
     template_id: 'default',
     status: 'active',
+    finder_directory_visible: true,
   }
 
   if (existingRep) {

@@ -388,6 +388,7 @@ export async function resetReviewerSmokeSession(
     email: persona.email,
     displayName: persona.displayName,
     password: persona.password,
+    finderDirectoryVisible: false,
   }
   const { authUserId, repId: existingRepId } = await ensureReviewerAuthUser(
     admin,
@@ -399,6 +400,7 @@ export async function resetReviewerSmokeSession(
       authUserId,
       email: persona.email,
       displayName: persona.displayName,
+      finderDirectoryVisible: false,
     },
     existingRepId,
   )
@@ -415,6 +417,7 @@ export async function resetReviewerSmokeSession(
       display_name: persona.displayName,
       business_name: 'Britt Test Rep Sparkle Studio',
       status: state === 'dashboard_unlocked' ? 'active' : 'onboarding',
+      finder_directory_visible: false,
       updated_at: now,
     })
     .eq('id', repId)

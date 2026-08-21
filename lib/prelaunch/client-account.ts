@@ -378,6 +378,7 @@ export async function preparePrelaunchClientAccountForLaunchBuild(
         social_handles: {},
         template_id: 'default',
         status: 'active',
+        finder_directory_visible: true,
       })
       .select('id, auth_user_id, email, display_name, business_name')
       .single()

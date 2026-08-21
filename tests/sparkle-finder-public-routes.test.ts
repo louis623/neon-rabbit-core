@@ -5,6 +5,7 @@ const listSparkleFinderCatalogFacetsMock = vi.fn()
 const getSparkleFinderCatalogItemMock = vi.fn()
 const getSparkleFinderAvailabilityMock = vi.fn()
 const listSparkleFinderLiveShowsMock = vi.fn()
+const listSparkleFinderPublicRepsMock = vi.fn()
 
 vi.mock('@/lib/sparkle-finder/public-api', async () => {
   const actual = await vi.importActual<typeof import('@/lib/sparkle-finder/public-api')>(
@@ -23,6 +24,8 @@ vi.mock('@/lib/sparkle-finder/public-api', async () => {
       getSparkleFinderAvailabilityMock(...args),
     listSparkleFinderLiveShows: (...args: unknown[]) =>
       listSparkleFinderLiveShowsMock(...args),
+    listSparkleFinderPublicReps: (...args: unknown[]) =>
+      listSparkleFinderPublicRepsMock(...args),
   }
 })
 
@@ -31,6 +34,7 @@ import { GET as getFinderCatalog } from '@/app/api/public/finder/catalog/route'
 import { GET as getFinderCatalogFacets } from '@/app/api/public/finder/catalog/facets/route'
 import { GET as getFinderCatalogDetail } from '@/app/api/public/finder/catalog/[designId]/route'
 import { GET as getFinderLiveShows } from '@/app/api/public/finder/live-shows/route'
+import { GET as getFinderReps } from '@/app/api/public/finder/reps/route'
 
 describe('Sparkle Finder public routes', () => {
   beforeEach(() => {
@@ -39,6 +43,7 @@ describe('Sparkle Finder public routes', () => {
     getSparkleFinderCatalogItemMock.mockReset()
     getSparkleFinderAvailabilityMock.mockReset()
     listSparkleFinderLiveShowsMock.mockReset()
+    listSparkleFinderPublicRepsMock.mockReset()
   })
 
   it('returns public catalog search results without caching', async () => {
@@ -309,5 +314,103 @@ describe('Sparkle Finder public routes', () => {
     await expect(response.json()).resolves.toEqual({
       error: 'limit must be a positive whole number.',
     })
+  })
+
+  it('returns the versioned public rep directory contract without caching', async () => {
+    listSparkleFinderPublicRepsMock.mockResolvedValueOnce([
+      {
+        repId: 'rep-heather',
+        displayName: 'Heather',
+        businessName: 'BlingKitchen',
+        avatarUrl: null,
+        state: null,
+        customerSiteUrl: 'https://www.yoursparklesuite.com/blingkitchen',
+        repBoardUrl: 'https://www.yoursparklesuite.com/blingkitchen/trade',
+        nextShow: null,
+      },
+    ])
+
+    const response = await getFinderReps(
+      new Request(
+        'http://localhost/api/public/finder/reps?limit=200&query=Heather',
+      ),
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toContain('application/json')
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(listSparkleFinderPublicRepsMock).toHaveBeenCalledWith({
+      limit: 200,
+      query: 'Heather',
+    })
+    expect(body).toEqual({
+      schemaVersion: 1,
+      generatedAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      reps: [expect.objectContaining({ repId: 'rep-heather' })],
+      nextCursor: null,
+    })
+    expect(JSON.stringify(body)).not.toContain('favoriteCount')
+    expect(JSON.stringify(body)).not.toContain('email')
+    expect(JSON.stringify(body)).not.toContain('auth_user_id')
+  })
+
+  it('returns a healthy empty public rep directory as JSON', async () => {
+    listSparkleFinderPublicRepsMock.mockResolvedValueOnce([])
+
+    const response = await getFinderReps(
+      new Request('http://localhost/api/public/finder/reps'),
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      schemaVersion: 1,
+      generatedAt: expect.any(String),
+      reps: [],
+      nextCursor: null,
+    })
+  })
+
+  it('rejects malformed rep-directory limits and oversized searches', async () => {
+    const invalidLimitResponse = await getFinderReps(
+      new Request('http://localhost/api/public/finder/reps?limit=10abc'),
+    )
+    const longQueryResponse = await getFinderReps(
+      new Request(
+        `http://localhost/api/public/finder/reps?query=${'a'.repeat(101)}`,
+      ),
+    )
+
+    expect(invalidLimitResponse.status).toBe(400)
+    expect(longQueryResponse.status).toBe(400)
+    expect(listSparkleFinderPublicRepsMock).not.toHaveBeenCalled()
+    await expect(invalidLimitResponse.json()).resolves.toEqual({
+      error: 'limit must be a positive whole number.',
+    })
+    await expect(longQueryResponse.json()).resolves.toEqual({
+      error: 'query must be 100 characters or fewer.',
+    })
+  })
+
+  it('returns a JSON service-unavailable response when the directory read fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    listSparkleFinderPublicRepsMock.mockRejectedValueOnce(
+      new Error('temporary database error'),
+    )
+
+    const response = await getFinderReps(
+      new Request('http://localhost/api/public/finder/reps'),
+    )
+
+    expect(response.status).toBe(503)
+    expect(response.headers.get('content-type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({
+      error: 'Rep directory is temporarily unavailable.',
+    })
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[sparkle-finder/reps] Public rep directory failed:',
+      expect.any(Error),
+    )
+    errorSpy.mockRestore()
   })
 })
