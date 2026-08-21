@@ -4,6 +4,17 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 21, 2026 - Message Center automation audit and Brittany domain-handoff preparation
+
+- Audited the production Message Center automations without mutating production: verified the daily cron's `CRON_SECRET` boundary, both required migrations, signup/resource triggers and functions, and a clean outbox (no overdue retryable, failed, or stale-processing rows). The focused feature suite passed 83 tests. Current active-rep time zones are Eastern (12) and Central (1), so the existing daily 18:00 UTC run is currently safe for the US-only audience; reassess before adding farther-west or non-US time zones.
+- Corrected the prior documentation mistake: the active Control Center list is now formally **Task List**, and Louis's references to a “task list” or “bug tracker” always mean that live operator list, not the Git-tracked vault. The UI terminology update was committed as `05486c8b`, passed five focused tests, and was manually released as `dpl_7AjjD1gQB8WMV4gbF21WEeAjw73c` with www/apex confirmation.
+- Added live Control Center Task List items for Heather's recipe-card update and Live Queue connector verification; Brittany's GoDaddy delegate/domain-reset instructions, Workspace/customer-site handoff audit, and Team Management/New Rep Onboarding smoke; and changed the GoDaddy task to in progress after the research.
+- The Gmail connector was reconnected and verified as `louis@neonrabbit.net`. Created and then revised an **unsent** Brittany draft to `braxtonsherri33@gmail.com`: **A quick GoDaddy step so we can connect your new Sparkle Suite site**. It gives the exact delegate identity: Louis Chapman / `louis@neonrabbit.net`, with Domains Only and transfer-action permissions. No email was sent.
+- Official GoDaddy guidance confirms that only unaccepted invites expire in 48–72 hours; accepted delegate access continues until the account owner removes or changes it. Louis manually confirmed current DNS-management access for `BrittWithBling.com`. Brittany must retain final approval of an incoming account/domain transfer.
+- Browser-control evidence: the current Chrome runtime bootstrap again failed before preflight tab discovery with the same trusted-RPC dependency-path failure. The direct local audit found the extension installed in Chrome Profile 2, a valid registry key/manifest, and `chrome\\latest` resolving to `26.818.21641`. Do not request another restart or misattribute this to GoDaddy. The requested PC-control fallback remained read-only; it reached GoDaddy Products but its Delegate Access URL required a separate visible sign-in, which Louis completed himself.
+
+---
+
 ## August 18, 2026 - Message Center closeout and Codex browser runtime lesson
 
 - Confirmed the August 17 Message Center/Resource Library release is already documented as the live baseline. No application, database, user-account, or production mutation occurred in this follow-up session.

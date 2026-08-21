@@ -1,5 +1,23 @@
 # Decision Log
 
+## August 21, 2026 - Control Center Task List is the operational source of truth
+
+**Use the live operator list, not Open Brain, for active work tracking**
+
+When Louis says “Task List” or “bug tracker,” add or update the active durable list in the live Sparkle Suite Control Center. `vault\\open-items.md` is a separate project-memory backlog and must not be substituted unless he explicitly requests that document. The visible Control Center label is **Task List**.
+
+## August 21, 2026 - Gmail identity gate and GoDaddy handoff boundary
+
+**Verify mailbox identity before every email operation**
+
+Use Gmail only after `get_profile` confirms `louis@neonrabbit.net`. Do not use `louischapman1@gmail.com` as a substitute and do not spoof the From address. The intended connector is now correctly attached; an unsent Brittany GoDaddy-instructions draft exists and may be edited or sent only with Louis's explicit instruction.
+
+**Delegate access assists preparation; Brittany keeps ownership approval**
+
+Brittany should invite **Louis Chapman** (`louis@neonrabbit.net`) as a GoDaddy **Domains Only** delegate with transfer actions. Delegate access is persistent after acceptance until the owner changes or removes it; pending invites expire in 48–72 hours. A delegate cannot accept an incoming GoDaddy domain transfer for the account owner, so Brittany must complete final approval herself. Louis has manually confirmed existing DNS-management access for `BrittWithBling.com`.
+
+---
+
 ## August 18, 2026 - In-app browser failure is not a user-restart problem
 
 **Preserve the requested browser surface while the runtime is broken**

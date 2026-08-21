@@ -1,5 +1,18 @@
 # Project State
 
+## August 21, 2026 Session - Message Center audit, Control Center Task List, and Brittany handoff prep
+
+- **Message Center automations audited healthy:** the daily recovery endpoint remains protected by `CRON_SECRET`; both required Message Center migrations are present; the customer-signup and resource-publication database triggers/functions are installed; and the outbox had no overdue retryable, failed, or stale-processing work. Focused automation coverage passed (83 tests). Current active-rep time zones are 12 `America/New_York` and 1 `America/Chicago`, so the 18:00 UTC daily run covers the present US-only audience. Revisit the schedule before adding a far-west or non-US rep.
+- **Control Center terminology is now durable:** Louis's “Task List” and “bug tracker” mean the active, durable Task List inside the live Sparkle Suite Control Center—not `vault\\open-items.md`. The Control Center labels were renamed accordingly and released in exact commit `05486c8b` as production deployment `dpl_7AjjD1gQB8WMV4gbF21WEeAjw73c`.
+- **Current operator tasks were added to the live Control Center Task List:** finish Heather's recipe-card updates using her new images; verify Heather's Live Queue Chrome connector; research and write Brittany's GoDaddy delegate/domain-reset instructions; complete Brittany's Workspace/customer-site handoff audit; and smoke-test Team Management plus generated New Rep Onboarding sites. The GoDaddy-instructions task is `in_progress`; the others remain open.
+- **Gmail connection corrected and safe draft created:** Gmail now verifies as `louis@neonrabbit.net`, not the former `louischapman1@gmail.com` connector. An unsent draft to Brittany Osborne (`braxtonsherri33@gmail.com`) titled **A quick GoDaddy step so we can connect your new Sparkle Suite site** instructs her to invite **Louis Chapman** at `louis@neonrabbit.net` with **Domains Only** access and transfer actions. Nothing was sent.
+- **GoDaddy delegate facts and current outcome:** accepted delegate access persists until the account owner removes or changes it; only a pending, unaccepted invitation expires after 48–72 hours. Louis manually signed in and confirmed he still has DNS-management access for `BrittWithBling.com`. Keep the final transfer acceptance with Brittany; delegates cannot accept an incoming GoDaddy domain transfer on the owner's behalf.
+- **Chrome-control regression remains a Codex runtime issue:** the current bundled Chrome runtime (`26.818.21641`) still failed before tab discovery with the trusted-RPC path error referring to `browser-service.mjs`. Read-only audit reconfirmed the Chrome extension is installed in Profile 2, the direct native-messaging registry key and manifest exist, and the Chrome plugin `latest` junction resolves to the current version. Do not frame this as a user restart/setup failure. PC-control fallback could read the already-signed-in GoDaddy Products page, but GoDaddy's Delegate Access route presented its own sign-in screen; Louis completed the check himself.
+
+**Last updated:** August 21, 2026
+
+---
+
 ## August 18, 2026 Session - Codex in-app browser recovery note
 
 - **Message Center release remains the current live baseline:** no application, database, account, or production state changed in this follow-up session.

@@ -9,7 +9,7 @@ future work.
 
 - [ ] **Complete authenticated synthetic Message Center browser acceptance after reviewer isolation is repaired** - database-backed reviewer smoke and local desktop/mobile rendered QA pass, but the live in-app browser retained a customer session instead of switching to `sparkle-reviewer+local`. Do not sign out or use Louis/customer accounts as a workaround. Repair the isolated reviewer-token/session path, then verify live unread/read/archive controls, report rendering, Resource filters/search, and reset.
 
-  - **New browser-runtime blocker (August 18):** after the bundled Codex Browser plugin refreshed to `26.814.41407`, in-app-browser bootstrap fails with a trusted-RPC dependency path error for `browser-service.mjs`, even after Louis restarted his computer. This is distinct from the reviewer-token/session-isolation issue. Do not ask Louis to restart again by default, do not substitute Chrome, and do not use an inherited personal/customer session; repair the Codex/plugin trusted-path handoff first.
+  - **Browser-runtime blocker (updated August 21):** after the bundled Codex Browser plugin refresh, in-app/Chrome bootstrap still fails before preflight with a trusted-RPC dependency path error for `browser-service.mjs`; the current Chrome bundle is `26.818.21641`. This is distinct from reviewer-token/session isolation. Extension installation, direct registry key/manifest, and the `latest` junction were reconfirmed. Do not ask Louis to restart again by default, do not substitute an authenticated personal/customer session, and treat this as a Codex trusted-path lifecycle defect until the runtime is repaired.
 
 - [ ] **Add designated-agent identity management before inviting internal agents to publish** - the sender/capability registry and application-owned publishing boundary are live, but the launch console is owner-authenticated and automations are the only non-owner active senders. Add per-agent Control Center identities, sender attribution, capability assignment/revocation, and audit UI before giving any designated agent access; never share the owner credential.
 
@@ -335,7 +335,7 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Tools and Integrations
 
-- [ ] **Reconnect Gmail to Louis's Neon Rabbit mailbox** - the current Gmail connector profile is `louischapman1@gmail.com`, but Louis needs `louis@neonrabbit.net`. Disconnect the former and connect the latter through the integration UI before any email work. Once confirmed, search Heather's messages and attachments for The Perfect Oatmeal Cookie, Cheesy Tortilla Soup, Soft and Fluffy Dinner Rolls, Mom's Apple Betty, and Banana Coffee Cake. Do not treat the prior no-match result from the wrong mailbox as evidence.
+- [ ] **Search Louis's Neon Rabbit Gmail for Heather's source recipes** - the Gmail connector was reconnected and verified as `louis@neonrabbit.net` on August 21. Search Heather's messages and attachments for The Perfect Oatmeal Cookie, Cheesy Tortilla Soup, Soft and Fluffy Dinner Rolls, Mom's Apple Betty, and Banana Coffee Cake. Do not treat the earlier no-match result from the former wrong mailbox as evidence.
 
 - [ ] **Launch customer messaging deliberately before re-enabling the SMS wallet** - Messages remains `Coming soon`; before exposing email/text actions or any SMS wallet/recharge UI, confirm provider readiness, consent/opt-out handling, support workflow, safe reviewer smoke, and user-facing copy.
 - [ ] **Google Meet transcription tool** — select a tool
