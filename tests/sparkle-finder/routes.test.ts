@@ -723,6 +723,8 @@ describe("Sparkle Finder hub routes", () => {
           ["rep-later", 2],
           ["rep-no-show", 5],
         ]),
+        now: new Date("2026-07-03T18:10:00-04:00"),
+        status: "ready",
       }),
     );
 
@@ -751,15 +753,44 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Marketplace");
   });
 
-  it("explains the pre-onboarding Rep Directory without inventing live reps", () => {
-    const emptyDirectory = renderToStaticMarkup(renderRepsPageContent());
-    const emptySearch = renderToStaticMarkup(renderRepsPageContent({ query: "Taylor" }));
+  it("distinguishes a working empty Rep Directory from search misses and API outages", () => {
+    const emptyDirectory = renderToStaticMarkup(renderRepsPageContent({ status: "empty" }));
+    const emptySearch = renderToStaticMarkup(renderRepsPageContent({ query: "Taylor", status: "ready" }));
+    const unavailable = renderToStaticMarkup(renderRepsPageContent({ status: "unavailable" }));
 
-    expect(emptyDirectory).toContain("The Rep Directory is opening soon.");
-    expect(emptyDirectory).toContain("Sparkle Suite is welcoming its first reps this week.");
+    expect(emptyDirectory).toContain("No public rep profiles are available yet.");
+    expect(emptyDirectory).toContain("Eligible Sparkle Suite reps will appear here automatically");
     expect(emptyDirectory).not.toContain("No reps match that search.");
     expect(emptySearch).toContain("No reps match that search.");
-    expect(emptySearch).not.toContain("The Rep Directory is opening soon.");
+    expect(emptySearch).not.toContain("No public rep profiles are available yet.");
+    expect(unavailable).toContain("The Rep Directory is temporarily unavailable.");
+    expect(unavailable).toContain("Your account and saved favorites are safe.");
+  });
+
+  it("renders functional Rep Directory filters and honest degraded favorite-count copy", () => {
+    const filtered = renderToStaticMarkup(renderRepsPageContent({ status: "ready", view: "favorites" }));
+    const countsUnavailable = renderToStaticMarkup(
+      renderRepsPageContent({
+        favoriteCountsAvailable: false,
+        reps: [{
+          id: "rep-one",
+          businessName: "One Sparkle",
+          displayName: "Rep One",
+          avatarUrl: "",
+          state: "",
+          siteUrl: "",
+          nextLiveShowId: "",
+        }],
+        status: "ready",
+      }),
+    );
+
+    expect(filtered).toContain('aria-current="page"');
+    expect(filtered).toContain('href="/reps?view=live_now"');
+    expect(filtered).toContain("You have not saved any favorite reps yet.");
+    expect(countsUnavailable).toContain("Live and upcoming reps appear first.");
+    expect(countsUnavailable).not.toContain("Ranked by customer favorites.");
+    expect(countsUnavailable).not.toContain("0 favorites");
   });
 
   it("renders favorite reps dashboards for free and Silver customers", () => {

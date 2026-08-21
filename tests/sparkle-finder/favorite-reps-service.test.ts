@@ -1,7 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   getFavoriteRepCardsForUser,
+  getPersistedFavoriteRepCounts,
   getPersistedFavoriteRepCardsForUser,
+  getPersistedFavoriteRepIdsForUser,
   getFavoriteRepIdsForUser,
   isRepFavoritedByUser,
   sortFavoriteRepCards,
@@ -208,6 +210,51 @@ describe("Favorite reps service", () => {
         userId: "user-123",
         hasSilverAccess: false,
       }),
+    ).resolves.toBeNull();
+  });
+
+  it("reads only favorite rep ids for directory heart state", async () => {
+    const client = createFavoriteReadClient({
+      favorites: [
+        { rep_id: "rep-kelli", user_id: "user-123" },
+        { rep_id: "rep-kelli", user_id: "user-123" },
+        { rep_id: "rep-maya", user_id: "user-123" },
+      ],
+    });
+
+    await expect(getPersistedFavoriteRepIdsForUser({ supabase: client, userId: "user-123" })).resolves.toEqual([
+      "rep-kelli",
+      "rep-maya",
+    ]);
+    expect(client.readTables).toEqual(["sparkle_finder_favorite_reps"]);
+  });
+
+  it("reads bounded aggregate favorite counts without exposing customer identities", async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: [
+        { rep_id: "rep-kelli", favorite_count: "3" },
+        { rep_id: "rep-maya", favorite_count: 1 },
+        { rep_id: "rep-bad", favorite_count: -1 },
+      ],
+      error: null,
+    });
+    const tooLong = `rep-${"x".repeat(201)}`;
+
+    const counts = await getPersistedFavoriteRepCounts({ rpc }, [" rep-kelli ", "rep-kelli", "rep-maya", tooLong]);
+
+    expect(rpc).toHaveBeenCalledWith("get_sparkle_finder_rep_favorite_counts", {
+      p_rep_ids: ["rep-kelli", "rep-maya"],
+    });
+    expect(counts).toEqual(new Map([["rep-kelli", 3], ["rep-maya", 1]]));
+  });
+
+  it("distinguishes aggregate count failures from honest zero counts", async () => {
+    await expect(getPersistedFavoriteRepCounts({ rpc: vi.fn() }, [])).resolves.toEqual(new Map());
+    await expect(
+      getPersistedFavoriteRepCounts(
+        { rpc: vi.fn().mockResolvedValue({ data: null, error: { message: "unavailable" } }) },
+        ["rep-kelli"],
+      ),
     ).resolves.toBeNull();
   });
 });

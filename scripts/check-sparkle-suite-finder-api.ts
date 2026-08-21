@@ -15,6 +15,10 @@ type LiveShowsResponse = {
   shows?: unknown[];
 };
 
+type RepsResponse = {
+  reps?: unknown[];
+};
+
 const baseUrl = (
   process.env.SPARKLE_SUITE_FINDER_API_BASE_URL ??
   process.env.NEXT_PUBLIC_SPARKLE_SUITE_FINDER_API_BASE_URL ??
@@ -54,6 +58,16 @@ async function main() {
     }
   }
 
+  const reps = await readJson<RepsResponse>(`${baseUrl}/api/public/finder/reps?limit=200`, failures);
+
+  if (!Array.isArray(reps?.reps)) {
+    failures.push("Reps endpoint did not return a reps array.");
+  } else {
+    for (const [index, rep] of reps.reps.entries()) {
+      assertFinderRep(rep, `reps item ${index + 1}`, failures);
+    }
+  }
+
   if (failures.length > 0) {
     console.error("Sparkle Suite Finder API contract check failed:");
     for (const failure of failures) {
@@ -64,6 +78,7 @@ async function main() {
 
   const catalogItems = catalog?.items ?? [];
   const liveShowItems = liveShows?.shows ?? [];
+  const repItems = reps?.reps ?? [];
 
   console.log(`OK ${baseUrl}`);
   console.log(`CATALOG_ITEMS=${catalogItems.length}`);
@@ -71,10 +86,19 @@ async function main() {
   console.log(`FIRST_NAME=${firstItem?.designName ?? ""}`);
   console.log(`AVAILABILITY_MATCHES=${availabilityMatches.length}`);
   console.log(`LIVE_SHOWS=${liveShowItems.length}`);
+  console.log(`REPS=${repItems.length}`);
 }
 
 async function readJson<T>(url: string, failures: string[]): Promise<T | null> {
-  const response = await fetch(url, { cache: "no-store" });
+  let response: Response;
+
+  try {
+    response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(10_000) });
+  } catch (error) {
+    failures.push(`${url} could not be reached: ${error instanceof Error ? error.message : String(error)}.`);
+    return null;
+  }
+
   const contentType = response.headers.get("content-type") ?? "";
 
   if (!response.ok) {
@@ -87,7 +111,12 @@ async function readJson<T>(url: string, failures: string[]): Promise<T | null> {
     return null;
   }
 
-  return (await response.json()) as T;
+  try {
+    return (await response.json()) as T;
+  } catch {
+    failures.push(`${url} returned invalid JSON.`);
+    return null;
+  }
 }
 
 function assertAvailabilityMatch(value: unknown, label: string, failures: string[]) {
@@ -123,6 +152,96 @@ function assertFinderShow(value: unknown, label: string, failures: string[]) {
 
   if (record.status !== "live" && record.status !== "scheduled") {
     failures.push(`${label} has invalid status.`);
+  }
+}
+
+function assertFinderRep(value: unknown, label: string, failures: string[]) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    failures.push(`${label} is not an object.`);
+    return;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  for (const field of ["repId", "displayName"]) {
+    if (typeof record[field] !== "string" || record[field].trim() === "") {
+      failures.push(`${label} is missing ${field}.`);
+    }
+  }
+
+  for (const field of ["businessName", "avatarUrl", "state", "customerSiteUrl", "repBoardUrl"]) {
+    if (record[field] !== null && record[field] !== undefined && typeof record[field] !== "string") {
+      failures.push(`${label} has invalid ${field}.`);
+    }
+  }
+
+
+  assertOptionalHttpsUrl(record.avatarUrl, `${label} avatarUrl`, failures);
+  assertOptionalSuiteUrl(record.customerSiteUrl, `${label} customerSiteUrl`, failures);
+  assertOptionalSuiteUrl(record.repBoardUrl, `${label} repBoardUrl`, failures);
+
+  if (record.nextShow !== null && record.nextShow !== undefined) {
+    assertRepDirectoryShow(record.nextShow, `${label} nextShow`, failures);
+  }
+}
+
+function assertRepDirectoryShow(value: unknown, label: string, failures: string[]) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    failures.push(`${label} is not an object.`);
+    return;
+  }
+
+  const record = value as Record<string, unknown>;
+  const showId = record.showId ?? record.id;
+  const title = record.showName ?? record.title;
+
+  if (typeof showId !== "string" || showId.trim() === "") failures.push(`${label} is missing showId.`);
+  if (typeof title !== "string" || title.trim() === "") failures.push(`${label} is missing title.`);
+  if (typeof record.startsAt !== "string" || Number.isNaN(Date.parse(record.startsAt))) {
+    failures.push(`${label} has invalid startsAt.`);
+  }
+  if (record.status !== "live" && record.status !== "scheduled") failures.push(`${label} has invalid status.`);
+
+  assertOptionalSuiteUrl(
+    record.customerSiteUrl ?? record.customerShowUrl,
+    `${label} customerShowUrl`,
+    failures,
+  );
+}
+
+function assertOptionalHttpsUrl(value: unknown, label: string, failures: string[]) {
+  if (value === null || value === undefined || value === "") return;
+
+  try {
+    const url = new URL(String(value));
+    if (url.protocol !== "https:" || url.username || url.password || url.port) {
+      failures.push(`${label} is not a safe HTTPS URL.`);
+    }
+  } catch {
+    failures.push(`${label} is not a valid URL.`);
+  }
+}
+
+function assertOptionalSuiteUrl(value: unknown, label: string, failures: string[]) {
+  if (value === null || value === undefined || value === "") return;
+
+  assertOptionalHttpsUrl(value, label, failures);
+
+  try {
+    const candidate = new URL(String(value));
+    const suite = new URL(baseUrl);
+    const allowedHosts = new Set([
+      suite.hostname.toLowerCase(),
+      suite.hostname.toLowerCase().startsWith("www.")
+        ? suite.hostname.toLowerCase().slice(4)
+        : `www.${suite.hostname.toLowerCase()}`,
+    ]);
+
+    if (!allowedHosts.has(candidate.hostname.toLowerCase())) {
+      failures.push(`${label} is not hosted by Sparkle Suite.`);
+    }
+  } catch {
+    // The general URL validator records the actionable error.
   }
 }
 

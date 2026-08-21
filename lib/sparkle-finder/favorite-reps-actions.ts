@@ -37,5 +37,5 @@ export function normalizeFavoriteRepNote(value: unknown): string {
 }
 
 export function normalizeRepId(value: unknown): string {
-  return String(value ?? "").trim();
+  return String(value ?? "").trim().slice(0, 200);
 }

@@ -1,5 +1,11 @@
 # Sparkle Finder Decisions
 
+## 2026-08-21 - Rep Discovery Is Automatic And Finder Owns Favorites
+
+Decision: The Reps directory automatically consumes eligible public rep profiles from Sparkle Suite. A rep does not need a Finder account, claim code, board, or scheduled show to appear. Finder claim credentials are only for a rep who wants to use Finder personally. Sparkle Finder owns customer favorite rows and aggregate favorite counts; Sparkle Suite must not supply Finder favorite totals.
+
+Reason: Rep discovery is a shared-data integration, not a second onboarding funnel. Keeping favorite identities private inside Finder preserves the separate customer auth boundary while still allowing anonymous aggregate ranking for signed-in Finder customers.
+
 ## 2026-07-04 - Bling Vault Shares The App Canvas
 
 Decision: The signed-in Bling Vault/collection section should use the same mobile-first app canvas as the opening home and guided Find sections. It should not expand back into the older wide dashboard layout on desktop.

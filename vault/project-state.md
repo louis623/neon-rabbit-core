@@ -9,9 +9,12 @@ Future Codex sessions should open this repo directly with Workspace write enable
 ## Current Live Target
 
 - Dev site: `https://sparkle-finder-dev.vercel.app`
+- Customer domain: `https://yoursparklefinder.com`
 - Production-style repo work should happen from this implementation repo, not the old binder.
 
 ## Recent Session Context
+
+- August 21, 2026: The Finder Reps directory now treats Sparkle Suite as the automatic source of public rep profiles and distinguishes a healthy empty feed from an unavailable integration. Finder-owned aggregate favorite counts are private, bounded, and database-backed; the Free five-rep cap is also enforced by RLS. The Finder side is ready, but the live Suite route `/api/public/finder/reps` still returns `404` and remains the blocking cross-repo dependency before real reps can appear.
 
 - Sparkle Finder silver showcase workflow was simplified for phone-first use.
 - Advanced showcase/profile controls were removed from the main customer flow in favor of simple cards, simple panels, and Nic-Nac-led help.

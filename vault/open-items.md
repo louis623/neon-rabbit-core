@@ -1,5 +1,8 @@
 # Sparkle Finder Open Items
 
+- Must fix in Sparkle Suite: implement and deploy `GET /api/public/finder/reps` so it returns HTTP `200` JSON with `reps: []` when no reps qualify and automatically includes active, discoverable, non-demo reps even when they have no board, show, or Finder account. The Finder health check now intentionally fails while the live Suite route returns `404`.
+- After the Suite Reps endpoint is live, rerun `npm exec tsx scripts/check-sparkle-suite-finder-api.ts` and a real signed-in production smoke on `https://yoursparklefinder.com/reps`; confirm the first eligible Suite rep appears automatically and favorite add/remove persists.
+
 - Future Codex sessions should be opened from `C:\Users\louis\sparkle-finder-repo` with Workspace write enabled.
 - Keep new durable project memory in repo-local `vault/`.
 - Keep new implementation plans, handoffs, decisions, research, and deployment notes in repo-local `docs/`.

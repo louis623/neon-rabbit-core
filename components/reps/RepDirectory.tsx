@@ -3,15 +3,18 @@ import { CalendarDays, ExternalLink, Search } from "lucide-react";
 import { FavoriteRepHeartButton } from "@/components/favorites/FavoriteRepHeartButton";
 import { CustomerShowTime } from "@/components/live/CustomerShowTime";
 import { getLocalRepBoardHref, getLocalRepHref } from "@/lib/sparkle-finder/route-hrefs";
-import type { RepDirectoryCard } from "@/lib/sparkle-finder/rep-directory";
+import type { RepDirectoryCard, RepDirectoryView } from "@/lib/sparkle-finder/rep-directory";
+import type { FinderRepDirectoryStatus } from "@/lib/sparkle-finder/catalog-service";
 
 type RepDirectoryProps = {
   cards: RepDirectoryCard[];
+  favoriteCountsAvailable: boolean;
   query?: string;
+  status: FinderRepDirectoryStatus;
+  view: RepDirectoryView;
 };
 
-export function RepDirectory({ cards, query = "" }: RepDirectoryProps) {
-  const favoriteCount = cards.filter((card) => card.isFavorited).length;
+export function RepDirectory({ cards, favoriteCountsAvailable, query = "", status, view }: RepDirectoryProps) {
 
   return (
     <section className="grid gap-5" aria-labelledby="sparkle-suite-reps-heading">
@@ -27,41 +30,64 @@ export function RepDirectory({ cards, query = "" }: RepDirectoryProps) {
           <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
             Browse reps, check show times, and save your favorites.
           </p>
-          <p className="mt-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">Ranked by customer favorites.</p>
+          <p className="mt-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
+            {favoriteCountsAvailable ? "Ranked by customer favorites." : "Live and upcoming reps appear first."}
+          </p>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2" aria-label="Rep directory filters">
-        <StatusChip label="Live now" />
-        <StatusChip label="Live today" />
-        <StatusChip label="Upcoming" />
-        <StatusChip label={`Your favorites${favoriteCount > 0 ? ` (${favoriteCount})` : ""}`} />
+        <StatusChip currentView={view} label="All reps" query={query} view="all" />
+        <StatusChip currentView={view} label="Live now" query={query} view="live_now" />
+        <StatusChip currentView={view} label="Live today" query={query} view="live_today" />
+        <StatusChip currentView={view} label="Upcoming" query={query} view="upcoming" />
+        <StatusChip
+          currentView={view}
+          label="Your favorites"
+          query={query}
+          view="favorites"
+        />
       </div>
 
       {cards.length > 0 ? (
         <div className="grid gap-3">
           {cards.map((card) => (
-            <RepDirectoryListCard card={card} key={card.repId} />
+            <RepDirectoryListCard card={card} favoriteCountsAvailable={favoriteCountsAvailable} key={card.repId} />
           ))}
         </div>
       ) : (
         <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
-          {query ? (
-            <p className="text-sm font-semibold text-[var(--sparkle-ink-muted)]">No reps match that search.</p>
-          ) : (
+          {status === "unavailable" ? (
             <>
               <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
-                The Rep Directory is opening soon.
+                The Rep Directory is temporarily unavailable.
               </h2>
               <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-                Sparkle Suite is welcoming its first reps this week. Their profiles and live show times will appear here as they are onboarded.
+                Sparkle Finder could not reach the live Sparkle Suite rep list. Your account and saved favorites are safe.
+              </p>
+              <Link className="mt-4 inline-flex min-h-11 items-center text-sm font-bold text-[var(--sparkle-rose)] hover:underline" href="/reps">
+                Try again
+              </Link>
+            </>
+          ) : status === "empty" ? (
+            <>
+              <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+                No public rep profiles are available yet.
+              </h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+                Eligible Sparkle Suite reps will appear here automatically, including reps who have not added a board or scheduled a show yet.
               </p>
             </>
+          ) : query ? (
+            <p className="text-sm font-semibold text-[var(--sparkle-ink-muted)]">No reps match that search.</p>
+          ) : (
+            <p className="text-sm font-semibold text-[var(--sparkle-ink-muted)]">{getFilteredEmptyMessage(view)}</p>
           )}
         </div>
       )}
 
       <form action="/reps" className="grid gap-2 border-t border-[var(--sparkle-border)] pt-4">
+        {view !== "all" ? <input name="view" type="hidden" value={view} /> : null}
         <label className="text-sm font-bold text-[var(--sparkle-plum-deep)]" htmlFor="rep-directory-search">
           Search reps
         </label>
@@ -84,15 +110,44 @@ export function RepDirectory({ cards, query = "" }: RepDirectoryProps) {
   );
 }
 
-function StatusChip({ label }: { label: string }) {
+function StatusChip({
+  currentView,
+  label,
+  query,
+  view,
+}: {
+  currentView: RepDirectoryView;
+  label: string;
+  query: string;
+  view: RepDirectoryView;
+}) {
+  const params = new URLSearchParams();
+  if (view !== "all") params.set("view", view);
+  if (query) params.set("q", query);
+  const href = params.size > 0 ? `/reps?${params.toString()}` : "/reps";
+
   return (
-    <span className="inline-flex min-h-9 items-center rounded-full border border-[rgba(238,44,155,0.2)] bg-[var(--sparkle-blush-bg)] px-3 text-xs font-extrabold text-[var(--sparkle-plum-deep)]">
+    <Link
+      aria-current={currentView === view ? "page" : undefined}
+      className={`inline-flex min-h-11 items-center rounded-full border px-3 text-xs font-extrabold ${
+        currentView === view
+          ? "border-[var(--sparkle-plum)] bg-[var(--sparkle-plum)] text-white"
+          : "border-[rgba(238,44,155,0.2)] bg-[var(--sparkle-blush-bg)] text-[var(--sparkle-plum-deep)]"
+      }`}
+      href={href}
+    >
       {label}
-    </span>
+    </Link>
   );
 }
 
-function RepDirectoryListCard({ card }: { card: RepDirectoryCard }) {
+function RepDirectoryListCard({
+  card,
+  favoriteCountsAvailable,
+}: {
+  card: RepDirectoryCard;
+  favoriteCountsAvailable: boolean;
+}) {
   const repHref = card.customerSiteUrl ? getLocalRepHref(card.customerSiteUrl) : "";
   const boardHref = card.repBoardUrl ? getLocalRepBoardHref(card.repBoardUrl) : "";
 
@@ -105,9 +160,11 @@ function RepDirectoryListCard({ card }: { card: RepDirectoryCard }) {
             <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
               {card.displayName}
             </h2>
-            <span className="inline-flex min-h-7 items-center rounded-full border border-[rgba(238,44,155,0.2)] bg-[var(--sparkle-blush-bg)] px-2 text-xs font-extrabold text-[var(--sparkle-plum-deep)]">
-              {formatFavoriteCount(card.favoriteCount)}
-            </span>
+            {favoriteCountsAvailable ? (
+              <span className="inline-flex min-h-7 items-center rounded-full border border-[rgba(238,44,155,0.2)] bg-[var(--sparkle-blush-bg)] px-2 text-xs font-extrabold text-[var(--sparkle-plum-deep)]">
+                {formatFavoriteCount(card.favoriteCount)}
+              </span>
+            ) : null}
             {card.state ? (
               <span className="inline-flex min-h-7 items-center rounded-full border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-2 text-xs font-extrabold text-[var(--sparkle-ink-muted)]">
                 {card.state}
@@ -149,6 +206,21 @@ function RepDirectoryListCard({ card }: { card: RepDirectoryCard }) {
       </div>
     </article>
   );
+}
+
+function getFilteredEmptyMessage(view: RepDirectoryView): string {
+  switch (view) {
+    case "favorites":
+      return "You have not saved any favorite reps yet.";
+    case "live_now":
+      return "No reps are live right now.";
+    case "live_today":
+      return "No reps have a live show scheduled for today.";
+    case "upcoming":
+      return "No upcoming rep shows are listed right now.";
+    case "all":
+      return "No public rep profiles are available yet.";
+  }
 }
 
 function RepAvatar({ alt, name, src }: { alt: string; name: string; src: string | null }) {

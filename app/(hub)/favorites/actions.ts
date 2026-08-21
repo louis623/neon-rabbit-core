@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentSparkleFinderAccount, type CurrentSparkleFinderAccountState } from "@/lib/sparkle-finder/account-service";
 import { normalizeFavoriteRepNote, normalizeRepId } from "@/lib/sparkle-finder/favorite-reps-actions";
+import { getFinderRepDirectoryData, shouldUseCatalogFixtureFallback } from "@/lib/sparkle-finder/catalog-service";
 import {
   deleteFavoriteRepForAccount,
   persistFavoriteRepForAccount,
@@ -41,11 +42,27 @@ export async function favoriteRepAction(
     };
   }
 
+  const directory = await getFinderRepDirectoryData({
+    useFixtureFallback: shouldUseCatalogFixtureFallback(),
+  });
+  const rep = directory.reps.find((candidate) => candidate.id === repId);
+
+  if (directory.status === "unavailable" || !rep) {
+    return {
+      status: "error",
+      message: "Favorite rep is unavailable.",
+    };
+  }
+
+  const repBoardUrl = directory.boardListings.find(
+    (listing) => listing.repId === repId && listing.status === "available",
+  )?.boardUrl ?? "";
+
   const result = await persistFavoriteRepForAccount(verified.client, verified.accountState, {
     repId,
-    repDisplayName: cleanFormText(formData.get("repDisplayName")),
-    repSiteUrl: cleanFormText(formData.get("repSiteUrl")),
-    repBoardUrl: cleanFormText(formData.get("repBoardUrl")),
+    repDisplayName: rep.displayName,
+    repSiteUrl: rep.siteUrl,
+    repBoardUrl,
   });
 
   if (!result.ok) {
@@ -173,10 +190,6 @@ function revalidateFavoriteRepPaths() {
   revalidatePath("/live-shows");
   revalidatePath("/rep-boards");
   revalidatePath("/reps");
-}
-
-function cleanFormText(value: FormDataEntryValue | null): string {
-  return String(value ?? "").trim();
 }
 
 function getFavoriteRepFailureMessage(reason: string): string {

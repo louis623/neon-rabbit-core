@@ -16,6 +16,10 @@ export type SupabaseFavoriteRepsReadClient = {
   };
 };
 
+export type SupabaseFavoriteRepCountsClient = {
+  rpc: (functionName: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
+};
+
 type FavoriteRepDetailRow = {
   favorite_rep_id?: unknown;
   notes?: unknown;
@@ -39,6 +43,71 @@ export function getFavoriteRepIdsForUser(userId: string): Set<string> {
       .filter((favorite) => favorite.userId === userId)
       .map((favorite) => favorite.repId),
   );
+}
+
+export function getFavoriteRepCounts(): Map<string, number> {
+  const counts = new Map<string, number>();
+
+  for (const favorite of sparkleFinderFavoriteReps) {
+    counts.set(favorite.repId, (counts.get(favorite.repId) ?? 0) + 1);
+  }
+
+  return counts;
+}
+
+export async function getPersistedFavoriteRepCounts(
+  supabase: SupabaseFavoriteRepCountsClient,
+  repIds: readonly string[],
+): Promise<Map<string, number> | null> {
+  const safeRepIds = [...new Set(repIds.map((repId) => repId.trim()).filter((repId) => repId.length > 0 && repId.length <= 200))].slice(0, 200);
+
+  if (safeRepIds.length === 0) {
+    return new Map();
+  }
+
+  try {
+    const result = await supabase.rpc("get_sparkle_finder_rep_favorite_counts", { p_rep_ids: safeRepIds });
+
+    if (result.error || !Array.isArray(result.data)) {
+      return null;
+    }
+
+    const counts = new Map<string, number>();
+
+    for (const row of result.data) {
+      const record = asRecord(row);
+      const repId = readString(record?.rep_id);
+      const favoriteCount = readNonNegativeInteger(record?.favorite_count);
+
+      if (repId && favoriteCount !== null) {
+        counts.set(repId, favoriteCount);
+      }
+    }
+
+    return counts;
+  } catch {
+    return null;
+  }
+}
+
+export async function getPersistedFavoriteRepIdsForUser(input: {
+  supabase: SupabaseFavoriteRepsReadClient;
+  userId: string;
+}): Promise<string[] | null> {
+  try {
+    const result = await input.supabase
+      .from("sparkle_finder_favorite_reps")
+      .select("rep_id")
+      .eq("user_id", input.userId);
+
+    if (result.error || !Array.isArray(result.data)) {
+      return null;
+    }
+
+    return [...new Set(result.data.map((row) => readString(asRecord(row)?.rep_id)).filter(Boolean))];
+  } catch {
+    return null;
+  }
 }
 
 export function isRepFavoritedByUser(input: { userId: string; repId: string }): boolean {
@@ -212,4 +281,14 @@ function readString(value: unknown): string {
 
 function readNullableString(value: unknown): string | null {
   return typeof value === "string" && value ? value : null;
+}
+
+function readNonNegativeInteger(value: unknown): number | null {
+  const parsed = typeof value === "number" ? value : typeof value === "string" ? Number(value) : Number.NaN;
+
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return null;
+  }
+
+  return Math.floor(parsed);
 }

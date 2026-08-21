@@ -329,7 +329,6 @@ describe("Sparkle Finder public API catalog service", () => {
             state: "OH",
             customerSiteUrl: "https://suite.example/reps/demo",
             repBoardUrl: "https://suite.example/reps/demo/board",
-            favoriteCount: 7,
           }),
         ],
       }),
@@ -371,7 +370,25 @@ describe("Sparkle Finder public API catalog service", () => {
         boardUrl: "https://suite.example/reps/demo/board",
       }),
     ]);
-    expect(data.favoriteCounts.get("rep-suite-demo")).toBe(7);
+    expect(data.status).toBe("ready");
+  });
+
+  it("sends Rep Directory searches upstream and deduplicates repeated rep ids", async () => {
+    const repeated = apiRepDirectoryItem({ repId: "rep-repeat", displayName: "Repeat Rep" });
+    const fetchReps = vi.fn(async () => jsonResponse({ reps: [repeated, repeated] }));
+
+    const data = await getFinderRepDirectoryData({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchReps,
+      query: "Repeat Rep",
+      useFixtureFallback: false,
+    });
+
+    expect(fetchReps).toHaveBeenCalledWith(
+      "https://suite.example/api/public/finder/reps?limit=200&query=Repeat+Rep",
+      { cache: "no-store" },
+    );
+    expect(data.reps.map((rep) => rep.id)).toEqual(["rep-repeat"]);
   });
 
   it("can disable fixture fallback when rep directory data is unavailable", async () => {
@@ -385,10 +402,81 @@ describe("Sparkle Finder public API catalog service", () => {
 
     expect(data).toEqual({
       boardListings: [],
-      favoriteCounts: new Map(),
       liveShows: [],
       reps: [],
+      status: "unavailable",
     });
+  });
+
+  it("distinguishes a working empty rep feed from an unavailable feed", async () => {
+    const data = await getFinderRepDirectoryData({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () => jsonResponse({ reps: [] })),
+      useFixtureFallback: false,
+    });
+
+    expect(data).toEqual({
+      boardListings: [],
+      liveShows: [],
+      reps: [],
+      status: "empty",
+    });
+  });
+
+  it("treats a missing reps array as an unavailable contract", async () => {
+    const data = await getFinderRepDirectoryData({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () => jsonResponse({ items: [] })),
+      useFixtureFallback: false,
+    });
+
+    expect(data.status).toBe("unavailable");
+  });
+
+  it("treats a nonempty all-malformed rep feed as unavailable", async () => {
+    const data = await getFinderRepDirectoryData({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () => jsonResponse({ reps: [null, {}, { repId: "rep-without-name" }] })),
+      useFixtureFallback: false,
+    });
+
+    expect(data.status).toBe("unavailable");
+    expect(data.reps).toEqual([]);
+  });
+
+  it("skips malformed reps, drops unsafe links, and preserves a valid rep without a valid show", async () => {
+    const data = await getFinderRepDirectoryData({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () =>
+        jsonResponse({
+          reps: [
+            null,
+            { repId: "", displayName: "Missing ID" },
+            apiRepDirectoryItem({
+              repId: "rep-safe",
+              avatarUrl: "http://cdn.example.test/avatar.jpg",
+              customerSiteUrl: "javascript:alert(1)",
+              repBoardUrl: "https://evil.example/board",
+              nextShow: {
+                id: "bad-show",
+                title: "Bad Date",
+                startsAt: "not-a-date",
+                status: "scheduled",
+                customerShowUrl: "https://suite.example/shows/bad",
+              },
+            }),
+          ],
+        }),
+      ),
+      useFixtureFallback: false,
+    });
+
+    expect(data.status).toBe("ready");
+    expect(data.reps).toEqual([
+      expect.objectContaining({ id: "rep-safe", avatarUrl: "", siteUrl: "", nextLiveShowId: "" }),
+    ]);
+    expect(data.boardListings).toEqual([]);
+    expect(data.liveShows).toEqual([]);
   });
 
   it("keeps reps visible when only a board link is available", async () => {
@@ -543,7 +631,6 @@ function apiRepDirectoryItem(
     state: "OH",
     customerSiteUrl: "https://suite.example/reps/demo",
     repBoardUrl: "https://suite.example/reps/demo/board",
-    favoriteCount: 1,
     nextShow: {
       showId: "show-demo",
       showName: "Demo Glow Show",

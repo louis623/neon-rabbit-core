@@ -1,5 +1,4 @@
 import {
-  sparkleFinderFavoriteReps,
   sparkleFinderJewelryItems,
   sparkleFinderLiveShows,
   sparkleFinderRepBoardListings,
@@ -52,7 +51,6 @@ export type SparkleSuiteFinderRepDirectoryItem = {
   state: string | null;
   customerSiteUrl: string | null;
   repBoardUrl: string | null;
-  favoriteCount?: number | null;
   nextShow: SparkleSuiteFinderRepDirectoryShow | null;
 };
 
@@ -78,8 +76,9 @@ export type FinderRepDirectoryData = {
   reps: RepSummary[];
   liveShows: LiveShow[];
   boardListings: RepBoardListing[];
-  favoriteCounts: Map<string, number>;
+  status: FinderRepDirectoryStatus;
 };
+export type FinderRepDirectoryStatus = "ready" | "empty" | "unavailable";
 export type CatalogFacetKey = "collections" | "materials" | "stones" | "types" | "labels" | "years";
 
 export type CatalogFacetOption = {
@@ -126,7 +125,7 @@ type LiveShowsResponse = {
 };
 
 type RepDirectoryResponse = {
-  reps?: SparkleSuiteFinderRepDirectoryItem[];
+  reps?: unknown;
 };
 
 type SparkleSuiteFinderAvailabilityMatch = {
@@ -281,6 +280,7 @@ export async function getFinderRepDirectoryData(options: CatalogReadOptions = {}
   }
 
   const params = new URLSearchParams({ limit: String(options.limit ?? defaultRepDirectoryLimit) });
+  appendCatalogFilterParam(params, "query", options.query);
 
   try {
     const payload = await fetchJson<RepDirectoryResponse>(
@@ -288,7 +288,11 @@ export async function getFinderRepDirectoryData(options: CatalogReadOptions = {}
       options,
     );
 
-    return mapRepDirectoryItems(payload.reps);
+    if (!Array.isArray(payload.reps)) {
+      throw new Error("Sparkle Suite Finder Reps API returned an invalid payload");
+    }
+
+    return mapRepDirectoryItems(payload.reps, apiBaseUrl);
   } catch {
     return fallbackRepDirectoryData(options);
   }
@@ -358,15 +362,134 @@ function mapLiveShows(shows: SparkleSuiteFinderLeadShow[] | undefined): FinderLi
   return (shows ?? []).filter((show) => Boolean(show.showId && show.showName && show.repFirstName && show.startsAt && show.customerSiteUrl));
 }
 
-function mapRepDirectoryItems(items: SparkleSuiteFinderRepDirectoryItem[] | undefined): FinderRepDirectoryData {
-  const directoryItems = (items ?? []).filter((item) => Boolean(item.repId && item.displayName));
+function mapRepDirectoryItems(items: unknown[], apiBaseUrl: string): FinderRepDirectoryData {
+  const seenRepIds = new Set<string>();
+  const directoryItems = items.flatMap((item) => {
+    const normalized = normalizeRepDirectoryItem(item, apiBaseUrl);
+
+    if (!normalized || seenRepIds.has(normalized.repId)) {
+      return [];
+    }
+
+    seenRepIds.add(normalized.repId);
+    return [normalized];
+  });
 
   return {
     reps: directoryItems.map(mapRepDirectoryRep),
     liveShows: directoryItems.flatMap(mapRepDirectoryLiveShow),
     boardListings: directoryItems.flatMap(mapRepDirectoryBoardListing),
-    favoriteCounts: mapRepDirectoryFavoriteCounts(directoryItems),
+    status: directoryItems.length > 0 ? "ready" : items.length === 0 ? "empty" : "unavailable",
   };
+}
+
+function normalizeRepDirectoryItem(value: unknown, apiBaseUrl: string): SparkleSuiteFinderRepDirectoryItem | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const repId = readRequiredString(record.repId);
+  const displayName = readRequiredString(record.displayName);
+
+  if (!repId || !displayName) {
+    return null;
+  }
+
+  return {
+    repId,
+    displayName,
+    businessName: readOptionalString(record.businessName),
+    avatarUrl: readHttpsUrl(record.avatarUrl),
+    state: readOptionalString(record.state),
+    customerSiteUrl: readSuitePublicUrl(record.customerSiteUrl, apiBaseUrl),
+    repBoardUrl: readSuitePublicUrl(record.repBoardUrl, apiBaseUrl),
+    nextShow: normalizeRepDirectoryShow(record.nextShow, apiBaseUrl),
+  };
+}
+
+function normalizeRepDirectoryShow(
+  value: unknown,
+  apiBaseUrl: string,
+): SparkleSuiteFinderRepDirectoryShow | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const id = readRequiredString(record.showId) || readRequiredString(record.id);
+  const title = readRequiredString(record.showName) || readRequiredString(record.title);
+  const startsAt = readRequiredString(record.startsAt);
+  const status = record.status === "live" || record.status === "scheduled" ? record.status : null;
+  const customerShowUrl = readSuitePublicUrl(record.customerSiteUrl ?? record.customerShowUrl, apiBaseUrl);
+
+  if (!id || !title || !startsAt || Number.isNaN(Date.parse(startsAt)) || !status) {
+    return null;
+  }
+
+  return {
+    id,
+    title,
+    startsAt,
+    status,
+    customerShowUrl,
+    durationMinutes:
+      typeof record.durationMinutes === "number" && Number.isFinite(record.durationMinutes)
+        ? Math.max(0, Math.floor(record.durationMinutes))
+        : null,
+  };
+}
+
+function readRequiredString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function readOptionalString(value: unknown): string | null {
+  const trimmed = readRequiredString(value);
+  return trimmed || null;
+}
+
+function readHttpsUrl(value: unknown): string | null {
+  const trimmed = readRequiredString(value);
+
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === "https:" && !url.username && !url.password && !url.port ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function readSuitePublicUrl(value: unknown, apiBaseUrl: string): string | null {
+  const safeUrl = readHttpsUrl(value);
+
+  if (!safeUrl) {
+    return null;
+  }
+
+  try {
+    const candidate = new URL(safeUrl);
+    const suiteBase = new URL(apiBaseUrl);
+    const allowedHosts = new Set([
+      suiteBase.hostname.toLowerCase(),
+      getAlternateWwwHostname(suiteBase.hostname),
+      "yoursparklesuite.com",
+      "www.yoursparklesuite.com",
+    ]);
+
+    return allowedHosts.has(candidate.hostname.toLowerCase()) ? candidate.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function getAlternateWwwHostname(hostname: string): string {
+  const normalized = hostname.toLowerCase();
+  return normalized.startsWith("www.") ? normalized.slice(4) : `www.${normalized}`;
 }
 
 function mapRepDirectoryRep(item: SparkleSuiteFinderRepDirectoryItem): RepSummary {
@@ -427,19 +550,6 @@ function mapRepDirectoryBoardListing(item: SparkleSuiteFinderRepDirectoryItem): 
       status: "available",
     },
   ];
-}
-
-function mapRepDirectoryFavoriteCounts(items: SparkleSuiteFinderRepDirectoryItem[]): Map<string, number> {
-  const favoriteCounts = new Map<string, number>();
-
-  for (const item of items) {
-    const count = typeof item.favoriteCount === "number" && Number.isFinite(item.favoriteCount)
-      ? Math.max(0, Math.floor(item.favoriteCount))
-      : 0;
-    favoriteCounts.set(item.repId, count);
-  }
-
-  return favoriteCounts;
 }
 
 function getRepDirectoryShowId(show: SparkleSuiteFinderRepDirectoryShow | null): string {
@@ -639,26 +749,16 @@ function fallbackRepDirectoryData(options: CatalogReadOptions): FinderRepDirecto
   if (options.useFixtureFallback === false) {
     return {
       boardListings: [],
-      favoriteCounts: new Map(),
       liveShows: [],
       reps: [],
+      status: "unavailable",
     };
   }
 
   return {
     boardListings: sparkleFinderRepBoardListings.map((listing) => ({ ...listing })),
-    favoriteCounts: getFixtureFavoriteRepCounts(),
     liveShows: sparkleFinderLiveShows.map((show) => ({ ...show })),
     reps: sparkleFinderReps.map((rep) => ({ ...rep })),
+    status: sparkleFinderReps.length > 0 ? "ready" : "empty",
   };
-}
-
-function getFixtureFavoriteRepCounts(): Map<string, number> {
-  const favoriteCounts = new Map<string, number>();
-
-  for (const favorite of sparkleFinderFavoriteReps) {
-    favoriteCounts.set(favorite.repId, (favoriteCounts.get(favorite.repId) ?? 0) + 1);
-  }
-
-  return favoriteCounts;
 }

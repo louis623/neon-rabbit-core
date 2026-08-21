@@ -184,6 +184,7 @@ describe("Favorite reps server actions", () => {
     vi.doUnmock("next/cache");
     vi.doUnmock("@/lib/supabase/server");
     vi.doUnmock("@/lib/sparkle-finder/account-service");
+    vi.doUnmock("@/lib/sparkle-finder/catalog-service");
     vi.doUnmock("@/lib/sparkle-finder/favorite-reps-state");
   });
 
@@ -239,6 +240,29 @@ describe("Favorite reps server actions", () => {
       status: "error",
       message: "Free favorite rep limit reached. Silver can save more favorite reps.",
     });
+  });
+
+  it("rejects invented rep ids instead of trusting hidden form fields", async () => {
+    const accountState = currentAccountState("free");
+    const persistFavoriteRepForAccount = vi.fn();
+
+    mockFavoriteActionDependencies({
+      accountState,
+      client: authenticatedClient(accountState.customer.id),
+      directoryReps: [],
+      persistFavoriteRepForAccount,
+    });
+
+    const { favoriteRepAction } = await import("../../app/(hub)/favorites/actions");
+    const formData = new FormData();
+    formData.set("repId", "rep-invented");
+    formData.set("repDisplayName", "Invented Rep");
+
+    await expect(favoriteRepAction({ status: "idle", message: "" }, formData)).resolves.toEqual({
+      status: "error",
+      message: "Favorite rep is unavailable.",
+    });
+    expect(persistFavoriteRepForAccount).not.toHaveBeenCalled();
   });
 
   it("deletes a favorite rep for the verified Sparkle Finder account", async () => {
@@ -511,6 +535,17 @@ function mockFavoriteActionDependencies({
   persistFavoriteRepForAccount = vi.fn().mockResolvedValue({ ok: true }),
   deleteFavoriteRepForAccount = vi.fn().mockResolvedValue({ ok: true }),
   persistFavoriteRepNotesForAccount = vi.fn().mockResolvedValue({ ok: true }),
+  directoryReps = [
+    {
+      id: "rep-kelli",
+      avatarUrl: "",
+      businessName: "Kelli's Sparkle",
+      displayName: "Kelli Jo",
+      nextLiveShowId: "",
+      siteUrl: "https://sparklesuite.example/reps/kelli",
+      state: "",
+    },
+  ],
 }: {
   accountState: CurrentSparkleFinderAccountState;
   client: ReturnType<typeof authenticatedClient>;
@@ -518,6 +553,15 @@ function mockFavoriteActionDependencies({
   persistFavoriteRepForAccount?: ReturnType<typeof vi.fn>;
   deleteFavoriteRepForAccount?: ReturnType<typeof vi.fn>;
   persistFavoriteRepNotesForAccount?: ReturnType<typeof vi.fn>;
+  directoryReps?: Array<{
+    id: string;
+    avatarUrl: string;
+    businessName: string;
+    displayName: string;
+    nextLiveShowId: string;
+    siteUrl: string;
+    state: string;
+  }>;
 }) {
   vi.doMock("next/cache", () => ({ revalidatePath }));
   vi.doMock("@/lib/supabase/server", () => ({
@@ -525,6 +569,17 @@ function mockFavoriteActionDependencies({
   }));
   vi.doMock("@/lib/sparkle-finder/account-service", () => ({
     getCurrentSparkleFinderAccount: vi.fn().mockResolvedValue(accountState),
+  }));
+  vi.doMock("@/lib/sparkle-finder/catalog-service", () => ({
+    getFinderRepDirectoryData: vi.fn().mockResolvedValue({
+      boardListings: directoryReps.some((rep) => rep.id === "rep-kelli")
+        ? [{ id: "board-kelli", boardUrl: "https://sparklesuite.example/reps/kelli/board", jewelryItemId: "", listedAt: "", repId: "rep-kelli", status: "available" }]
+        : [],
+      liveShows: [],
+      reps: directoryReps,
+      status: directoryReps.length > 0 ? "ready" : "empty",
+    }),
+    shouldUseCatalogFixtureFallback: vi.fn().mockReturnValue(false),
   }));
   vi.doMock("@/lib/sparkle-finder/favorite-reps-state", () => ({
     deleteFavoriteRepForAccount,

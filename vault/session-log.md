@@ -1,5 +1,17 @@
 # Sparkle Finder Session Log
 
+## 2026-08-21 - Bulletproofed The Automatic Reps Integration
+
+- Re-audited the live integration and confirmed the Finder adapter existed, but the live Sparkle Suite `/api/public/finder/reps` route returns `404` HTML. The old health script did not check Reps and therefore gave a false green.
+- Added explicit Rep Directory states: `ready`, healthy `empty`, and `unavailable`. The UI now gives honest automatic-population, search-miss, filter-empty, and retry-later messages instead of treating a broken API as no reps.
+- Turned the old visual status chips into working All, Live now, Live today, Upcoming, and Favorites filters. Search preserves the active view.
+- Hardened the Suite response adapter for malformed payloads, duplicate IDs, unsafe URLs, invalid shows, stale shows, no-board/no-show reps, and upstream search.
+- Moved aggregate favorite counts fully to Finder Supabase with a bounded authenticated count-only RPC. Count-read failures are distinct from honest zeros, and the UI hides favorite ranking claims/counts during a count outage.
+- Added database hardening for rep-id length, precise table grants, the rep-id index, and RLS enforcement of the five-rep Free limit. Verified the deployed permissions, constraint, index, and policy directly.
+- Favorite saves now verify the rep against the current Suite directory and persist canonical directory data instead of trusting hidden form fields.
+- Removed broken preview avatar paths so preview reps use the initials fallback without 404s.
+- Verification before commit: lint passed; focused Reps tests passed (`144`); full suite passed (`39` files, `529` tests); production build passed; mobile 390px and desktop rendered checks passed with no horizontal overflow or console errors. The corrected live Suite contract check fails as expected until the missing Suite endpoint is deployed.
+
 ## 2026-07-04
 
 - Aligned the Bling Vault section with the mobile-first signed-in app layout after Louis pointed out section 3 still looked like the older wide web dashboard:

@@ -1,6 +1,7 @@
 import type { LiveShow, RepBoardListing, RepSummary } from "./types";
 
 export type RepDirectoryStatus = "live_now" | "live_today" | "upcoming" | "no_show";
+export type RepDirectoryView = "all" | "live_now" | "live_today" | "upcoming" | "favorites";
 
 export type RepDirectoryCard = {
   repId: string;
@@ -31,6 +32,7 @@ export type BuildRepDirectoryCardsInput = {
   favoriteCounts?: ReadonlyMap<string, number>;
   now?: Date;
   query?: string;
+  view?: RepDirectoryView;
 };
 
 const statusRank: Record<RepDirectoryStatus, number> = {
@@ -48,16 +50,24 @@ export function buildRepDirectoryCards({
   favoriteCounts = new Map(),
   now = new Date(),
   query = "",
+  view = "all",
 }: BuildRepDirectoryCardsInput): RepDirectoryCard[] {
   const showsById = new Map(liveShows.map((show) => [show.id, show]));
+  const boardsByRepId = new Map<string, string>();
+  for (const listing of boardListings) {
+    if (listing.status === "available" && !boardsByRepId.has(listing.repId)) {
+      boardsByRepId.set(listing.repId, listing.boardUrl);
+    }
+  }
   const favoriteIds = new Set(favoriteRepIds);
   const normalizedQuery = query.trim().toLocaleLowerCase();
 
   return reps
     .map((rep) => {
       const nextShow = showsById.get(rep.nextLiveShowId);
-      const boardUrl = boardListings.find((listing) => listing.repId === rep.id && listing.status === "available")?.boardUrl ?? null;
+      const boardUrl = boardsByRepId.get(rep.id) ?? null;
       const status = deriveRepDirectoryStatus(nextShow, now);
+      const visibleNextShow = status === "no_show" ? undefined : nextShow;
       const favoriteCount = Math.max(0, favoriteCounts.get(rep.id) ?? 0);
 
       return {
@@ -72,19 +82,32 @@ export function buildRepDirectoryCards({
         favoriteCount,
         status,
         statusLabel: getRepDirectoryStatusLabel(status),
-        nextShow: nextShow
+        nextShow: visibleNextShow
           ? {
-              id: nextShow.id,
-              title: nextShow.title,
-              startsAt: nextShow.startsAt,
-              status: nextShow.status,
-              customerShowUrl: nextShow.showUrl.trim() || null,
+              id: visibleNextShow.id,
+              title: visibleNextShow.title,
+              startsAt: visibleNextShow.startsAt,
+              status: visibleNextShow.status,
+              customerShowUrl: visibleNextShow.showUrl.trim() || null,
             }
           : null,
       } satisfies RepDirectoryCard;
     })
-    .filter((card) => matchesRepDirectoryQuery(card, normalizedQuery))
+    .filter((card) => matchesRepDirectoryQuery(card, normalizedQuery) && matchesRepDirectoryView(card, view))
     .sort(compareRepDirectoryCards);
+}
+
+function matchesRepDirectoryView(card: RepDirectoryCard, view: RepDirectoryView): boolean {
+  switch (view) {
+    case "all":
+      return true;
+    case "favorites":
+      return card.isFavorited;
+    case "live_now":
+    case "live_today":
+    case "upcoming":
+      return card.status === view;
+  }
 }
 
 export function getRepDirectoryStatusLabel(status: RepDirectoryStatus): string {
@@ -105,8 +128,22 @@ function deriveRepDirectoryStatus(show: LiveShow | undefined, now: Date): RepDir
     return "no_show";
   }
 
-  if (show.status === "live") {
+  const startsAt = Date.parse(show.startsAt);
+  if (Number.isNaN(startsAt)) {
+    return "no_show";
+  }
+
+  const durationMilliseconds = Math.max(1, show.durationMinutes) * 60_000;
+  if (startsAt + durationMilliseconds <= now.getTime()) {
+    return "no_show";
+  }
+
+  if (show.status === "live" && startsAt <= now.getTime()) {
     return "live_now";
+  }
+
+  if (startsAt < now.getTime()) {
+    return "no_show";
   }
 
   return isSameCustomerDate(show.startsAt, now) ? "live_today" : "upcoming";
