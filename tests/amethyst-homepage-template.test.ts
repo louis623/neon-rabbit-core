@@ -605,6 +605,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('className="hp-sticky-stack"')
     expect(css).toContain('.hp-trade-preview')
     expect(css).toContain('.hp-queue-modal-mask')
+    expect(css).toMatch(/\.hp-queue-modal-close\s*\{[\s\S]*?color:\s*#2b1b1f;/)
+    expect(css).toContain('.hp-queue-modal-close:focus-visible')
     expect(css).toContain('position: sticky;')
     expect(css).toMatch(/\.hp-sticky-stack\s*\{[\s\S]*?top:\s*0;/)
     expect(css).not.toContain('top: 144px;')

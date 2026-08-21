@@ -1763,10 +1763,20 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   border-radius: 999px;
   border: 1px solid var(--border);
   background: white;
-  color: var(--fg);
+  color: #2b1b1f;
   font-size: 24px;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
+}
+
+.hp-queue-modal-close:hover {
+  background: #f7edf6;
+}
+
+.hp-queue-modal-close:focus-visible {
+  outline: 3px solid var(--hp-primary);
+  outline-offset: 3px;
 }
 
 .hp-queue-modal-list {
