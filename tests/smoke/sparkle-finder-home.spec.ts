@@ -15,10 +15,11 @@ const sparkleSuiteFinderBaseUrl = (
 
 const smokeTexts = [
   "Sparkle Finder",
-  "Find the pieces you love.",
-  "Build your collection with Sparkle Finder.",
-  "Free or Silver account required.",
-  "Create free account",
+  "Coming soon",
+  "Sparkle Finder is coming soon.",
+  "A new place to find the pieces you love",
+  "We are getting the finishing touches in place",
+  "Create account",
   "Sign in",
 ];
 
@@ -56,14 +57,15 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
-    await expectClickPath(page, page.getByRole("link", { name: "Create free account" }), "/auth/sign-up");
+    await expectClickPath(page, page.getByRole("link", { name: "Create account" }), "/auth/sign-up");
     await expectClickPath(page, page.locator("main").getByRole("link", { name: "Sign in" }), "/auth/sign-in");
   });
 
-  test("logged-out homepage keeps the product behind the account gate", async ({ page }) => {
+  test("logged-out homepage keeps the product behind the coming-soon landing", async ({ page }) => {
     await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
-    await expect(page.locator('[data-smoke="account-gate-copy"]')).toBeVisible();
+    await expect(page.locator('[data-smoke="public-landing"]')).toBeVisible();
+    await expect(page.locator('[data-smoke="coming-soon-copy"]')).toBeVisible();
     await expect(page.locator('[data-smoke="public-feature-cards"]')).toHaveCount(0);
     await expect(page.locator('[data-smoke="public-membership-tiers"]')).toHaveCount(0);
     await expect(page.getByText("Master Jewelry Library")).toHaveCount(0);
@@ -376,7 +378,7 @@ async function expectPrimarySectionsAreVisible(page: Page) {
     "nav",
     "public-landing",
     "public-hero",
-    "account-gate-copy",
+    "coming-soon-copy",
   ]) {
     await expect(page.locator(`[data-smoke="${selector}"]`)).toBeVisible();
   }
@@ -414,7 +416,7 @@ async function expectReadableControls(page: Page) {
   );
   expect(navLabelsFit, "nav labels should not be clipped inside links").toBe(true);
 
-  const primaryColors = await page.getByRole("link", { name: "Create free account" }).evaluate((element) => {
+  const primaryColors = await page.getByRole("link", { name: "Create account" }).evaluate((element) => {
     const styles = window.getComputedStyle(element);
 
     return {
