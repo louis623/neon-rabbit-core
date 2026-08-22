@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { makeHeroPiece } from "@/app/actions/hero-piece";
 import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
-import type { HomepageBlingVaultItem } from "@/lib/sparkle-finder/homepage-bling-vault";
+import { getHomepageBlingVaultImageUrl, type HomepageBlingVaultItem } from "@/lib/sparkle-finder/homepage-bling-vault";
 
 type HeroPieceSpotlightProps = {
+  isSelected?: boolean;
   item?: HomepageBlingVaultItem;
 };
 
-export function HeroPieceSpotlight({ item }: HeroPieceSpotlightProps) {
+export function HeroPieceSpotlight({ isSelected = false, item }: HeroPieceSpotlightProps) {
   if (!item) {
     return (
       <article className="grid gap-4 rounded-[1.25rem] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
@@ -38,7 +40,7 @@ export function HeroPieceSpotlight({ item }: HeroPieceSpotlightProps) {
         >
           <JewelryImageFrame
             fetchPriority="high"
-            imageUrl={item.jewelryItem.imageUrl}
+            imageUrl={getHomepageBlingVaultImageUrl(item)}
             jewelryType={item.jewelryItem.jewelryType}
             loading="eager"
             name={item.jewelryItem.name}
@@ -62,23 +64,35 @@ export function HeroPieceSpotlight({ item }: HeroPieceSpotlightProps) {
 
           <div className="flex flex-wrap gap-2">
             <StateBadge state={item.state} />
-            {item.isHighlighted ? (
-              <span className="inline-flex items-center gap-1 rounded border border-[#e7be77] bg-[#fff3cf] px-2 py-1 text-xs font-black text-[#704b11]">
-                <ShieldCheck aria-hidden="true" className="size-3.5" />
-                Hero Piece
-              </span>
-            ) : null}
+            <span className="inline-flex items-center gap-1 rounded border border-[#e7be77] bg-[#fff3cf] px-2 py-1 text-xs font-black text-[#704b11]">
+              <ShieldCheck aria-hidden="true" className="size-3.5" />
+              {isSelected ? "Selected Hero Piece" : "Not saved as Hero yet"}
+            </span>
           </div>
 
           {item.note ? <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">{item.note}</p> : null}
 
-          <Link
-            className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-black text-white transition hover:bg-[var(--sparkle-plum-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
-            href={`/library/${item.jewelryItemId}`}
-          >
-            View piece
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-black text-white transition hover:bg-[var(--sparkle-plum-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
+              href={`/library/${item.jewelryItemId}`}
+            >
+              View piece
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </Link>
+            {!isSelected ? (
+              <form action={makeHeroPiece}>
+                <input name="collectionItemId" type="hidden" value={item.id} />
+                <button
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-4 text-sm font-black text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
+                  type="submit"
+                >
+                  <Sparkles aria-hidden="true" className="size-4 text-[var(--sparkle-coral)]" />
+                  Make this my Hero Piece
+                </button>
+              </form>
+            ) : null}
+          </div>
         </div>
       </div>
     </article>

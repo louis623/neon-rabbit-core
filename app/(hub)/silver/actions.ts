@@ -167,6 +167,15 @@ export async function saveShowcasePieceAction(
     };
   }
 
+  const piecePhoto = await readOptionalProfilePhotoDataUrl(
+    formData.get("personalPhoto"),
+    formData.get("personalPhotoDataUrl"),
+  );
+
+  if (!piecePhoto.ok) {
+    return piecePhoto.state;
+  }
+
   const result = await persistShowcasePieceForAccount(verified.client, verified.accountState, {
     jewelryItemId,
     note: String(formData.get("note") ?? ""),
@@ -174,6 +183,7 @@ export async function saveShowcasePieceAction(
     visibility: parseShowcaseVisibility(formData.get("visibility")),
     revealStory: String(formData.get("revealStory") ?? ""),
     isRarestReveal: formData.get("isRarestReveal") === "yes",
+    ...(piecePhoto.photoUrl ? { personalPhotoUrl: piecePhoto.photoUrl } : {}),
   });
 
   if (!result.ok) {
@@ -185,6 +195,7 @@ export async function saveShowcasePieceAction(
   }
 
   revalidatePath("/silver");
+  revalidatePath("/showcase", "layout");
 
   return {
     status: "saved",

@@ -5,12 +5,12 @@ import {
   sparkleFinderSilverProfiles,
 } from "../fixtures/sparkle-finder-fixtures";
 import { getPublicShowcasePiecesByCustomerId } from "./showcase-service";
-import type { PublicCollectorProfile } from "./social-types";
+import type { FollowedShowcaseHighlight, PublicCollectorProfile } from "./social-types";
 
 export type SupabaseCollectorSocialReadClient = {
   rpc: (
-    functionName: "sparkle_finder_search_public_collectors",
-    args: { search_query: string; result_limit: number },
+    functionName: "sparkle_finder_search_public_collectors" | "sparkle_finder_list_followed_showcase_highlights",
+    args: { search_query: string; result_limit: number } | { result_limit: number },
   ) => PromiseLike<{ data: unknown; error: unknown }>;
 };
 
@@ -71,6 +71,29 @@ export async function searchPersistedPublicCollectorProfiles(input: {
       const profile = mapPersistedPublicCollectorProfile(row);
 
       return profile ? [profile] : [];
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function getPersistedFollowedShowcaseHighlights(input: {
+  supabase: SupabaseCollectorSocialReadClient;
+  limit?: number;
+}): Promise<FollowedShowcaseHighlight[] | null> {
+  try {
+    const result = await input.supabase.rpc("sparkle_finder_list_followed_showcase_highlights", {
+      result_limit: input.limit ?? 6,
+    });
+
+    if (result.error || !Array.isArray(result.data)) {
+      return null;
+    }
+
+    return result.data.flatMap((row) => {
+      const highlight = mapPersistedFollowedShowcaseHighlight(row);
+
+      return highlight ? [highlight] : [];
     });
   } catch {
     return null;
@@ -173,6 +196,36 @@ function mapPersistedPublicCollectorProfile(row: unknown): PublicCollectorProfil
     publicPieceCount: readCount(record?.public_piece_count),
     isFollowedByViewer: record?.is_followed_by_viewer === true,
     isBlockedByViewer: record?.is_blocked_by_viewer === true,
+  };
+}
+
+function mapPersistedFollowedShowcaseHighlight(row: unknown): FollowedShowcaseHighlight | null {
+  const record = asRecord(row);
+  const userId = readString(record?.user_id);
+  const handle = normalizeHandle(readString(record?.showcase_handle));
+  const displayName = readString(record?.display_name);
+  const collectionItemId = readString(record?.collection_item_id);
+  const jewelryItemId = readString(record?.jewelry_item_id);
+  const updatedAt = readString(record?.updated_at);
+
+  if (!userId || !handle || !displayName || !collectionItemId || !jewelryItemId || !updatedAt) {
+    return null;
+  }
+
+  return {
+    userId,
+    handle,
+    displayName,
+    tagline: readString(record?.showcase_tagline),
+    collectorPhotoUrl: readNullableString(record?.photo_url),
+    collectionItemId,
+    jewelryItemId,
+    revealStory: readString(record?.reveal_story),
+    personalPhotoUrl: readNullableString(record?.personal_photo_url),
+    isRarestReveal: record?.is_rarest_reveal === true,
+    updatedAt,
+    showcaseUrl: `/showcase/${handle}`,
+    spotlightUrl: `/showcase/${handle}/pieces/${encodeURIComponent(jewelryItemId)}`,
   };
 }
 

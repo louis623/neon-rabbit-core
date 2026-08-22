@@ -9,19 +9,35 @@ const screenshotDir = process.env.SPARKLE_FINDER_SCREENSHOT_DIR ?? "verification
 test.describe("Sparkle Showcase smoke", () => {
   test("public Sparkle Showcase renders shareable collection and conversation surfaces", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 950 });
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "share", { configurable: true, value: undefined });
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async (url: string) => {
+            (window as Window & { __sparkleFinderCopiedUrl?: string }).__sparkleFinderCopiedUrl = url;
+          },
+        },
+      });
+    });
     await page.goto(`${baseUrl}/showcase/sparkle-mama`, { waitUntil: "domcontentloaded" });
 
     await expect(page.locator('[data-smoke="sparkle-showcase"]')).toBeVisible();
     await expect(page.getByRole("heading", { name: "Sparkle Mama's Sparkle Showcase" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "The Rarest of Reveals" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Showcase Collections" })).toBeVisible();
-    await expect(page.getByText("Never Leaving")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Never Leaving", exact: true })).toBeVisible();
     await expect(page.getByText("Showcase Conversation")).toBeVisible();
     await expect(page.getByRole("button", { name: "Sign in to follow" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Share Showcase" })).toHaveAttribute(
-      "href",
-      "/showcase/sparkle-mama",
-    );
+    await expect(page.getByRole("button", { name: "Share Showcase" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Share Never Leaving" })).toBeVisible();
+    await page.getByRole("button", { name: "Share Showcase" }).click();
+    await expect(page.getByText("Public link copied.").first()).toBeVisible();
+    expect(await page.evaluate(() => (window as Window & { __sparkleFinderCopiedUrl?: string }).__sparkleFinderCopiedUrl))
+      .toBe("https://yoursparklefinder.com/showcase/sparkle-mama");
+    await page.getByRole("button", { name: "Share Never Leaving" }).click();
+    expect(await page.evaluate(() => (window as Window & { __sparkleFinderCopiedUrl?: string }).__sparkleFinderCopiedUrl))
+      .toBe("https://yoursparklefinder.com/showcase/sparkle-mama/showcase-collections/never-leaving");
     await expectNoGuardrailCopy(page);
 
     mkdirSync(screenshotDir, { recursive: true });
@@ -43,10 +59,7 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.getByText("Diamond Reveal", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Dancer leads" })).toBeVisible();
     await expect(page.getByText("That reveal was unreal.")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Share Reveal Spotlight" })).toHaveAttribute(
-      "href",
-      "/showcase/sparkle-mama/pieces/jewel-rainbow-crown-ring",
-    );
+    await expect(page.getByRole("button", { name: "Share Reveal Spotlight" })).toBeVisible();
     await expectNoGuardrailCopy(page);
   });
 

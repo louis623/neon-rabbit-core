@@ -65,3 +65,19 @@ export type PublicCollectorProfile = {
   isFollowedByViewer: boolean;
   isBlockedByViewer: boolean;
 };
+
+export type FollowedShowcaseHighlight = {
+  userId: string;
+  handle: string;
+  displayName: string;
+  tagline: string;
+  collectorPhotoUrl: string | null;
+  collectionItemId: string;
+  jewelryItemId: string;
+  revealStory: string;
+  personalPhotoUrl: string | null;
+  isRarestReveal: boolean;
+  updatedAt: string;
+  showcaseUrl: string;
+  spotlightUrl: string;
+};

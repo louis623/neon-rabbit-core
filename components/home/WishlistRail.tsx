@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Heart, Search } from "lucide-react";
 import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
-import type { HomepageBlingVaultItem } from "@/lib/sparkle-finder/homepage-bling-vault";
+import { getHomepageBlingVaultImageUrl, type HomepageBlingVaultItem } from "@/lib/sparkle-finder/homepage-bling-vault";
 
 type WishlistRailProps = {
   items: HomepageBlingVaultItem[];
@@ -35,7 +35,7 @@ export function WishlistRail({ items }: WishlistRailProps) {
             >
               <div className="aspect-[4/3] overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white md:aspect-square">
                 <JewelryImageFrame
-                  imageUrl={item.jewelryItem.imageUrl}
+                  imageUrl={getHomepageBlingVaultImageUrl(item)}
                   jewelryType={item.jewelryItem.jewelryType}
                   name={item.jewelryItem.name}
                 />

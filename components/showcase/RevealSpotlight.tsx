@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { ArrowLeft, Share2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { createShowcaseCommentAction, deleteShowcaseCommentAction, editShowcaseCommentAction, reportShowcaseTargetAction } from "@/app/showcase/actions";
 import { BombPartyLabelBadge, PieceStatusBadge, RarestRevealBadge } from "./ShowcaseBadges";
 import { ShowcaseComments } from "./ShowcaseComments";
 import { PieceImage } from "./RarestReveals";
 import { RepLeadPanel } from "./RepLeadPanel";
+import { ShareShowcaseButton } from "./ShareShowcaseButton";
+import { buildRevealSpotlightPath } from "@/lib/sparkle-finder/showcase-sharing";
 import type { RevealSpotlight as RevealSpotlightData } from "@/lib/sparkle-finder/showcase-types";
 
 type RevealSpotlightProps = {
@@ -42,13 +44,13 @@ export function RevealSpotlight({ spotlight, viewerUserId }: RevealSpotlightProp
             <RarestRevealBadge piece={piece} />
           </div>
           <p className="text-base leading-7 text-[var(--sparkle-ink-muted)]">{piece.revealStory}</p>
-          <Link
-            className="inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-bold text-white"
-            href={`/showcase/${showcase.profile.handle}/pieces/${piece.jewelryItemId}`}
-          >
-            <Share2 aria-hidden="true" className="size-4" />
-            Share Reveal Spotlight
-          </Link>
+          <ShareShowcaseButton
+            isPublic
+            label="Share Reveal Spotlight"
+            pathname={buildRevealSpotlightPath(showcase.profile.handle, piece.jewelryItemId)}
+            shareText={`See ${piece.jewelryItem.name} in ${showcase.profile.customer.displayName}'s Sparkle Showcase.`}
+            shareTitle={`${piece.jewelryItem.name} Reveal Spotlight`}
+          />
         </div>
       </article>
 

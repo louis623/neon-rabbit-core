@@ -318,7 +318,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.locator('[data-smoke="library-image-frame"]').first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Nic-Nac" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Check saved pieces" })).toBeVisible();
-    await expect(page.getByText("Exact item", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Exact dancer lead", { exact: true }).first()).toBeVisible();
     await expectNoGuardrailCopy(page);
     await expectNoExampleLinksOnCurrentPage(page);
 

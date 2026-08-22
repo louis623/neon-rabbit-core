@@ -35,6 +35,7 @@ export type ShowcasePieceUpdateInput = {
   isRarestReveal: boolean;
   jewelryItemId: string;
   note: string;
+  personalPhotoUrl?: string;
   revealStory: string;
   showcaseStatus: SparkleShowcaseItemStatus;
   visibility: SparkleShowcaseVisibility;
@@ -241,6 +242,9 @@ export async function persistShowcasePieceForAccount(
     showcase_status: input.showcaseStatus,
     reveal_story: cleanText(input.revealStory, 700),
     is_rarest_reveal: input.isRarestReveal,
+    ...(input.personalPhotoUrl !== undefined
+      ? { personal_photo_url: cleanText(input.personalPhotoUrl, profilePhotoMaxCharacters) }
+      : {}),
   };
   const result = await supabase.from("sparkle_finder_collection_items").upsert(values, {
     onConflict: "user_id,jewelry_item_id",

@@ -6,10 +6,18 @@ import { FinderNicNacWorkspace } from "@/components/nic-nac/FinderNicNacWorkspac
 import type { ManagedCollectionItem } from "@/components/silver/CollectionManager";
 import { ProfileSummaryPanel } from "@/components/silver/ProfileSummaryPanel";
 import { SimpleSilverShowcase } from "@/components/silver/SimpleSilverShowcase";
+import { ShowcaseOwnerPanel, type ShowcaseOwnerData } from "@/components/showcase/ShowcaseOwnerPanel";
 import {
   saveSilverCollectionItemAction,
   saveSilverProfileAction,
+  saveShowcasePieceAction,
 } from "@/app/(hub)/silver/actions";
+import {
+  assignShowcasePieceAction,
+  deleteShowcaseCollectionAction,
+  saveShowcaseCollectionAction,
+  saveShowcaseProfileSetupAction,
+} from "@/app/(hub)/silver/showcase-owner-actions";
 import { getCatalogJewelryItems, shouldUseCatalogFixtureFallback } from "@/lib/sparkle-finder/catalog-service";
 import {
   getCollectionItemsByCustomerId,
@@ -32,6 +40,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { FavoriteRepCard } from "@/lib/sparkle-finder/social-types";
 import type { CollectionItem, JewelryItem, SilverProfile } from "@/lib/sparkle-finder/types";
+import type { ShowcaseCollection } from "@/lib/sparkle-finder/showcase-types";
 
 type SilverPageAccountState = SparkleFinderAccountState & {
   silverProfile?: SilverProfile;
@@ -51,8 +60,12 @@ export default async function SilverPage() {
     accountState.status === "authenticated" && accountState.isLocalPreview !== true
       ? await getPersistedFavoriteRepCards(accountState)
       : undefined;
+  const persistedShowcaseOwnerData =
+    accountState.status === "authenticated" && accountState.isLocalPreview !== true
+      ? await getPersistedShowcaseOwnerData(accountState.customer.id)
+      : undefined;
 
-  return renderSilverPageContent(accountState, persistedCollectionItems, libraryItems, persistedFavoriteRepCards);
+  return renderSilverPageContent(accountState, persistedCollectionItems, libraryItems, persistedFavoriteRepCards, persistedShowcaseOwnerData);
 }
 
 export function renderSilverPageContent(
@@ -60,6 +73,7 @@ export function renderSilverPageContent(
   persistedCollectionItems?: ManagedCollectionItem[],
   libraryItems: JewelryItem[] = getJewelryItems(),
   persistedFavoriteRepCards?: FavoriteRepCard[],
+  persistedShowcaseOwnerData?: ShowcaseOwnerData,
 ) {
   const entitlements = getSparkleFinderAccountEntitlements(accountState);
   const isLocalPreview = accountState.isLocalPreview === true;
@@ -148,6 +162,18 @@ export function renderSilverPageContent(
 
       <FavoriteRepsPanel cards={favoriteRepCards} isSilver={entitlements.canUseNicNacFindRequests} />
 
+      <ShowcaseOwnerPanel
+        assignPieceAction={isLocalPreview ? undefined : assignShowcasePieceAction}
+        canSave={entitlements.canUseSilverCollectionActions}
+        collectionItems={collectionItems}
+        data={persistedShowcaseOwnerData ?? createEmptyShowcaseOwnerData()}
+        deleteCollectionAction={isLocalPreview ? undefined : deleteShowcaseCollectionAction}
+        isLocalPreview={isLocalPreview}
+        saveCollectionAction={isLocalPreview ? undefined : saveShowcaseCollectionAction}
+        savePieceAction={isLocalPreview ? undefined : saveShowcasePieceAction}
+        saveProfileAction={isLocalPreview ? undefined : saveShowcaseProfileSetupAction}
+      />
+
       <SimpleSilverShowcase
         accountState={accountState}
         canSaveSilverActions={entitlements.canUseSilverCollectionActions}
@@ -207,7 +233,7 @@ async function getPersistedCollectionItems(userId: string, libraryItems: Jewelry
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("sparkle_finder_collection_items")
-      .select("id,user_id,jewelry_item_id,state,note,is_highlighted,acquisition_source,acquisition_context,acquisition_marked_at")
+      .select("id,user_id,jewelry_item_id,state,note,is_highlighted,acquisition_source,acquisition_context,acquisition_marked_at,visibility,showcase_status,reveal_story,personal_photo_url,is_rarest_reveal")
       .eq("user_id", userId);
 
     if (error || !Array.isArray(data)) {
@@ -248,7 +274,9 @@ function findLibraryItemById(itemId: string, libraryItems: readonly JewelryItem[
   return libraryItems.find((item) => item.id === itemId);
 }
 
-function mapPersistedCollectionItem(row: unknown): CollectionItem | null {
+type PersistedManagedCollectionItem = Omit<ManagedCollectionItem, "jewelryItem">;
+
+function mapPersistedCollectionItem(row: unknown): PersistedManagedCollectionItem | null {
   if (!row || typeof row !== "object") {
     return null;
   }
@@ -273,7 +301,81 @@ function mapPersistedCollectionItem(row: unknown): CollectionItem | null {
     acquisitionSource: readAcquisitionSource(record.acquisition_source),
     acquisitionContext: readAcquisitionContext(record.acquisition_context),
     acquisitionMarkedAt: readString(record.acquisition_marked_at) || null,
+    visibility: record.visibility === "public" ? "public" : "private",
+    showcaseStatus: readShowcaseStatus(record.showcase_status),
+    revealStory: readString(record.reveal_story),
+    personalPhotoUrl: readString(record.personal_photo_url) || null,
+    isRarestReveal: record.is_rarest_reveal === true,
   };
+}
+
+async function getPersistedShowcaseOwnerData(userId: string): Promise<ShowcaseOwnerData> {
+  try {
+    const supabase = await createClient();
+    const [profileResult, collectionsResult] = await Promise.all([
+      supabase
+        .from("sparkle_finder_profiles")
+        .select("showcase_handle,showcase_tagline,showcase_visibility")
+        .eq("user_id", userId)
+        .maybeSingle(),
+      supabase
+        .from("sparkle_finder_showcase_collections")
+        .select("id,user_id,title,slug,description,visibility,sparkle_finder_showcase_collection_items(collection_item_id)")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true }),
+    ]);
+
+    const profile = profileResult.data && typeof profileResult.data === "object"
+      ? profileResult.data as Record<string, unknown>
+      : {};
+    const collections = Array.isArray(collectionsResult.data)
+      ? collectionsResult.data.flatMap((row) => {
+          const collection = mapOwnerShowcaseCollection(row);
+          return collection ? [collection] : [];
+        })
+      : [];
+
+    return {
+      handle: readString(profile.showcase_handle),
+      tagline: readString(profile.showcase_tagline),
+      visibility: profile.showcase_visibility === "public" ? "public" : "private",
+      collections,
+    };
+  } catch {
+    return createEmptyShowcaseOwnerData();
+  }
+}
+
+function mapOwnerShowcaseCollection(row: unknown): ShowcaseCollection | null {
+  if (!row || typeof row !== "object") return null;
+  const record = row as Record<string, unknown>;
+  const id = readString(record.id);
+  const customerId = readString(record.user_id);
+  const title = readString(record.title);
+  const slug = readString(record.slug);
+  if (!id || !customerId || !title || !slug) return null;
+
+  const joins = Array.isArray(record.sparkle_finder_showcase_collection_items)
+    ? record.sparkle_finder_showcase_collection_items
+    : [];
+
+  return {
+    id,
+    customerId,
+    title,
+    slug,
+    description: readString(record.description),
+    visibility: record.visibility === "public" ? "public" : "private",
+    pieceIds: joins.flatMap((join) => {
+      if (!join || typeof join !== "object") return [];
+      const itemId = readString((join as Record<string, unknown>).collection_item_id);
+      return itemId ? [itemId] : [];
+    }),
+  };
+}
+
+function createEmptyShowcaseOwnerData(): ShowcaseOwnerData {
+  return { handle: "", tagline: "", visibility: "private", collections: [] };
 }
 
 function readString(value: unknown): string {
@@ -286,6 +388,11 @@ function readCollectionState(value: unknown): CollectionItem["state"] | null {
   }
 
   return null;
+}
+
+function readShowcaseStatus(value: unknown): ManagedCollectionItem["showcaseStatus"] {
+  if (value === "wishlist" || value === "iso" || value === "private_note_only") return value;
+  return "owned";
 }
 
 function readAcquisitionSource(value: unknown): CollectionItem["acquisitionSource"] {

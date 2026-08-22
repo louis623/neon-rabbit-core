@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import { SparkleShowcaseProfile } from "@/components/showcase/SparkleShowcaseProfile";
@@ -12,6 +13,7 @@ import {
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
 import { getPublicSparkleShowcaseByHandle } from "@/lib/sparkle-finder/showcase-service";
+import { createSparkleShowcaseMetadata } from "@/lib/sparkle-finder/showcase-metadata";
 import type { SparkleShowcase } from "@/lib/sparkle-finder/showcase-types";
 
 type SparkleShowcasePageProps = {
@@ -20,18 +22,34 @@ type SparkleShowcasePageProps = {
   }>;
 };
 
-export default async function SparkleShowcasePage({ params }: SparkleShowcasePageProps) {
-  const cookieStore = await cookies();
-  const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
-  const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
+export async function generateMetadata({ params }: SparkleShowcasePageProps): Promise<Metadata> {
   const { handle } = await params;
-  const showcase = getPublicSparkleShowcaseByHandle(handle);
+  const accountState = await getShowcaseAccountState();
+  const showcase = await getPublicSparkleShowcaseByHandle(handle, {
+    viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
+  });
+
+  return showcase ? createSparkleShowcaseMetadata(showcase) : { title: "Sparkle Showcase | Sparkle Finder" };
+}
+
+export default async function SparkleShowcasePage({ params }: SparkleShowcasePageProps) {
+  const accountState = await getShowcaseAccountState();
+  const { handle } = await params;
+  const showcase = await getPublicSparkleShowcaseByHandle(handle, {
+    viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
+  });
 
   if (!showcase) {
     notFound();
   }
 
   return renderSparkleShowcasePageContent(showcase, accountState);
+}
+
+async function getShowcaseAccountState() {
+  const cookieStore = await cookies();
+  const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
+  return getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
 }
 
 export function renderSparkleShowcasePageContent(

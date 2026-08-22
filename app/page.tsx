@@ -21,9 +21,10 @@ export function renderPublicHomeContent(accountState: CurrentSparkleFinderAccoun
 export function renderHomeContent(
   accountState: CurrentSparkleFinderAccountState,
   collectionItems?: HomepageBlingVaultItem[],
+  heroCollectionItemId?: string | null,
 ) {
   return accountState.status === "authenticated" ? (
-    <AuthenticatedHomePage accountState={accountState} collectionItems={collectionItems} />
+    <AuthenticatedHomePage accountState={accountState} collectionItems={collectionItems} heroCollectionItemId={heroCollectionItemId} />
   ) : (
     renderPublicHomeContent(accountState)
   );
@@ -33,12 +34,27 @@ export default async function Home() {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
-  const collectionItems =
+  const homepageData =
     accountState.status === "authenticated"
-      ? await getPersistedHomepageBlingVaultItems(accountState.customer.id)
-      : undefined;
+      ? await getPersistedHomepageData(accountState.customer.id)
+      : { collectionItems: [], heroCollectionItemId: null };
 
-  return renderHomeContent(accountState, collectionItems && collectionItems.length > 0 ? collectionItems : undefined);
+  return renderHomeContent(
+    accountState,
+    homepageData.collectionItems.length > 0 ? homepageData.collectionItems : undefined,
+    homepageData.heroCollectionItemId,
+  );
+}
+
+async function getPersistedHomepageData(userId: string): Promise<{
+  collectionItems: HomepageBlingVaultItem[];
+  heroCollectionItemId: string | null;
+}> {
+  const [collectionItems, heroCollectionItemId] = await Promise.all([
+    getPersistedHomepageBlingVaultItems(userId),
+    getPersistedHeroCollectionItemId(userId),
+  ]);
+  return { collectionItems, heroCollectionItemId };
 }
 
 async function getPersistedHomepageBlingVaultItems(userId: string): Promise<HomepageBlingVaultItem[]> {
@@ -47,7 +63,7 @@ async function getPersistedHomepageBlingVaultItems(userId: string): Promise<Home
     const { data, error } = await supabase
       .from("sparkle_finder_collection_items")
       .select(
-        "id,user_id,jewelry_item_id,state,note,is_highlighted,acquisition_source,acquisition_context,acquisition_marked_at",
+        "id,user_id,jewelry_item_id,state,note,is_highlighted,acquisition_source,acquisition_context,acquisition_marked_at,personal_photo_url",
       )
       .eq("user_id", userId);
 
@@ -73,7 +89,23 @@ async function getPersistedHomepageBlingVaultItems(userId: string): Promise<Home
   }
 }
 
-function mapPersistedCollectionItem(row: unknown): CollectionItem | null {
+async function getPersistedHeroCollectionItemId(userId: string): Promise<string | null> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("sparkle_finder_profiles")
+      .select("hero_collection_item_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error || !data || typeof data !== "object") return null;
+    return readString((data as Record<string, unknown>).hero_collection_item_id) || null;
+  } catch {
+    return null;
+  }
+}
+
+function mapPersistedCollectionItem(row: unknown): (CollectionItem & { personalPhotoUrl?: string | null }) | null {
   if (!row || typeof row !== "object") {
     return null;
   }
@@ -98,6 +130,7 @@ function mapPersistedCollectionItem(row: unknown): CollectionItem | null {
     acquisitionSource: readAcquisitionSource(record.acquisition_source),
     acquisitionContext: readAcquisitionContext(record.acquisition_context),
     acquisitionMarkedAt: readString(record.acquisition_marked_at) || null,
+    personalPhotoUrl: readString(record.personal_photo_url) || null,
   };
 }
 

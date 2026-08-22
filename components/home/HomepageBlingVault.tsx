@@ -10,12 +10,13 @@ import type { LucideIcon } from "lucide-react";
 import type { SVGProps } from "react";
 
 type HomepageBlingVaultProps = {
+  canLoadPersistedItems?: boolean;
   customer: CustomerAccount;
   model: HomepageBlingVaultModel;
   profile?: SilverProfile;
 };
 
-export function HomepageBlingVault({ customer, model, profile }: HomepageBlingVaultProps) {
+export function HomepageBlingVault({ canLoadPersistedItems = false, customer, model, profile }: HomepageBlingVaultProps) {
   const profilePhotoUrl = profile?.photoUrl.trim();
 
   return (
@@ -90,11 +91,16 @@ export function HomepageBlingVault({ customer, model, profile }: HomepageBlingVa
         </div>
 
         <div className="grid gap-3">
-          <HeroPieceSpotlight item={model.heroItem} />
+          <HeroPieceSpotlight isSelected={model.heroItem?.id === model.heroItemId} item={model.heroItem} />
           <WishlistRail items={model.wishlistItems} />
         </div>
 
-        <BlingVaultMosaic items={model.mosaicItems} />
+        <BlingVaultMosaic
+          canLoadPersistedItems={canLoadPersistedItems}
+          heroItemId={model.heroItemId}
+          items={model.allItems}
+          totalItemCount={model.totalItemCount}
+        />
       </div>
     </section>
   );

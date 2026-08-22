@@ -6,9 +6,15 @@ import { addJewelryItemToCustomerCollection } from "@/lib/sparkle-finder/custome
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { CollectionItem, JewelryItem } from "@/lib/sparkle-finder/types";
 import type { SilverSaveActionState } from "@/app/(hub)/silver/actions";
+import type { SparkleShowcaseItemStatus, SparkleShowcaseVisibility } from "@/lib/sparkle-finder/showcase-types";
 
 export type ManagedCollectionItem = CollectionItem & {
   jewelryItem: JewelryItem;
+  visibility?: SparkleShowcaseVisibility;
+  showcaseStatus?: SparkleShowcaseItemStatus;
+  revealStory?: string;
+  personalPhotoUrl?: string | null;
+  isRarestReveal?: boolean;
 };
 
 type CollectionManagerProps = {

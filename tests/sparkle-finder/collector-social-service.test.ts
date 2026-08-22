@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getCollectorFollowSummary,
+  getPersistedFollowedShowcaseHighlights,
   getPublicCollectorProfile,
   searchPersistedPublicCollectorProfiles,
   searchPublicCollectorProfiles,
@@ -175,6 +176,48 @@ describe("Collector social service", () => {
         query: "",
       }),
     ).resolves.toBeNull();
+  });
+
+  it("maps only the strict public fields returned for followed Showcase highlights", async () => {
+    const highlights = await getPersistedFollowedShowcaseHighlights({
+      supabase: {
+        rpc: async (functionName, args) => {
+          expect(functionName).toBe("sparkle_finder_list_followed_showcase_highlights");
+          expect(args).toEqual({ result_limit: 6 });
+          return {
+            error: null,
+            data: [{
+              user_id: "user-123",
+              showcase_handle: "casey-finds",
+              display_name: "Casey Finds",
+              showcase_tagline: "Jewel tones and rare reveals.",
+              photo_url: "https://images.example/casey.jpg",
+              collection_item_id: "b1d5d56c-e870-4c37-8af1-c76127642ff0",
+              jewelry_item_id: "jewelry-123",
+              reveal_story: "I found this one on my birthday.",
+              personal_photo_url: "https://images.example/reveal.jpg",
+              is_rarest_reveal: true,
+              updated_at: "2026-08-22T19:30:00.000Z",
+              private_note: "must never be mapped",
+            }],
+          };
+        },
+      },
+    });
+
+    expect(highlights).toEqual([expect.objectContaining({
+      displayName: "Casey Finds",
+      showcaseUrl: "/showcase/casey-finds",
+      spotlightUrl: "/showcase/casey-finds/pieces/jewelry-123",
+      isRarestReveal: true,
+    })]);
+    expect(JSON.stringify(highlights)).not.toContain("must never be mapped");
+  });
+
+  it("fails closed when followed Showcase highlight reads fail", async () => {
+    await expect(getPersistedFollowedShowcaseHighlights({
+      supabase: { rpc: async () => ({ data: [], error: { message: "blocked" } }) },
+    })).resolves.toBeNull();
   });
 });
 

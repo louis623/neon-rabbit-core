@@ -13,8 +13,8 @@ import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
 
 describe("Sparkle Showcase public routes", () => {
-  it("renders a public Sparkle Showcase with rarest reveals and showcase collections", () => {
-    const showcase = getPublicSparkleShowcaseByHandle("sparkle-mama")!;
+  it("renders a public Sparkle Showcase with rarest reveals and showcase collections", async () => {
+    const showcase = (await getPublicSparkleShowcaseByHandle("sparkle-mama", fixtureOptions()))!;
     const markup = renderToStaticMarkup(renderSparkleShowcasePageContent(showcase, showcaseRouteAccountState("free")));
 
     expect(markup).toContain("Sparkle Mama");
@@ -37,8 +37,8 @@ describe("Sparkle Showcase public routes", () => {
     expect(findSparkleFinderCopyViolations(markup)).toEqual([]);
   });
 
-  it("does not render a self-follow button on the owner Showcase view", () => {
-    const showcase = getPublicSparkleShowcaseByHandle("sparkle-mama")!;
+  it("does not render a self-follow button on the owner Showcase view", async () => {
+    const showcase = (await getPublicSparkleShowcaseByHandle("sparkle-mama", fixtureOptions()))!;
     const markup = renderToStaticMarkup(renderSparkleShowcasePageContent(showcase, showcaseRouteAccountState("silver")));
 
     expect(markup).toContain("Your Showcase");
@@ -47,8 +47,8 @@ describe("Sparkle Showcase public routes", () => {
     expect(markup).not.toContain("DM");
   });
 
-  it("renders a shareable Reveal Spotlight with dancer leads and comments", () => {
-    const spotlight = getRevealSpotlight("sparkle-mama", "jewel-rainbow-crown-ring")!;
+  it("renders a shareable Reveal Spotlight with dancer leads and comments", async () => {
+    const spotlight = (await getRevealSpotlight("sparkle-mama", "jewel-rainbow-crown-ring", fixtureOptions()))!;
     const markup = renderToStaticMarkup(renderRevealSpotlightPageContent(spotlight));
 
     expect(markup).toContain("Reveal Spotlight");
@@ -63,18 +63,23 @@ describe("Sparkle Showcase public routes", () => {
     expect(markup).not.toContain("Private note");
   });
 
-  it("renders a public Showcase Collection detail page", () => {
-    const showcase = getPublicSparkleShowcaseByHandle("sparkle-mama")!;
-    const showcaseCollection = getShowcaseCollectionBySlug("sparkle-mama", "never-leaving")!;
+  it("renders a public Showcase Collection detail page", async () => {
+    const showcase = (await getPublicSparkleShowcaseByHandle("sparkle-mama", fixtureOptions()))!;
+    const showcaseCollection = (await getShowcaseCollectionBySlug("sparkle-mama", "never-leaving", fixtureOptions()))!;
     const markup = renderToStaticMarkup(renderShowcaseCollectionPageContent(showcase, showcaseCollection));
 
     expect(markup).toContain("Never Leaving");
     expect(markup).toContain("Showcase Collection");
+    expect(markup).toContain("Share Collection");
     expect(markup).toContain("Rainbow Crown Ring");
     expect(markup).not.toContain("Private Notes");
     expect(markup).not.toContain("Curated Collections");
   });
 });
+
+function fixtureOptions() {
+  return { allowFixtureFallback: true, supabase: null } as const;
+}
 
 function showcaseRouteAccountState(mode: "free" | "silver"): CurrentSparkleFinderAccountState & { status: "authenticated" } {
   const accountState = getLocalDevAuthState(mode);

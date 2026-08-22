@@ -12,6 +12,7 @@ const npxCommand = process.platform === "win32" ? "npx.cmd" : "npx";
 const useShell = process.platform === "win32";
 const smokeEnv = {
   SPARKLE_FINDER_ENABLE_PREVIEW_AUTH: "true",
+  SPARKLE_FINDER_ENABLE_SHOWCASE_FIXTURES: "true",
 };
 
 async function main() {

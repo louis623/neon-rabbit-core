@@ -2,15 +2,18 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { CollectorSearch } from "@/components/social/CollectorSearch";
 import { CollectorSocialPanel } from "@/components/social/CollectorSocialPanel";
+import { FollowedShowcases } from "@/components/social/FollowedShowcases";
 import { getCurrentSparkleFinderAccount } from "@/lib/sparkle-finder/account-service";
 import { parseSparkleFinderAuthMode, sparkleFinderAuthCookieName, type SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import {
   searchPersistedPublicCollectorProfiles,
+  getPersistedFollowedShowcaseHighlights,
   searchPublicCollectorProfiles,
   type SupabaseCollectorSocialReadClient,
 } from "@/lib/sparkle-finder/collector-social-service";
 import { createClient } from "@/lib/supabase/server";
 import type { PublicCollectorProfile } from "@/lib/sparkle-finder/social-types";
+import type { FollowedShowcaseHighlight } from "@/lib/sparkle-finder/social-types";
 import {
   blockCollectorAction,
   followCollectorAction,
@@ -29,18 +32,19 @@ export default async function CollectorsPage({ searchParams }: CollectorsPagePro
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
   const query = cleanQuery((await searchParams)?.q);
-  const persistedCollectors =
+  const persistedSocial =
     accountState.status === "authenticated" && accountState.isLocalPreview !== true
-      ? await getCollectorsForRealAccount(query)
+      ? await getCollectorSocialForRealAccount(query)
       : undefined;
 
-  return renderCollectorsPageContent(accountState, query, persistedCollectors);
+  return renderCollectorsPageContent(accountState, query, persistedSocial?.collectors, persistedSocial?.highlights);
 }
 
 export function renderCollectorsPageContent(
   accountState: SparkleFinderAccountState,
   query = "",
   persistedCollectors?: PublicCollectorProfile[],
+  persistedHighlights?: FollowedShowcaseHighlight[],
 ) {
   const cleanSearch = cleanQuery(query);
 
@@ -91,6 +95,8 @@ export function renderCollectorsPageContent(
         <CollectorSearch query={cleanSearch} />
       </div>
 
+      <FollowedShowcases highlights={persistedHighlights ?? []} />
+
       <CollectorSocialPanel
         blockAction={blockCollectorAction}
         collectors={collectors}
@@ -109,18 +115,20 @@ function cleanQuery(value: unknown): string {
     .slice(0, 80);
 }
 
-async function getCollectorsForRealAccount(query: string): Promise<PublicCollectorProfile[]> {
+async function getCollectorSocialForRealAccount(query: string): Promise<{
+  collectors: PublicCollectorProfile[];
+  highlights: FollowedShowcaseHighlight[];
+}> {
   try {
     const supabase = await createClient();
     const readClient = supabase as unknown as SupabaseCollectorSocialReadClient;
-    const collectors = await searchPersistedPublicCollectorProfiles({
-      supabase: readClient,
-      query,
-      limit: 12,
-    });
+    const [collectors, highlights] = await Promise.all([
+      searchPersistedPublicCollectorProfiles({ supabase: readClient, query, limit: 12 }),
+      getPersistedFollowedShowcaseHighlights({ supabase: readClient, limit: 6 }),
+    ]);
 
-    return collectors ?? [];
+    return { collectors: collectors ?? [], highlights: highlights ?? [] };
   } catch {
-    return [];
+    return { collectors: [], highlights: [] };
   }
 }

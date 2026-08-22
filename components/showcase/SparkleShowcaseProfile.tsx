@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Share2, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { blockCollectorAction, followCollectorAction, reportCollectorAction, unfollowCollectorAction } from "@/app/(hub)/collectors/actions";
 import { createShowcaseCommentAction, deleteShowcaseCommentAction, editShowcaseCommentAction, reportShowcaseTargetAction } from "@/app/showcase/actions";
 import { CollectorFollowButton } from "@/components/social/CollectorFollowButton";
@@ -8,6 +7,8 @@ import { RarestReveals } from "./RarestReveals";
 import { ShowcaseCollectionRail } from "./ShowcaseCollectionRail";
 import { ShowcaseComments } from "./ShowcaseComments";
 import { ShowcasePieceGrid } from "./ShowcasePieceGrid";
+import { ShareShowcaseButton } from "./ShareShowcaseButton";
+import { buildSparkleShowcasePath } from "@/lib/sparkle-finder/showcase-sharing";
 import type { SparkleShowcase } from "@/lib/sparkle-finder/showcase-types";
 
 type SparkleShowcaseProfileProps = {
@@ -60,13 +61,13 @@ export function SparkleShowcaseProfile({ showcase, viewerUserId }: SparkleShowca
             unfollowAction={unfollowCollectorAction}
             viewerUserId={viewerUserId}
           />
-          <Link
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-bold text-white"
-            href={`/showcase/${profile.handle}`}
-          >
-            <Share2 aria-hidden="true" className="size-4" />
-            Share Showcase
-          </Link>
+          <ShareShowcaseButton
+            isPublic
+            label="Share Showcase"
+            pathname={buildSparkleShowcasePath(profile.handle)}
+            shareText={`See ${profile.customer.displayName}'s public jewelry collection on Sparkle Finder.`}
+            shareTitle={`${profile.customer.displayName}'s Sparkle Showcase`}
+          />
           <SocialSafetyControls
             blockAction={blockCollectorAction}
             handle={profile.handle}

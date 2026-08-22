@@ -2,9 +2,11 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
 import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import { ShowcasePieceGrid } from "@/components/showcase/ShowcasePieceGrid";
+import { ShareShowcaseButton } from "@/components/showcase/ShareShowcaseButton";
 import {
   getCurrentSparkleFinderAccount,
   type CurrentSparkleFinderAccountState,
@@ -13,7 +15,9 @@ import {
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
-import { getPublicSparkleShowcaseByHandle, getShowcaseCollectionBySlug } from "@/lib/sparkle-finder/showcase-service";
+import { getPublicSparkleShowcaseByHandle } from "@/lib/sparkle-finder/showcase-service";
+import { createShowcaseCollectionMetadata } from "@/lib/sparkle-finder/showcase-metadata";
+import { buildShowcaseCollectionPath } from "@/lib/sparkle-finder/showcase-sharing";
 import type { ShowcaseCollectionWithPieces, SparkleShowcase } from "@/lib/sparkle-finder/showcase-types";
 
 type ShowcaseCollectionPageProps = {
@@ -23,19 +27,42 @@ type ShowcaseCollectionPageProps = {
   }>;
 };
 
-export default async function ShowcaseCollectionPage({ params }: ShowcaseCollectionPageProps) {
-  const cookieStore = await cookies();
-  const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
-  const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
+export async function generateMetadata({ params }: ShowcaseCollectionPageProps): Promise<Metadata> {
   const { collectionSlug, handle } = await params;
-  const showcase = getPublicSparkleShowcaseByHandle(handle);
-  const showcaseCollection = getShowcaseCollectionBySlug(handle, collectionSlug);
+  const accountState = await getCollectionAccountState();
+  const showcase = await getPublicSparkleShowcaseByHandle(handle, {
+    viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
+  });
+  const collection = showcase?.showcaseCollections.find(
+    (candidate) => candidate.slug === collectionSlug.trim().toLowerCase(),
+  );
+
+  return showcase && collection
+    ? createShowcaseCollectionMetadata(showcase, collection)
+    : { title: "Showcase Collection | Sparkle Finder" };
+}
+
+export default async function ShowcaseCollectionPage({ params }: ShowcaseCollectionPageProps) {
+  const accountState = await getCollectionAccountState();
+  const { collectionSlug, handle } = await params;
+  const showcase = await getPublicSparkleShowcaseByHandle(handle, {
+    viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
+  });
+  const showcaseCollection = showcase?.showcaseCollections.find(
+    (collection) => collection.slug === collectionSlug.trim().toLowerCase(),
+  );
 
   if (!showcase || !showcaseCollection) {
     notFound();
   }
 
   return renderShowcaseCollectionPageContent(showcase, showcaseCollection, accountState);
+}
+
+async function getCollectionAccountState() {
+  const cookieStore = await cookies();
+  const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
+  return getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
 }
 
 export function renderShowcaseCollectionPageContent(
@@ -62,6 +89,16 @@ export function renderShowcaseCollectionPageContent(
           <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
             {showcaseCollection.description}
           </p>
+          <div className="mt-5">
+            <ShareShowcaseButton
+              isPublic
+              label="Share Collection"
+              pathname={buildShowcaseCollectionPath(showcase.profile.handle, showcaseCollection.slug)}
+              shareText={`Browse ${showcaseCollection.title}, a public Showcase Collection from ${showcase.profile.customer.displayName}.`}
+              shareTitle={`${showcaseCollection.title} | Sparkle Finder`}
+              tone="secondary"
+            />
+          </div>
         </header>
         <ShowcasePieceGrid
           handle={showcase.profile.handle}

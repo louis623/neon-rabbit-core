@@ -1,48 +1,84 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { Gem, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { makeHeroPiece } from "@/app/actions/hero-piece";
 import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
-import type { HomepageBlingVaultItem } from "@/lib/sparkle-finder/homepage-bling-vault";
+import {
+  getHomepageBlingVaultImageUrl,
+  isFinderAssistedCollectionItem,
+  type HomepageBlingVaultItem,
+} from "@/lib/sparkle-finder/homepage-bling-vault";
 
 type BlingVaultTileProps = {
+  isHeroPiece?: boolean;
   item: HomepageBlingVaultItem;
   index: number;
 };
 
-export function BlingVaultTile({ item, index }: BlingVaultTileProps) {
+export function BlingVaultTile({ isHeroPiece = false, item, index }: BlingVaultTileProps) {
   return (
-    <Link
-      aria-label={`View ${item.jewelryItem.name}`}
+    <article
       className="group grid break-inside-avoid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-3 shadow-[var(--sparkle-shadow-sm)] transition hover:-translate-y-0.5 hover:border-[var(--sparkle-border-strong)] hover:shadow-[var(--sparkle-shadow-md)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
       data-smoke="bling-vault-tile"
-      href={`/library/${item.jewelryItemId}`}
     >
-      <div className={`${imageAspectClass(index)} overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)]`}>
+      <Link
+        aria-label={`View ${item.jewelryItem.name}`}
+        className={`relative block ${imageAspectClass(index)} overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sparkle-rose)]`}
+        href={`/library/${item.jewelryItemId}`}
+      >
         <JewelryImageFrame
-          imageUrl={item.jewelryItem.imageUrl}
+          imageUrl={getHomepageBlingVaultImageUrl(item)}
           jewelryType={item.jewelryItem.jewelryType}
           name={item.jewelryItem.name}
         />
-      </div>
+        {item.personalPhotoUrl?.trim() ? (
+          <span className="absolute left-2 top-2 rounded-full bg-[rgba(49,18,64,0.82)] px-2 py-1 text-[0.65rem] font-black text-white backdrop-blur-sm">
+            Your photo
+          </span>
+        ) : null}
+      </Link>
       <div className="min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="truncate font-[family-name:var(--font-playfair)] text-lg font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
+            <Link
+              className="line-clamp-2 font-[family-name:var(--font-playfair)] text-lg font-semibold leading-tight text-[var(--sparkle-plum-deep)] hover:text-[var(--sparkle-plum)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sparkle-rose)]"
+              href={`/library/${item.jewelryItemId}`}
+            >
               {item.jewelryItem.name}
-            </p>
+            </Link>
             <p className="mt-1 truncate text-sm font-semibold text-[var(--sparkle-ink-muted)]">{item.jewelryItem.collectionName}</p>
           </div>
-          {item.isHighlighted ? <ShieldCheck aria-hidden="true" className="size-5 shrink-0 text-[var(--sparkle-coral)]" /> : null}
+          {isHeroPiece ? <ShieldCheck aria-label="Current Hero Piece" className="size-5 shrink-0 text-[var(--sparkle-coral)]" /> : null}
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <StateBadge state={item.state} />
           {item.jewelryItem.bpLabel !== "standard" ? (
-            <span className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-2 py-1 text-xs font-black capitalize text-[var(--sparkle-plum)]">
+            <span className="inline-flex items-center gap-1 rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] px-2 py-1 text-xs font-black capitalize text-[var(--sparkle-plum)]">
+              <Gem aria-hidden="true" className="size-3.5" />
               {item.jewelryItem.bpLabel}
+            </span>
+          ) : null}
+          {isFinderAssistedCollectionItem(item) ? (
+            <span className="inline-flex items-center gap-1 rounded border border-[rgba(238,44,155,0.18)] bg-[var(--sparkle-blush-bg)] px-2 py-1 text-xs font-black text-[var(--sparkle-rose)]">
+              <Search aria-hidden="true" className="size-3.5" />
+              Found by Sparkle Finder
             </span>
           ) : null}
         </div>
       </div>
-    </Link>
+      {item.state === "owned" && !isHeroPiece ? (
+        <form action={makeHeroPiece}>
+          <input name="collectionItemId" type="hidden" value={item.id} />
+          <button
+            aria-label={`Make ${item.jewelryItem.name} your Hero Piece`}
+            className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-3 text-xs font-black text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--sparkle-rose)]"
+            type="submit"
+          >
+            <Sparkles aria-hidden="true" className="size-3.5 text-[var(--sparkle-coral)]" />
+            Make Hero Piece
+          </button>
+        </form>
+      ) : null}
+    </article>
   );
 }
 
