@@ -421,7 +421,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(vaultMarkup.indexOf("Owned")).toBeLessThan(vaultMarkup.indexOf("Hero Piece"));
     expect(vaultMarkup.indexOf("Hero Piece")).toBeLessThan(vaultMarkup.indexOf("Pieces you want to find."));
     expect(vaultMarkup.indexOf("Pieces you want to find.")).toBeLessThan(
-      vaultMarkup.indexOf("Your collection, loaded as you scroll."),
+      vaultMarkup.indexOf("Your collection, all in one place."),
     );
     expect((markup.match(/data-smoke="bling-vault-tile"/g) ?? []).length).toBeLessThanOrEqual(8);
     expect(markup).not.toContain("My Collection Preview");
@@ -873,7 +873,7 @@ describe("Sparkle Finder hub routes", () => {
     const markup = renderToStaticMarkup(renderCollectorsPageContent(getLocalDevAuthState("anonymous")));
 
     expect(markup).toContain("Collectors");
-    expect(markup).toContain("Sign in to discover public collector Showcases.");
+    expect(markup).toContain("Sign in to discover public Sparkle Showcases and follow collectors you love.");
     expect(markup).toContain('href="/auth/sign-in"');
     expect(markup).not.toContain("Friend request");
     expect(markup).not.toContain("DM");

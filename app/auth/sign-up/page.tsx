@@ -33,17 +33,18 @@ export function renderSignUpPageContent(searchParams: SignUpSearchParams = {}) {
               Start your 45-day Silver trial
             </h1>
             <p className="max-w-2xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
-              Create one Sparkle Finder account for the jewelry library, dancer leads, and Silver collector tools.
-              Your first 45 days include Silver access. After that, continue Silver for $4.99/month or keep browsing on Free.
+              Create one Sparkle Finder account to browse jewelry, find dancers, and build your Bling Vault and
+              Sparkle Showcase. Your first 45 days include Silver access. After that, continue Silver for $4.99/month
+              or keep browsing on Free.
             </p>
             <div className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
               <div className="flex items-start gap-3">
                 <Sparkles aria-hidden="true" className="mt-1 size-5 text-[var(--sparkle-coral)]" />
                 <div>
-                  <h2 className="text-lg font-bold text-[var(--sparkle-plum-deep)]">What Silver starts with</h2>
+                  <h2 className="text-lg font-bold text-[var(--sparkle-plum-deep)]">What Silver includes</h2>
                   <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-                    Profile and collection tools, focused Nic-Nac requests, and a smoother way to follow the pieces
-                    you care about.
+                    Your Bling Vault and Sparkle Showcase, personalized help from Nic-Nac, and an easier way to follow
+                    the pieces you care about.
                   </p>
                 </div>
               </div>

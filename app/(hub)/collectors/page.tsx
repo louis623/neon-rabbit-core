@@ -59,7 +59,7 @@ export function renderCollectorsPageContent(
         </div>
         <div className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
           <p className="text-sm font-semibold leading-6 text-[var(--sparkle-ink-muted)]">
-            Sign in to discover public collector Showcases.
+            Sign in to discover public Sparkle Showcases and follow collectors you love.
           </p>
           <Link
             className="inline-flex min-h-11 w-fit items-center justify-center rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-4 text-sm font-bold text-white"
@@ -89,7 +89,7 @@ export function renderCollectorsPageContent(
             Collectors
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-            Find public Sparkle Showcase profiles, follow one-way shortcuts, and keep safety controls close.
+            Discover public Sparkle Showcases, follow collectors you love, and keep your safety controls close.
           </p>
         </div>
         <CollectorSearch query={cleanSearch} />
@@ -102,6 +102,7 @@ export function renderCollectorsPageContent(
         collectors={collectors}
         followAction={followCollectorAction}
         reportAction={reportCollectorAction}
+        query={cleanSearch}
         unfollowAction={unfollowCollectorAction}
         viewerUserId={accountState.customer.id}
       />

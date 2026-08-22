@@ -31,8 +31,12 @@ describe("Followed Showcases", () => {
     expect(markup).toContain("/showcase/casey-finds/pieces/");
 
     expect(renderToStaticMarkup(<FollowedShowcases highlights={[]} />)).toContain(
-      "Your followed Showcase highlights will appear here.",
+      "Follow collectors to see their newest pieces.",
     );
+    expect(renderToStaticMarkup(<FollowedShowcases highlights={[]} />)).toContain(
+      "Their newest public pieces will appear here.",
+    );
+    expect(markup).toContain("See the newest public pieces shared by collectors you follow.");
   });
 
   it("keeps the database helper authenticated, bounded, block-aware, and free of private note fields", () => {

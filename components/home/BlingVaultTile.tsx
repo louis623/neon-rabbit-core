@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Gem, Search, ShieldCheck, Sparkles } from "lucide-react";
-import { makeHeroPiece } from "@/app/actions/hero-piece";
+import { Gem, Search, ShieldCheck } from "lucide-react";
+import { HeroPieceActionForm } from "@/components/home/HeroPieceActionForm";
 import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
 import {
   getHomepageBlingVaultImageUrl,
@@ -65,18 +65,13 @@ export function BlingVaultTile({ isHeroPiece = false, item, index }: BlingVaultT
           ) : null}
         </div>
       </div>
-      {item.state === "owned" && !isHeroPiece ? (
-        <form action={makeHeroPiece}>
-          <input name="collectionItemId" type="hidden" value={item.id} />
-          <button
-            aria-label={`Make ${item.jewelryItem.name} your Hero Piece`}
-            className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-3 text-xs font-black text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--sparkle-rose)]"
-            type="submit"
-          >
-            <Sparkles aria-hidden="true" className="size-3.5 text-[var(--sparkle-coral)]" />
-            Make Hero Piece
-          </button>
-        </form>
+      {item.state === "owned" ? (
+        <HeroPieceActionForm
+          collectionItemId={item.id}
+          compact
+          isSelected={isHeroPiece}
+          pieceName={item.jewelryItem.name}
+        />
       ) : null}
     </article>
   );

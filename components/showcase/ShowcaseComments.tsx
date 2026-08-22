@@ -21,12 +21,12 @@ type ShowcaseCommentsProps = {
 
 const initialCommentState: CommentActionState = {
   ok: true,
-  message: "Comments ready.",
+  message: "",
 };
 
 const initialReportState: ReportActionState = {
   ok: true,
-  message: "Reports ready.",
+  message: "",
 };
 const commentReportTargetType: ShowcaseReportTargetType = "comment";
 
@@ -82,9 +82,11 @@ export function ShowcaseComments({
             {isCommentPending ? <LoaderCircle aria-hidden="true" className="size-4 animate-spin" /> : <Send aria-hidden="true" className="size-4" />}
             Post comment
           </button>
-          <p className="text-sm font-semibold text-[var(--sparkle-ink-muted)]" role="status">
-            {commentState.message}
-          </p>
+          {commentState.message ? (
+            <p aria-live="polite" className="text-sm font-semibold text-[var(--sparkle-ink-muted)]" role="status">
+              {commentState.message}
+            </p>
+          ) : null}
         </form>
       ) : (
         <p className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] p-3 text-sm font-semibold text-[var(--sparkle-ink-muted)]">
@@ -107,13 +109,17 @@ export function ShowcaseComments({
             />
           ))
         ) : (
-          <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">No comments yet.</p>
+          <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+            {viewerUserId ? "Be the first to leave a kind comment." : "Comments will appear here."}
+          </p>
         )}
       </div>
 
-      <p className="text-sm font-semibold text-[var(--sparkle-ink-muted)]" role="status">
-        {isReportPending ? "Sending report..." : reportState.message}
-      </p>
+      {isReportPending || reportState.message ? (
+        <p aria-live="polite" className="text-sm font-semibold text-[var(--sparkle-ink-muted)]" role="status">
+          {isReportPending ? "Sending your report..." : reportState.message}
+        </p>
+      ) : null}
     </section>
   );
 }

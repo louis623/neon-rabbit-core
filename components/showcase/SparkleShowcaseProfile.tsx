@@ -20,6 +20,7 @@ type SparkleShowcaseProfileProps = {
 export function SparkleShowcaseProfile({ showcase, viewerUserId, isPrivatePreview = false }: SparkleShowcaseProfileProps) {
   const { profile } = showcase;
   const isSelf = viewerUserId === profile.customer.id;
+  const hasPublicPieces = showcase.pieces.length > 0;
 
   return (
     <section className="grid gap-8" data-smoke="sparkle-showcase">
@@ -80,10 +81,25 @@ export function SparkleShowcaseProfile({ showcase, viewerUserId, isPrivatePrevie
         </div> : null}
       </header>
 
-      <RarestReveals handle={profile.handle} pieces={showcase.rarestReveals} />
-      <ShowcaseCollectionRail collections={showcase.showcaseCollections} handle={profile.handle} />
-      <ShowcasePieceGrid handle={profile.handle} pieces={showcase.pieces} />
-      {!isPrivatePreview ? <ShowcaseComments
+      {hasPublicPieces ? (
+        <>
+          <RarestReveals handle={profile.handle} pieces={showcase.rarestReveals} />
+          <ShowcaseCollectionRail collections={showcase.showcaseCollections} handle={profile.handle} />
+          <ShowcasePieceGrid handle={profile.handle} pieces={showcase.pieces} />
+        </>
+      ) : (
+        <div className="grid gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-6 text-center shadow-[var(--sparkle-shadow-sm)]">
+          <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+            This Showcase is ready for its first public piece.
+          </h2>
+          <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+            {isPrivatePreview || isSelf
+              ? "When you make a piece public, it will appear here."
+              : "When this collector shares jewelry, it will appear here."}
+          </p>
+        </div>
+      )}
+      {!isPrivatePreview && hasPublicPieces ? <ShowcaseComments
         comments={showcase.comments}
         createAction={createShowcaseCommentAction}
         deleteAction={deleteShowcaseCommentAction}

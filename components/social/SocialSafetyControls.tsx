@@ -15,7 +15,7 @@ type SocialSafetyControlsProps = {
 
 const idleActionState: CollectorSocialActionState = {
   status: "idle",
-  message: "Safety controls ready.",
+  message: "",
 };
 
 export function SocialSafetyControls({
@@ -35,12 +35,14 @@ export function SocialSafetyControls({
     idleActionState,
   );
   const statusMessage = isReportPending
-    ? "Sending report..."
+    ? "Sending your report..."
     : isBlockPending
-      ? "Blocking collector..."
+      ? "Blocking this collector..."
       : blockState.status !== "idle"
         ? blockState.message
-        : reportState.message;
+        : reportState.status !== "idle"
+          ? reportState.message
+          : null;
 
   if (isSelf || !viewerUserId) {
     return null;
@@ -55,6 +57,7 @@ export function SocialSafetyControls({
           <input name="reason" type="hidden" value="other" />
           <input name="details" type="hidden" value="Collector profile report" />
           <button
+            aria-label={`Report @${handle}`}
             aria-busy={isReportPending}
             className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-xs font-bold text-[var(--sparkle-ink-muted)] transition hover:border-[var(--sparkle-rose)] hover:text-[var(--sparkle-plum)] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isReportPending}
@@ -86,13 +89,15 @@ export function SocialSafetyControls({
             type="submit"
           >
             {isBlockPending ? <LoaderCircle aria-hidden="true" className="size-4 animate-spin" /> : <Ban aria-hidden="true" className="size-4" />}
-            <span>Block</span>
+            <span>Block collector</span>
           </button>
         </form>
       </div>
-      <p className="text-xs font-semibold text-[var(--sparkle-ink-muted)]" role="status">
-        {statusMessage}
-      </p>
+      {statusMessage ? (
+        <p aria-live="polite" className="text-xs font-semibold text-[var(--sparkle-ink-muted)]" role="status">
+          {statusMessage}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -100,6 +105,6 @@ export function SocialSafetyControls({
 async function disabledSafetyAction(): Promise<CollectorSocialActionState> {
   return {
     status: "error",
-    message: "Sign in to use collector controls.",
+    message: "Sign in to use these safety controls.",
   };
 }

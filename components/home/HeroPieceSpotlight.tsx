@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
-import { makeHeroPiece } from "@/app/actions/hero-piece";
+import { HeroPieceActionForm } from "@/components/home/HeroPieceActionForm";
 import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
 import { getHomepageBlingVaultImageUrl, type HomepageBlingVaultItem } from "@/lib/sparkle-finder/homepage-bling-vault";
 
@@ -51,7 +51,7 @@ export function HeroPieceSpotlight({ isSelected = false, item }: HeroPieceSpotli
           <div>
             <p className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">
               <Sparkles aria-hidden="true" className="size-4" />
-              Hero Piece
+              {isSelected ? "Hero Piece" : "Hero Piece suggestion"}
             </p>
             <h3 className="mt-2 font-[family-name:var(--font-playfair)] text-3xl font-semibold leading-tight text-[var(--sparkle-plum-deep)] sm:text-4xl">
               {item.jewelryItem.name}
@@ -66,7 +66,7 @@ export function HeroPieceSpotlight({ isSelected = false, item }: HeroPieceSpotli
             <StateBadge state={item.state} />
             <span className="inline-flex items-center gap-1 rounded border border-[#e7be77] bg-[#fff3cf] px-2 py-1 text-xs font-black text-[#704b11]">
               <ShieldCheck aria-hidden="true" className="size-3.5" />
-              {isSelected ? "Selected Hero Piece" : "Not saved as Hero yet"}
+              {isSelected ? "Selected Hero Piece" : "Ready to make your Hero"}
             </span>
           </div>
 
@@ -80,18 +80,11 @@ export function HeroPieceSpotlight({ isSelected = false, item }: HeroPieceSpotli
               View piece
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
-            {!isSelected ? (
-              <form action={makeHeroPiece}>
-                <input name="collectionItemId" type="hidden" value={item.id} />
-                <button
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-4 text-sm font-black text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
-                  type="submit"
-                >
-                  <Sparkles aria-hidden="true" className="size-4 text-[var(--sparkle-coral)]" />
-                  Make this my Hero Piece
-                </button>
-              </form>
-            ) : null}
+            <HeroPieceActionForm
+              collectionItemId={item.id}
+              isSelected={isSelected}
+              pieceName={item.jewelryItem.name}
+            />
           </div>
         </div>
       </div>

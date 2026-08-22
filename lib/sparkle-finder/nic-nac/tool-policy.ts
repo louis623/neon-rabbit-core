@@ -2,10 +2,10 @@ import type { FinderNicNacToolIntent } from "./curator";
 import { listFinderNicNacToolNamesForIntents } from "./tools";
 
 export const FINDER_SUITE_WORKSPACE_REQUIRED_MESSAGE =
-  "I need you to log in to Sparkle Suite for us to do any Sparkle Suite work.";
+  "Please sign in to Sparkle Suite before asking me to update anything there.";
 
 export const FINDER_SILVER_REQUIRED_MESSAGE =
-  "Sparkle Finder Silver is required before I can use that Finder tool.";
+  "Sparkle Finder Silver is required for personalized help from Nic-Nac.";
 
 export type FinderNicNacToolIntentCapabilityRequirement =
   | "finder_memory"

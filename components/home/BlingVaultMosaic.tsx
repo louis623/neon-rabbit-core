@@ -1,8 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { loadBlingVaultPage } from "@/app/actions/bling-vault";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { loadBlingVaultPage, type BlingVaultPageResult } from "@/app/actions/bling-vault";
 import { BlingVaultTile } from "@/components/home/BlingVaultTile";
+import {
+  createInitialBlingVaultLoadState,
+  reduceBlingVaultLoadState,
+} from "@/lib/sparkle-finder/bling-vault-load-state";
 import {
   filterHomepageBlingVaultItems,
   type BlingVaultFilter,
@@ -12,6 +16,7 @@ import {
 type BlingVaultMosaicProps = {
   canLoadPersistedItems?: boolean;
   heroItemId?: string;
+  initialLoadError?: string | null;
   items: HomepageBlingVaultItem[];
   totalItemCount?: number;
 };
@@ -30,35 +35,61 @@ const filterOptions: Array<{ emptyTitle: string; label: string; value: BlingVaul
   { emptyTitle: "No pieces found by Sparkle Finder yet.", label: "Found by Sparkle Finder", value: "finder" },
 ];
 
-export function BlingVaultMosaic({ canLoadPersistedItems = false, heroItemId, items, totalItemCount = items.length }: BlingVaultMosaicProps) {
-  const [activeFilter, setActiveFilter] = useState<BlingVaultFilter>("all");
-  const [persistedItems, setPersistedItems] = useState(items);
-  const [persistedTotal, setPersistedTotal] = useState(totalItemCount);
-  const [isLoading, setIsLoading] = useState(false);
+export function BlingVaultMosaic({
+  canLoadPersistedItems = false,
+  heroItemId,
+  initialLoadError,
+  items,
+  totalItemCount = items.length,
+}: BlingVaultMosaicProps) {
+  const shouldRefreshAfterRecovery = useRef(Boolean(initialLoadError));
+  const [loadState, dispatch] = useReducer(
+    reduceBlingVaultLoadState,
+    { errorMessage: initialLoadError, items, total: totalItemCount },
+    createInitialBlingVaultLoadState,
+  );
   const requestNumber = useRef(0);
+  const pendingRequest = useRef<number | null>(null);
+  const { activeFilter, errorMessage, items: persistedItems, status, total: persistedTotal } = loadState;
+  const isLoading = status === "loading";
   const filteredItems = canLoadPersistedItems ? persistedItems : filterHomepageBlingVaultItems(items, activeFilter);
   const total = canLoadPersistedItems ? persistedTotal : filteredItems.length;
   const [visibleCount, setVisibleCount] = useState(Math.min(initialBatchSize, filteredItems.length));
   const [automaticLoads, setAutomaticLoads] = useState(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const hasMore = canLoadPersistedItems ? persistedItems.length < persistedTotal : visibleCount < filteredItems.length;
+  const hasMore = status !== "error" && (canLoadPersistedItems ? persistedItems.length < persistedTotal : visibleCount < filteredItems.length);
   const visibleItems = canLoadPersistedItems ? persistedItems : filteredItems.slice(0, visibleCount);
 
   const loadMore = useCallback(async () => {
-    if (isLoading) return;
+    if (pendingRequest.current !== null) return;
     if (!canLoadPersistedItems) {
       setVisibleCount((current) => Math.min(current + getBatchSize(), filteredItems.length));
       setAutomaticLoads((current) => current + 1);
       return;
     }
 
-    setIsLoading(true);
-    const page = await loadBlingVaultPage(activeFilter, persistedItems.length, getBatchSize());
-    setPersistedItems((current) => mergeUniqueItems(current, page.items));
-    setPersistedTotal(page.total);
-    setAutomaticLoads((current) => current + 1);
-    setIsLoading(false);
-  }, [activeFilter, canLoadPersistedItems, filteredItems.length, isLoading, persistedItems.length]);
+    const requestId = ++requestNumber.current;
+    pendingRequest.current = requestId;
+    dispatch({ type: "request_started", filter: activeFilter, requestId, replace: false });
+
+    try {
+      const result = await loadBlingVaultPage(activeFilter, persistedItems.length, getBatchSize());
+      dispatch({ type: "request_finished", requestId, replace: false, result });
+      if (result.status === "success") {
+        setAutomaticLoads((current) => current + 1);
+      }
+    } catch {
+      const result: BlingVaultPageResult = {
+        status: "error",
+        message: "We couldn't load more of your Bling Vault. Please try again.",
+      };
+      dispatch({ type: "request_finished", requestId, replace: false, result });
+    } finally {
+      if (pendingRequest.current === requestId) {
+        pendingRequest.current = null;
+      }
+    }
+  }, [activeFilter, canLoadPersistedItems, filteredItems.length, persistedItems.length]);
 
   useEffect(() => {
     if (!hasMore || automaticLoads >= automaticBatchLimit) {
@@ -85,21 +116,42 @@ export function BlingVaultMosaic({ canLoadPersistedItems = false, heroItemId, it
     observer.observe(sentinel);
 
     return () => observer.disconnect();
-  }, [automaticLoads, filteredItems.length, hasMore, loadMore]);
+  }, [automaticLoads, filteredItems.length, hasMore, loadMore, status]);
 
   async function selectFilter(filter: BlingVaultFilter) {
-    setActiveFilter(filter);
     setVisibleCount(initialBatchSize);
     setAutomaticLoads(0);
-    if (!canLoadPersistedItems) return;
+    if (!canLoadPersistedItems) {
+      dispatch({ type: "filter_changed", filter });
+      return;
+    }
 
-    const currentRequest = ++requestNumber.current;
-    setIsLoading(true);
-    const page = await loadBlingVaultPage(filter, 0, initialBatchSize);
-    if (currentRequest !== requestNumber.current) return;
-    setPersistedItems(page.items);
-    setPersistedTotal(page.total);
-    setIsLoading(false);
+    await loadFirstPage(filter);
+  }
+
+  async function loadFirstPage(filter: BlingVaultFilter) {
+    const requestId = ++requestNumber.current;
+    pendingRequest.current = requestId;
+    dispatch({ type: "request_started", filter, requestId, replace: true });
+
+    try {
+      const result = await loadBlingVaultPage(filter, 0, initialBatchSize);
+      dispatch({ type: "request_finished", requestId, replace: true, result });
+      if (result.status === "success" && shouldRefreshAfterRecovery.current) {
+        shouldRefreshAfterRecovery.current = false;
+        window.location.reload();
+      }
+    } catch {
+      const result: BlingVaultPageResult = {
+        status: "error",
+        message: "We couldn't load your Bling Vault. Please try again.",
+      };
+      dispatch({ type: "request_finished", requestId, replace: true, result });
+    } finally {
+      if (pendingRequest.current === requestId) {
+        pendingRequest.current = null;
+      }
+    }
   }
 
   return (
@@ -107,13 +159,13 @@ export function BlingVaultMosaic({ canLoadPersistedItems = false, heroItemId, it
       <div>
         <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Bling Vault</p>
         <h3 id="bling-vault-mosaic-title" className="mt-1 font-[family-name:var(--font-playfair)] text-2xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
-          Your collection, loaded as you scroll.
+          Your collection, all in one place.
         </h3>
       </div>
 
       <div
         aria-label="Filter your Bling Vault"
-        className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1"
+        className="sparkle-scrollbar-hidden -mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1"
         role="group"
       >
         {filterOptions.map((option) => (
@@ -132,6 +184,29 @@ export function BlingVaultMosaic({ canLoadPersistedItems = false, heroItemId, it
           </button>
         ))}
       </div>
+
+      {errorMessage ? (
+        <div
+          className="rounded-[var(--sparkle-radius-sm)] border border-[rgba(238,44,155,0.24)] bg-[var(--sparkle-blush-bg)] p-4"
+          role="alert"
+        >
+          <p className="font-bold text-[var(--sparkle-plum-deep)]">{errorMessage}</p>
+          <button
+            className="mt-3 inline-flex min-h-11 items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border-strong)] bg-white px-4 text-sm font-black text-[var(--sparkle-plum)] transition hover:bg-[var(--sparkle-paper-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isLoading}
+            onClick={() => void loadFirstPage(activeFilter)}
+            type="button"
+          >
+            {isLoading ? "Trying again…" : "Try again"}
+          </button>
+        </div>
+      ) : null}
+
+      {isLoading && visibleItems.length === 0 ? (
+        <p aria-live="polite" className="text-sm font-semibold text-[var(--sparkle-ink-muted)]" role="status">
+          Loading your Bling Vault…
+        </p>
+      ) : null}
 
       {visibleItems.length > 0 ? (
         <>
@@ -160,7 +235,7 @@ export function BlingVaultMosaic({ canLoadPersistedItems = false, heroItemId, it
             </div>
           ) : null}
         </>
-      ) : (
+      ) : !errorMessage && !isLoading ? (
         <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
           <p className="font-bold text-[var(--sparkle-plum-deep)]">
             {totalItemCount > 0
@@ -170,18 +245,12 @@ export function BlingVaultMosaic({ canLoadPersistedItems = false, heroItemId, it
           <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
             {totalItemCount > 0
               ? "Try another filter or add a piece from the Library."
-              : "Add more owned pieces or Wishlist pieces and they will load into the Bling Vault without slowing the homepage down."}
+              : "Add an owned or Wishlist piece from the Library, and it will appear here."}
           </p>
         </div>
-      )}
+      ) : null}
     </section>
   );
-}
-
-function mergeUniqueItems(current: HomepageBlingVaultItem[], next: HomepageBlingVaultItem[]) {
-  const byId = new Map(current.map((item) => [item.id, item]));
-  next.forEach((item) => byId.set(item.id, item));
-  return [...byId.values()];
 }
 
 function getBatchSize() {

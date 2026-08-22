@@ -11,6 +11,10 @@ type ShowcasePieceGridProps = {
 };
 
 export function ShowcasePieceGrid({ handle, pieces, title = "Sparkle Showcase Pieces" }: ShowcasePieceGridProps) {
+  if (pieces.length === 0) {
+    return null;
+  }
+
   return (
     <section className="grid gap-4" data-smoke="showcase-piece-grid">
       <div>

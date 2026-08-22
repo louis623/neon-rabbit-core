@@ -26,7 +26,7 @@ describe("Sparkle Showcase public routes", () => {
     expect(markup).toContain("Follow");
     expect(markup).toContain("Report");
     expect(markup).toContain("Block");
-    expect(markup).toContain("Safety controls ready.");
+    expect(markup).not.toContain("Safety controls ready.");
     expect(markup).toContain("Confirm block");
     expect(markup).toContain("Report spam or bad behavior");
     expect(markup).not.toContain("Private note");

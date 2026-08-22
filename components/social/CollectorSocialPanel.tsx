@@ -9,6 +9,7 @@ type CollectorSocialPanelProps = {
   blockAction?: (previousState: CollectorSocialActionState, formData: FormData) => Promise<CollectorSocialActionState>;
   collectors: PublicCollectorProfile[];
   followAction?: (formData: FormData) => Promise<void>;
+  query?: string;
   reportAction?: (previousState: CollectorSocialActionState, formData: FormData) => Promise<CollectorSocialActionState>;
   unfollowAction?: (formData: FormData) => Promise<void>;
   viewerUserId: string;
@@ -18,15 +19,28 @@ export function CollectorSocialPanel({
   blockAction,
   collectors,
   followAction,
+  query = "",
   reportAction,
   unfollowAction,
   viewerUserId,
 }: CollectorSocialPanelProps) {
   if (collectors.length === 0) {
+    const hasSearchQuery = query.trim().length > 0;
+
     return (
-      <p className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 text-sm font-semibold text-[var(--sparkle-ink-muted)] shadow-[var(--sparkle-shadow-sm)]">
-        No public collectors matched that search.
-      </p>
+      <section
+        aria-label="Public Showcases"
+        className="grid gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]"
+      >
+        <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
+          {hasSearchQuery ? "No public Showcases match this search." : "Public Showcases will appear here."}
+        </h2>
+        <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+          {hasSearchQuery
+            ? "Try another collector name, handle, state, or TikTok handle."
+            : "Check back as collectors begin sharing the jewelry they love."}
+        </p>
+      </section>
     );
   }
 
@@ -40,7 +54,7 @@ export function CollectorSocialPanel({
           </h2>
         </div>
         <p className="max-w-2xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-          Follow public collectors for quick return trips to their shared reveals and collection shortcuts.
+          Follow collectors you love and come back easily to their newest public pieces and Showcase Collections.
         </p>
       </div>
 

@@ -2,9 +2,9 @@ import Link from "next/link";
 import { CheckCircle2, Gem } from "lucide-react";
 
 const silverTrialHighlights = [
-  "Find pieces you like, follow reps, and track the next shows in one workflow.",
-  "Keep favorites in your digital wishlist and add notes on what you are watching.",
-  "Show off pieces you already own with a digital collection.",
+  "Find jewelry you love, follow reps, and keep up with upcoming shows.",
+  "Build a Wishlist and add notes about the pieces you are watching.",
+  "Celebrate the jewelry you own in your Bling Vault and Sparkle Showcase.",
 ] as const;
 
 export function MembershipTierCards() {
@@ -21,8 +21,8 @@ export function MembershipTierCards() {
           Start with your 45-day Silver Tier trial
         </h2>
         <p className="mt-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-          Silver opens the full collector workflow: jewelry search, the Dance Floor, live show planning, wishlist, and
-          collection showcase.
+          Silver brings together jewelry search, dancer leads, live show planning, your Wishlist, your Bling Vault,
+          and personalized help from Nic-Nac.
         </p>
       </div>
 

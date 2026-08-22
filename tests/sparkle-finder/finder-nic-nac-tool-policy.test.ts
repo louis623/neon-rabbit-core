@@ -2,12 +2,24 @@ import { describe, expect, it } from "vitest";
 import { getFinderNicNacToolIntentsForText } from "../../lib/sparkle-finder/nic-nac/curator";
 import {
   FINDER_NIC_NAC_TOOL_INTENT_CAPABILITIES,
+  FINDER_SILVER_REQUIRED_MESSAGE,
   FINDER_SUITE_WORKSPACE_REQUIRED_MESSAGE,
   createFinderNicNacProductContext,
   filterFinderNicNacToolIntentsForContext,
 } from "../../lib/sparkle-finder/nic-nac/tool-policy";
 
 describe("Sparkle Finder Nic-Nac tool policy", () => {
+  it("uses clear customer wording when an account boundary blocks Nic-Nac help", () => {
+    expect(FINDER_SUITE_WORKSPACE_REQUIRED_MESSAGE).toBe(
+      "Please sign in to Sparkle Suite before asking me to update anything there.",
+    );
+    expect(FINDER_SILVER_REQUIRED_MESSAGE).toBe(
+      "Sparkle Finder Silver is required for personalized help from Nic-Nac.",
+    );
+    expect(FINDER_SUITE_WORKSPACE_REQUIRED_MESSAGE).not.toContain("workspace mutation");
+    expect(FINDER_SILVER_REQUIRED_MESSAGE).not.toContain("Finder tool");
+  });
+
   it("assigns every Finder routed intent to an explicit capability requirement", () => {
     expect(Object.keys(FINDER_NIC_NAC_TOOL_INTENT_CAPABILITIES).sort()).toEqual([
       "availability",

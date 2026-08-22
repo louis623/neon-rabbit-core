@@ -39,8 +39,8 @@ export function renderSignInPageContent(searchParams: SignInSearchParams = {}) {
               Sign in to open Sparkle Finder
             </h1>
             <p className="max-w-2xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
-              Use your Sparkle Finder account for the library, dancer leads, Silver collection tools, and focused
-              Nic-Nac requests. New accounts start with a 45-day Silver trial.
+              Use your Sparkle Finder account to browse jewelry, find dancers, build your Bling Vault and Sparkle
+              Showcase, and get personalized help from Nic-Nac. New accounts start with a 45-day Silver trial.
             </p>
             {notice ? (
               <p className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-3 text-sm font-semibold leading-6 text-[var(--sparkle-plum-deep)] shadow-[var(--sparkle-shadow-sm)]">
@@ -63,7 +63,7 @@ export function renderSignInPageContent(searchParams: SignInSearchParams = {}) {
                   <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
                     This development build uses fixture accounts, so no production credentials are needed. Guest preview
                     keeps the public view anonymous, Free preview opens the browsing hub, and Silver preview opens
-                    collection tools and focused Nic-Nac requests.
+                    collection tools and personalized help from Nic-Nac.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3">

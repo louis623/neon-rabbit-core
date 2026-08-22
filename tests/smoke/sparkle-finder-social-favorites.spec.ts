@@ -28,7 +28,7 @@ test.describe("Sparkle Finder social favorites smoke", () => {
     await expect(page.getByRole("link", { name: "View Showcase" }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: /Follow|Following|Your Showcase/ }).first()).toBeVisible();
     await expect(page.locator('[data-smoke="collector-safety-controls"]').first()).toBeVisible();
-    await expect(page.getByText("Safety controls ready.").first()).toBeVisible();
+    await expect(page.getByText("Safety controls ready.")).toHaveCount(0);
     await expect(page.getByLabel("Confirm block").first()).toBeVisible();
     await expectNoGuardrailCopy(page);
 
@@ -53,8 +53,8 @@ test.describe("Sparkle Finder social favorites smoke", () => {
     await page.goto(`${baseUrl}/showcase/sparkle-mama`, { waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-smoke="sparkle-showcase"]')).toBeVisible();
     await expect(page.getByRole("button", { name: "Follow" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Report", exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Block", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Report @/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Block collector", exact: true })).toBeVisible();
     await expect(page.getByLabel("Confirm block")).toBeVisible();
     await expectNoGuardrailCopy(page);
   });

@@ -977,3 +977,12 @@ select {
   font-family: var(--font-playfair), Georgia, serif;
   letter-spacing: 0;
 }
+
+.sparkle-scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.sparkle-scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}

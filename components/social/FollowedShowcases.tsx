@@ -13,15 +13,15 @@ export function FollowedShowcases({ highlights }: { highlights: FollowedShowcase
           </h2>
         </div>
         <p className="max-w-2xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-          A small, newest-first look at public pieces from collectors you follow.
+          See the newest public pieces shared by collectors you follow.
         </p>
       </div>
 
       {highlights.length === 0 ? (
         <div className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
-          <p className="font-bold text-[var(--sparkle-plum-deep)]">Your followed Showcase highlights will appear here.</p>
+          <p className="font-bold text-[var(--sparkle-plum-deep)]">Follow collectors to see their newest pieces.</p>
           <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-            Follow a public collector below. When they share a public piece, you can return to it from this compact view.
+            Follow a public collector below. Their newest public pieces will appear here.
           </p>
         </div>
       ) : (

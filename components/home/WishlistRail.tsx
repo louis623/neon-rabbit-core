@@ -25,7 +25,7 @@ export function WishlistRail({ items }: WishlistRailProps) {
       </div>
 
       {items.length > 0 ? (
-        <div className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-2 md:overflow-visible md:pb-0">
+        <div className="sparkle-scrollbar-hidden mt-4 flex snap-x gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-2 md:overflow-visible md:pb-0">
           {items.slice(0, visibleWishlistCount).map((item) => (
             <Link
               aria-label={`View Wishlist piece ${item.jewelryItem.name}`}

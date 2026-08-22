@@ -9,7 +9,7 @@ import {
   getCurrentSparkleFinderAccount,
   type CurrentSparkleFinderAccountState,
 } from "@/lib/sparkle-finder/account-service";
-import { getCatalogJewelryItemById } from "@/lib/sparkle-finder/catalog-service";
+import { getCatalogJewelryItemByIdResult } from "@/lib/sparkle-finder/catalog-service";
 import { createClient } from "@/lib/supabase/server";
 import type { HomepageBlingVaultItem } from "@/lib/sparkle-finder/homepage-bling-vault";
 import type { CollectionAcquisitionSource, CollectionItem } from "@/lib/sparkle-finder/types";
@@ -22,9 +22,15 @@ export function renderHomeContent(
   accountState: CurrentSparkleFinderAccountState,
   collectionItems?: HomepageBlingVaultItem[],
   heroCollectionItemId?: string | null,
+  blingVaultLoadError?: string | null,
 ) {
   return accountState.status === "authenticated" ? (
-    <AuthenticatedHomePage accountState={accountState} collectionItems={collectionItems} heroCollectionItemId={heroCollectionItemId} />
+    <AuthenticatedHomePage
+      accountState={accountState}
+      blingVaultLoadError={blingVaultLoadError}
+      collectionItems={collectionItems}
+      heroCollectionItemId={heroCollectionItemId}
+    />
   ) : (
     renderPublicHomeContent(accountState)
   );
@@ -35,19 +41,26 @@ export default async function Home() {
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
   const homepageData =
-    accountState.status === "authenticated"
+    accountState.status === "authenticated" && accountState.isLocalPreview !== true
       ? await getPersistedHomepageData(accountState.customer.id)
-      : { collectionItems: [], heroCollectionItemId: null };
+      : null;
 
   return renderHomeContent(
     accountState,
-    homepageData.collectionItems.length > 0 ? homepageData.collectionItems : undefined,
-    homepageData.heroCollectionItemId,
+    homepageData
+      ? homepageData.collectionItems.status === "success"
+        ? homepageData.collectionItems.items
+        : []
+      : undefined,
+    homepageData?.heroCollectionItemId,
+    homepageData?.collectionItems.status === "error"
+      ? homepageData.collectionItems.message
+      : null,
   );
 }
 
 async function getPersistedHomepageData(userId: string): Promise<{
-  collectionItems: HomepageBlingVaultItem[];
+  collectionItems: HomepageCollectionItemsResult;
   heroCollectionItemId: string | null;
 }> {
   const [collectionItems, heroCollectionItemId] = await Promise.all([
@@ -57,7 +70,13 @@ async function getPersistedHomepageData(userId: string): Promise<{
   return { collectionItems, heroCollectionItemId };
 }
 
-async function getPersistedHomepageBlingVaultItems(userId: string): Promise<HomepageBlingVaultItem[]> {
+export type HomepageCollectionItemsResult =
+  | { status: "success"; items: HomepageBlingVaultItem[] }
+  | { status: "error"; message: string };
+
+export async function getPersistedHomepageBlingVaultItems(
+  userId: string,
+): Promise<HomepageCollectionItemsResult> {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -68,7 +87,10 @@ async function getPersistedHomepageBlingVaultItems(userId: string): Promise<Home
       .eq("user_id", userId);
 
     if (error || !Array.isArray(data)) {
-      return [];
+      return {
+        status: "error",
+        message: "We couldn't load your Bling Vault. Please try again.",
+      };
     }
 
     const mappedItems = await Promise.all(
@@ -76,16 +98,40 @@ async function getPersistedHomepageBlingVaultItems(userId: string): Promise<Home
         const item = mapPersistedCollectionItem(row);
 
         return item ? [item] : [];
-      }).map(async (item): Promise<HomepageBlingVaultItem | null> => {
-        const jewelryItem = await getCatalogJewelryItemById(item.jewelryItemId, { useFixtureFallback: false });
+      }).map(async (item) => {
+        const catalogResult = await getCatalogJewelryItemByIdResult(item.jewelryItemId, {
+          useFixtureFallback: false,
+        });
 
-        return jewelryItem ? { ...item, jewelryItem } : null;
+        if (catalogResult.status === "error") {
+          return { status: "error" as const };
+        }
+
+        return {
+          status: "success" as const,
+          item: catalogResult.item ? { ...item, jewelryItem: catalogResult.item } : null,
+        };
       }),
     );
 
-    return mappedItems.filter((item): item is HomepageBlingVaultItem => item !== null);
+    if (mappedItems.some((result) => result.status === "error")) {
+      return {
+        status: "error",
+        message: "Your Bling Vault couldn't reach the jewelry catalog. Please try again.",
+      };
+    }
+
+    return {
+      status: "success",
+      items: mappedItems.flatMap((result) =>
+        result.status === "success" && result.item ? [result.item] : [],
+      ),
+    };
   } catch {
-    return [];
+    return {
+      status: "error",
+      message: "We couldn't load your Bling Vault. Please try again.",
+    };
   }
 }
 

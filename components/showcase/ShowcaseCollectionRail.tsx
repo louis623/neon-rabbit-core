@@ -10,10 +10,14 @@ type ShowcaseCollectionRailProps = {
 };
 
 export function ShowcaseCollectionRail({ collections, handle }: ShowcaseCollectionRailProps) {
+  if (collections.length === 0) {
+    return null;
+  }
+
   return (
     <section className="grid gap-4" data-smoke="showcase-collections">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Customer-created groupings</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">More ways to browse</p>
         <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--sparkle-plum-deep)]">
           Showcase Collections
         </h2>
@@ -36,7 +40,7 @@ export function ShowcaseCollectionRail({ collections, handle }: ShowcaseCollecti
                 </div>
               </div>
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--sparkle-coral)]">
-                {collection.pieces.length} pieces / Showcase Collection
+                {collection.pieces.length} {collection.pieces.length === 1 ? "piece" : "pieces"} in this Showcase Collection
               </p>
             </Link>
             <ShareShowcaseButton

@@ -12,6 +12,10 @@ type RarestRevealsProps = {
 export function RarestReveals({ handle, pieces }: RarestRevealsProps) {
   const ownedRarestReveals = pieces.filter(qualifiesForRarestReveals);
 
+  if (ownedRarestReveals.length === 0) {
+    return null;
+  }
+
   return (
     <section className="grid gap-4" data-smoke="rarest-reveals">
       <div className="flex flex-wrap items-end justify-between gap-3">

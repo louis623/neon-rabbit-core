@@ -12,11 +12,18 @@ import type { SVGProps } from "react";
 type HomepageBlingVaultProps = {
   canLoadPersistedItems?: boolean;
   customer: CustomerAccount;
+  initialBlingVaultLoadError?: string | null;
   model: HomepageBlingVaultModel;
   profile?: SilverProfile;
 };
 
-export function HomepageBlingVault({ canLoadPersistedItems = false, customer, model, profile }: HomepageBlingVaultProps) {
+export function HomepageBlingVault({
+  canLoadPersistedItems = false,
+  customer,
+  initialBlingVaultLoadError,
+  model,
+  profile,
+}: HomepageBlingVaultProps) {
   const profilePhotoUrl = profile?.photoUrl.trim();
 
   return (
@@ -81,23 +88,32 @@ export function HomepageBlingVault({ canLoadPersistedItems = false, customer, mo
             <UserRound aria-hidden="true" className="size-4" />
             Me
           </Link>
-          <div className="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-3" data-smoke="collection-stats">
-            <CollectionMetric icon={Gem} label="Owned" value={model.counts.owned} />
-            <CollectionMetric icon={Heart} label="Wishlist" value={model.counts.wishlist} />
-            <CollectionMetric icon={Sparkles} label="Diamonds" value={model.counts.diamonds} />
-            <CollectionMetric icon={ShieldCheck} label="Unicorns" value={model.counts.unicorns} />
-            <CollectionMetric className="col-span-2 sm:col-span-2" icon={Search} label="Found by Sparkle Finder" value={model.counts.finderFinds} />
-          </div>
+          {initialBlingVaultLoadError ? (
+            <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3 text-sm font-semibold leading-6 text-[var(--sparkle-ink-muted)] sm:col-span-2">
+              We couldn&apos;t load your collection details yet. Your saved pieces are still safe.
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-3" data-smoke="collection-stats">
+              <CollectionMetric icon={Gem} label="Owned" value={model.counts.owned} />
+              <CollectionMetric icon={Heart} label="Wishlist" value={model.counts.wishlist} />
+              <CollectionMetric icon={Sparkles} label="Diamonds" value={model.counts.diamonds} />
+              <CollectionMetric icon={ShieldCheck} label="Unicorns" value={model.counts.unicorns} />
+              <CollectionMetric className="col-span-2 sm:col-span-2" icon={Search} label="Found by Sparkle Finder" value={model.counts.finderFinds} />
+            </div>
+          )}
         </div>
 
-        <div className="grid gap-3">
-          <HeroPieceSpotlight isSelected={model.heroItem?.id === model.heroItemId} item={model.heroItem} />
-          <WishlistRail items={model.wishlistItems} />
-        </div>
+        {!initialBlingVaultLoadError ? (
+          <div className="grid gap-3">
+            <HeroPieceSpotlight isSelected={model.heroItem?.id === model.heroItemId} item={model.heroItem} />
+            <WishlistRail items={model.wishlistItems} />
+          </div>
+        ) : null}
 
         <BlingVaultMosaic
           canLoadPersistedItems={canLoadPersistedItems}
           heroItemId={model.heroItemId}
+          initialLoadError={initialBlingVaultLoadError}
           items={model.allItems}
           totalItemCount={model.totalItemCount}
         />

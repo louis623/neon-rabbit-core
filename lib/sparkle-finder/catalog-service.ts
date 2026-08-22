@@ -88,6 +88,14 @@ export type CatalogFacetOption = {
 
 export type CatalogFacetOptions = Record<CatalogFacetKey, CatalogFacetOption[]>;
 
+export type CatalogItemsReadResult =
+  | { status: "success"; items: JewelryItem[] }
+  | { status: "error" };
+
+export type CatalogItemReadResult =
+  | { status: "success"; item?: JewelryItem }
+  | { status: "error" };
+
 type CatalogReadOptions = {
   apiBaseUrl?: string;
   fetcher?: (input: string, init?: RequestInit) => Promise<Response>;
@@ -146,10 +154,17 @@ const defaultLiveShowsLimit = 50;
 const defaultRepDirectoryLimit = 200;
 
 export async function getCatalogJewelryItems(options: CatalogReadOptions = {}): Promise<JewelryItem[]> {
+  const result = await getCatalogJewelryItemsResult(options);
+  return result.status === "success" ? result.items : fallbackItems(options);
+}
+
+export async function getCatalogJewelryItemsResult(options: CatalogReadOptions = {}): Promise<CatalogItemsReadResult> {
   const apiBaseUrl = getSparkleSuiteFinderApiBaseUrl(options);
 
   if (!apiBaseUrl) {
-    return fallbackItems(options);
+    return options.useFixtureFallback === false
+      ? { status: "error" }
+      : { status: "success", items: fallbackItems(options) };
   }
 
   const params = buildCatalogParams(options, { includeLimit: true });
@@ -161,9 +176,11 @@ export async function getCatalogJewelryItems(options: CatalogReadOptions = {}): 
     );
     const items = Array.isArray(payload.items) ? payload.items : [];
 
-    return items.map(mapSparkleSuiteFinderCatalogItem);
+    return { status: "success", items: items.map(mapSparkleSuiteFinderCatalogItem) };
   } catch {
-    return fallbackItems(options);
+    return options.useFixtureFallback === false
+      ? { status: "error" }
+      : { status: "success", items: fallbackItems(options) };
   }
 }
 
@@ -190,16 +207,26 @@ export async function getCatalogJewelryItemById(
   itemId: string,
   options: CatalogReadOptions = {},
 ): Promise<JewelryItem | undefined> {
+  const result = await getCatalogJewelryItemByIdResult(itemId, options);
+  return result.status === "success" ? result.item : fallbackItemById(itemId.trim(), options);
+}
+
+export async function getCatalogJewelryItemByIdResult(
+  itemId: string,
+  options: CatalogReadOptions = {},
+): Promise<CatalogItemReadResult> {
   const trimmedItemId = itemId.trim();
 
   if (!trimmedItemId) {
-    return undefined;
+    return { status: "success", item: undefined };
   }
 
   const apiBaseUrl = getSparkleSuiteFinderApiBaseUrl(options);
 
   if (!apiBaseUrl) {
-    return fallbackItemById(trimmedItemId, options);
+    return options.useFixtureFallback === false
+      ? { status: "error" }
+      : { status: "success", item: fallbackItemById(trimmedItemId, options) };
   }
 
   try {
@@ -208,9 +235,23 @@ export async function getCatalogJewelryItemById(
       options,
     );
 
-    return payload.item ? mapSparkleSuiteFinderCatalogItem(payload.item) : fallbackItemById(trimmedItemId, options);
-  } catch {
-    return fallbackItemById(trimmedItemId, options);
+    return {
+      status: "success",
+      item: payload.item
+        ? mapSparkleSuiteFinderCatalogItem(payload.item)
+        : fallbackItemById(trimmedItemId, options),
+    };
+  } catch (error) {
+    if (isCatalogApiNotFound(error)) {
+      return {
+        status: "success",
+        item: fallbackItemById(trimmedItemId, options),
+      };
+    }
+
+    return options.useFixtureFallback === false
+      ? { status: "error" }
+      : { status: "success", item: fallbackItemById(trimmedItemId, options) };
   }
 }
 
@@ -583,10 +624,24 @@ async function fetchJson<T>(url: string, options: CatalogReadOptions): Promise<T
   const response = await fetcher(url, { cache: "no-store" });
 
   if (!response.ok) {
-    throw new Error(`Sparkle Suite Finder API returned ${response.status}`);
+    throw new CatalogApiError(response.status);
   }
 
   return (await response.json()) as T;
+}
+
+class CatalogApiError extends Error {
+  readonly status: number;
+
+  constructor(status: number) {
+    super(`Sparkle Suite Finder API returned ${status}`);
+    this.name = "CatalogApiError";
+    this.status = status;
+  }
+}
+
+function isCatalogApiNotFound(error: unknown): boolean {
+  return error instanceof CatalogApiError && error.status === 404;
 }
 
 function getSparkleSuiteFinderApiBaseUrl(options: Pick<CatalogReadOptions, "apiBaseUrl"> = {}): string {

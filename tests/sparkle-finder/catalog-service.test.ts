@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   getCatalogJewelryItemById,
+  getCatalogJewelryItemByIdResult,
   getCatalogFacetOptions,
   getCatalogJewelryItems,
+  getCatalogJewelryItemsResult,
   getFinderAvailabilityForJewelryItem,
   getFinderLiveShows,
   getFinderRepDirectoryData,
@@ -157,6 +159,22 @@ describe("Sparkle Finder public API catalog service", () => {
     expect(items).toEqual([]);
   });
 
+  it("keeps an unavailable catalog distinct from a successful empty catalog", async () => {
+    const unavailable = await getCatalogJewelryItemsResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () => new Response("unavailable", { status: 503 })),
+      useFixtureFallback: false,
+    });
+    const empty = await getCatalogJewelryItemsResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () => jsonResponse({ items: [] })),
+      useFixtureFallback: false,
+    });
+
+    expect(unavailable).toEqual({ status: "error" });
+    expect(empty).toEqual({ status: "success", items: [] });
+  });
+
   it("fetches a single catalog item by Sparkle Suite designId", async () => {
     const fetchDetail = vi.fn(async () => jsonResponse({ item: apiCatalogItem({ designId: "design-single" }) }));
 
@@ -188,6 +206,22 @@ describe("Sparkle Finder public API catalog service", () => {
     });
 
     expect(item).toBeUndefined();
+  });
+
+  it("keeps an unavailable detail endpoint distinct from a valid missing item", async () => {
+    const unavailable = await getCatalogJewelryItemByIdResult("design-123", {
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () => new Response("unavailable", { status: 503 })),
+      useFixtureFallback: false,
+    });
+    const missing = await getCatalogJewelryItemByIdResult("design-123", {
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () => new Response("not found", { status: 404 })),
+      useFixtureFallback: false,
+    });
+
+    expect(unavailable).toEqual({ status: "error" });
+    expect(missing).toEqual({ status: "success", item: undefined });
   });
 
   it("reads exact and similar availability matches from the Sparkle Suite public Finder API", async () => {

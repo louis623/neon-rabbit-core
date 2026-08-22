@@ -16,11 +16,17 @@ type AuthenticatedHomePageProps = {
     isLocalPreview?: boolean;
     silverProfile?: SilverProfile;
   };
+  blingVaultLoadError?: string | null;
   collectionItems?: HomepageBlingVaultItem[];
   heroCollectionItemId?: string | null;
 };
 
-export function AuthenticatedHomePage({ accountState, collectionItems: persistedCollectionItems, heroCollectionItemId }: AuthenticatedHomePageProps) {
+export function AuthenticatedHomePage({
+  accountState,
+  blingVaultLoadError,
+  collectionItems: persistedCollectionItems,
+  heroCollectionItemId,
+}: AuthenticatedHomePageProps) {
   const customer = accountState.customer;
   const collectionItems =
     persistedCollectionItems ??
@@ -49,6 +55,7 @@ export function AuthenticatedHomePage({ accountState, collectionItems: persisted
         <HomepageBlingVault
           canLoadPersistedItems={accountState.isLocalPreview !== true && persistedCollectionItems !== undefined}
           customer={customer}
+          initialBlingVaultLoadError={blingVaultLoadError}
           model={blingVaultModel}
           profile={profile}
         />
