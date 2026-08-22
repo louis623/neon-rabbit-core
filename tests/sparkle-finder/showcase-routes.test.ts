@@ -57,7 +57,7 @@ describe("Sparkle Showcase public routes", () => {
     expect(markup).toContain("Diamond Reveal");
     expect(markup).toContain("Rep leads");
     expect(markup).toContain("Exact item lead");
-    expect(markup).toContain("Open rep board path");
+    expect(markup).toContain("Open Dance Floor");
     expect(markup).toContain("That reveal was unreal.");
     expect(markup).not.toContain("Deleted comment should stay hidden");
     expect(markup).not.toContain("Private note");

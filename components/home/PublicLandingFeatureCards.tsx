@@ -6,8 +6,8 @@ const howItWorksSteps = [
     body: "Search the jewelry library for styles and products you want to follow.",
   },
   {
-    title: "Check rep trade boards.",
-    body: "See which reps have pieces you love on their trade boards aka dance floors.",
+    title: "Browse the Dance Floor.",
+    body: "See which reps have dancers you love.",
   },
   {
     title: "Live show calendar.",
@@ -22,7 +22,7 @@ const howItWorksSteps = [
 const includedTools = [
   {
     title: "Master Jewelry Library",
-    body: "Find pieces you like before you jump into live shows or rep boards.",
+    body: "Find jewelry you like before you jump into live shows or browse dancers.",
     icon: BookOpen,
   },
   {
@@ -31,8 +31,8 @@ const includedTools = [
     icon: CalendarDays,
   },
   {
-    title: "Rep Trade Boards / Dance Floors",
-    body: "See which reps have the pieces you are looking for.",
+    title: "Dance Floor",
+    body: "See which reps have the dancers you are looking for.",
     icon: UsersRound,
   },
   {
@@ -69,7 +69,7 @@ export function PublicLandingFeatureCards() {
             How Sparkle Finder works
           </h2>
           <p className="mt-3 text-sm leading-6 text-[rgba(246,231,218,0.82)]">
-            Follow the path from pieces to reps, trade boards, show times, wishlist, and collection.
+            Follow the path from jewelry to reps, the Dance Floor, show times, wishlist, and collection.
           </p>
         </div>
 

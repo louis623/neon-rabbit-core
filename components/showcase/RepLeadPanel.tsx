@@ -20,7 +20,7 @@ export function RepLeadPanel({ piece }: { piece: SparkleShowcasePiece }) {
             {wanted ? "Find reps with this piece" : "Rep leads"}
           </h2>
           <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-            Sparkle Finder checks rep boards first so the hunt can lead back to active Sparkle Suite reps.
+            Sparkle Finder checks the Dance Floor first so the hunt can lead back to active Sparkle Suite reps.
           </p>
         </div>
       </div>
@@ -40,7 +40,7 @@ export function RepLeadPanel({ piece }: { piece: SparkleShowcasePiece }) {
                   className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
                   href={getLocalRepBoardHref(lead.boardUrl)}
                 >
-                  Open rep board path
+                  Open Dance Floor
                   <ExternalLink aria-hidden="true" className="size-4" />
                 </Link>
               </article>

@@ -190,7 +190,7 @@ Acceptance:
 
 Dashboard sections:
 - Favorite reps live soon
-- Wishlist or looking-for pieces with rep board leads
+- Wishlist or looking-for jewelry with Dance Floor dancer leads
 - Followed collector updates
 - Showcase completion tasks
 - Nic-Nac primary CTA: “Ask Nic-Nac what changed”
@@ -479,4 +479,3 @@ Deployment gate:
 - Showcase creation is prominent and simple.
 - Social activity remains one-way, public, and moderation-safe.
 - Full tests, lint, build, smoke, Browser QA, and diff hygiene pass.
-

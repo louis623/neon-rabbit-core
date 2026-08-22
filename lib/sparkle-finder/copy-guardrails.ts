@@ -11,6 +11,13 @@ type SparkleFinderCopyRule = {
 };
 
 const BANNED_COPY_RULES: SparkleFinderCopyRule[] = [
+  { phrase: "Trade Board", pattern: /\btrade\s+boards?\b/i },
+  { phrase: "rep board", pattern: /\brep\s+boards?\b/i },
+  { phrase: "board piece", pattern: /\bboard\s+pieces?\b/i },
+  { phrase: "trade piece", pattern: /\btrade\s+pieces?\b/i },
+  { phrase: "available piece", pattern: /\bavailable\s+pieces?\b/i },
+  { phrase: "Dance Floor listing", pattern: /\bDance Floor\s+listings?\b/i },
+  { phrase: "incorrectly capitalized Dance Floor", pattern: /\b(?:dance floor|Dance floor|dance Floor)\b/ },
   { phrase: "buy, sell", pattern: /\bbuy\s*,\s*sell\b/i },
   { phrase: "buy and sell", pattern: /\bbuy\s+(?:\/|and)\s+sell\b/i },
   { phrase: "buy/sell", pattern: /\bbuy\s*\/\s*sell\b/i },

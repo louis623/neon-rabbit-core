@@ -27,7 +27,7 @@ describe("Sparkle Finder Nic-Nac tool policy", () => {
   });
 
   it("blocks Sparkle Suite workspace mutation requests on the Finder surface", () => {
-    const requestedIntents = getFinderNicNacToolIntentsForText("Add ER13229 to my Trade Board.");
+    const requestedIntents = getFinderNicNacToolIntentsForText("Add ER13229 to my Dance Floor.");
 
     expect(requestedIntents).toEqual(["suite_workspace"]);
 
@@ -51,8 +51,12 @@ describe("Sparkle Finder Nic-Nac tool policy", () => {
     ]);
   });
 
-  it("distinguishes board discovery wording from Suite board mutation wording", () => {
-    expect(getFinderNicNacToolIntentsForText("Show me my Trade Board.")).not.toContain("suite_workspace");
+  it("distinguishes Dance Floor discovery wording from Suite mutation wording", () => {
+    expect(getFinderNicNacToolIntentsForText("Show me my Dance Floor.")).not.toContain("suite_workspace");
+    expect(getFinderNicNacToolIntentsForText("List ER13229 on my Dance Floor.")).toEqual(["suite_workspace"]);
+  });
+
+  it("still recognizes legacy Trade Board mutation input for compatibility", () => {
     expect(getFinderNicNacToolIntentsForText("List ER13229 on my Trade Board.")).toEqual(["suite_workspace"]);
   });
 
@@ -67,7 +71,7 @@ describe("Sparkle Finder Nic-Nac tool policy", () => {
 
   it("blocks all Finder tools on mixed Suite mutation and memory turns", () => {
     const requestedIntents = getFinderNicNacToolIntentsForText(
-      "Add ER13229 to my Trade Board and remember I like short prompts.",
+      "Add ER13229 to my Dance Floor and remember I like short prompts.",
     );
 
     expect(requestedIntents).toEqual(["suite_workspace", "memory"]);

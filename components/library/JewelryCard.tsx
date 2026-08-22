@@ -13,7 +13,7 @@ export function formatAvailabilityCount(
 ): string {
   if (typeof count === "number") {
     if (count < 1) {
-      return "No current listings";
+      return "No dancers right now";
     }
 
     return count === 1 ? "1 available" : `${count} available`;

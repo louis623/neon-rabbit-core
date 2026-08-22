@@ -21,6 +21,20 @@ describe("Sparkle Finder Nic-Nac prompt builder", () => {
     expect(prompt).toContain("Only call tools in the active list");
     expect(prompt).toContain(bannedSocialCommercePrompt);
     expect(prompt).toContain("Light friendly chat is okay");
+    expect(prompt).toContain("the feature is always the Dance Floor");
+    expect(prompt).toContain("jewelry offered there are dancers");
+  });
+
+  it("normalizes legacy linked memory to the approved Dance Floor vocabulary", () => {
+    const prompt = buildFinderNicNacSystemPrompt({
+      activeToolNames: ["read_customer_memory"],
+      intents: ["memory"],
+      memorySummaries: ["Ask before adding duplicate Trade Board items or sharing rep board links."],
+    });
+
+    expect(prompt).toContain("Ask before adding duplicate dancers or sharing Dance Floor links.");
+    expect(prompt).not.toContain("Trade Board");
+    expect(prompt).not.toContain("rep board links");
   });
 
   it("includes the full social-commerce prohibition for non-social tool intents", () => {

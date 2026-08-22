@@ -50,6 +50,24 @@ describe("findSparkleFinderCopyViolations", () => {
     );
   });
 
+  it("flags legacy Dance Floor terminology and incorrect capitalization", () => {
+    const copy = [
+      "Open the Trade Board or a rep board.",
+      "Browse board pieces, trade pieces, available pieces, and Dance Floor listings.",
+      "Visit the dance floor.",
+    ].join(" ");
+
+    expect(violationPhrases(copy)).toEqual([
+      "Trade Board",
+      "rep board",
+      "board piece",
+      "trade piece",
+      "available piece",
+      "Dance Floor listing",
+      "incorrectly capitalized Dance Floor",
+    ]);
+  });
+
   it("flags social trading and marketplace drift in visible app copy", () => {
     const copy = [
       "Trade with this collector.",
@@ -299,7 +317,7 @@ describe("findSparkleFinderCopyViolations", () => {
 
   it("allows approved Sparkle Finder wording", () => {
     const copy =
-      "Nic-Nac. Rep Trade Boards / Dance Floors. Silver Membership. Diamonds & Unicorns Library. Bomb Party labels. Favorite Reps. Rep leads. Public Showcases. Sparkle Finder is a discovery hub, not a jewelry marketplace. Photo setup guidance can link to a plain external resource without paid placement language.";
+      "Nic-Nac. Dance Floor. Browse dancers. Add a dancer to your Dance Floor. Silver Membership. Diamonds & Unicorns Library. Bomb Party labels. Favorite Reps. Rep leads. Public Showcases. Sparkle Finder is a discovery hub, not a jewelry marketplace. Photo setup guidance can link to a plain external resource without paid placement language.";
 
     expect(findSparkleFinderCopyViolations(copy)).toEqual([]);
   });

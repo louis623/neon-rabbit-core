@@ -102,7 +102,7 @@ Optional, if needed after testing:
 Move these out of the primary nav:
 
 - Live Shows
-- Rep Boards
+- Dance Floor
 - Favorites
 - Collectors
 - Showcase
@@ -110,7 +110,7 @@ Move these out of the primary nav:
 
 Those surfaces can still exist, but they should appear contextually:
 
-- Live shows and rep boards appear when a piece has leads.
+- Live shows and the Dance Floor appear when a piece has dancer leads.
 - Favorites appears from rep/profile surfaces.
 - Collectors appears from public Showcase discovery surfaces.
 - Showcase Studio appears when a piece is missing from the library or the customer is managing their collection.

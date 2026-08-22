@@ -22,8 +22,8 @@ export function renderLiveShowsPageContent(shows: FinderLiveShow[] = []) {
           Master Live Calendar
         </h1>
         <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
-          See eligible Sparkle Suite shows that are live now or scheduled ahead, then visit the rep site for the board,
-          calendar, and live details.
+          See eligible Sparkle Suite shows that are live now or scheduled ahead, then visit the rep site for the Dance
+          Floor, calendar, and live details.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link

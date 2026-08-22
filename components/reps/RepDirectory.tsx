@@ -75,7 +75,7 @@ export function RepDirectory({ cards, favoriteCountsAvailable, query = "", statu
                 No public rep profiles are available yet.
               </h2>
               <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-                Eligible Sparkle Suite reps will appear here automatically, including reps who have not added a board or scheduled a show yet.
+                Eligible Sparkle Suite reps will appear here automatically, including reps who have not added a dancer to their Dance Floor or scheduled a show yet.
               </p>
             </>
           ) : query ? (
@@ -191,7 +191,7 @@ function RepDirectoryListCard({
             ) : null}
             {boardHref ? (
               <Link className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[var(--sparkle-plum)] hover:underline" href={boardHref}>
-                Board <ExternalLink aria-hidden="true" className="size-3.5" />
+                Dance Floor <ExternalLink aria-hidden="true" className="size-3.5" />
               </Link>
             ) : null}
           </div>

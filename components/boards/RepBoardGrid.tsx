@@ -50,7 +50,7 @@ export function RepBoardGrid({ listings, jewelryItems, reps, liveShows }: RepBoa
                   repSiteUrl={rep.siteUrl}
                 />
                 <span className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-blush-bg)] px-2 py-1 text-xs font-bold capitalize text-[var(--sparkle-plum)]">
-                  {listing.status}
+                  {formatDancerStatus(listing.status)}
                 </span>
               </div>
             </div>
@@ -68,7 +68,7 @@ export function RepBoardGrid({ listings, jewelryItems, reps, liveShows }: RepBoa
                 className="inline-flex items-center gap-1 text-sm font-bold text-[var(--sparkle-plum)] hover:underline"
                 href={getLocalRepBoardHref(listing.boardUrl)}
               >
-                Open rep board <ExternalLink aria-hidden="true" className="size-3.5" />
+                Open Dance Floor <ExternalLink aria-hidden="true" className="size-3.5" />
               </a>
             </div>
           </article>
@@ -76,4 +76,15 @@ export function RepBoardGrid({ listings, jewelryItems, reps, liveShows }: RepBoa
       })}
     </div>
   );
+}
+
+function formatDancerStatus(status: RepBoardListing["status"]): string {
+  switch (status) {
+    case "available":
+      return "Dancer available";
+    case "pending":
+      return "Dancer pending";
+    case "unavailable":
+      return "Dancer unavailable";
+  }
 }

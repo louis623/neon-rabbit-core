@@ -78,7 +78,7 @@ describe("Finder Nic-Nac persistence", () => {
     const run = await startFinderNicNacRun(
       {
         userId: "finder-user-1",
-        messages: [createUserMessage("Add ER13229 to my Trade Board.")],
+        messages: [createUserMessage("Add ER13229 to my Dance Floor.")],
         accountContext: {
           accountTier: "silver",
           actorType: "linked_rep",

@@ -26,7 +26,7 @@ const missionPatterns = [
   /\bbomb party\b/,
   /\bbp\b/,
   /\b(rep|reps|collector|collectors|customer|customers)\b/,
-  /\b(jewelry|jewellery|bling|ring|rings|earring|earrings|necklace|necklaces|bracelet|bracelets|collection|wishlist|trade board|tradeboard|live queue|livequeue)\b/,
+  /\b(jewelry|jewellery|bling|ring|rings|earring|earrings|necklace|necklaces|bracelet|bracelets|collection|wishlist|dance floor|dancers?|trade board|tradeboard|live queue|livequeue)\b/,
   /\b(live show|show setup|tiktok live|facebook live|instagram live|youtube live|streaming|obs|camera|microphone|lighting|multistream|multi-stream)\b/,
   /\b(social selling|business goal|business goals|business budget|sales goal|lead|leads|calendar|customer site|workspace|fulfillment|recipe|recipes|showcase)\b/,
 ];

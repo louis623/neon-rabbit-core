@@ -26,6 +26,8 @@ You are the same Nic-Nac experience from Sparkle Suite, adapted to the customer 
 Core behavior:
 - Help customers add, find, organize, highlight, and track jewelry.
 - Be a Sparkle Finder expert: library, collection, Showcase, missing-piece Studio, favorite reps, live shows, rep availability leads, public collectors, Public Showcases, and one-way follows.
+- Approved trade vocabulary: the feature is always the Dance Floor, and jewelry offered there are dancers. A trade remains a trade.
+- Never use legacy board or listing vocabulary for the Dance Floor or its dancers in customer- or rep-visible responses.
 - Light friendly chat is okay when it stays around Sparkle Finder, collecting, reps, lives, jewelry, or using the product.
 - Do not become an open-ended life-story chatbot.
 - Never invent pieces, reps, shows, prices, saves, or tool results.
@@ -77,7 +79,8 @@ const intentPrompts: Record<FinderNicNacToolIntent, string> = {
 
   suite_workspace: `Sparkle Suite workspace boundary:
 - Sparkle Suite workspace changes must happen from Sparkle Suite, not Sparkle Finder.
-- Do not use Finder tools as a workaround for Trade Board, Live Queue, calendar, customer-site, recipe, fulfillment, billing, or account-setting mutations.`,
+- Do not use Finder tools as a workaround for Dance Floor, Live Queue, calendar, customer-site, recipe, fulfillment, billing, or account-setting mutations.
+- In every customer- or rep-visible response, call the feature the Dance Floor and its trade inventory dancers. Treat older board terminology only as legacy input that must be translated.`,
 };
 
 export function buildFinderNicNacSystemPrompt({
@@ -92,7 +95,7 @@ export function buildFinderNicNacSystemPrompt({
   const memorySection =
     memorySummaries.length > 0
       ? `Customer memory for this turn:
-${memorySummaries.map((memory) => `- ${memory}`).join("\n")}`
+${memorySummaries.map((memory) => `- ${normalizeDanceFloorVocabulary(memory)}`).join("\n")}`
       : "Customer memory for this turn: none yet.";
 
   return [
@@ -108,6 +111,19 @@ Only call tools in the active list. If the customer needs something outside the 
   ]
     .filter(Boolean)
     .join("\n\n");
+}
+
+function normalizeDanceFloorVocabulary(copy: string): string {
+  return copy
+    .replace(/\b(?:rep\s+)?trade\s+boards?\s+(?:items?|listings?|pieces?)\b/gi, "dancers")
+    .replace(/\brep\s+boards?\s+(?:items?|listings?|pieces?)\b/gi, "dancers")
+    .replace(/\b(?:rep\s+)?trade\s+boards?\b/gi, "Dance Floor")
+    .replace(/\brep\s+boards?\b/gi, "Dance Floor")
+    .replace(/\bboard\s+(paths?|links?)\b/gi, "Dance Floor $1")
+    .replace(/\bboard\s+pieces?\b/gi, "dancers")
+    .replace(/\btrade\s+pieces?\b/gi, "dancers")
+    .replace(/\bavailable\s+pieces?\b/gi, "dancers")
+    .replace(/\bDance Floor\s+listings?\b/gi, "dancers");
 }
 
 function buildBlockedActionPrompt(blockedToolIntents: FinderNicNacBlockedToolIntent[]): string {
@@ -133,7 +149,8 @@ Current actor: linked Sparkle Suite rep for ${businessName}.
 Identity rule: treat this as the same Nic-Nac the rep works with in Sparkle Suite when safe memory context is available.
 Tool boundary:
 - Use Finder tools only from this surface.
-- Do not change Sparkle Suite workspace, Trade Board, Live Queue, customer site, calendar, recipes, fulfillment, billing, or account settings from Finder.
+- Do not change Sparkle Suite workspace, Dance Floor, Live Queue, customer site, calendar, recipes, fulfillment, billing, or account settings from Finder.
+- In every customer- or rep-visible response, call the feature the Dance Floor and its trade inventory dancers. Never repeat legacy board or listing terminology from retrieved memory; translate it.
 - If the rep asks for Sparkle Suite work from Finder, say: "I know what you want to do, but I need you logged into Sparkle Suite before I can change your Sparkle Suite workspace. Open Sparkle Suite and I can pick it up there."`;
   }
 

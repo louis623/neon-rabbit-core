@@ -11,7 +11,7 @@ Beta launch includes:
 - Dedicated Sparkle Finder account creation/sign-in through the dedicated Supabase project.
 - 45-day Silver trial for new customer accounts.
 - Free/Silver gated hub access.
-- Master Jewelry Library, live shows, rep boards, public Sparkle Showcase, Silver Sparkle Showcase tools, and Showcase Studio intake.
+- Master Jewelry Library, live shows, the Dance Floor, public Sparkle Showcase, Silver Sparkle Showcase tools, and Showcase Studio intake.
 - Plain, non-affiliate photo setup resource link only.
 
 Beta launch excludes unless explicitly re-approved before launch:

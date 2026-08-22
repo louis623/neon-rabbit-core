@@ -719,7 +719,7 @@
               route: "/",
               title: "Header navigation is readable",
               steps: [
-                "Scan Library, Live Shows, Rep Boards, Showcase, and Account/Guest.",
+                "Scan Library, Live Shows, Dance Floor, Showcase, and Account/Guest.",
                 "On a narrow screen, use the horizontal nav if needed.",
               ],
               expected: "No nav label looks clipped, impossible to tap, or confusing.",
@@ -768,7 +768,7 @@
               route: "/",
               title: "Four discovery cards",
               steps: [
-                "Click Master Live Calendar, Rep Trade Boards / Dance Floors, Master Jewelry Library, and Photo Setup Guide.",
+                "Click Master Live Calendar, Dance Floor, Master Jewelry Library, and Photo Setup Guide.",
                 "Use Back after each card.",
               ],
               expected: "Every card opens the right local route and none of them feel dead.",
@@ -877,13 +877,13 @@
             {
               id: "rep-boards-route",
               route: "/rep-boards",
-              title: "Rep Trade Boards / Dance Floors route",
+              title: "Dance Floor route",
               steps: [
-                "Open Rep Boards.",
-                "Click View library record on a listing.",
-                "Go back, then click Open rep board.",
+                "Open Dance Floor.",
+                "Click View library record on a dancer.",
+                "Go back, then click Open Dance Floor.",
               ],
-              expected: "Listings are readable. Links use local routes and there are no direct collector trading actions.",
+              expected: "Dancers are readable. Links use local routes and there are no direct collector trading actions.",
             },
             {
               id: "library-route",
@@ -904,7 +904,7 @@
                 "Open the Rainbow Crown Ring detail page.",
                 "Look for known rep availability.",
                 "Look for Nic-Nac, find this for me.",
-                "Click Open rep board path.",
+                "Click Open Dance Floor.",
               ],
               expected: "Nic-Nac is focused on matching leads, not open-ended chat, and rep paths stay local.",
             },
@@ -981,7 +981,7 @@
               route: "/rep-boards",
               title: "No direct collector trading flow",
               steps: [
-                "Scan Rep Boards and item detail pages.",
+                "Scan the Dance Floor and item detail pages.",
                 "Look for anything that lets one collector trade directly with another collector.",
               ],
               expected: "The app points to rep-hosted discovery paths only.",
@@ -991,7 +991,7 @@
               route: "/photo-setup",
               title: "No jewelry checkout flow",
               steps: [
-                "Scan Photo Setup, Rep Boards, and Library.",
+                "Scan Photo Setup, Dance Floor, and Library.",
                 "Look for checkout, shipping, escrow, or payment steps tied to jewelry.",
               ],
               expected: "Photo setup is guidance only and the hub does not handle jewelry transactions.",

@@ -23,10 +23,10 @@ The first customer-side product should be a secured, free Sparkle Suite customer
 - public landing/teaser page
 - free customer login required for meaningful browsing
 - authenticated rep live calendar across Sparkle Suite reps
-- authenticated aggregated rep trade board / dance floor browser
+- authenticated aggregated Dance Floor dancer browser
 - authenticated master jewelry library browsing
 - authenticated Diamonds & Unicorns Library browsing
-- paths back to individual rep sites, live shows, and rep trade boards
+- paths back to individual rep sites, live shows, and Dance Floors
 - light customer profile/data capture for future leads and personalization
 - no customer-to-customer trading
 - no customer buy/sell marketplace
@@ -40,7 +40,7 @@ Public visitors can see the landing page and understand the concept.
 Free logged-in customers can:
 
 - browse Sparkle Suite rep live calendars
-- browse aggregated rep trade boards / dance floors
+- browse aggregated dancers on the Dance Floor
 - browse the master jewelry library
 - browse Diamonds & Unicorns from the master jewelry library
 - discover reps in the Sparkle Suite ecosystem
@@ -60,7 +60,7 @@ The customer hub should make Sparkle Suite more attractive to reps because it gi
 The rep pitch becomes:
 
 - your site still belongs to you
-- your trade board still lives on your Sparkle Suite site
+- your Dance Floor still lives on your Sparkle Suite site
 - your calendar still promotes your shows
 - the Sparkle Suite customer hub can also send customers toward your shows and boards
 - as more reps join, the hub becomes more useful for customers

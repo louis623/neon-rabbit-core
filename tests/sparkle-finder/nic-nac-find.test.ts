@@ -112,7 +112,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
     }
 
     expect(result.results).toEqual([]);
-    expect(result.emptyState).toContain("No fixture-backed rep board leads yet");
+    expect(result.emptyState).toContain("No preview Dance Floor leads yet");
   });
 
   it("shows the Silver upgrade prompt for Free and anonymous visitors instead of running search", () => {
@@ -152,9 +152,9 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(markup).toContain(">Nic-Nac</h2>");
     expect(markup).toContain("finder-nic-nac-chatbot");
     expect(markup).toContain("0 preview leads");
-    expect(markup).toContain("No shows in the next 48 hours currently list this piece for trade.");
+    expect(markup).toContain("No shows in the next 48 hours currently have this dancer.");
     expect(markup).not.toContain("Sierra Sparkle Studio");
-    expect(markup).not.toContain("View Trade Board");
+    expect(markup).not.toContain("View Dance Floor");
     expect(markup).toContain("Check saved pieces");
   });
 
@@ -174,10 +174,10 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(markup).toContain("Demo Glow Show");
     expect(markup).toContain("Rep: Demo");
     expect(markup).toContain("Nic-Nac found a fresh lead");
-    expect(markup).toContain("View Trade Board");
+    expect(markup).toContain("View Dance Floor");
     expect(markup).toContain("View Show");
     expect(markup).toContain("https://www.yoursparklesuite.com/demo-show?c=rep-demo");
-    expect(markup).not.toContain("Open rep board path");
+    expect(markup).not.toContain("Open Dance Floor");
     expect(markup).not.toContain("fixture lead");
     expect(markup).not.toContain("fixture-backed");
   });
@@ -191,7 +191,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
     );
 
     expect(markup).toContain("0 preview leads");
-    expect(markup).toContain("No shows in the next 48 hours currently list this piece for trade.");
+    expect(markup).toContain("No shows in the next 48 hours currently have this dancer.");
     expect(markup).not.toContain("/rep-boards?listing=rainbow-crown");
     expect(markup).not.toContain("Sparkle Suite lead");
   });

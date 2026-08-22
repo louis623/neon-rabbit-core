@@ -21,7 +21,7 @@ export function MembershipTierCards() {
           Start with your 45-day Silver Tier trial
         </h2>
         <p className="mt-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-          Silver opens the full collector workflow: jewelry search, rep boards, live show planning, wishlist, and
+          Silver opens the full collector workflow: jewelry search, the Dance Floor, live show planning, wishlist, and
           collection showcase.
         </p>
       </div>

@@ -9,8 +9,8 @@ const discoveryCards = [
     icon: CalendarDays,
   },
   {
-    title: "Rep Trade Boards / Dance Floors",
-    body: "Browse rep-hosted boards and planned dance floor moments.",
+    title: "Dance Floor",
+    body: "Browse dancers from Sparkle Suite reps.",
     href: "/rep-boards",
     icon: UsersRound,
   },

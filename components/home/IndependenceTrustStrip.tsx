@@ -19,7 +19,7 @@ export function IndependenceTrustStrip() {
             Built for collectors, independently.
           </h2>
           <p className="mt-3 max-w-4xl text-sm leading-6 text-[rgba(246,231,218,0.82)] sm:text-base">
-            Sparkle Finder organizes the hunt: pieces, reps, trade boards, live shows, wishlist, and collection
+            Sparkle Finder organizes the hunt: jewelry, reps, the Dance Floor, live shows, wishlist, and collection
             showcase.
           </p>
           <p className="mt-4 max-w-4xl rounded-[var(--sparkle-radius-sm)] border border-[rgba(246,231,218,0.14)] bg-[rgba(255,246,250,0.07)] px-4 py-3 text-sm leading-6 text-[rgba(246,231,218,0.82)]">

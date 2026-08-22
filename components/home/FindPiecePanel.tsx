@@ -46,7 +46,7 @@ export function FindPiecePanel({ accountState, model }: FindPiecePanelProps) {
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <ContextLink href="/library?label=diamond" icon={Sparkles} label="Diamonds & Unicorns" />
               <ContextLink href="/live-shows" icon={CalendarDays} label="Live Shows" />
-              <ContextLink href="/rep-boards" icon={UsersRound} label="Rep Boards" />
+              <ContextLink href="/rep-boards" icon={UsersRound} label="Dance Floor" />
               <ContextLink href="/reps" icon={UsersRound} label="Reps" />
               <ContextLink href="/favorites" icon={Heart} label="Favorite Reps" />
               <ContextLink href="/collectors" icon={UsersRound} label="Collectors" />

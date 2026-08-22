@@ -22,7 +22,7 @@ export function HeroAndAgenda({ liveShows, reps }: HeroAndAgendaProps) {
               Find the sparkle you&apos;re hunting.
             </h1>
             <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)] sm:text-lg">
-              One login gives you access to Sparkle Suite live shows, rep-hosted boards and dance floors,
+              One login gives you access to Sparkle Suite live shows, the Dance Floor,
               and the jewelry discovery library so you can browse, collect, and plan with confidence.
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

@@ -4,7 +4,7 @@ Created: 2026-05-29
 
 ## Executive Summary
 
-Sparkle Finder is a secured discovery hub for Bomb Party customers and collectors inside the Sparkle Suite ecosystem. New accounts start with a 45-day Silver trial and then continue as paid Silver or downgrade to Free access. V1 is not a customer-to-customer trading marketplace. Its first job is to drive customer traffic back to Sparkle Suite reps by making rep live schedules, rep trade boards/dance floors, and the master jewelry library easier to discover in one place.
+Sparkle Finder is a secured discovery hub for Bomb Party customers and collectors inside the Sparkle Suite ecosystem. New accounts start with a 45-day Silver trial and then continue as paid Silver or downgrade to Free access. V1 is not a customer-to-customer trading marketplace. Its first job is to drive customer traffic back to Sparkle Suite reps by making rep live schedules, dancers on the Dance Floor, and the master jewelry library easier to discover in one place.
 
 The business model is intentionally light at launch:
 
@@ -20,7 +20,7 @@ The core strategic value is rep acquisition and retention. Reps should want Spar
 
 ### Customer Promise
 
-Find Sparkle Suite reps, live shows, trade boards, and jewelry pieces in one place.
+Find Sparkle Suite reps, live shows, dancers, and jewelry in one place.
 
 ### Rep Promise
 
@@ -53,10 +53,10 @@ Free customer account holders can:
 
 - browse Sparkle Suite rep directory
 - browse master Sparkle Suite rep live calendar
-- browse aggregated rep trade boards/dance floors
+- browse aggregated dancers on the Dance Floor
 - browse the master jewelry library
 - use normal manual search and filters
-- open rep sites and rep trade boards
+- open rep sites and Dance Floors
 - see rep next-show context where available
 - review photo setup guidance for Showcase Studio uploads
 
@@ -86,7 +86,7 @@ Silver features:
 - customer collection built from master jewelry library records
 - collection showcase/highlight areas
 - saved collection items and collector notes
-- Nic-Nac search across rep boards/dance floors
+- Nic-Nac search across Dance Floor dancers
 - exact matches first, close matches second
 - matching reps and next-show context
 - saved searches/watchlist
@@ -115,7 +115,7 @@ Sparkle Suite should be upfront that active rep discovery data may appear on Spa
 
 - rep profile basics
 - show schedules
-- dance floors / rep trade boards
+- Dance Floor dancers
 - relevant business links
 
 ### Phone Privacy And Consent
@@ -251,7 +251,7 @@ The customer hub should increase Sparkle Suite rep value because paid reps can s
 
 - my site is included in the customer discovery network
 - my live shows appear in the master calendar
-- my dance floor / trade board can be discovered through the hub
+- my Dance Floor can be discovered through the hub
 - customers hunting pieces may get routed toward me
 - I get included Silver access as a paid rep
 
@@ -366,7 +366,7 @@ High-intent moments:
 - jewelry detail page
 - no obvious manual match found
 - master jewelry library filtered to diamond/unicorn labels
-- rep board item detail
+- dancer detail
 - creating or expanding a personal collection
 - after repeated searches
 
@@ -381,7 +381,7 @@ rep prospect -> paid Sparkle Suite rep
 Hub-driven proof points to track:
 
 - hub clicks to rep sites
-- hub clicks to rep trade boards
+- hub clicks to Dance Floors
 - hub calendar clicks
 - top searched collections/pieces
 - Silver searches routed to reps
@@ -394,13 +394,13 @@ Hub-driven proof points to track:
 Suggested plain-English message:
 
 ```text
-One login for Sparkle Suite live shows, rep boards, and jewelry discovery.
+One login for Sparkle Suite live shows, the Dance Floor, and jewelry discovery.
 ```
 
 Support copy:
 
 ```text
-Browse Sparkle Suite reps, see who's going live, explore rep boards, and use the jewelry library to find pieces you love.
+Browse Sparkle Suite reps, see who's going live, explore dancers on the Dance Floor, and use the jewelry library to find pieces you love.
 ```
 
 Silver copy:
@@ -448,7 +448,7 @@ Mitigation:
 Mitigation:
 
 - v1 copy should avoid customer-to-customer trade promises
-- focus on rep boards/dance floors and jewelry discovery
+- focus on Dance Floor dancers and jewelry discovery
 - keep trading in roadmap language only if needed
 
 ### Risk: Reps Feel The Hub Competes With Their Sites
@@ -474,7 +474,7 @@ Customer metrics:
 - public visitor to free signup conversion
 - active logged-in customers
 - rep calendar views
-- rep board views
+- Dance Floor views
 - library searches
 - master jewelry library diamond/unicorn filter views
 - photo setup guide views
@@ -490,11 +490,11 @@ Customer metrics:
 Rep value metrics:
 
 - clicks to rep sites
-- clicks to rep trade boards
+- clicks to Dance Floors
 - clicks to next-show links
 - reps receiving traffic from hub
 - top searched pieces not currently listed
-- top rep boards by customer view
+- top Dance Floors by customer view
 
 Business metrics:
 
@@ -510,7 +510,7 @@ Business metrics:
 Launch the business model in this order:
 
 1. Secured discovery hub with new accounts starting in a 45-day Silver trial.
-2. Rep calendar, rep directory, rep board aggregation, and master jewelry library.
+2. Rep calendar, rep directory, Dance Floor aggregation, and master jewelry library.
 3. Photo setup guidance for Showcase Studio uploads, without affiliate monetization.
 4. Silver Membership at `$4.99/month`, monthly only, with the 45-day trial and downgrade path.
 5. Included Silver access for paid Sparkle Suite reps through a Silver Membership Billing Credit or equivalent entitlement.

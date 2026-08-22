@@ -120,7 +120,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
       await expect(collectionStats.getByText("Found by Sparkle Finder", { exact: true })).toBeVisible();
       await findPanel.getByText("More ways to look").click();
       await expect(findPanel.getByRole("link", { name: "Live Shows" })).toBeVisible();
-      await expect(findPanel.getByRole("link", { name: "Rep Boards" })).toBeVisible();
+      await expect(findPanel.getByRole("link", { name: "Dance Floor" })).toBeVisible();
       await expect(findPanel.getByRole("link", { name: "Favorite Reps" })).toBeVisible();
       await expect(findPanel.getByRole("link", { name: "Collectors" })).toBeVisible();
       await expect(findPanel.getByRole("link", { name: "Photo Setup Guide" })).toBeVisible();
@@ -297,7 +297,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByText("Create a free Sparkle Finder account to open this tool.")).toBeVisible();
   });
 
-  test("Silver library item detail exposes bounded Nic-Nac and local rep-board paths", async ({ page }) => {
+  test("Silver library item detail exposes bounded Nic-Nac and local Dance Floor paths", async ({ page }) => {
     await page.context().clearCookies();
     await page.context().addCookies([
       {
@@ -322,9 +322,9 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expectNoGuardrailCopy(page);
     await expectNoExampleLinksOnCurrentPage(page);
 
-    await page.getByRole("link", { name: "Open rep board path" }).first().click();
+    await page.getByRole("link", { name: "Open Dance Floor" }).first().click();
     await expect(page).toHaveURL(`${baseUrl}/rep-boards?listing=rainbow-crown`);
-    await expect(page.getByText("Rep Trade Boards / Dance Floors")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Dance Floor" })).toBeVisible();
     await expectNoExampleLinksOnCurrentPage(page);
   });
 
@@ -351,7 +351,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
       "href",
       new RegExp(`^${escapeRegExp(sparkleSuiteFinderBaseUrl)}/`),
     );
-    await expect(page.getByRole("link", { name: "Open rep board path" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Open Dance Floor" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Open rep profile" })).toHaveCount(0);
     await expectNoGuardrailCopy(page);
   });

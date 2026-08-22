@@ -12,10 +12,10 @@ These are working assumptions for research only unless a later decision note mar
 - Sparkle Finder should use an `SF` circular seal inspired by the Sparkle Suite `S` seal.
 - Sparkle Finder should use the Sparkle Suite Amethyst customer-facing site skin as the visual direction for the simplified mobile-first app redesign, while keeping Sparkle Finder as the customer-facing product brand.
 - Sparkle Finder's current homepage/UI direction is a simplified mobile-first app home: open with "Find the pieces you love. Build your collection with Sparkle Finder.", use a primary Find a Piece action, flow into My Collection / Bling Vault, and keep Nic-Nac as a helper layer rather than a homepage destination.
-- The customer side is more than a trade board. For v1, it is a secured discovery hub for reps, live shows, rep trade boards/dance floors, and the master jewelry library.
+- The customer side is more than the Dance Floor. For v1, it is a secured discovery hub for reps, live shows, rep dancers on the Dance Floor, and the master jewelry library.
 - The existing Sparkle Suite jewelry database is a core asset for the customer side.
-- Current rep-side trade board rules are intentionally narrow.
-- Neon Rabbit has historically preferred not to be the money or shipping middleman for the rep trade board.
+- Current rep-side Dance Floor rules are intentionally narrow.
+- Neon Rabbit has historically preferred not to be the money or shipping middleman for Dance Floor trades.
 - Any customer-side marketplace must research revenue share, disputes, scam protection, and trust before implementation.
 
 ## Assumptions That Need Validation
@@ -28,7 +28,7 @@ These are working assumptions for research only unless a later decision note mar
 - Phone numbers may be collected for identity, recovery, verification, trial abuse prevention, and security notices, but marketing SMS requires a separate optional opt-in.
 - Sparkle Finder should not sell customer personal information.
 - Promotional email consent should be separate from account/security email.
-- Logged-in Free customers can browse Sparkle Suite rep live calendars, aggregated rep trade boards/dance floors, and the master jewelry library after any trial or paid Silver access ends.
+- Logged-in Free customers can browse Sparkle Suite rep live calendars, aggregated dancers on the Dance Floor, and the master jewelry library after any trial or paid Silver access ends.
 - Logged-in Free customers can find diamond and unicorn labels inside the Master Jewelry Library through filters and search, not through a separate standalone library surface.
 - Sparkle Suite should not create its own rarity ratings or rarity scoring for Diamonds & Unicorns.
 - Public visitors should see a landing/teaser only; the useful hub requires login.

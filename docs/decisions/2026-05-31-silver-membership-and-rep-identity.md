@@ -67,11 +67,11 @@ Rep data should flow from Sparkle Suite into Sparkle Finder automatically:
 
 - rep profile basics
 - show schedules
-- dance floors / rep trade boards
+- Dance Floor dancers
 - relevant business links
 - other approved discovery data
 
-Sparkle Suite should be upfront with reps that active rep discovery data may appear on Sparkle Finder so customers can find shows and potential trade-board items.
+Sparkle Suite should be upfront with reps that active rep discovery data may appear on Sparkle Finder so customers can find shows and potential dancers.
 
 ## Unified Rep And Customer Identity
 

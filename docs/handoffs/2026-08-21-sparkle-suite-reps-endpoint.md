@@ -12,7 +12,7 @@ A rep must not need any of the following to appear:
 
 - a Sparkle Finder account;
 - a Finder claim code or password;
-- a trade board;
+- a Dance Floor;
 - a scheduled show;
 - saved Finder profile data.
 
@@ -132,7 +132,7 @@ Do not make eligibility depend on:
 
 - Finder account ownership;
 - Finder claim status;
-- a trade board existing or containing items;
+- a Dance Floor existing or containing dancers;
 - a live show existing;
 - a profile photo existing;
 - favorite counts.
@@ -157,7 +157,7 @@ Never return:
 - auth user ids or internal account ids when they are not the established public `repId`;
 - email addresses, phone numbers, private notes, customer identities, or precise addresses;
 - Finder customer favorite rows or customer-level favorite information;
-- private board inventory or unpublished show metadata.
+- private Dance Floor inventory or unpublished show metadata.
 
 Normalize URLs server-side. Require HTTPS, reject embedded credentials and non-default ports, and allow only approved public Suite/customer-site hosts.
 
@@ -206,4 +206,3 @@ The integration is complete only when all of the following are true:
 - favorite add/remove persists across refresh;
 - Finder production browser console and network checks contain no unexpected errors;
 - `npm run lint`, `npm test`, `npm run build`, and `npm run smoke:sparkle-finder` pass in Finder.
-

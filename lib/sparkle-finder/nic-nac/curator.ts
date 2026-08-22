@@ -54,6 +54,8 @@ export function getFinderNicNacToolIntentsForText(text: string): FinderNicNacToo
       /\bshow[-\s]?times?\b/,
       /\bnext show\b/,
       /\bwho has\b/,
+      /\bdance floor\b/,
+      /\bdancers?\b/,
       /\bkelli\b/,
       /\blindsey\b/,
       /\blindsay\b/,
@@ -108,15 +110,15 @@ export function getFinderNicNacToolIntentsForText(text: string): FinderNicNacToo
 
 function isSuiteWorkspaceMutationRequest(normalized: string): boolean {
   const suiteSurface =
-    /\b(trade board|tradeboard|live queue|livequeue|customer site|workspace|calendar|site settings|account settings|billing|fulfillment|recipes?|board|homepage|hero|trade)\b/;
+    /\b(dance floor|dancers?|trade board|tradeboard|live queue|livequeue|customer site|workspace|calendar|site settings|account settings|billing|fulfillment|recipes?|board|homepage|hero|trade)\b/;
   const mutationVerb =
     /\b(add|post|put|create|update|change|edit|remove|delete|schedule|cancel|mark|approve|ship|shipped|complete|publish|hide|upload|take)\b/;
   const listAsMutation =
-    /\blist\b.{0,80}\b(on|to)\s+(my|our|the)?\s*(trade board|tradeboard)\b/;
+    /\blist\b.{0,80}\b(on|to)\s+(my|our|the)?\s*(dance floor|trade board|tradeboard)\b/;
   const boardMutation =
-    /\b(add|post|put|list|create)\b.{0,80}\b(on|to)\s+(my|our|the)?\s*(board|trade board|tradeboard)\b/;
+    /\b(add|post|put|list|create)\b.{0,80}\b(on|to)\s+(my|our|the)?\s*(dance floor|board|trade board|tradeboard)\b/;
   const boardRemoval =
-    /\b(take|remove|delete)\b.{0,80}\b(off|from)\s+(my|our|the)?\s*(board|trade board|tradeboard)\b/;
+    /\b(take|remove|delete)\b.{0,80}\b(off|from)\s+(my|our|the)?\s*(dance floor|board|trade board|tradeboard)\b/;
   const tradeStatusMutation = /\bmark\b.{0,80}\btrade\b.{0,80}\b(shipped|complete|completed|approved|cancelled|canceled)\b/;
   const siteContentMutation = /\b(change|edit|update|publish|hide|upload)\b.{0,80}\b(homepage|hero|customer site|site settings|recipe|recipes?)\b/;
   const liveShowMutation = /\b(schedule|add|create|cancel|update|change|edit)\b.{0,80}\b(live show|next live|show time|showtime)\b/;

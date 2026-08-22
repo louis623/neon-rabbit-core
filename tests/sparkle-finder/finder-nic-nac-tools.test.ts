@@ -161,7 +161,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
         },
       ],
       guidance:
-        "Use availability leads for rep board and next-show discovery only. Do not mutate Sparkle Suite Trade Boards from Finder.",
+        "Use dancer leads for Dance Floor and next-show discovery only. Do not mutate Sparkle Suite Dance Floors from Finder.",
     });
   });
 
@@ -809,7 +809,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
           hasRepPath: true,
         },
       ],
-      guidance: "Use favorite reps for rep-first discovery, show timing, and board shortcuts only.",
+      guidance: "Use favorite reps for rep-first discovery, show timing, and Dance Floor shortcuts only.",
     });
   });
 

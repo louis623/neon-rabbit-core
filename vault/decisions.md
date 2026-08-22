@@ -77,3 +77,9 @@ Reason: Louis wants fewer AI vendor accounts to troubleshoot and bill, and Nic-N
 Decision: When Finder knows an account is linked to a Sparkle Suite rep, Finder Nic-Nac should treat that as the same assistant relationship but keep current-surface tools limited to Sparkle Finder. Sparkle Suite workspace mutations requested from Finder should be redirected to Sparkle Suite login/opening, with context preserved in the conversation tone.
 
 Reason: This matches Louis's expectation that reps feel like they are talking to the same Nic-Nac on both products while keeping security and troubleshooting boundaries clear.
+
+## 2026-08-22 - Dance Floor Is The Approved Trade Vocabulary
+
+Decision: Customer- and rep-facing copy must call the product feature the `Dance Floor` and jewelry offered there `dancers`. `Dance Floor` is always capitalized, and a `trade` remains the exchange/process. Legacy database, API, route, field, component, stable ID, and tool names stay unchanged when compatibility requires them, but must not appear in visible copy or Nic-Nac responses.
+
+Reason: Sparkle Finder and Sparkle Suite need one clear, approved vocabulary without risking existing integrations or stored data.

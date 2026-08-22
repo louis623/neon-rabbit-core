@@ -21,7 +21,7 @@ The future customer side is a collector/community surface for Bomb Party custome
 - secured free customer discovery hub
 - Sparkle Suite rep directory
 - master live calendar for Sparkle Suite reps
-- aggregated rep trade board / dance floor browsing
+- aggregated Dance Floor browsing for rep dancers
 - searchable jewelry library powered by the existing Sparkle Suite jewelry database
 - Diamonds & Unicorns Library powered by Bomb Party's own diamond/unicorn labels
 - traffic paths back to rep sites and shows
@@ -44,7 +44,7 @@ This repo is for:
 This repo is not for:
 
 - active `neon-rabbit-core` launch work
-- current rep-side trade board implementation
+- current rep-side Dance Floor implementation
 - generated marketing assets
 - fake UI/product screenshots
 - live SMS, Stripe, marketplace, shipping, or payment-provider actions

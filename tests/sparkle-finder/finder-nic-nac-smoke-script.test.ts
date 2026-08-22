@@ -56,12 +56,12 @@ describe("Finder Nic-Nac smoke script helpers", () => {
   });
 
   it("builds a UI-message request body for the smoke prompt", () => {
-    expect(buildFinderNicNacSmokeBody("Add ER13229 to my Trade Board.")).toEqual({
+    expect(buildFinderNicNacSmokeBody("Add ER13229 to my Dance Floor.")).toEqual({
       messages: [
         {
           id: "finder-nic-nac-smoke-1",
           role: "user",
-          parts: [{ type: "text", text: "Add ER13229 to my Trade Board." }],
+          parts: [{ type: "text", text: "Add ER13229 to my Dance Floor." }],
         },
       ],
     });
@@ -98,7 +98,7 @@ describe("Finder Nic-Nac smoke script helpers", () => {
       { expectModelConfigured: true },
     );
     const hardFailResult = await evaluateFinderNicNacSmokeResponse(
-      new Response("I can't actually add listings from here.", { status: 200 }),
+      new Response("I can't actually add dancers from here.", { status: 200 }),
       { expectModelConfigured: true },
     );
 
@@ -114,7 +114,7 @@ describe("Finder Nic-Nac smoke script helpers", () => {
   it("checks framed AI SDK streams for hard-fail phrases split across deltas", async () => {
     const framedStream = [
       'data: {"type":"text-delta","delta":"I can\'t actually "}',
-      'data: {"type":"text-delta","delta":"add listings from here."}',
+      'data: {"type":"text-delta","delta":"add dancers from here."}',
     ].join("\n");
 
     const result = await evaluateFinderNicNacSmokeResponse(

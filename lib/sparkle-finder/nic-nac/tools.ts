@@ -171,7 +171,7 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
   if (activeNames.includes("find_rep_board_availability")) {
     tools.find_rep_board_availability = tool({
       description:
-        "Find bounded public Sparkle Suite rep board availability and next-show leads for a Sparkle Finder catalog item.",
+        "Find bounded public Sparkle Suite Dance Floor dancers and next-show leads for a Sparkle Finder catalog item.",
       inputSchema: z.object({
         itemId: z.string(),
         limit: z.number().int().min(1).max(12).optional(),
@@ -183,7 +183,7 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
           return {
             status: "missing_item_id",
             leads: [],
-            guidance: "Ask for the item number or catalog item before checking rep board availability.",
+            guidance: "Ask for the item number or catalog item before checking for dancers on the Dance Floor.",
           };
         }
 
@@ -234,7 +234,7 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
           count: leads.length,
           leads: leads.slice(0, limit ?? 8),
           guidance:
-            "Use availability leads for rep board and next-show discovery only. Do not mutate Sparkle Suite Trade Boards from Finder.",
+            "Use dancer leads for Dance Floor and next-show discovery only. Do not mutate Sparkle Suite Dance Floors from Finder.",
         };
       },
     });
@@ -664,7 +664,7 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
 
   if (activeNames.includes("list_favorite_reps")) {
     tools.list_favorite_reps = tool({
-      description: "List the customer's persisted favorite reps with next-show and board context.",
+      description: "List the customer's persisted favorite reps with next-show and Dance Floor context.",
       inputSchema: z.object({
         limit: z.number().int().min(1).max(12).optional(),
       }),
@@ -703,7 +703,7 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
             hasBoardPath: Boolean(card.repBoardUrl),
             hasRepPath: Boolean(card.repSiteUrl),
           })),
-          guidance: "Use favorite reps for rep-first discovery, show timing, and board shortcuts only.",
+          guidance: "Use favorite reps for rep-first discovery, show timing, and Dance Floor shortcuts only.",
         };
       },
     });

@@ -46,7 +46,7 @@ Each listed rep should show:
 - next show date/time in customer-friendly wording,
 - favorite/save rep control for signed-in customers,
 - public customer-facing rep site link when available,
-- public customer-facing board link when available.
+- public customer-facing Dance Floor link when available.
 
 Keep the page focused on browsing. Do not add rep onboarding, claim flows, account editing, shop behavior, paid links, marketplace behavior, or customer-to-customer trading.
 
@@ -89,7 +89,7 @@ Recommended actions:
 
 If a rep has no upcoming show, show `No show scheduled` instead of hiding the rep.
 
-If a rep does not have a board link, hide the `Board` action for that card.
+If a rep does not have a Dance Floor link, hide the `Dance Floor` action for that card.
 
 If a rep is currently live or live today, that status should be visually obvious but not loud. Use the Amethyst skin accents already introduced in the homepage redesign.
 
@@ -276,7 +276,7 @@ Pressure test:
 - 1440px desktop,
 - a large rep list sample to check scroll performance,
 - missing avatar,
-- missing board link,
+- missing Dance Floor link,
 - no upcoming show.
 
 ## Out Of Scope

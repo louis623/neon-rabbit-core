@@ -1,9 +1,16 @@
 # Sparkle Finder Session Log
 
+## 2026-08-22 - Dance Floor Vocabulary Alignment
+
+- Audited active UI, state copy, customer legal content, manual smoke instructions, Nic-Nac prompts/tool descriptions/results, tests, and current project memory for legacy trade terminology.
+- Standardized the feature name to `Dance Floor` and its inventory to `dancers`, while preserving compatibility identifiers such as `/rep-boards`, `RepBoardListing`, `listingId`, database fields, URLs, and the `find_rep_board_availability` tool name.
+- Added copy guardrails and prompt-memory normalization so legacy input can still be understood without leaking legacy terminology into customer- or rep-visible responses.
+- Verification passed: focused terminology/Nic-Nac/route tests (`196`), full Vitest suite (`39` files, `532` tests), lint, final focused route/copy tests (`134`), and the production build.
+
 ## 2026-08-21 - Bulletproofed The Automatic Reps Integration
 
 - Completed the missing Sparkle Suite half of the automatic Reps integration. Suite commit `7d373f44` added the public Reps route, a fail-closed `finder_directory_visible` flag, service-role-only bounded directory RPC, safe current/next-show selection, canonical Suite links, stale-show expiry, and provisioning rules that automatically include real reps while explicitly excluding reviewer/demo accounts.
-- Applied Suite migration `20260821191500_ss_finder_rep_directory_visibility.sql` and directly verified the visibility row, RPC output, indexes, guard trigger, and execute permissions. Only Heather/BlingKitchen was enabled because read-only production evidence matched Louis's description of the one current real rep setting up Trade Board data; other existing accounts remain hidden until their public intent is confirmed.
+- Applied Suite migration `20260821191500_ss_finder_rep_directory_visibility.sql` and directly verified the visibility row, RPC output, indexes, guard trigger, and execute permissions. Only Heather/BlingKitchen was enabled because read-only production evidence matched Louis's description of the one current real rep setting up Dance Floor data; other existing accounts remain hidden until their public intent is confirmed.
 - Pushed Suite commit `7d373f44` and deployed it Ready as `dpl_AwjMxR9w5C3DmMvtMeuZBWn94Fym` with both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` attached. The live endpoint returns JSON `200` with Heather, canonical site and `/trade` links, no show, and no private fields; `query=demo` returns a healthy empty array and malformed limits return JSON `400`.
 - Finder's cross-product contract checker now passes with `REPS=1`. Suite focused integration tests passed (`77`), lint and production build passed, and Vercel's production error-log scan returned no errors. The broader Suite suite still has unrelated pre-existing stale assertions outside this integration.
 - Hardened Finder's Playwright release smoke so its Reps check can no longer pass on preview fixtures when the live integration is expected: it must render Heather/BlingKitchen and must not render Lindsay/Sierra. The production build and full browser smoke passed (`18` passed, `2` optional checks skipped), and the live-data Reps screen was visually reviewed at desktop and 390px phone widths. The existing production browser session was signed out, so the live custom domain honestly verified the anonymous account gate; no personal/customer account state was changed.
@@ -50,7 +57,7 @@
   - B: the Bling Vault collection layer now carries the customer profile cue, `Owned`, `Wishlist`, `Diamonds`, `Unicorns`, `Found by Sparkle Finder`, Hero Piece, Wishlist rail, and lazy-loading mosaic.
   - Primary app navigation is now `Home`, `Find`, `Collection`, `Reps`, `Me`; Library remains reachable from A and C but is not a top-level app tab.
   - Moved the shared hub chrome helper out of the App Router layout file so production builds are not affected by test-only exports, and hardened smoke cleanup against stale `.next/dev` generated types.
-  - Preserved existing backend plumbing, Nic-Nac route/tool behavior, collection persistence, Reps, Library, Wishlist, Live Shows, Rep Boards, Favorites, Collectors, Silver Studio, auth/account, and legal routes.
+  - Preserved existing backend plumbing, Nic-Nac route/tool behavior, collection persistence, Reps, Library, Wishlist, Live Shows, Dance Floor, Favorites, Collectors, Silver Studio, auth/account, and legal routes.
   - Verification passed: subagent review issues addressed, `npm run lint`, focused route tests (`90` tests), full `npm run test` (`38` files, `515` tests), `npm run build`, `npm run smoke:sparkle-finder` (`18` passed, `2` optional live/API checks skipped), and signed-in mobile/desktop A/B/C screenshots reviewed.
   - Deployed Finder production `dpl_gdKzhuuCqeKJm9cVqCX6ZDefZTGT`, aliased at `https://sparkle-finder-dev.vercel.app`, and live-checked `/`, `/reps`, `/library`, and `/auth/sign-in` with `200 OK`.
 
@@ -58,7 +65,7 @@
 
 - Added the simple customer-facing Reps main tab:
   - Added `Reps` to the primary Sparkle Finder app navigation and created `/reps` as a signed-in hub route.
-  - Built a mobile-first Reps directory with search, status chips, small profile/avatar treatment, state badges, next-show timing, View Rep links, Board links when a board URL is available, and existing favorite-rep controls.
+  - Built a mobile-first Reps directory with search, status chips, small profile/avatar treatment, state badges, next-show timing, View Rep links, Dance Floor links when a compatible URL is available, and existing favorite-rep controls.
   - Added a Sparkle Suite public Finder API adapter for `/api/public/finder/reps?limit=200`, with preview/test fixture fallback and mapping into existing Finder rep, live-show, and board-link models.
   - Revalidated `/reps` after favorite/unfavorite actions so the new tab stays in sync with favorite reps.
   - Fixed `CustomerShowTime` browser hydration by replacing the invalid `Intl.DateTimeFormat` `dateStyle`/`timeStyle` plus `timeZoneName` combination with explicit date/time fields.
@@ -87,7 +94,7 @@
 - Implemented the mobile-first Sparkle Finder homepage overhaul:
   - Replaced the signed-in command-center opening with a simple app home built around `Find the pieces you love. Build your collection with Sparkle Finder.`
   - Simplified primary app navigation to `Home`, `Library`, `Find`, and account status while keeping advanced feature routes reachable from the guided `Find a Piece` panel.
-  - Moved live shows, rep boards, favorite reps, collectors, Photo Setup, missing-piece flow, and Nic-Nac help into contextual find paths without removing backend plumbing or feature routes.
+  - Moved live shows, the Dance Floor, favorite reps, collectors, Photo Setup, missing-piece flow, and Nic-Nac help into contextual find paths without removing backend plumbing or feature routes.
   - Applied the Sparkle Suite Amethyst customer-site direction through shared theme tokens, app nav/footer surfaces, CTAs, Nic-Nac accents, and the authenticated homepage collection layer.
   - Preserved collection stats, Bling Vault lazy loading, Wishlist and owned-item persistence, the Nic-Nac `FindThisForMe` helper, customer profile/TikTok details, and route/account gating behavior.
   - Added the active Silver missing-piece anchor to the Nic-Nac curator workspace so `/silver#showcase-studio` lands on the current missing-piece helper area.
@@ -143,7 +150,7 @@
   - Deployed authenticated Nic-Nac chat smoke still needs a local/available authenticated smoke credential path; the stable alias and unauthenticated protection checks are verified.
 
 - Added Finder Nic-Nac availability/live-show tool parity:
-  - Added `find_rep_board_availability`, a bounded read-only tool backed by the existing Sparkle Suite public Finder availability API service. It returns requested item context, exact leads first, same collection/type fallback leads second, public customer-site links, listing photo context, and next-show timing without mutating Sparkle Suite Trade Boards.
+  - Added the compatibility-named `find_rep_board_availability`, a bounded read-only tool backed by the existing Sparkle Suite public Finder availability API service. It returns requested item context, exact leads first, same collection/type fallback leads second, public customer-site links, dancer photo context, and next-show timing without mutating Sparkle Suite Dance Floors.
   - Added `list_upcoming_live_shows`, a bounded read-only tool backed by the existing Sparkle Suite public Finder live-shows API service. It returns public show id, show name, rep first name, start time, status, and customer-site link for timing/discovery only.
   - Wired the `availability` intent through tool policy, active tool names, route prompt exposure, and telemetry so “who has this / next show” Finder turns can use real discovery tools while Suite workspace mutation requests remain blocked on the Finder surface.
   - Verification passed: focused Finder Nic-Nac tools/policy/curator/route tests, full Finder Vitest suite (`37` files, `476` tests), and production `next build`.

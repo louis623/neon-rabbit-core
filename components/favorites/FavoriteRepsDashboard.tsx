@@ -14,7 +14,7 @@ export function FavoriteRepsDashboard({ cards, isSilver }: FavoriteRepsDashboard
           Favorites
         </h1>
         <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
-          Keep preferred rep show paths, board links, and Silver planning notes in one place.
+          Keep preferred rep show paths, Dance Floor links, and Silver planning notes in one place.
         </p>
       </div>
       <FavoriteRepsPanel cards={cards} isSilver={isSilver} />

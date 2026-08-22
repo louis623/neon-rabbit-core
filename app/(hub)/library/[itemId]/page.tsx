@@ -171,14 +171,14 @@ export function renderItemDetailPageContent(
                       className="mt-3 inline-flex text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
                       href={getLocalRepBoardHref(match.boardUrl)}
                     >
-                      Open rep board path
+                      Open Dance Floor
                     </a>
                   </div>
                 );
               })
             ) : (
               <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-                No rep board leads yet.
+                No dancer leads yet.
               </p>
             )}
           </div>

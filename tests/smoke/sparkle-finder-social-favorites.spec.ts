@@ -15,7 +15,7 @@ test.describe("Sparkle Finder social favorites smoke", () => {
     await expect(page.getByRole("heading", { name: "Favorites" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Favorite Reps" })).toBeVisible();
     await expect(page.getByText("Next show").first()).toBeVisible();
-    await expect(page.getByText("Trade board").first()).toBeVisible();
+    await expect(page.getByText("Dance Floor").first()).toBeVisible();
     await expect(page.getByText("Rep notes").first()).toBeVisible();
     await expect(page.getByText("Ask Nic-Nac").first()).toBeVisible();
     await expectNoGuardrailCopy(page);

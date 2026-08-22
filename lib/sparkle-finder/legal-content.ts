@@ -53,7 +53,7 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
         "Sparkle Finder signup, sign-in, account, and Silver trial flows",
         "Favorite Reps, Public Showcases, Showcase Collections, Reveal Spotlight, one-way follow, block, report, watchlist, and Nic-Nac request features",
         "Nic-Nac assistant, memory, linked-rep context, and AI-assisted collector support features",
-        "Sparkle Suite-powered library, live show, rep board, and availability data shown in Sparkle Finder",
+        "Sparkle Suite-powered library, live show, Dance Floor, and dancer availability data shown in Sparkle Finder",
         "optional Sparkle Finder email or SMS update choices",
       ],
     },
@@ -85,7 +85,7 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
         "create and manage Sparkle Finder customer accounts",
         "provide the 45-day Silver trial and Silver membership access",
         "support Favorite Reps, Sparkle Showcase, Public Showcases, Showcase Collections, Reveal Spotlight, watchlist, one-way follow, block, report, and Nic-Nac request features",
-        "show relevant library, live show, rep board, and availability information",
+        "show relevant library, live show, Dance Floor, and dancer availability information",
         "respond to support requests or product concern reports",
         "send account, security, trial, billing, or service notices",
         "send optional promotional messages only when you choose to opt in",
@@ -109,8 +109,8 @@ export const sparkleFinderPrivacyPolicyDocument: LegalDocument = {
     {
       title: "Sparkle Suite Data And Rep Links",
       paragraphs: [
-        "Sparkle Finder may display catalog, live show, rep, rep board, and availability information read from or linked through Sparkle Suite systems.",
-        "Sparkle Finder does not make every rep, listing, availability count, show time, or external link permanently available or guaranteed. Reps and third-party systems may change their own information.",
+        "Sparkle Finder may display catalog, live show, rep, Dance Floor, and dancer availability information read from or linked through Sparkle Suite systems.",
+        "Sparkle Finder does not make every rep, dancer, availability count, show time, or external link permanently available or guaranteed. Reps and third-party systems may change their own information.",
       ],
     },
     {
@@ -219,10 +219,10 @@ export const sparkleFinderTermsAndConditionsDocument: LegalDocument = {
       ],
     },
     {
-      title: "Library, Live Shows, Rep Boards, And Availability",
+      title: "Library, Live Shows, Dance Floor, And Availability",
       paragraphs: [
-        "Sparkle Finder may display jewelry library records, live show information, rep links, rep board links, and item availability information powered by Sparkle Suite systems or other approved sources.",
-        "Sparkle Finder does not guarantee that every listing, show time, availability count, rep link, item detail, or external destination is complete, current, or error-free.",
+        "Sparkle Finder may display jewelry library records, live show information, rep links, Dance Floor links, and dancer availability information powered by Sparkle Suite systems or other approved sources.",
+        "Sparkle Finder does not guarantee that every dancer, show time, availability count, rep link, item detail, or external destination is complete, current, or error-free.",
       ],
     },
     {

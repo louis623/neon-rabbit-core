@@ -30,7 +30,7 @@ export type FinderNicNacSmokeResult = {
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 const useShell = process.platform === "win32";
 const hardFailPhrases = [
-  "i can't actually add listings",
+  "i can't actually add dancers",
   "log into your workspace and add it manually",
   "unboxed",
   "plain background",

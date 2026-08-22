@@ -12,7 +12,7 @@ Decision date: 2026-05-29
 
 Customer-to-customer trading was originally discussed as Plus-only for active participation. Since `Plus` has been renamed `Silver Membership`, this would mean Silver-only if customer-to-customer trading is reactivated later.
 
-- Free accounts can browse customer trade listings.
+- Free accounts can browse dancers on the customer Dance Floor.
 - Free accounts can browse the jewelry database.
 - Free accounts cannot list items for customer-to-customer trade.
 - Free accounts cannot initiate customer-to-customer trade proposals.
@@ -22,4 +22,4 @@ Product rationale:
 
 - Free browsing keeps the network useful and helps customers see the value of the customer side.
 - Silver-only trading creates an accountability gate before customers can affect other customers.
-- This keeps the first customer trade workflow simple and safer without hiding the trade board entirely.
+- This keeps the first customer trade workflow simple and safer without hiding the Dance Floor entirely.

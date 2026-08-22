@@ -92,7 +92,7 @@ export function findNicNacMatchesForItem(
         createNicNacMatch(requestId, requestedItem, listing, "same_collection_type"),
       ),
     ],
-    emptyState: "No fixture-backed rep board leads yet. Nic-Nac will stay within saved rep boards and next-show context.",
+    emptyState: "No preview Dance Floor leads yet. Nic-Nac will stay within saved Dance Floors and next-show context.",
   };
 }
 
@@ -121,7 +121,7 @@ function createApiBackedNicNacResult(
         createApiNicNacMatch(requestId, availability.requestedItem!, match, "same_collection_type"),
       ),
     ],
-    emptyState: "No Sparkle Suite availability leads yet. Nic-Nac will stay within shared catalog, rep board, and next-show context.",
+    emptyState: "No Sparkle Suite dancer leads yet. Nic-Nac will stay within shared catalog, Dance Floor, and next-show context.",
   };
 }
 

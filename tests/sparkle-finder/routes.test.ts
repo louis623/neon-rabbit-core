@@ -227,7 +227,7 @@ describe("Sparkle Finder hub routes", () => {
       "Agreement To These Terms",
       "About Sparkle Finder",
       "Customer Accounts And Silver Access",
-      "Library, Live Shows, Rep Boards, And Availability",
+      "Library, Live Shows, Dance Floor, And Availability",
       "Sparkle Showcase, Profile, And Watchlist Tools",
       "Nic-Nac And AI-Assisted Features",
       "Follows, Blocking, Reports, And Moderation",
@@ -313,7 +313,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("How Sparkle Finder works");
     expect(markup).toContain("sparkle-home-primary-cta");
     expect(markup).not.toContain("Find pieces you like.");
-    expect(markup).not.toContain("Check rep trade boards.");
+    expect(markup).not.toContain("Browse the Dance Floor.");
     expect(markup).not.toContain("Live show calendar.");
     expect(markup).not.toContain("Collect and show off.");
     expect(markup).not.toContain("Included tools");
@@ -337,10 +337,10 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain('href="/auth/sign-up?next=/shop"');
     expect(markup).not.toContain("Master Jewelry Library");
     expect(markup).not.toContain("Live Show Calendar");
-    expect(markup).not.toContain("Rep Trade Boards / Dance Floors");
+    expect(markup).not.toContain(">Dance Floor<");
     expect(markup).not.toContain("Collection Showcase");
     expect(markup).not.toContain("Photo-ready uploads");
-    expect(markup).not.toContain("Find the pieces you like, see which reps have them on trade boards");
+    expect(markup).not.toContain("See which reps have dancers you love.");
     expect(markup).not.toContain("Start with your 45-day Silver Tier trial");
     expect(markup).not.toContain("Silver opens the full collector workflow");
     expect(markup).not.toContain("$4.99/month");
@@ -456,7 +456,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Check my Wishlist");
     expect(markup).toContain("Ask Nic-Nac for Help");
     expect(markup).toContain("Live Shows");
-    expect(markup).toContain("Rep Boards");
+    expect(markup).toContain("Dance Floor");
     expect(markup).toContain("Favorite Reps");
     expect(markup).toContain("Collectors");
     expect(markup).not.toContain("Trial access");
@@ -491,7 +491,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(findMarkup).toContain('href="/live-shows"');
     expect(findMarkup).toContain("Live Shows");
     expect(findMarkup).toContain('href="/rep-boards"');
-    expect(findMarkup).toContain("Rep Boards");
+    expect(findMarkup).toContain("Dance Floor");
     expect(findMarkup).toContain('href="/favorites"');
     expect(findMarkup).toContain("Favorite Reps");
     expect(findMarkup).toContain('href="/collectors"');
@@ -643,19 +643,19 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("/library/jewel-rainbow-crown-ring");
   });
 
-  it("labels dashboard live show stats from the Finder API and board stats as preview data", () => {
+  it("labels dashboard live show stats from the Finder API and dancers as preview data", () => {
     const markup = renderToStaticMarkup(renderDashboardPageContent(undefined, 3));
 
     expect(markup).toContain("Live/upcoming shows");
     expect(markup).toContain(">3<");
-    expect(markup).toContain("Preview board listings");
+    expect(markup).toContain("Preview dancers");
   });
 
-  it("labels rep boards as preview-backed and renders API-shaped live shows", () => {
+  it("labels the Dance Floor as preview-backed and renders API-shaped live shows", () => {
     const repBoardsMarkup = renderToStaticMarkup(createElement(RepBoardsPage));
     const liveShowsMarkup = renderToStaticMarkup(renderLiveShowsPageContent(finderLiveShowItems()));
 
-    expect(repBoardsMarkup).toContain("Preview board data");
+    expect(repBoardsMarkup).toContain("Preview dancers");
     expect(liveShowsMarkup).toContain("Demo Glow Show");
     expect(liveShowsMarkup).toContain("Rep: Demo");
     expect(liveShowsMarkup).toContain("Visit Rep Site");
@@ -800,7 +800,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(freeMarkup).toContain("Favorites");
     expect(freeMarkup).toContain("Favorite Reps");
     expect(freeMarkup).toContain("Next show");
-    expect(freeMarkup).toContain("Trade board");
+    expect(freeMarkup).toContain("Dance Floor");
     expect(freeMarkup).toContain("Visit Rep Site");
     expect(freeMarkup).toContain("Silver unlocks rep notes");
     expect(freeMarkup).not.toContain("Rep notes");
@@ -808,7 +808,7 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(silverMarkup).toContain("Favorite Reps");
     expect(silverMarkup).toContain("Next show");
-    expect(silverMarkup).toContain("Trade board");
+    expect(silverMarkup).toContain("Dance Floor");
     expect(silverMarkup).toContain("Rep notes");
     expect(silverMarkup).toContain("Ask Nic-Nac");
   });
@@ -879,7 +879,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("DM");
   });
 
-  it("surfaces favorite rep controls across Silver, live shows, and rep boards", () => {
+  it("surfaces favorite rep controls across Silver, live shows, and the Dance Floor", () => {
     const silverMarkup = renderToStaticMarkup(renderSilverPageContent(getLocalDevAuthState("silver")));
     const liveShowsMarkup = renderToStaticMarkup(renderLiveShowsPageContent(finderLiveShowItems()));
     const repBoardsMarkup = renderToStaticMarkup(createElement(RepBoardsPage));
@@ -1120,9 +1120,9 @@ describe("Sparkle Finder hub routes", () => {
 
     expect(singularMarkup).toContain("Known rep lead");
     expect(singularMarkup).not.toContain("Known rep leads");
-    expect(singularMarkup).not.toContain("No current listings");
+    expect(singularMarkup).not.toContain("No dancers right now");
     expect(pluralMarkup).toContain("Known rep leads");
-    expect(pluralMarkup).not.toContain("No current listings");
+    expect(pluralMarkup).not.toContain("No dancers right now");
   });
 
   it("shows availability unknown when library card counts and known leads are missing", () => {
@@ -1142,7 +1142,7 @@ describe("Sparkle Finder hub routes", () => {
     const markup = renderToStaticMarkup(renderLibraryPageContent(items));
 
     expect(markup).toContain("Availability unknown");
-    expect(markup).not.toContain("No current listings");
+    expect(markup).not.toContain("No dancers right now");
   });
 
   it("renders library card photos with a locked smart crop that favors the jewelry", () => {
@@ -1279,7 +1279,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Demo Glow Show");
     expect(markup).toContain("Rep: Demo");
     expect(markup).toContain("Visit Rep Site");
-    expect(markup).not.toContain("Open rep board path");
+    expect(markup).not.toContain("Open Dance Floor");
   });
 
   it("renders library detail photos with full-photo framing", () => {
@@ -1330,10 +1330,11 @@ describe("Sparkle Finder hub routes", () => {
     ).toThrow();
   });
 
-  it("renders rep board listings without customer action controls", () => {
+  it("renders Dance Floor dancers without customer action controls", () => {
     const markup = renderToStaticMarkup(createElement(RepBoardsPage));
 
-    expect(markup).toContain("Rep Trade Boards / Dance Floors");
+    expect(markup).toContain("Dance Floor");
+    expect(markup).toContain("Dancer available");
     expect(markup).toContain("Sierra Sparkle Studio");
     expect(markup).toContain("/rep-boards?listing=rainbow-crown");
     expect(markup).not.toContain("Offer Item");

@@ -66,13 +66,13 @@ export function FavoriteRepsPanel({ cards, isSilver }: FavoriteRepsPanelProps) {
                     ) : null}
                     {card.repBoardUrl ? (
                       <a className="text-sm font-bold text-[var(--sparkle-plum)] hover:underline" href={getLocalRepBoardHref(card.repBoardUrl)}>
-                        Trade board
+                        Dance Floor
                       </a>
                     ) : (
-                      <span className="text-sm font-bold text-[var(--sparkle-ink-muted)]">Trade board: watching</span>
+                      <span className="text-sm font-bold text-[var(--sparkle-ink-muted)]">Dance Floor: watching</span>
                     )}
                     <span className="text-sm font-semibold text-[var(--sparkle-ink-muted)]">
-                      {card.boardItemCount} board matches
+                      {card.boardItemCount} {card.boardItemCount === 1 ? "dancer" : "dancers"}
                     </span>
                   </div>
                 </div>
@@ -94,7 +94,7 @@ export function FavoriteRepsPanel({ cards, isSilver }: FavoriteRepsPanelProps) {
         <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
           <p className="font-bold text-[var(--sparkle-plum-deep)]">No favorite reps saved yet.</p>
           <p className="mt-2 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
-            Use the heart on live shows or rep boards to keep rep paths close. Next show and Trade board details will appear here.
+            Use the heart on live shows or the Dance Floor to keep rep paths close. Next-show and Dance Floor details will appear here.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
@@ -109,7 +109,7 @@ export function FavoriteRepsPanel({ cards, isSilver }: FavoriteRepsPanelProps) {
               href="/rep-boards"
             >
               <UsersRound aria-hidden="true" className="size-4" />
-              Rep boards
+              Dance Floor
             </Link>
           </div>
         </div>

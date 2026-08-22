@@ -422,7 +422,7 @@ describe("Finder Nic-Nac API route", () => {
       },
     };
 
-    await POST(createNicNacRequest("Add ER13229 to my Trade Board."));
+    await POST(createNicNacRequest("Add ER13229 to my Dance Floor."));
 
     const systemPrompt = String(streamTextMock.mock.calls[0][0].system);
 
@@ -458,10 +458,10 @@ describe("Finder Nic-Nac API route", () => {
       },
     };
     suiteMemoryRuntime.summaries = [
-      "Sparkle Suite memory - explicit preference: Ask before adding duplicate Trade Board items.",
+      "Sparkle Suite memory - explicit preference: Ask before adding duplicate Dance Floor dancers.",
     ];
 
-    await POST(createNicNacRequest("Add ER13229 to my Trade Board."));
+    await POST(createNicNacRequest("Add ER13229 to my Dance Floor."));
 
     const systemPrompt = String(streamTextMock.mock.calls[0][0].system);
 
@@ -473,7 +473,7 @@ describe("Finder Nic-Nac API route", () => {
     ]);
     expect(systemPrompt).toContain("linked Sparkle Suite rep");
     expect(systemPrompt).toContain("BlingKitchen");
-    expect(systemPrompt).toContain("Ask before adding duplicate Trade Board items.");
+    expect(systemPrompt).toContain("Ask before adding duplicate Dance Floor dancers.");
     expect(systemPrompt).toContain("I need you logged into Sparkle Suite");
   });
 
@@ -506,7 +506,7 @@ describe("Finder Nic-Nac API route", () => {
       },
     };
 
-    await POST(createNicNacRequest("Add ER13229 to my Trade Board."));
+    await POST(createNicNacRequest("Add ER13229 to my Dance Floor."));
 
     const routeCall = streamTextMock.mock.calls[0][0] as {
       system?: unknown;
@@ -520,7 +520,7 @@ describe("Finder Nic-Nac API route", () => {
     expect(systemPrompt).not.toContain("search_catalog");
   });
 
-  it("exposes Finder availability tools for public rep board discovery turns", async () => {
+  it("exposes Finder availability tools for public Dance Floor discovery turns", async () => {
     nicNacRouteRuntime.accountState = {
       status: "authenticated",
       tier: "silver",
@@ -730,7 +730,7 @@ describe("Finder Nic-Nac API route", () => {
       updatedAt: "2026-06-01T00:00:00.000Z",
     });
     suiteMemoryRuntime.summaries = [
-      "Sparkle Suite memory - explicit preference: Keep Trade Board cleanup prompts short.",
+      "Sparkle Suite memory - explicit preference: Keep Dance Floor cleanup prompts short.",
     ];
 
     await POST(createNicNacRequest("What do you remember about how I work?"));
@@ -744,7 +744,7 @@ describe("Finder Nic-Nac API route", () => {
       },
     ]);
     expect(systemPrompt).toContain("Usually collects rose gold rings.");
-    expect(systemPrompt).toContain("Keep Trade Board cleanup prompts short.");
+    expect(systemPrompt).toContain("Keep Dance Floor cleanup prompts short.");
 
     nicNacRouteRuntime.accountState = {
       status: "authenticated",

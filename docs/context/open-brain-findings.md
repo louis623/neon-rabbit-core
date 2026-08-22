@@ -2,6 +2,8 @@
 
 Initial pull date: 2026-05-28
 
+> Historical terminology note (2026-08-22): early Open Brain excerpts below preserve the words used in the source research. Active customer and rep vocabulary now uses `Dance Floor` for the feature and `dancers` for its inventory. Those archival excerpts are not approved product copy.
+
 ## High-Signal Retrieved Thoughts
 
 ### Two-Sided Ecosystem Vision
@@ -152,11 +154,11 @@ Current signed-in flow:
 - C is the guided finding experience behind that primary action. It surfaces the next useful customer choice and puts Nic-Nac in the supporting/help role rather than making Nic-Nac a destination customers must decipher.
 - B is the Bling Vault/collection layer: profile cue, `Owned`, `Wishlist`, `Diamonds`, `Unicorns`, `Found by Sparkle Finder`, Hero Piece, Wishlist, and the lazy-loading collection mosaic.
 - Primary navigation is `Home`, `Find`, `Collection`, `Reps`, and `Me`; the Library remains reachable through customer tasks instead of competing as a top-level conceptual mode.
-- The Reps tab is list-first, searchable, and ordered by aggregate favorite count, with compact profile treatment, state, next-show timing, View Rep links, Board links when available, and favorite-rep controls.
+- The Reps tab is list-first, searchable, and ordered by aggregate favorite count, with compact profile treatment, state, next-show timing, View Rep links, Dance Floor links when available, and favorite-rep controls.
 
 Important implementation boundary:
 
-- This is a simplification and reorganization, not a feature removal project. Existing Finder persistence, Nic-Nac capabilities and routes, collection/Wishlist behavior, Reps, Library, Live Shows, Rep Boards, Favorites, Collectors, Silver Studio, auth/account, legal flows, and backend automations remain available.
+- This is a simplification and reorganization, not a feature removal project. Existing Finder persistence, Nic-Nac capabilities and routes, collection/Wishlist behavior, Reps, Library, Live Shows, Dance Floor, Favorites, Collectors, Silver Studio, auth/account, legal flows, and backend automations remain available.
 - Sparkle Finder remains a normal browser-based web app. App Store and Google Play distribution are future delivery channels for the same product experience, not replacements for the website.
 - The Sparkle Suite Amethyst customer-facing skin is the visual direction for both the public gate and signed-in app shell.
 

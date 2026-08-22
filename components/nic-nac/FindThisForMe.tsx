@@ -32,7 +32,7 @@ export function FindThisForMe({ accountState, jewelryItemId, compact = false, av
   const activeMatches = result.results.filter(isFreshLead);
   const emptyState =
     activeMatches.length === 0
-      ? "No shows in the next 48 hours currently list this piece for trade. Add it to your Wishlist or search again later."
+      ? "No shows in the next 48 hours currently have this dancer. Add the jewelry to your Wishlist or search again later."
       : result.emptyState;
 
   return (
@@ -45,7 +45,7 @@ export function FindThisForMe({ accountState, jewelryItemId, compact = false, av
           label: "Check saved pieces",
           response:
             activeMatches.length > 0
-              ? `I found ${activeMatches.length} fresh lead${activeMatches.length === 1 ? "" : "s"} inside the next 48 hours. I added the trade board and show links to this Wishlist lead.`
+              ? `I found ${activeMatches.length} fresh dancer lead${activeMatches.length === 1 ? "" : "s"} inside the next 48 hours. I added the Dance Floor and show links to this Wishlist lead.`
               : emptyState,
         },
         {
@@ -74,7 +74,7 @@ function NicNacUpgradePrompt({ compact }: { compact: boolean }) {
         },
         {
           label: "Match rep leads",
-          response: "With Silver, I can compare your target piece against known rep board paths.",
+          response: "With Silver, I can compare your target piece against known dancers on rep Dance Floors.",
         },
         {
           label: "Show timing context",
@@ -88,7 +88,7 @@ function NicNacUpgradePrompt({ compact }: { compact: boolean }) {
 
 function NicNacEmptyPrompt({ compact }: { compact: boolean }) {
   const emptyState =
-    "Add an existing library record to your collection or Wishlist, then Nic-Nac can check saved rep board paths and next shows.";
+    "Add an existing library record to your collection or Wishlist, then Nic-Nac can check saved Dance Floor paths and next shows.";
 
   return (
     <FinderNicNacChatbot
@@ -139,7 +139,7 @@ function buildLead(match: NicNacFindMatch, dataSource: NicNacDataSource) {
     nextShowLabel: match.nextLiveShow?.title ?? "No upcoming show listed",
     showStartsAt: match.nextLiveShow?.startsAt,
     primaryHref: isApi ? match.rep.siteUrl : getLocalRepBoardHref(match.listing.boardUrl),
-    primaryLabel: "View Trade Board",
+    primaryLabel: "View Dance Floor",
     repName: isApi ? match.rep.displayName : undefined,
     secondaryHref: isApi ? match.nextLiveShow?.showUrl ?? match.rep.siteUrl : getLocalRepHref(match.nextLiveShow?.showUrl ?? match.rep.siteUrl),
     secondaryLabel: "View Show",

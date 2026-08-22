@@ -187,7 +187,7 @@ function NicNacLeadCard({ lead }: { lead: FinderNicNacLead }) {
             on <CustomerLocalShowTime value={lead.showStartsAt} />
           </>
         ) : null}
-        . The trade board and show links are now with this Wishlist lead.
+        . The Dance Floor and show links are now with this Wishlist lead.
       </p>
       <p className="finder-nic-nac-chatbot__show">
         <CalendarClock aria-hidden="true" />
@@ -207,12 +207,12 @@ function buildTypedResponse(status: FinderNicNacChatbotProps["status"], leadCoun
   }
 
   if (status === "empty") {
-    return emptyState ?? "Add a piece to your collection or wishlist first, then I can check saved rep board paths and upcoming shows.";
+    return emptyState ?? "Add a piece to your collection or wishlist first, then I can check saved Dance Floor paths and upcoming shows.";
   }
 
   return leadCount > 0
-    ? `I found ${leadCount} fresh lead${leadCount === 1 ? "" : "s"} inside the next 48 hours. Use the Wishlist lead buttons for the trade board and show.`
-    : "No shows in the next 48 hours currently list this piece for trade. Add it to your Wishlist or search again later.";
+    ? `I found ${leadCount} fresh dancer lead${leadCount === 1 ? "" : "s"} inside the next 48 hours. Use the Wishlist lead buttons for the Dance Floor and show.`
+    : "No shows in the next 48 hours currently have this dancer. Add the jewelry to your Wishlist or search again later.";
 }
 
 function CustomerLocalShowTime({ value }: { value: string }) {
