@@ -24,6 +24,7 @@ const collectorActionRuntime = vi.hoisted(() => ({
     },
   },
   client: null as unknown,
+  publicShowcaseUserIds: new Set<string>(),
   revalidatedPaths: [] as string[],
 }));
 
@@ -47,6 +48,12 @@ vi.mock("../../lib/sparkle-finder/account-service", () => ({
   getCurrentSparkleFinderAccount: async () => collectorActionRuntime.accountState,
 }));
 
+vi.mock("../../lib/sparkle-finder/showcase-service", () => ({
+  isPublicSparkleShowcaseTarget: async ({ showcaseUserId }: { showcaseUserId: string }) => (
+    collectorActionRuntime.publicShowcaseUserIds.has(showcaseUserId)
+  ),
+}));
+
 import {
   blockCollectorAction,
   followCollectorAction,
@@ -57,6 +64,7 @@ import {
 describe("Collector social actions", () => {
   beforeEach(() => {
     collectorActionRuntime.client = createFakeCollectorActionClient();
+    collectorActionRuntime.publicShowcaseUserIds = new Set(["customer-silver-sparkle-mama"]);
     collectorActionRuntime.revalidatedPaths = [];
   });
 
@@ -230,6 +238,7 @@ describe("Collector social actions", () => {
   });
 
   it("does not follow when the target profile is visible but Showcase is not public", async () => {
+    collectorActionRuntime.publicShowcaseUserIds.clear();
     const client = createFakeCollectorActionClient({
       profiles: {
         "customer-silver-sparkle-mama": {

@@ -8,6 +8,7 @@ import {
   normalizeSocialReportDetails,
   normalizeSocialReportReason,
 } from "@/lib/sparkle-finder/collector-social-actions";
+import { isPublicSparkleShowcaseTarget } from "@/lib/sparkle-finder/showcase-service";
 import { createClient } from "@/lib/supabase/server";
 
 export type CollectorSocialActionState = {
@@ -52,7 +53,7 @@ export async function followCollectorAction(formData: FormData): Promise<void> {
 
   const targetUserId = cleanFormText(formData.get("targetUserId"));
   const handle = cleanFormText(formData.get("handle"));
-  const isTargetPublic = await isPublicCollector(verified.client, targetUserId);
+  const isTargetPublic = await isPublicCollector(targetUserId);
   const isBlockedRelationship = await isCollectorBlockedRelationship(verified.client, verified.userId, targetUserId);
   const permission = canFollowCollector({
     viewerUserId: verified.userId,
@@ -171,7 +172,7 @@ export async function reportCollectorAction(
     };
   }
 
-  const isTargetPublic = await isPublicCollector(verified.client, targetUserId);
+  const isTargetPublic = await isPublicCollector(targetUserId);
   const isBlockedRelationship = await isCollectorBlockedRelationship(verified.client, verified.userId, targetUserId);
 
   if (!isTargetPublic || isBlockedRelationship) {
@@ -288,25 +289,12 @@ function createCollectorActionFailure(message: string): { ok: false; state: Coll
   };
 }
 
-async function isPublicCollector(client: CollectorActionClient, targetUserId: string): Promise<boolean> {
+async function isPublicCollector(targetUserId: string): Promise<boolean> {
   if (!targetUserId) {
     return false;
   }
 
-  const result = await selectMaybeSingleCollectorRow(
-    client,
-    "sparkle_finder_profiles",
-    "user_id,profile_visibility,showcase_visibility",
-    [{ column: "user_id", value: targetUserId }],
-  );
-  const row = asRecord(result?.data);
-
-  return (
-    !result?.error &&
-    row?.user_id === targetUserId &&
-    row.profile_visibility === "sparkle_finder" &&
-    row.showcase_visibility === "public"
-  );
+  return isPublicSparkleShowcaseTarget({ showcaseUserId: targetUserId });
 }
 
 async function isCollectorBlockedRelationship(

@@ -36,6 +36,12 @@ export type PublicShowcaseReadOptions = {
   viewerUserId?: string | null;
 };
 
+export type PublicShowcaseTargetOptions = {
+  collectionItemId?: string | null;
+  showcaseUserId: string;
+  supabase?: SupabaseShowcaseReadClient | null;
+};
+
 const profileColumns = [
   "user_id", "display_name", "state", "tiktok_handle", "bio", "photo_url",
   "profile_visibility", "showcase_handle", "showcase_tagline", "showcase_visibility",
@@ -92,6 +98,60 @@ export async function getPublicSparkleShowcaseByHandle(
     process.env.NODE_ENV !== "production" || process.env.SPARKLE_FINDER_ENABLE_SHOWCASE_FIXTURES === "true"
   );
   return allowFixtureFallback ? readFixtureShowcase(normalizedHandle, options.viewerUserId ?? null) : undefined;
+}
+
+/**
+ * Server-only action guard for public Showcase targets. Authenticated clients
+ * intentionally cannot read another collector's raw profile or collection row,
+ * because those rows also contain owner-only columns such as email and notes.
+ */
+export async function isPublicSparkleShowcaseTarget({
+  collectionItemId = null,
+  showcaseUserId,
+  supabase: suppliedClient,
+}: PublicShowcaseTargetOptions): Promise<boolean> {
+  let userId: string;
+  let itemId: string;
+  let supabase: SupabaseShowcaseReadClient | null;
+
+  try {
+    userId = showcaseUserId.trim();
+    itemId = collectionItemId?.trim() ?? "";
+    supabase = suppliedClient === undefined
+      ? createSupabaseServiceRoleClient() as unknown as SupabaseShowcaseReadClient | null
+      : suppliedClient;
+  } catch {
+    return false;
+  }
+
+  if (!userId || (collectionItemId !== null && collectionItemId !== undefined && !itemId) || !supabase) return false;
+
+  const profileResult = await one(supabase, "sparkle_finder_profiles", "user_id,profile_visibility,showcase_visibility", [
+    ["user_id", userId], ["profile_visibility", "sparkle_finder"], ["showcase_visibility", "public"],
+  ]);
+  const profile = record(profileResult.data);
+  if (profileResult.error || profile?.user_id !== userId || profile.profile_visibility !== "sparkle_finder" || profile.showcase_visibility !== "public") {
+    return false;
+  }
+
+  if (!itemId) return true;
+
+  const itemResult = await one(
+    supabase,
+    "sparkle_finder_collection_items",
+    "id,user_id,state,visibility,showcase_status",
+    [["id", itemId], ["user_id", userId], ["visibility", "public"]],
+  );
+  const item = record(itemResult.data);
+
+  return Boolean(
+    !itemResult.error &&
+    item?.id === itemId &&
+    item.user_id === userId &&
+    item.visibility === "public" &&
+    (item.state === "owned" || item.state === "wishlist") &&
+    (item.showcase_status === "owned" || item.showcase_status === "wishlist" || item.showcase_status === "iso")
+  );
 }
 
 export async function getShowcaseCollectionBySlug(

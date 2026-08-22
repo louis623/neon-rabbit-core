@@ -13,6 +13,7 @@ import {
   normalizeReportReason,
   type ShowcaseActionResult,
 } from "@/lib/sparkle-finder/showcase-actions";
+import { isPublicSparkleShowcaseTarget } from "@/lib/sparkle-finder/showcase-service";
 import { createClient } from "@/lib/supabase/server";
 import type { ShowcaseCommentTargetType, ShowcaseReportTargetType } from "@/lib/sparkle-finder/showcase-types";
 
@@ -63,7 +64,7 @@ export async function followShowcaseAction(formData: FormData): Promise<void> {
 
   if (
     !canFollowShowcase(verified.userId, showcaseUserId) ||
-    !(await isPublicShowcase(verified.client, showcaseUserId)) ||
+    !(await isPublicShowcase(showcaseUserId)) ||
     (await isBlockedShowcaseRelationship(verified.client, verified.userId, showcaseUserId))
   ) {
     return;
@@ -336,24 +337,12 @@ function parseReportTargetType(value: FormDataEntryValue | null): ShowcaseReport
   return "showcase";
 }
 
-async function isPublicShowcase(client: ShowcaseActionClient, showcaseUserId: string): Promise<boolean> {
+async function isPublicShowcase(showcaseUserId: string): Promise<boolean> {
   if (!showcaseUserId) {
     return false;
   }
 
-  const result = await client
-    .from("sparkle_finder_profiles")
-    .select("user_id,profile_visibility,showcase_visibility")
-    .eq("user_id", showcaseUserId)
-    .maybeSingle();
-  const row = asRecord(result.data);
-
-  return (
-    !result.error &&
-    row?.user_id === showcaseUserId &&
-    row.profile_visibility === "sparkle_finder" &&
-    row.showcase_visibility === "public"
-  );
+  return isPublicSparkleShowcaseTarget({ showcaseUserId });
 }
 
 async function isBlockedShowcaseRelationship(
@@ -396,7 +385,7 @@ async function isPublicCommentTarget(
   targetType: ShowcaseCommentTargetType,
   targetId: string,
 ): Promise<boolean> {
-  if (!(await isPublicShowcase(client, showcaseUserId))) {
+  if (!(await isPublicShowcase(showcaseUserId))) {
     return false;
   }
 
@@ -404,7 +393,7 @@ async function isPublicCommentTarget(
     return targetId === showcaseUserId;
   }
 
-  return isPublicShowcasePiece(client, showcaseUserId, targetId);
+  return isPublicShowcasePiece(showcaseUserId, targetId);
 }
 
 async function isReportableTarget(
@@ -423,18 +412,10 @@ async function isReportableTarget(
 }
 
 async function isPublicShowcasePiece(
-  client: ShowcaseActionClient,
   showcaseUserId: string,
   collectionItemId: string,
 ): Promise<boolean> {
-  const result = await client
-    .from("sparkle_finder_collection_items")
-    .select("id,user_id,visibility")
-    .eq("id", collectionItemId)
-    .maybeSingle();
-  const row = asRecord(result.data);
-
-  return !result.error && row?.id === collectionItemId && row.user_id === showcaseUserId && row.visibility === "public";
+  return isPublicSparkleShowcaseTarget({ collectionItemId, showcaseUserId });
 }
 
 async function getCommentForAction(

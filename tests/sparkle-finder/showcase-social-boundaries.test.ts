@@ -15,6 +15,12 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => showcaseRuntime.client,
 }));
 
+vi.mock("@/lib/sparkle-finder/showcase-service", () => ({
+  isPublicSparkleShowcaseTarget: async ({ collectionItemId, showcaseUserId }: { collectionItemId?: string; showcaseUserId: string }) => (
+    showcaseUserId === "showcase-user" && (!collectionItemId || collectionItemId === "public-piece")
+  ),
+}));
+
 vi.mock("@/lib/sparkle-finder/account-service", () => ({
   getCurrentSparkleFinderAccount: async () => ({
     status: "authenticated",

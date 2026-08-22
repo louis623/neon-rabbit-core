@@ -5,6 +5,7 @@ import {
   getRevealSpotlight,
   getShowcaseCollectionBySlug,
   getShowcasePieceRepLeads,
+  isPublicSparkleShowcaseTarget,
   type SupabaseShowcaseReadClient,
 } from "../../lib/sparkle-finder/showcase-service";
 
@@ -81,6 +82,36 @@ describe("Sparkle Showcase service", () => {
     expect(client.selections.find((selection) => selection.table === "sparkle_finder_profiles")?.columns).not.toContain("email");
   });
 
+  it("validates action targets through the server-only public field boundary", async () => {
+    const client = persistedClient();
+
+    await expect(isPublicSparkleShowcaseTarget({
+      showcaseUserId: "owner-user",
+      supabase: client,
+    })).resolves.toBe(true);
+    await expect(isPublicSparkleShowcaseTarget({
+      collectionItemId: "public-piece",
+      showcaseUserId: "owner-user",
+      supabase: client,
+    })).resolves.toBe(true);
+    await expect(isPublicSparkleShowcaseTarget({
+      collectionItemId: "private-note-piece",
+      showcaseUserId: "owner-user",
+      supabase: client,
+    })).resolves.toBe(false);
+    await expect(isPublicSparkleShowcaseTarget({
+      showcaseUserId: "owner-user",
+      supabase: null,
+    })).resolves.toBe(false);
+    await expect(isPublicSparkleShowcaseTarget({
+      showcaseUserId: "owner-user",
+      supabase: throwingClient(),
+    })).resolves.toBe(false);
+
+    expect(client.selections.find((selection) => selection.table === "sparkle_finder_collection_items" && selection.columns.includes("showcase_status"))?.columns)
+      .not.toContain("note");
+  });
+
   it("loads persisted piece comments only for a public Reveal Spotlight", async () => {
     const spotlight = await getRevealSpotlight("real-sparkles", "jewel-rainbow-crown-ring", {
       allowFixtureFallback: false,
@@ -141,6 +172,14 @@ function fixtureOptions() {
 
 function persistedCatalogItem(itemId: string) {
   return Promise.resolve(getJewelryItemById(itemId));
+}
+
+function throwingClient(): SupabaseShowcaseReadClient {
+  return {
+    from() {
+      throw new Error("read unavailable");
+    },
+  } as SupabaseShowcaseReadClient;
 }
 
 function fixtureShowcase() {
