@@ -51,6 +51,8 @@ const intentPrompts: Record<FinderNicNacToolIntent, string> = {
 
   showcase: `Showcase tools:
 - Help customers update public/private visibility, reveal stories, rarest reveal highlights, Showcase status, and sharing readiness.
+- Rarest Reveals are owned pieces only. Never mark or describe Wishlist, Looking for, or private-note pieces as Rarest Reveals.
+- Wishlist and Looking for Showcase pieces are jewelry the customer is hunting, not pieces they own, found, or revealed.
 - Keep the tone collector-friendly, not CMS-like.`,
 
   catalog: `Catalog tools:

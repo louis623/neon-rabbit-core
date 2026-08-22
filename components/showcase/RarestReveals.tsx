@@ -2,6 +2,7 @@ import Link from "next/link";
 import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
 import { BombPartyLabelBadge, PieceStatusBadge, RarestRevealBadge } from "./ShowcaseBadges";
 import type { SparkleShowcasePiece } from "@/lib/sparkle-finder/showcase-types";
+import { qualifiesForRarestReveals } from "@/lib/sparkle-finder/showcase-rarity";
 
 type RarestRevealsProps = {
   handle: string;
@@ -9,6 +10,8 @@ type RarestRevealsProps = {
 };
 
 export function RarestReveals({ handle, pieces }: RarestRevealsProps) {
+  const ownedRarestReveals = pieces.filter(qualifiesForRarestReveals);
+
   return (
     <section className="grid gap-4" data-smoke="rarest-reveals">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -24,7 +27,7 @@ export function RarestReveals({ handle, pieces }: RarestRevealsProps) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {pieces.map((piece) => (
+        {ownedRarestReveals.map((piece) => (
           <article
             className="overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[#e7be77] bg-white shadow-[0_18px_44px_rgba(112,75,17,0.1)]"
             key={piece.id}

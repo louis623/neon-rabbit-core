@@ -481,6 +481,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
         user_id: "customer-silver-celeste",
         jewelry_item_id: "design-owned",
         state: "owned",
+        showcase_status: "owned",
         note: "My favorite reveal.",
         is_highlighted: true,
         acquisition_source: "nic_nac_request",
@@ -555,7 +556,9 @@ describe("Sparkle Finder Nic-Nac tools", () => {
       status: "saved",
       saved: true,
       message: "Sparkle Showcase piece saved.",
-      guidance: "Nic-Nac may now say the Showcase piece save succeeded because the save tool returned saved.",
+      isRarestReveal: false,
+      rarityWasNormalizedOff: true,
+      guidance: "The Showcase piece save succeeded, but Rarest Reveal stayed off because only owned pieces can be Rarest Reveals. Explain that clearly to the customer.",
     });
     expect(supabase.operations).toContainEqual({
       table: "sparkle_finder_collection_items",
@@ -565,11 +568,11 @@ describe("Sparkle Finder Nic-Nac tools", () => {
         jewelry_item_id: "design-wishlist",
         state: "wishlist",
         note: "Private note for me.",
-        is_highlighted: true,
+        is_highlighted: false,
         visibility: "public",
         showcase_status: "iso",
         reveal_story: "Looking for the pink Aurora drops.",
-        is_rarest_reveal: true,
+        is_rarest_reveal: false,
       },
       options: {
         onConflict: "user_id,jewelry_item_id",

@@ -14,9 +14,10 @@ import type { SparkleShowcase } from "@/lib/sparkle-finder/showcase-types";
 type SparkleShowcaseProfileProps = {
   showcase: SparkleShowcase;
   viewerUserId?: string | null;
+  isPrivatePreview?: boolean;
 };
 
-export function SparkleShowcaseProfile({ showcase, viewerUserId }: SparkleShowcaseProfileProps) {
+export function SparkleShowcaseProfile({ showcase, viewerUserId, isPrivatePreview = false }: SparkleShowcaseProfileProps) {
   const { profile } = showcase;
   const isSelf = viewerUserId === profile.customer.id;
 
@@ -51,7 +52,7 @@ export function SparkleShowcaseProfile({ showcase, viewerUserId }: SparkleShowca
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {!isPrivatePreview ? <div className="flex flex-wrap gap-2">
           <CollectorFollowButton
             followAction={followCollectorAction}
             handle={profile.handle}
@@ -76,13 +77,13 @@ export function SparkleShowcaseProfile({ showcase, viewerUserId }: SparkleShowca
             targetUserId={profile.customer.id}
             viewerUserId={viewerUserId}
           />
-        </div>
+        </div> : null}
       </header>
 
       <RarestReveals handle={profile.handle} pieces={showcase.rarestReveals} />
       <ShowcaseCollectionRail collections={showcase.showcaseCollections} handle={profile.handle} />
       <ShowcasePieceGrid handle={profile.handle} pieces={showcase.pieces} />
-      <ShowcaseComments
+      {!isPrivatePreview ? <ShowcaseComments
         comments={showcase.comments}
         createAction={createShowcaseCommentAction}
         deleteAction={deleteShowcaseCommentAction}
@@ -93,7 +94,7 @@ export function SparkleShowcaseProfile({ showcase, viewerUserId }: SparkleShowca
         targetId={profile.customer.id}
         targetType="showcase"
         viewerUserId={viewerUserId}
-      />
+      /> : null}
     </section>
   );
 }

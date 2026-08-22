@@ -67,9 +67,53 @@ describe("Showcase owner workflow", () => {
     expect(markup).toContain("Nothing becomes public automatically");
     expect(markup).toContain("Make public");
     expect(markup).toContain("Personal piece photo");
-    expect(markup).toContain("Reveal story");
+    expect(markup).toContain("Showcase story");
+    expect(markup).toContain("Private Preview");
     expect(markup).toContain("Showcase Collection");
     expect(markup).toContain("Private notes are never included");
+  });
+
+  it("offers Rarest Reveal selection only for owned pieces", () => {
+    const wishlistItem: ManagedCollectionItem = {
+      ...collectionItem,
+      id: "wishlist-piece",
+      state: "wishlist",
+      showcaseStatus: "iso",
+      jewelryItem: { ...collectionItem.jewelryItem, id: "wanted-jewelry", name: "Wanted Amethyst" },
+      jewelryItemId: "wanted-jewelry",
+      isRarestReveal: true,
+    };
+    const markup = renderToStaticMarkup(
+      <ShowcaseOwnerPanel
+        canSave
+        collectionItems={[wishlistItem]}
+        data={{ handle: "casey-finds", tagline: "Purple stacks", visibility: "private", collections: [] }}
+        isLocalPreview={false}
+        savePieceAction={ownerAction}
+      />,
+    );
+
+    expect(markup).not.toContain('name="isRarestReveal"');
+    expect(markup).toContain("only owned pieces can be Rarest Reveals");
+  });
+
+  it("explains automatic Diamond and Unicorn rarity without an opt-out checkbox", () => {
+    const diamondItem: ManagedCollectionItem = {
+      ...collectionItem,
+      jewelryItem: { ...collectionItem.jewelryItem, bpLabel: "diamond" },
+    };
+    const markup = renderToStaticMarkup(
+      <ShowcaseOwnerPanel
+        canSave
+        collectionItems={[diamondItem]}
+        data={{ handle: "casey-finds", tagline: "Purple stacks", visibility: "private", collections: [] }}
+        isLocalPreview={false}
+        savePieceAction={ownerAction}
+      />,
+    );
+
+    expect(markup).toContain("This Diamond is automatically featured in The Rarest of Reveals while it is owned.");
+    expect(markup).not.toContain('name="isRarestReveal"');
   });
 
   it("verifies the authenticated account and never accepts a hidden owner ID", () => {

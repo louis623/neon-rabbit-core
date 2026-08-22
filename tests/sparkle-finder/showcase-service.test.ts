@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { getJewelryItemById } from "../../lib/sparkle-finder/service";
 import {
   getPublicSparkleShowcaseByHandle,
   getRevealSpotlight,
+  getRevealSpotlightForRoute,
+  getSparkleShowcaseForRoute,
   getShowcaseCollectionBySlug,
   getShowcasePieceRepLeads,
   isPublicSparkleShowcaseTarget,
@@ -31,9 +33,26 @@ describe("Sparkle Showcase service", () => {
     const showcase = await fixtureShowcase();
     const rarest = showcase?.rarestReveals ?? [];
 
-    expect(rarest.length).toBeGreaterThan(0);
+    expect(rarest).toHaveLength(2);
+    expect(rarest.every((piece) => piece.state === "owned" && piece.showcaseStatus === "owned")).toBe(true);
     expect(rarest.every((piece) => piece.jewelryItem.bpLabel !== "standard" || piece.isRarestReveal)).toBe(true);
   });
+
+  it("keeps Wishlist and Looking for pieces public without treating them as Rarest Reveals", async () => {
+    const showcase = await fixtureShowcase();
+    const wanted = showcase?.pieces.filter((piece) => piece.showcaseStatus === "wishlist" || piece.showcaseStatus === "iso") ?? [];
+
+    expect(wanted).toHaveLength(2);
+    expect(wanted.every((piece) => piece.isRarestReveal === false)).toBe(true);
+    expect(wanted.every((piece) => !showcase?.rarestReveals.includes(piece))).toBe(true);
+  });
+
+  it.each(["sparkle-mama", "celeste-stacks", "ivy-curates", "riley-reveals"])(
+    "resolves the fixture collector Showcase link for %s",
+    async (handle) => {
+      await expect(getPublicSparkleShowcaseByHandle(handle, fixtureOptions())).resolves.toBeDefined();
+    },
+  );
 
   it("loads one Showcase Collection by slug", async () => {
     const collection = await getShowcaseCollectionBySlug("sparkle-mama", "never-leaving", fixtureOptions());
@@ -164,6 +183,81 @@ describe("Sparkle Showcase service", () => {
       supabase: persistedClient(),
     })).resolves.toBeUndefined();
   });
+
+  it("allows only the persisted owner to preview a real private Showcase", async () => {
+    const client = persistedClient({ showcaseVisibility: "private", profileVisibility: "private" });
+
+    const ownerRoute = await getSparkleShowcaseForRoute("real-sparkles", {
+      allowFixtureFallback: false,
+      catalogItemById: persistedCatalogItem,
+      supabase: client,
+      viewerUserId: "owner-user",
+    });
+    expect(ownerRoute?.access).toBe("owner_private_preview");
+    expect(ownerRoute?.showcase.comments).toEqual([]);
+    expect(ownerRoute?.showcase.profile).toEqual(expect.objectContaining({ followerCount: 0, followingCount: 0 }));
+    expect(client.selections.some((selection) => selection.table === "sparkle_finder_showcase_comments")).toBe(false);
+    expect(client.selections.some((selection) => selection.table === "sparkle_finder_collector_follows")).toBe(false);
+    expect(client.selections.some((selection) => selection.table === "sparkle_finder_collector_blocks")).toBe(false);
+
+    await expect(getSparkleShowcaseForRoute("real-sparkles", {
+      allowFixtureFallback: false,
+      catalogItemById: persistedCatalogItem,
+      supabase: client,
+      viewerUserId: "viewer-user",
+    })).resolves.toBeUndefined();
+    await expect(getSparkleShowcaseForRoute("unknown-handle", {
+      allowFixtureFallback: false,
+      catalogItemById: persistedCatalogItem,
+      supabase: client,
+      viewerUserId: "owner-user",
+    })).resolves.toBeUndefined();
+    await expect(getRevealSpotlightForRoute("real-sparkles", "unknown-piece", {
+      allowFixtureFallback: false,
+      catalogItemById: persistedCatalogItem,
+      supabase: client,
+      viewerUserId: "owner-user",
+    })).resolves.toBeUndefined();
+
+    await expect(getSparkleShowcaseForRoute("real-sparkles", {
+      allowFixtureFallback: false,
+      catalogItemById: persistedCatalogItem,
+      supabase: persistedClient({ profileVisibility: "private", showcaseVisibility: "public" }),
+      viewerUserId: "owner-user",
+    })).resolves.toEqual(expect.objectContaining({ access: "owner_private_preview" }));
+  });
+
+  it("hard-disables fixture fallback in production even when explicitly requested", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    try {
+      await expect(getPublicSparkleShowcaseByHandle("sparkle-mama", {
+        allowFixtureFallback: true,
+        supabase: null,
+      })).resolves.toBeUndefined();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("allows fixtures in an explicit local production-build smoke without enabling Vercel production", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SPARKLE_FINDER_LOCAL_SMOKE_FIXTURES", "true");
+    vi.stubEnv("VERCEL_ENV", "preview");
+    try {
+      await expect(getPublicSparkleShowcaseByHandle("sparkle-mama", {
+        allowFixtureFallback: true,
+        supabase: null,
+      })).resolves.toBeDefined();
+
+      vi.stubEnv("VERCEL_ENV", "production");
+      await expect(getPublicSparkleShowcaseByHandle("sparkle-mama", {
+        allowFixtureFallback: true,
+        supabase: null,
+      })).resolves.toBeUndefined();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 });
 
 function fixtureOptions() {
@@ -191,16 +285,20 @@ type Row = Record<string, unknown>;
 function persistedClient({
   blocks = [],
   jewelryItemId = "jewel-rainbow-crown-ring",
+  profileVisibility = "sparkle_finder",
+  showcaseVisibility = "public",
 }: {
   blocks?: Row[];
   jewelryItemId?: string;
+  profileVisibility?: "private" | "sparkle_finder";
+  showcaseVisibility?: "private" | "public";
 } = {}) {
   const tables: Record<string, Row[]> = {
     sparkle_finder_profiles: [
       {
         user_id: "owner-user", display_name: "Real Collector", state: "VA", tiktok_handle: "@real",
-        bio: "Collector bio", photo_url: null, profile_visibility: "sparkle_finder",
-        showcase_handle: "real-sparkles", showcase_tagline: "Real persisted sparkle.", showcase_visibility: "public",
+        bio: "Collector bio", photo_url: null, profile_visibility: profileVisibility,
+        showcase_handle: "real-sparkles", showcase_tagline: "Real persisted sparkle.", showcase_visibility: showcaseVisibility,
       },
       { user_id: "viewer-user", display_name: "Viewing Collector", profile_visibility: "sparkle_finder" },
     ],

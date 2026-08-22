@@ -8,6 +8,7 @@ import {
 import { createSupabaseServiceRoleClient } from "../supabase/service-role";
 import { getCatalogJewelryItemById } from "./catalog-service";
 import { getJewelryItemById, matchJewelryItemToRepBoardListings } from "./service";
+import { normalizeRarestRevealSelection, qualifiesForRarestReveals } from "./showcase-rarity";
 import type { CollectionItem, JewelryItem } from "./types";
 import type {
   RevealSpotlight,
@@ -42,6 +43,13 @@ export type PublicShowcaseTargetOptions = {
   supabase?: SupabaseShowcaseReadClient | null;
 };
 
+export type SparkleShowcaseRouteAccess = "public" | "owner_private_preview";
+
+export type SparkleShowcaseRouteResult = {
+  access: SparkleShowcaseRouteAccess;
+  showcase: SparkleShowcase;
+};
+
 const profileColumns = [
   "user_id", "display_name", "state", "tiktok_handle", "bio", "photo_url",
   "profile_visibility", "showcase_handle", "showcase_tagline", "showcase_visibility",
@@ -52,6 +60,9 @@ const pieceColumns = [
 ].join(",");
 
 const fixtureShowcaseHandles: Record<string, string> = {
+  "celeste-stacks": "customer-silver-celeste",
+  "ivy-curates": "customer-silver-ivy",
+  "riley-reveals": "customer-silver-riley",
   "sparkle-mama": "customer-silver-sparkle-mama",
 };
 const fixtureShowcasePieceOverrides: Record<string, {
@@ -63,9 +74,9 @@ const fixtureShowcasePieceOverrides: Record<string, {
 }> = {
   "collection-owned-rainbow": { visibility: "public", showcaseStatus: "owned", revealStory: "My jaw dropped when this Diamond came out of the fizz.", isRarestReveal: true },
   "collection-owned-starlit": { visibility: "private", showcaseStatus: "owned", revealStory: "Private note for owner planning only.", isRarestReveal: false },
-  "collection-wishlist-lilac": { visibility: "public", showcaseStatus: "wishlist", revealStory: "Still watching for this Unicorn because the soft purple is everything.", isRarestReveal: true },
+  "collection-wishlist-lilac": { visibility: "public", showcaseStatus: "wishlist", revealStory: "Still watching for this Unicorn because the soft purple is everything.", isRarestReveal: false },
   "collection-owned-heart": { visibility: "public", showcaseStatus: "owned", revealStory: "A sweet gold piece that feels like an everyday favorite.", isRarestReveal: true },
-  "collection-wishlist-aurora": { visibility: "public", showcaseStatus: "iso", revealStory: "Looking for the pink Aurora drops for my dream earring stack.", isRarestReveal: true },
+  "collection-wishlist-aurora": { visibility: "public", showcaseStatus: "iso", revealStory: "Looking for the pink Aurora drops for my dream earring stack.", isRarestReveal: false },
   "collection-highlight-rose": { visibility: "public", showcaseStatus: "owned", revealStory: "The bracelet stack I keep reaching for.", isRarestReveal: false },
 };
 
@@ -81,23 +92,84 @@ export async function getPublicSparkleShowcaseByHandle(
   const normalizedHandle = normalizePathPart(handle);
   if (!normalizedHandle) return undefined;
 
-  const supabase = options.supabase === undefined
-    ? createSupabaseServiceRoleClient() as unknown as SupabaseShowcaseReadClient | null
-    : options.supabase;
+  const supabase = resolveShowcaseReadClient(options.supabase);
   if (supabase) {
     const persisted = await readPersistedShowcase(
       supabase,
       normalizedHandle,
       options.viewerUserId ?? null,
       options.catalogItemById ?? readPersistedCatalogItem,
+      "public",
     );
     if (persisted) return persisted;
   }
 
-  const allowFixtureFallback = options.allowFixtureFallback ?? (
-    process.env.NODE_ENV !== "production" || process.env.SPARKLE_FINDER_ENABLE_SHOWCASE_FIXTURES === "true"
-  );
+  const isExplicitLocalSmoke = process.env.SPARKLE_FINDER_LOCAL_SMOKE_FIXTURES === "true" &&
+    process.env.VERCEL_ENV !== "production";
+  const allowFixtureFallback = (process.env.NODE_ENV !== "production" || isExplicitLocalSmoke) &&
+    (options.allowFixtureFallback ?? true);
   return allowFixtureFallback ? readFixtureShowcase(normalizedHandle, options.viewerUserId ?? null) : undefined;
+}
+
+/**
+ * Route read that preserves the public boundary while allowing a signed-in
+ * owner to preview the public-eligible contents of their real private Showcase.
+ * Unknown handles and fixture-only private states never receive preview access.
+ */
+export async function getSparkleShowcaseForRoute(
+  handle: string,
+  options: PublicShowcaseReadOptions = {},
+): Promise<SparkleShowcaseRouteResult | undefined> {
+  const publicShowcase = await getPublicSparkleShowcaseByHandle(handle, options);
+  if (publicShowcase) return { access: "public", showcase: publicShowcase };
+
+  const normalizedHandle = normalizePathPart(handle);
+  const viewerUserId = options.viewerUserId?.trim() ?? "";
+  const supabase = resolveShowcaseReadClient(options.supabase);
+  if (!normalizedHandle || !viewerUserId || !supabase) return undefined;
+
+  const showcase = await readPersistedShowcase(
+    supabase,
+    normalizedHandle,
+    viewerUserId,
+    options.catalogItemById ?? readPersistedCatalogItem,
+    "owner_private_preview",
+  );
+  return showcase ? { access: "owner_private_preview", showcase } : undefined;
+}
+
+export async function getShowcaseCollectionForRoute(
+  handle: string,
+  slug: string,
+  options: PublicShowcaseReadOptions = {},
+): Promise<(SparkleShowcaseRouteResult & { collection: ShowcaseCollectionWithPieces }) | undefined> {
+  const route = await getSparkleShowcaseForRoute(handle, options);
+  const collection = route?.showcase.showcaseCollections.find(
+    (candidate) => candidate.slug === normalizePathPart(slug),
+  );
+  return route && collection ? { ...route, collection } : undefined;
+}
+
+export async function getRevealSpotlightForRoute(
+  handle: string,
+  jewelryItemId: string,
+  options: PublicShowcaseReadOptions = {},
+): Promise<{ access: SparkleShowcaseRouteAccess; spotlight: RevealSpotlight } | undefined> {
+  const route = await getSparkleShowcaseForRoute(handle, options);
+  const piece = route?.showcase.pieces.find((candidate) => candidate.jewelryItemId === jewelryItemId.trim());
+  if (!route || !piece) return undefined;
+  return {
+    access: route.access,
+    spotlight: {
+      showcase: route.showcase,
+      piece,
+      comments: route.access === "public"
+        ? showcaseAllComments.get(route.showcase)?.filter(
+          (comment) => comment.targetType === "piece" && comment.targetId === piece.id,
+        ) ?? []
+        : [],
+    },
+  };
 }
 
 /**
@@ -212,25 +284,32 @@ async function readPersistedShowcase(
   handle: string,
   viewerUserId: string | null,
   catalogItemById: (itemId: string) => Promise<JewelryItem | undefined>,
+  access: SparkleShowcaseRouteAccess,
 ): Promise<SparkleShowcase | undefined> {
-  const profileResult = await one(supabase, "sparkle_finder_profiles", profileColumns, [
-    ["showcase_handle", handle], ["profile_visibility", "sparkle_finder"], ["showcase_visibility", "public"],
-  ]);
-  const profile = mapProfile(profileResult.data, handle);
+  const profileFilters: Array<[string, string | boolean]> = access === "public"
+    ? [["showcase_handle", handle], ["profile_visibility", "sparkle_finder"], ["showcase_visibility", "public"]]
+    : [["showcase_handle", handle], ["user_id", viewerUserId ?? ""]];
+  const profileResult = await one(supabase, "sparkle_finder_profiles", profileColumns, profileFilters);
+  const profile = mapProfile(profileResult.data, handle, access, viewerUserId);
   if (profileResult.error || !profile) return undefined;
 
-  const blockRows = await readBlocks(supabase, profile.userId);
+  const blockRows = access === "public" ? await readBlocks(supabase, profile.userId) : [];
   // A block lookup failure fails closed because the admin client bypasses RLS.
   if (!blockRows || isViewerBlocked(blockRows, profile.userId, viewerUserId)) return undefined;
 
-  const [pieceRows, collectionRows, commentRows, followerRows, followingRows] = await Promise.all([
+  const [pieceRows, collectionRows] = await Promise.all([
     many(supabase, "sparkle_finder_collection_items", pieceColumns, [["user_id", profile.userId], ["visibility", "public"]]),
     many(supabase, "sparkle_finder_showcase_collections", "id,user_id,title,slug,description,visibility", [["user_id", profile.userId], ["visibility", "public"]]),
+  ]);
+  if (!pieceRows || !collectionRows) return undefined;
+
+  const socialRows: [Record<string, unknown>[] | null, Record<string, unknown>[] | null, Record<string, unknown>[] | null] = access === "public" ? await Promise.all([
     many(supabase, "sparkle_finder_showcase_comments", "id,showcase_user_id,author_user_id,target_type,target_id,body,deleted_at,created_at,updated_at", [["showcase_user_id", profile.userId]]),
     many(supabase, "sparkle_finder_collector_follows", "follower_user_id,followed_user_id", [["followed_user_id", profile.userId]]),
     many(supabase, "sparkle_finder_collector_follows", "follower_user_id,followed_user_id", [["follower_user_id", profile.userId]]),
-  ]);
-  if (!pieceRows || !collectionRows || !commentRows || !followerRows || !followingRows) return undefined;
+  ]) : [[], [], []];
+  const [commentRows, followerRows, followingRows] = socialRows;
+  if (!commentRows || !followerRows || !followingRows) return undefined;
 
   const pieces = await mapPersistedPieces(pieceRows, profile.userId, catalogItemById);
   const pieceById = new Map(pieces.map((piece) => [piece.id, piece]));
@@ -238,9 +317,15 @@ async function readPersistedShowcase(
   if (!collections) return undefined;
 
   const blockedIds = relatedBlockedIds(blockRows, profile.userId);
-  const comments = await mapComments(supabase, commentRows, profile.userId, pieceById, blockedIds);
-  const followers = followerRows.filter((row) => permittedFollow(row, profile.userId, "in", blockedIds));
-  const following = followingRows.filter((row) => permittedFollow(row, profile.userId, "out", blockedIds));
+  const comments = access === "public"
+    ? await mapComments(supabase, commentRows, profile.userId, pieceById, blockedIds)
+    : [];
+  const followers = access === "public"
+    ? followerRows.filter((row) => permittedFollow(row, profile.userId, "in", blockedIds))
+    : [];
+  const following = access === "public"
+    ? followingRows.filter((row) => permittedFollow(row, profile.userId, "out", blockedIds))
+    : [];
   const showcase: SparkleShowcase = {
     profile: {
       customer: { id: profile.userId, displayName: profile.displayName, email: "", state: profile.state, tier: "silver" },
@@ -265,10 +350,18 @@ type MappedProfile = {
   photoUrl: string | null; tagline: string;
 };
 
-function mapProfile(value: unknown, handle: string): MappedProfile | null {
+function mapProfile(
+  value: unknown,
+  handle: string,
+  access: SparkleShowcaseRouteAccess,
+  viewerUserId: string | null,
+): MappedProfile | null {
   const row = record(value);
-  if (!row || row.profile_visibility !== "sparkle_finder" || row.showcase_visibility !== "public" ||
-      normalizePathPart(text(row.showcase_handle)) !== handle) return null;
+  const isFullyPublic = row?.profile_visibility === "sparkle_finder" && row.showcase_visibility === "public";
+  const publicProfile = access === "public" && isFullyPublic;
+  const privateOwner = access === "owner_private_preview" && Boolean(viewerUserId) &&
+    row?.user_id === viewerUserId && !isFullyPublic;
+  if (!row || (!publicProfile && !privateOwner) || normalizePathPart(text(row.showcase_handle)) !== handle) return null;
   const userId = text(row.user_id);
   const displayName = text(row.display_name);
   if (!userId || !displayName) return null;
@@ -317,7 +410,8 @@ function mapPersistedPiece(value: unknown, userId: string, jewelryItem: JewelryI
   return {
     id, customerId: userId, jewelryItemId, state, note: "", isHighlighted: row.is_highlighted === true,
     jewelryItem, visibility: "public", showcaseStatus, revealStory: text(row.reveal_story),
-    personalPhotoUrl: nullableText(row.personal_photo_url), isRarestReveal: row.is_rarest_reveal === true,
+    personalPhotoUrl: nullableText(row.personal_photo_url),
+    isRarestReveal: normalizeRarestRevealSelection(showcaseStatus, row.is_rarest_reveal === true && state === "owned"),
   };
 }
 
@@ -455,7 +549,15 @@ function readFixtureShowcase(handle: string, viewerUserId: string | null): Spark
     .filter((collection) => collection.pieces.length);
   const allComments = getVisibleShowcaseComments(customerId);
   const showcase: SparkleShowcase = {
-    profile: { customer, profile, handle, tagline: "Warm golds, hearts, unicorn hunts, and favorite reveals.", followerCount: 42, followingCount: 8, isFollowedByViewer: viewerUserId === "customer-silver-celeste" },
+    profile: {
+      customer,
+      profile,
+      handle,
+      tagline: profile.bio || "A jewelry collection shared with Sparkle Finder.",
+      followerCount: customerId === "customer-silver-sparkle-mama" ? 42 : 0,
+      followingCount: customerId === "customer-silver-sparkle-mama" ? 8 : 0,
+      isFollowedByViewer: customerId === "customer-silver-sparkle-mama" && viewerUserId === "customer-silver-celeste",
+    },
     pieces, rarestReveals: pieces.filter(isRarest), showcaseCollections: collections,
     comments: allComments.filter((comment) => comment.targetType === "showcase" && comment.targetId === customerId),
   };
@@ -469,11 +571,26 @@ function mapFixturePiece(item: CollectionItem): SparkleShowcasePiece | null {
   const override = fixtureShowcasePieceOverrides[item.id] ?? {};
   return { ...item, jewelryItem, visibility: override.visibility ?? "private", showcaseStatus: override.showcaseStatus ?? item.state,
     revealStory: override.revealStory ?? "", personalPhotoUrl: override.personalPhotoUrl ?? null,
-    isRarestReveal: override.isRarestReveal ?? item.isHighlighted, note: "" };
+    isRarestReveal: normalizeRarestRevealSelection(
+      override.showcaseStatus ?? item.state,
+      override.isRarestReveal ?? item.isHighlighted,
+    ), note: "" };
 }
 
 function isRarest(piece: SparkleShowcasePiece) {
-  return piece.isRarestReveal || piece.jewelryItem.bpLabel === "diamond" || piece.jewelryItem.bpLabel === "unicorn";
+  return qualifiesForRarestReveals(piece);
+}
+
+function resolveShowcaseReadClient(
+  suppliedClient: SupabaseShowcaseReadClient | null | undefined,
+): SupabaseShowcaseReadClient | null {
+  try {
+    return suppliedClient === undefined
+      ? createSupabaseServiceRoleClient() as unknown as SupabaseShowcaseReadClient | null
+      : suppliedClient;
+  } catch {
+    return null;
+  }
 }
 function normalizePathPart(value: string) {
   const normalized = value.trim().toLowerCase();

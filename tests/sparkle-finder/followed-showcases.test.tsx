@@ -26,6 +26,7 @@ describe("Followed Showcases", () => {
 
     expect(markup).toContain("Followed Showcases");
     expect(markup).toContain("Rarest Reveal");
+    expect(markup).toContain("Open Piece Spotlight");
     expect(markup).toContain("My favorite birthday reveal.");
     expect(markup).toContain("/showcase/casey-finds/pieces/");
 
@@ -36,7 +37,7 @@ describe("Followed Showcases", () => {
 
   it("keeps the database helper authenticated, bounded, block-aware, and free of private note fields", () => {
     const sql = fs.readFileSync(
-      path.resolve(process.cwd(), "supabase/migrations/20260822193000_followed_showcase_highlights.sql"),
+      path.resolve(process.cwd(), "supabase/migrations/20260822220000_sparkle_finder_owned_rarest_reveals.sql"),
       "utf8",
     );
 
@@ -45,8 +46,16 @@ describe("Followed Showcases", () => {
     expect(sql).toContain("sparkle_finder_collector_blocks");
     expect(sql).toContain("item.visibility = 'public'");
     expect(sql).toContain("item.showcase_status <> 'private_note_only'");
+    expect(sql).toContain("item.state = 'owned'");
+    expect(sql).toContain("item.showcase_status = 'owned'");
+    expect(sql).toContain("sparkle_finder_collection_items_rarest_reveal_owned");
+    expect(sql).toContain("or (state = 'owned' and showcase_status = 'owned')");
     expect(sql).toContain("limit least(greatest(coalesce(result_limit, 6), 1), 12)");
     expect(sql).toContain("grant execute on function public.sparkle_finder_list_followed_showcase_highlights(integer) to authenticated");
+    expect(sql).toContain("sparkle_finder_list_followed_showcase_highlights_v2");
+    expect(sql).toContain("item.state::text as state");
+    expect(sql).toContain("item.showcase_status::text as showcase_status");
+    expect(sql).toContain("grant execute on function public.sparkle_finder_list_followed_showcase_highlights_v2(integer) to authenticated");
     expect(sql).not.toMatch(/\bnote\b/);
   });
 });

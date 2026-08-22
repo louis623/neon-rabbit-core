@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import { RevealSpotlight } from "@/components/showcase/RevealSpotlight";
+import { PrivateShowcasePreviewNotice } from "@/components/showcase/PrivateShowcasePreviewNotice";
 import {
   getCurrentSparkleFinderAccount,
   type CurrentSparkleFinderAccountState,
@@ -12,8 +13,12 @@ import {
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
-import { getRevealSpotlight } from "@/lib/sparkle-finder/showcase-service";
-import { createRevealSpotlightMetadata } from "@/lib/sparkle-finder/showcase-metadata";
+import { getRevealSpotlightForRoute } from "@/lib/sparkle-finder/showcase-service";
+import {
+  createPrivateShowcasePreviewMetadata,
+  createRevealSpotlightMetadata,
+  createUnavailableShowcaseMetadata,
+} from "@/lib/sparkle-finder/showcase-metadata";
 import type { RevealSpotlight as RevealSpotlightData } from "@/lib/sparkle-finder/showcase-types";
 
 type RevealSpotlightPageProps = {
@@ -26,25 +31,28 @@ type RevealSpotlightPageProps = {
 export async function generateMetadata({ params }: RevealSpotlightPageProps): Promise<Metadata> {
   const { handle, pieceId } = await params;
   const accountState = await getRevealAccountState();
-  const spotlight = await getRevealSpotlight(handle, pieceId, {
+  const route = await getRevealSpotlightForRoute(handle, pieceId, {
     viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
   });
 
-  return spotlight ? createRevealSpotlightMetadata(spotlight) : { title: "Reveal Spotlight | Sparkle Finder" };
+  if (!route) return createUnavailableShowcaseMetadata();
+  return route.access === "public"
+    ? createRevealSpotlightMetadata(route.spotlight)
+    : createPrivateShowcasePreviewMetadata();
 }
 
 export default async function RevealSpotlightPage({ params }: RevealSpotlightPageProps) {
   const accountState = await getRevealAccountState();
   const { handle, pieceId } = await params;
-  const spotlight = await getRevealSpotlight(handle, pieceId, {
+  const route = await getRevealSpotlightForRoute(handle, pieceId, {
     viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
   });
 
-  if (!spotlight) {
+  if (!route) {
     notFound();
   }
 
-  return renderRevealSpotlightPageContent(spotlight, accountState);
+  return renderRevealSpotlightPageContent(route.spotlight, accountState, route.access === "owner_private_preview");
 }
 
 async function getRevealAccountState() {
@@ -56,6 +64,7 @@ async function getRevealAccountState() {
 export function renderRevealSpotlightPageContent(
   spotlight: RevealSpotlightData,
   accountState: CurrentSparkleFinderAccountState = anonymousRevealAccountState(),
+  isPrivatePreview = false,
 ) {
   const viewerUserId = accountState.status === "authenticated" ? accountState.customer.id : null;
 
@@ -63,7 +72,8 @@ export function renderRevealSpotlightPageContent(
     <>
       <SparkleFinderNav accountState={accountState} variant={accountState.status === "authenticated" ? "app" : "public"} />
       <main className="mx-auto grid w-full max-w-[112rem] gap-8 px-5 py-8 sm:px-8 lg:px-10">
-        <RevealSpotlight spotlight={spotlight} viewerUserId={viewerUserId} />
+        {isPrivatePreview ? <PrivateShowcasePreviewNotice /> : null}
+        <RevealSpotlight isPrivatePreview={isPrivatePreview} spotlight={spotlight} viewerUserId={viewerUserId} />
       </main>
       <SparkleFinderFooter />
     </>

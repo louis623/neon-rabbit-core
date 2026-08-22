@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Camera, CheckCircle2, Eye, EyeOff, LoaderCircle, Search, Sparkles, Star } from "lucide-react";
 import type { SilverSaveActionState } from "@/app/(hub)/silver/actions";
 import type { ManagedCollectionItem } from "@/components/silver/CollectionManager";
 import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { JewelryItem } from "@/lib/sparkle-finder/types";
 import type { SparkleShowcaseItemStatus, SparkleShowcaseVisibility } from "@/lib/sparkle-finder/showcase-types";
+import { canSelectRarestReveal } from "@/lib/sparkle-finder/showcase-rarity";
 
 type ShowcaseManagerProps = {
   accountState: SparkleFinderAccountState;
@@ -264,6 +265,7 @@ function ShowcaseRecordCard({
   saveEnabled: boolean;
 }) {
   const disabled = !saveEnabled || (!isLocalPreview && isPending);
+  const [status, setStatus] = useState(record.showcaseStatus);
 
   return (
     <form action={formAction} className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-4">
@@ -275,7 +277,7 @@ function ShowcaseRecordCard({
             Bomb Party Collection: {record.item.collectionName}
           </p>
         </div>
-        {record.isRarestReveal ? (
+        {record.isRarestReveal && canSelectRarestReveal(status) ? (
           <span className="inline-flex items-center gap-1 rounded border border-[#e7be77] bg-[#fff3cf] px-2 py-1 text-xs font-bold text-[#704b11]">
             <Star aria-hidden="true" className="size-3" />
             The Rarest of Reveals
@@ -286,7 +288,7 @@ function ShowcaseRecordCard({
       <div className="grid gap-3 md:grid-cols-2">
         <label className="grid gap-1 text-sm font-bold text-[var(--sparkle-plum-deep)]">
           Status
-          <select className="min-h-10 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm" defaultValue={record.showcaseStatus} name="showcaseStatus">
+          <select className="min-h-10 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm" name="showcaseStatus" onChange={(event) => setStatus(event.target.value as SparkleShowcaseItemStatus)} value={status}>
             <option value="owned">Owned</option>
             <option value="wishlist">Wishlist</option>
             <option value="iso">Looking for</option>
@@ -303,14 +305,14 @@ function ShowcaseRecordCard({
       </div>
 
       <label className="grid gap-1 text-sm font-bold text-[var(--sparkle-plum-deep)]">
-        Reveal story
+        Showcase story
         <textarea className="min-h-24 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white p-3 text-sm leading-6" defaultValue={record.revealStory} maxLength={700} name="revealStory" />
       </label>
       <input name="note" type="hidden" value={record.note} />
-      <label className="inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
+      {canSelectRarestReveal(status) ? <label className="inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-plum-deep)]">
         <input defaultChecked={record.isRarestReveal} name="isRarestReveal" type="checkbox" value="yes" />
         Feature in The Rarest of Reveals
-      </label>
+      </label> : <p className="text-sm text-[var(--sparkle-ink-muted)]">Only owned pieces can be Rarest Reveals.</p>}
       <div className="flex flex-wrap gap-2">
         <button
           aria-busy={!isLocalPreview && isPending}
@@ -337,7 +339,7 @@ function createLocalRecords(collectionItems: ManagedCollectionItem[], libraryIte
     showcaseStatus: collectionItem.state,
     visibility: collectionItem.state === "private_note_only" ? "private" : "public",
     revealStory: collectionItem.note || `Added ${collectionItem.jewelryItem.name} to my Sparkle Showcase.`,
-    isRarestReveal: collectionItem.isHighlighted || collectionItem.jewelryItem.bpLabel !== "standard",
+    isRarestReveal: collectionItem.state === "owned" && (collectionItem.isHighlighted || collectionItem.jewelryItem.bpLabel !== "standard"),
   }));
 
   return existingRecords.length > 0 ? existingRecords : libraryItems.slice(0, 3).map((item) => createRecord(item, "wishlist"));
@@ -350,7 +352,7 @@ function createRecord(item: JewelryItem, status: SparkleShowcaseItemStatus): Loc
     showcaseStatus: status,
     visibility: status === "private_note_only" ? "private" : "public",
     revealStory: getDefaultRevealStory(item, status),
-    isRarestReveal: item.bpLabel !== "standard",
+    isRarestReveal: status === "owned" && item.bpLabel !== "standard",
   };
 }
 

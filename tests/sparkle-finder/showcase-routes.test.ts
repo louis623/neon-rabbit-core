@@ -75,6 +75,28 @@ describe("Sparkle Showcase public routes", () => {
     expect(markup).not.toContain("Private Notes");
     expect(markup).not.toContain("Curated Collections");
   });
+
+  it("renders an owner-only private preview without social or sharing controls", async () => {
+    const accountState = showcaseRouteAccountState("silver");
+    const showcase = (await getPublicSparkleShowcaseByHandle("sparkle-mama", fixtureOptions()))!;
+    const spotlight = (await getRevealSpotlight("sparkle-mama", "jewel-rainbow-crown-ring", fixtureOptions()))!;
+    const showcaseCollection = (await getShowcaseCollectionBySlug("sparkle-mama", "never-leaving", fixtureOptions()))!;
+    const profileMarkup = renderToStaticMarkup(renderSparkleShowcasePageContent(showcase, accountState, true));
+    const spotlightMarkup = renderToStaticMarkup(renderRevealSpotlightPageContent(spotlight, accountState, true));
+    const collectionMarkup = renderToStaticMarkup(renderShowcaseCollectionPageContent(showcase, showcaseCollection, accountState, true));
+
+    for (const markup of [profileMarkup, spotlightMarkup, collectionMarkup]) {
+      expect(markup).toContain("Private Showcase preview");
+      expect(markup).not.toContain("Share Showcase");
+      expect(markup).not.toContain("Share Reveal Spotlight");
+      expect(markup).not.toContain("Share Collection");
+      expect(markup).not.toContain("Confirm block");
+      expect(markup).not.toContain("Report spam or bad behavior");
+    }
+    expect(profileMarkup).not.toContain(">Follow<");
+    expect(profileMarkup).not.toContain("Showcase comments");
+    expect(spotlightMarkup).not.toContain("That reveal was unreal.");
+  });
 });
 
 function fixtureOptions() {

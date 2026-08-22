@@ -13,6 +13,7 @@ const useShell = process.platform === "win32";
 const smokeEnv = {
   SPARKLE_FINDER_ENABLE_PREVIEW_AUTH: "true",
   SPARKLE_FINDER_ENABLE_SHOWCASE_FIXTURES: "true",
+  SPARKLE_FINDER_LOCAL_SMOKE_FIXTURES: "true",
 };
 
 async function main() {

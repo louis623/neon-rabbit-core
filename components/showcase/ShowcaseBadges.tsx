@@ -1,5 +1,6 @@
 import { Gem, Search, ShieldCheck, Sparkles } from "lucide-react";
 import type { SparkleShowcasePiece } from "@/lib/sparkle-finder/showcase-types";
+import { isWantedShowcasePiece, qualifiesForRarestReveals } from "@/lib/sparkle-finder/showcase-rarity";
 
 export function PieceStatusBadge({ piece }: { piece: SparkleShowcasePiece }) {
   const labels: Record<SparkleShowcasePiece["showcaseStatus"], string> = {
@@ -27,13 +28,13 @@ export function BombPartyLabelBadge({ piece }: { piece: SparkleShowcasePiece }) 
   return (
     <span className="inline-flex items-center gap-1 rounded border border-[#e7be77] bg-[#fff3cf] px-2 py-1 text-xs font-bold text-[#704b11]">
       <Gem aria-hidden="true" className="size-3" />
-      {piece.jewelryItem.bpLabel === "diamond" ? "Diamond" : "Unicorn"} Reveal
+      {piece.jewelryItem.bpLabel === "diamond" ? "Diamond" : "Unicorn"} {isWantedShowcasePiece(piece) ? "piece I’m hunting" : "Reveal"}
     </span>
   );
 }
 
 export function RarestRevealBadge({ piece }: { piece: SparkleShowcasePiece }) {
-  if (!piece.isRarestReveal && piece.jewelryItem.bpLabel === "standard") {
+  if (!qualifiesForRarestReveals(piece)) {
     return null;
   }
 

@@ -35,7 +35,7 @@ export function FollowedShowcases({ highlights }: { highlights: FollowedShowcase
                 <div className="relative grid aspect-[4/3] place-items-center overflow-hidden bg-[linear-gradient(135deg,var(--sparkle-blush-bg),white)] text-[var(--sparkle-plum)]">
                   {highlight.personalPhotoUrl ? (
                     <div
-                      aria-label={`Public reveal shared by ${highlight.displayName}`}
+                      aria-label={`Public Showcase piece shared by ${highlight.displayName}`}
                       className="size-full bg-cover bg-center transition-transform duration-300 group-hover:scale-[1.03]"
                       role="img"
                       style={{ backgroundImage: `url("${highlight.personalPhotoUrl}")` }}
@@ -59,7 +59,7 @@ export function FollowedShowcases({ highlights }: { highlights: FollowedShowcase
                   <p className="line-clamp-3 min-h-[3.75rem] text-sm leading-5 text-[var(--sparkle-ink-muted)]">
                     {highlight.revealStory || "Shared a new public piece in their Sparkle Showcase."}
                   </p>
-                  <span className="text-sm font-bold text-[var(--sparkle-plum)]">Open Reveal Spotlight</span>
+                  <span className="text-sm font-bold text-[var(--sparkle-plum)]">Open Piece Spotlight</span>
                 </div>
               </Link>
             </article>

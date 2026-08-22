@@ -2,6 +2,7 @@ import type { SparkleFinderAccountState } from "./auth";
 import type { CurrentSparkleFinderAccountState } from "./account-service";
 import type { CollectionAcquisitionSource, CollectionItem, SilverProfile } from "./types";
 import type { SparkleShowcaseItemStatus, SparkleShowcaseVisibility } from "./showcase-types";
+import { normalizeRarestRevealSelection } from "./showcase-rarity";
 
 export type CustomerStateDeniedReason = "silver_required" | "account_mismatch" | "save_failed";
 
@@ -199,8 +200,10 @@ export async function persistCollectionItemForAccount(
     user_id: accountState.customer.id,
     jewelry_item_id: input.jewelryItemId,
     state: input.state,
+    showcase_status: input.state,
     note: cleanText(input.note, 500),
-    is_highlighted: input.isHighlighted,
+    is_highlighted: input.state === "owned" ? input.isHighlighted : false,
+    ...(input.state === "owned" ? {} : { is_rarest_reveal: false }),
     ...getAcquisitionPersistenceValues(input),
   };
   const result = await supabase.from("sparkle_finder_collection_items").upsert(values, {
@@ -232,16 +235,17 @@ export async function persistShowcasePieceForAccount(
     return { ok: false, reason: "silver_required" };
   }
 
+  const isRarestReveal = normalizeRarestRevealSelection(input.showcaseStatus, input.isRarestReveal);
   const values = {
     user_id: accountState.customer.id,
     jewelry_item_id: input.jewelryItemId,
     state: mapShowcaseStatusToLegacyCollectionState(input.showcaseStatus),
     note: cleanText(input.note, 500),
-    is_highlighted: input.isRarestReveal,
+    is_highlighted: isRarestReveal,
     visibility: input.visibility,
     showcase_status: input.showcaseStatus,
     reveal_story: cleanText(input.revealStory, 700),
-    is_rarest_reveal: input.isRarestReveal,
+    is_rarest_reveal: isRarestReveal,
     ...(input.personalPhotoUrl !== undefined
       ? { personal_photo_url: cleanText(input.personalPhotoUrl, profilePhotoMaxCharacters) }
       : {}),

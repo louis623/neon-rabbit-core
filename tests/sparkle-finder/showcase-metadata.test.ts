@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   createRevealSpotlightMetadata,
+  createPrivateShowcasePreviewMetadata,
   createShowcaseCollectionMetadata,
   createSparkleShowcaseMetadata,
+  createUnavailableShowcaseMetadata,
 } from "../../lib/sparkle-finder/showcase-metadata";
 import type {
   RevealSpotlight,
@@ -126,5 +128,21 @@ describe("public Sparkle Showcase metadata", () => {
 
     expect(metadata.openGraph?.images).toBeUndefined();
     expect(metadata.twitter).toMatchObject({ card: "summary" });
+  });
+
+  it("uses Piece Spotlight wording for Wishlist and Looking for jewelry", () => {
+    const wantedPiece = { ...publicPiece, isRarestReveal: false, showcaseStatus: "iso" as const, state: "wishlist" as const };
+    const metadata = createRevealSpotlightMetadata({ comments: [], piece: wantedPiece, showcase });
+
+    expect(metadata.title).toBe("Rainbow Crown Ring Piece Spotlight | Sparkle Finder");
+    expect(JSON.stringify(metadata)).not.toContain("Reveal Spotlight");
+  });
+
+  it("marks private previews and unavailable routes noindex without public social metadata", () => {
+    for (const metadata of [createPrivateShowcasePreviewMetadata(), createUnavailableShowcaseMetadata()]) {
+      expect(metadata.robots).toEqual({ follow: false, index: false });
+      expect(metadata.alternates).toBeUndefined();
+      expect(metadata.openGraph).toBeUndefined();
+    }
   });
 });

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BombPartyLabelBadge, PieceStatusBadge, RarestRevealBadge } from "./ShowcaseBadges";
 import { PieceImage } from "./RarestReveals";
 import type { SparkleShowcasePiece } from "@/lib/sparkle-finder/showcase-types";
+import { getShowcaseSpotlightLabel } from "@/lib/sparkle-finder/showcase-rarity";
 
 type ShowcasePieceGridProps = {
   handle: string;
@@ -39,7 +40,7 @@ export function ShowcasePieceGrid({ handle, pieces, title = "Sparkle Showcase Pi
               </div>
               <p className="line-clamp-3 text-sm leading-6 text-[var(--sparkle-ink-muted)]">{piece.revealStory}</p>
               <Link className="text-sm font-bold text-[var(--sparkle-rose)] hover:underline" href={`/showcase/${handle}/pieces/${piece.jewelryItemId}`}>
-                Open Reveal Spotlight
+                Open {getShowcaseSpotlightLabel(piece)}
               </Link>
             </div>
           </article>

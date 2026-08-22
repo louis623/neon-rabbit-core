@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import { SparkleShowcaseProfile } from "@/components/showcase/SparkleShowcaseProfile";
+import { PrivateShowcasePreviewNotice } from "@/components/showcase/PrivateShowcasePreviewNotice";
 import {
   getCurrentSparkleFinderAccount,
   type CurrentSparkleFinderAccountState,
@@ -12,8 +13,12 @@ import {
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
-import { getPublicSparkleShowcaseByHandle } from "@/lib/sparkle-finder/showcase-service";
-import { createSparkleShowcaseMetadata } from "@/lib/sparkle-finder/showcase-metadata";
+import { getSparkleShowcaseForRoute } from "@/lib/sparkle-finder/showcase-service";
+import {
+  createPrivateShowcasePreviewMetadata,
+  createSparkleShowcaseMetadata,
+  createUnavailableShowcaseMetadata,
+} from "@/lib/sparkle-finder/showcase-metadata";
 import type { SparkleShowcase } from "@/lib/sparkle-finder/showcase-types";
 
 type SparkleShowcasePageProps = {
@@ -25,25 +30,28 @@ type SparkleShowcasePageProps = {
 export async function generateMetadata({ params }: SparkleShowcasePageProps): Promise<Metadata> {
   const { handle } = await params;
   const accountState = await getShowcaseAccountState();
-  const showcase = await getPublicSparkleShowcaseByHandle(handle, {
+  const route = await getSparkleShowcaseForRoute(handle, {
     viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
   });
 
-  return showcase ? createSparkleShowcaseMetadata(showcase) : { title: "Sparkle Showcase | Sparkle Finder" };
+  if (!route) return createUnavailableShowcaseMetadata();
+  return route.access === "public"
+    ? createSparkleShowcaseMetadata(route.showcase)
+    : createPrivateShowcasePreviewMetadata();
 }
 
 export default async function SparkleShowcasePage({ params }: SparkleShowcasePageProps) {
   const accountState = await getShowcaseAccountState();
   const { handle } = await params;
-  const showcase = await getPublicSparkleShowcaseByHandle(handle, {
+  const route = await getSparkleShowcaseForRoute(handle, {
     viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
   });
 
-  if (!showcase) {
+  if (!route) {
     notFound();
   }
 
-  return renderSparkleShowcasePageContent(showcase, accountState);
+  return renderSparkleShowcasePageContent(route.showcase, accountState, route.access === "owner_private_preview");
 }
 
 async function getShowcaseAccountState() {
@@ -55,6 +63,7 @@ async function getShowcaseAccountState() {
 export function renderSparkleShowcasePageContent(
   showcase: SparkleShowcase,
   accountState: CurrentSparkleFinderAccountState = anonymousShowcaseAccountState(),
+  isPrivatePreview = false,
 ) {
   const viewerUserId = accountState.status === "authenticated" ? accountState.customer.id : null;
 
@@ -62,7 +71,8 @@ export function renderSparkleShowcasePageContent(
     <>
       <SparkleFinderNav accountState={accountState} variant={accountState.status === "authenticated" ? "app" : "public"} />
       <main className="mx-auto grid w-full max-w-[112rem] gap-8 px-5 py-8 sm:px-8 lg:px-10">
-        <SparkleShowcaseProfile showcase={showcase} viewerUserId={viewerUserId} />
+        {isPrivatePreview ? <PrivateShowcasePreviewNotice /> : null}
+        <SparkleShowcaseProfile isPrivatePreview={isPrivatePreview} showcase={showcase} viewerUserId={viewerUserId} />
       </main>
       <SparkleFinderFooter />
     </>

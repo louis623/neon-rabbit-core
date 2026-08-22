@@ -1,11 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Eye, EyeOff, FolderHeart, LoaderCircle, Save, Sparkles, Trash2 } from "lucide-react";
 import type { SilverSaveActionState } from "@/app/(hub)/silver/actions";
 import type { ManagedCollectionItem } from "@/components/silver/CollectionManager";
 import type { ShowcaseCollection } from "@/lib/sparkle-finder/showcase-types";
+import type { SparkleShowcaseItemStatus } from "@/lib/sparkle-finder/showcase-types";
+import { canSelectRarestReveal } from "@/lib/sparkle-finder/showcase-rarity";
 
 export type ShowcaseOwnerData = {
   handle: string;
@@ -90,7 +92,7 @@ export function ShowcaseOwnerPanel({
             <SubmitButton disabled={disabled} pending={profilePending}>Save Showcase</SubmitButton>
             {publicUrl ? (
               <Link className="inline-flex min-h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] px-4 text-sm font-bold text-[var(--sparkle-plum)]" href={publicUrl}>
-                <ExternalLink aria-hidden="true" className="size-4" /> Preview
+                <ExternalLink aria-hidden="true" className="size-4" /> {data.visibility === "public" ? "Preview" : "Private Preview"}
               </Link>
             ) : null}
           </div>
@@ -142,30 +144,12 @@ export function ShowcaseOwnerPanel({
                 <span className="shrink-0 rounded-full bg-[var(--sparkle-blush-bg)] px-2.5 py-1 text-xs text-[var(--sparkle-ink-muted)]">{item.visibility === "public" ? "Public" : "Private"}</span>
               </summary>
               <div className="grid gap-4 border-t border-[var(--sparkle-border)] p-4 lg:grid-cols-2">
-                <form action={pieceFormAction} className="grid gap-3">
-                  <input name="jewelryItemId" type="hidden" value={item.jewelryItemId} />
-                  <input name="note" type="hidden" value={item.note} />
-                  <div className="grid grid-cols-2 gap-3">
-                    <label className="grid gap-1 text-sm font-bold">Status
-                      <select className="min-h-11 rounded border border-[var(--sparkle-border)] bg-white px-3 font-normal" defaultValue={item.showcaseStatus ?? (item.state === "wishlist" ? "wishlist" : "owned")} name="showcaseStatus">
-                        <option value="owned">Owned</option><option value="wishlist">Wishlist</option><option value="iso">Looking for</option><option value="private_note_only">Private note only</option>
-                      </select>
-                    </label>
-                    <label className="grid gap-1 text-sm font-bold">Visibility
-                      <select className="min-h-11 rounded border border-[var(--sparkle-border)] bg-white px-3 font-normal" defaultValue={item.visibility ?? "private"} name="visibility">
-                        <option value="private">Private</option><option value="public">Public</option>
-                      </select>
-                    </label>
-                  </div>
-                  <label className="grid gap-1 text-sm font-bold">Reveal story
-                    <textarea className="min-h-28 rounded border border-[var(--sparkle-border)] bg-white p-3 font-normal" defaultValue={item.revealStory ?? ""} maxLength={700} name="revealStory" placeholder="Tell the true story of this reveal in your own words." />
-                  </label>
-                  <label className="grid gap-1 text-sm font-bold">Personal piece photo
-                    <input accept="image/jpeg,image/png,image/webp" className="min-h-11 rounded border border-[var(--sparkle-border)] bg-white p-2 font-normal" name="personalPhoto" type="file" />
-                  </label>
-                  <label className="flex min-h-11 items-center gap-2 text-sm font-bold"><input defaultChecked={item.isRarestReveal === true} name="isRarestReveal" type="checkbox" value="yes" /> Mark as a Rarest Reveal</label>
-                  <SubmitButton disabled={disabled} pending={piecePending}>Save piece story</SubmitButton>
-                </form>
+                <PieceStoryForm
+                  action={pieceFormAction}
+                  disabled={disabled}
+                  item={item}
+                  pending={piecePending}
+                />
 
                 <div className="grid content-start gap-3 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-paper-soft)] p-4">
                   <p className="inline-flex items-center gap-2 font-bold text-[var(--sparkle-plum-deep)]"><FolderHeart aria-hidden="true" className="size-5" /> Showcase Collection</p>
@@ -191,6 +175,69 @@ export function ShowcaseOwnerPanel({
         <ActionStatus state={assignmentState} />
       </div>
     </section>
+  );
+}
+
+function PieceStoryForm({
+  action,
+  disabled,
+  item,
+  pending,
+}: {
+  action: (formData: FormData) => void;
+  disabled: boolean;
+  item: ManagedCollectionItem;
+  pending: boolean;
+}) {
+  const initialStatus = item.showcaseStatus ?? (item.state === "wishlist" ? "wishlist" : "owned");
+  const [status, setStatus] = useState<SparkleShowcaseItemStatus>(initialStatus);
+  const canMarkRarest = canSelectRarestReveal(status);
+  const isAutomaticRarestReveal = canMarkRarest && (
+    item.jewelryItem.bpLabel === "diamond" || item.jewelryItem.bpLabel === "unicorn"
+  );
+
+  return (
+    <form action={action} className="grid gap-3">
+      <input name="jewelryItemId" type="hidden" value={item.jewelryItemId} />
+      <input name="note" type="hidden" value={item.note} />
+      <div className="grid grid-cols-2 gap-3">
+        <label className="grid gap-1 text-sm font-bold">Status
+          <select
+            className="min-h-11 rounded border border-[var(--sparkle-border)] bg-white px-3 font-normal"
+            name="showcaseStatus"
+            onChange={(event) => setStatus(event.target.value as SparkleShowcaseItemStatus)}
+            value={status}
+          >
+            <option value="owned">Owned</option><option value="wishlist">Wishlist</option><option value="iso">Looking for</option><option value="private_note_only">Private note only</option>
+          </select>
+        </label>
+        <label className="grid gap-1 text-sm font-bold">Visibility
+          <select className="min-h-11 rounded border border-[var(--sparkle-border)] bg-white px-3 font-normal" defaultValue={item.visibility ?? "private"} name="visibility">
+            <option value="private">Private</option><option value="public">Public</option>
+          </select>
+        </label>
+      </div>
+      <label className="grid gap-1 text-sm font-bold">Showcase story
+        <textarea className="min-h-28 rounded border border-[var(--sparkle-border)] bg-white p-3 font-normal" defaultValue={item.revealStory ?? ""} maxLength={700} name="revealStory" placeholder="Tell the true story of this piece in your own words." />
+      </label>
+      <label className="grid gap-1 text-sm font-bold">Personal piece photo
+        <input accept="image/jpeg,image/png,image/webp" className="min-h-11 rounded border border-[var(--sparkle-border)] bg-white p-2 font-normal" name="personalPhoto" type="file" />
+      </label>
+      {isAutomaticRarestReveal ? (
+        <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+          This {item.jewelryItem.bpLabel === "diamond" ? "Diamond" : "Unicorn"} is automatically featured in The Rarest of Reveals while it is owned.
+        </p>
+      ) : canMarkRarest ? (
+        <label className="flex min-h-11 items-center gap-2 text-sm font-bold">
+          <input defaultChecked={item.isRarestReveal === true} name="isRarestReveal" type="checkbox" value="yes" /> Mark as a Rarest Reveal
+        </label>
+      ) : (
+        <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">
+          Wishlist and Looking for pieces stay in your Showcase, but only owned pieces can be Rarest Reveals.
+        </p>
+      )}
+      <SubmitButton disabled={disabled} pending={pending}>Save piece story</SubmitButton>
+    </form>
   );
 }
 

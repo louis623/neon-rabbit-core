@@ -69,6 +69,14 @@ describe("Sparkle Finder Nic-Nac prompt builder", () => {
     expect(prompt).toContain(bannedSocialCommercePrompt);
   });
 
+  it("keeps Rarest Reveals owned-only and describes wanted Showcase jewelry honestly", () => {
+    const prompt = buildFinderNicNacSystemPrompt({ activeToolNames: ["summarize_my_showcase"], intents: ["showcase"] });
+
+    expect(prompt).toContain("Rarest Reveals are owned pieces only");
+    expect(prompt).toContain("Wishlist and Looking for Showcase pieces are jewelry the customer is hunting");
+    expect(prompt).toContain("not pieces they own, found, or revealed");
+  });
+
   it("tells linked Sparkle Suite reps that Suite mutations require the Suite surface", () => {
     const prompt = buildFinderNicNacSystemPrompt({
       activeToolNames: ["read_customer_memory"],

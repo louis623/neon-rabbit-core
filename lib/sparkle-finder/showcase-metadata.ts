@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildRevealSpotlightPath, buildShowcaseCollectionPath, buildSparkleShowcasePath, getCanonicalShowcaseUrl } from "./showcase-sharing";
 import type { RevealSpotlight, ShowcaseCollectionWithPieces, SparkleShowcase, SparkleShowcasePiece } from "./showcase-types";
+import { getShowcaseSpotlightLabel, qualifiesForRarestReveals } from "./showcase-rarity";
 
 const metadataDescriptionLimit = 160;
 
@@ -13,7 +14,9 @@ export function createSparkleShowcaseMetadata(showcase: SparkleShowcase): Metada
   );
   const canonicalUrl = getCanonicalShowcaseUrl(buildSparkleShowcasePath(showcase.profile.handle));
   const imageUrl = getPublicPieceImage(
-    showcase.pieces.find((piece) => piece.isHighlighted) ?? showcase.rarestReveals[0] ?? showcase.pieces[0],
+    showcase.pieces.find((piece) => piece.state === "owned" && piece.showcaseStatus === "owned" && piece.isHighlighted) ??
+      showcase.pieces.find(qualifiesForRarestReveals) ??
+      showcase.pieces[0],
   );
 
   return createPublicMetadata({ canonicalUrl, description, imageUrl, title });
@@ -39,10 +42,11 @@ export function createShowcaseCollectionMetadata(
 }
 
 export function createRevealSpotlightMetadata(spotlight: RevealSpotlight): Metadata {
-  const pieceName = cleanPublicText(spotlight.piece.jewelryItem.name) || "Reveal Spotlight";
+  const spotlightLabel = getShowcaseSpotlightLabel(spotlight.piece);
+  const pieceName = cleanPublicText(spotlight.piece.jewelryItem.name) || spotlightLabel;
   const collectionName = cleanPublicText(spotlight.piece.jewelryItem.collectionName);
   const revealStory = cleanPublicText(spotlight.piece.revealStory);
-  const title = `${pieceName} Reveal Spotlight | Sparkle Finder`;
+  const title = `${pieceName} ${spotlightLabel} | Sparkle Finder`;
   const description = toDescription(
     [
       collectionName ? `${pieceName} from the ${collectionName} collection.` : `${pieceName}.`,
@@ -58,6 +62,28 @@ export function createRevealSpotlightMetadata(spotlight: RevealSpotlight): Metad
   const imageUrl = getPublicPieceImage(spotlight.piece);
 
   return createPublicMetadata({ canonicalUrl, description, imageUrl, title });
+}
+
+export function createPrivateShowcasePreviewMetadata(): Metadata {
+  return createUnavailableMetadata(
+    "Private Showcase preview | Sparkle Finder",
+    "A private Sparkle Showcase preview visible only to its owner.",
+  );
+}
+
+export function createUnavailableShowcaseMetadata(): Metadata {
+  return createUnavailableMetadata(
+    "Page unavailable | Sparkle Finder",
+    "This Sparkle Finder page may be private, unavailable, or mistyped.",
+  );
+}
+
+function createUnavailableMetadata(title: string, description: string): Metadata {
+  return {
+    description,
+    robots: { follow: false, index: false },
+    title,
+  };
 }
 
 function createPublicMetadata({

@@ -62,11 +62,11 @@ describe("Sparkle Showcase actions", () => {
           jewelry_item_id: "jewel-aurora-drop-earrings",
           state: "wishlist",
           note: "Private owner note.",
-          is_highlighted: true,
+          is_highlighted: false,
           visibility: "public",
           showcase_status: "iso",
           reveal_story: "Looking for the pink Aurora drops.",
-          is_rarest_reveal: true,
+          is_rarest_reveal: false,
         },
         options: {
           onConflict: "user_id,jewelry_item_id",

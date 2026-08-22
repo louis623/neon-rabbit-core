@@ -7,15 +7,18 @@ import { PieceImage } from "./RarestReveals";
 import { RepLeadPanel } from "./RepLeadPanel";
 import { ShareShowcaseButton } from "./ShareShowcaseButton";
 import { buildRevealSpotlightPath } from "@/lib/sparkle-finder/showcase-sharing";
+import { getShowcaseSpotlightLabel } from "@/lib/sparkle-finder/showcase-rarity";
 import type { RevealSpotlight as RevealSpotlightData } from "@/lib/sparkle-finder/showcase-types";
 
 type RevealSpotlightProps = {
   spotlight: RevealSpotlightData;
   viewerUserId?: string | null;
+  isPrivatePreview?: boolean;
 };
 
-export function RevealSpotlight({ spotlight, viewerUserId }: RevealSpotlightProps) {
+export function RevealSpotlight({ spotlight, viewerUserId, isPrivatePreview = false }: RevealSpotlightProps) {
   const { piece, showcase } = spotlight;
+  const spotlightLabel = getShowcaseSpotlightLabel(piece);
 
   return (
     <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]" data-smoke="reveal-spotlight">
@@ -30,7 +33,7 @@ export function RevealSpotlight({ spotlight, viewerUserId }: RevealSpotlightProp
             Back to Sparkle Showcase
           </Link>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">Reveal Spotlight</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">{spotlightLabel}</p>
             <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-4xl font-semibold leading-tight text-[var(--sparkle-plum-deep)]">
               {piece.jewelryItem.name}
             </h1>
@@ -44,19 +47,19 @@ export function RevealSpotlight({ spotlight, viewerUserId }: RevealSpotlightProp
             <RarestRevealBadge piece={piece} />
           </div>
           <p className="text-base leading-7 text-[var(--sparkle-ink-muted)]">{piece.revealStory}</p>
-          <ShareShowcaseButton
-            isPublic
-            label="Share Reveal Spotlight"
+          {!isPrivatePreview ? <ShareShowcaseButton
+            isPublic={!isPrivatePreview}
+            label={`Share ${spotlightLabel}`}
             pathname={buildRevealSpotlightPath(showcase.profile.handle, piece.jewelryItemId)}
             shareText={`See ${piece.jewelryItem.name} in ${showcase.profile.customer.displayName}'s Sparkle Showcase.`}
-            shareTitle={`${piece.jewelryItem.name} Reveal Spotlight`}
-          />
+            shareTitle={`${piece.jewelryItem.name} ${spotlightLabel}`}
+          /> : null}
         </div>
       </article>
 
       <aside className="grid gap-4">
         <RepLeadPanel piece={piece} />
-        <ShowcaseComments
+        {!isPrivatePreview ? <ShowcaseComments
           comments={spotlight.comments}
           createAction={createShowcaseCommentAction}
           deleteAction={deleteShowcaseCommentAction}
@@ -67,7 +70,7 @@ export function RevealSpotlight({ spotlight, viewerUserId }: RevealSpotlightProp
           targetId={piece.id}
           targetType="piece"
           viewerUserId={viewerUserId}
-        />
+        /> : null}
       </aside>
     </section>
   );

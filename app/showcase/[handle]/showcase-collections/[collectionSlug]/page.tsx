@@ -7,6 +7,7 @@ import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
 import { ShowcasePieceGrid } from "@/components/showcase/ShowcasePieceGrid";
 import { ShareShowcaseButton } from "@/components/showcase/ShareShowcaseButton";
+import { PrivateShowcasePreviewNotice } from "@/components/showcase/PrivateShowcasePreviewNotice";
 import {
   getCurrentSparkleFinderAccount,
   type CurrentSparkleFinderAccountState,
@@ -15,8 +16,12 @@ import {
   parseSparkleFinderAuthMode,
   sparkleFinderAuthCookieName,
 } from "@/lib/sparkle-finder/auth";
-import { getPublicSparkleShowcaseByHandle } from "@/lib/sparkle-finder/showcase-service";
-import { createShowcaseCollectionMetadata } from "@/lib/sparkle-finder/showcase-metadata";
+import { getShowcaseCollectionForRoute } from "@/lib/sparkle-finder/showcase-service";
+import {
+  createPrivateShowcasePreviewMetadata,
+  createShowcaseCollectionMetadata,
+  createUnavailableShowcaseMetadata,
+} from "@/lib/sparkle-finder/showcase-metadata";
 import { buildShowcaseCollectionPath } from "@/lib/sparkle-finder/showcase-sharing";
 import type { ShowcaseCollectionWithPieces, SparkleShowcase } from "@/lib/sparkle-finder/showcase-types";
 
@@ -30,33 +35,31 @@ type ShowcaseCollectionPageProps = {
 export async function generateMetadata({ params }: ShowcaseCollectionPageProps): Promise<Metadata> {
   const { collectionSlug, handle } = await params;
   const accountState = await getCollectionAccountState();
-  const showcase = await getPublicSparkleShowcaseByHandle(handle, {
+  const route = await getShowcaseCollectionForRoute(handle, collectionSlug, {
     viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
   });
-  const collection = showcase?.showcaseCollections.find(
-    (candidate) => candidate.slug === collectionSlug.trim().toLowerCase(),
-  );
-
-  return showcase && collection
-    ? createShowcaseCollectionMetadata(showcase, collection)
-    : { title: "Showcase Collection | Sparkle Finder" };
+  if (!route) return createUnavailableShowcaseMetadata();
+  return route.access === "public"
+    ? createShowcaseCollectionMetadata(route.showcase, route.collection)
+    : createPrivateShowcasePreviewMetadata();
 }
 
 export default async function ShowcaseCollectionPage({ params }: ShowcaseCollectionPageProps) {
   const accountState = await getCollectionAccountState();
   const { collectionSlug, handle } = await params;
-  const showcase = await getPublicSparkleShowcaseByHandle(handle, {
+  const route = await getShowcaseCollectionForRoute(handle, collectionSlug, {
     viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
   });
-  const showcaseCollection = showcase?.showcaseCollections.find(
-    (collection) => collection.slug === collectionSlug.trim().toLowerCase(),
-  );
-
-  if (!showcase || !showcaseCollection) {
+  if (!route) {
     notFound();
   }
 
-  return renderShowcaseCollectionPageContent(showcase, showcaseCollection, accountState);
+  return renderShowcaseCollectionPageContent(
+    route.showcase,
+    route.collection,
+    accountState,
+    route.access === "owner_private_preview",
+  );
 }
 
 async function getCollectionAccountState() {
@@ -69,11 +72,13 @@ export function renderShowcaseCollectionPageContent(
   showcase: SparkleShowcase,
   showcaseCollection: ShowcaseCollectionWithPieces,
   accountState: CurrentSparkleFinderAccountState = anonymousCollectionAccountState(),
+  isPrivatePreview = false,
 ) {
   return (
     <>
       <SparkleFinderNav accountState={accountState} variant={accountState.status === "authenticated" ? "app" : "public"} />
       <main className="mx-auto grid w-full max-w-[112rem] gap-8 px-5 py-8 sm:px-8 lg:px-10">
+        {isPrivatePreview ? <PrivateShowcasePreviewNotice /> : null}
         <header className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)] lg:p-7">
           <Link
             className="inline-flex w-fit items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
@@ -89,16 +94,16 @@ export function renderShowcaseCollectionPageContent(
           <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
             {showcaseCollection.description}
           </p>
-          <div className="mt-5">
+          {!isPrivatePreview ? <div className="mt-5">
             <ShareShowcaseButton
-              isPublic
+              isPublic={!isPrivatePreview}
               label="Share Collection"
               pathname={buildShowcaseCollectionPath(showcase.profile.handle, showcaseCollection.slug)}
               shareText={`Browse ${showcaseCollection.title}, a public Showcase Collection from ${showcase.profile.customer.displayName}.`}
               shareTitle={`${showcaseCollection.title} | Sparkle Finder`}
               tone="secondary"
             />
-          </div>
+          </div> : null}
         </header>
         <ShowcasePieceGrid
           handle={showcase.profile.handle}

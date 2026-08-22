@@ -5,11 +5,13 @@ import {
   sparkleFinderSilverProfiles,
 } from "../fixtures/sparkle-finder-fixtures";
 import { getPublicShowcasePiecesByCustomerId } from "./showcase-service";
+import { getCatalogJewelryItemById } from "./catalog-service";
 import type { FollowedShowcaseHighlight, PublicCollectorProfile } from "./social-types";
+import type { JewelryItem } from "./types";
 
 export type SupabaseCollectorSocialReadClient = {
   rpc: (
-    functionName: "sparkle_finder_search_public_collectors" | "sparkle_finder_list_followed_showcase_highlights",
+    functionName: "sparkle_finder_search_public_collectors" | "sparkle_finder_list_followed_showcase_highlights" | "sparkle_finder_list_followed_showcase_highlights_v2",
     args: { search_query: string; result_limit: number } | { result_limit: number },
   ) => PromiseLike<{ data: unknown; error: unknown }>;
 };
@@ -78,23 +80,43 @@ export async function searchPersistedPublicCollectorProfiles(input: {
 }
 
 export async function getPersistedFollowedShowcaseHighlights(input: {
+  catalogItemById?: (itemId: string) => Promise<JewelryItem | undefined>;
   supabase: SupabaseCollectorSocialReadClient;
   limit?: number;
 }): Promise<FollowedShowcaseHighlight[] | null> {
   try {
-    const result = await input.supabase.rpc("sparkle_finder_list_followed_showcase_highlights", {
-      result_limit: input.limit ?? 6,
-    });
+    const resultLimit = Math.min(Math.max(input.limit ?? 6, 1), 12);
+    const args = { result_limit: resultLimit };
+    let result = await input.supabase.rpc("sparkle_finder_list_followed_showcase_highlights_v2", args);
+    let hasOwnershipFields = true;
+
+    if (result.error || !Array.isArray(result.data)) {
+      result = await input.supabase.rpc("sparkle_finder_list_followed_showcase_highlights", args);
+      hasOwnershipFields = false;
+    }
 
     if (result.error || !Array.isArray(result.data)) {
       return null;
     }
 
-    return result.data.flatMap((row) => {
+    const catalogItemById = input.catalogItemById ?? ((itemId: string) =>
+      getCatalogJewelryItemById(itemId, { useFixtureFallback: false }));
+    const highlights = await Promise.all(result.data.slice(0, resultLimit).map(async (row) => {
       const highlight = mapPersistedFollowedShowcaseHighlight(row);
 
-      return highlight ? [highlight] : [];
-    });
+      if (!highlight || !hasOwnershipFields || !isOwnedHighlightRow(row)) return highlight;
+
+      try {
+        const catalogItem = await catalogItemById(highlight.jewelryItemId);
+        return catalogItem?.bpLabel === "diamond" || catalogItem?.bpLabel === "unicorn"
+          ? { ...highlight, isRarestReveal: true }
+          : highlight;
+      } catch {
+        return highlight;
+      }
+    }));
+
+    return highlights.flatMap((highlight) => highlight ? [highlight] : []);
   } catch {
     return null;
   }
@@ -227,6 +249,11 @@ function mapPersistedFollowedShowcaseHighlight(row: unknown): FollowedShowcaseHi
     showcaseUrl: `/showcase/${handle}`,
     spotlightUrl: `/showcase/${handle}/pieces/${encodeURIComponent(jewelryItemId)}`,
   };
+}
+
+function isOwnedHighlightRow(row: unknown): boolean {
+  const record = asRecord(row);
+  return record?.state === "owned" && record.showcase_status === "owned";
 }
 
 function isBlockedRelationship(input: { viewerUserId: string | null; targetUserId: string }): boolean {

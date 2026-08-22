@@ -22,6 +22,8 @@ import {
 } from "../customer-memory";
 import { getPersistedFavoriteRepCardsForUser, type SupabaseFavoriteRepsReadClient } from "../favorite-reps-service";
 import { getShowcaseStudioConfig } from "../showcase-studio";
+import { normalizeRarestRevealSelection, qualifiesForRarestReveals } from "../showcase-rarity";
+import type { SparkleShowcaseItemStatus } from "../showcase-types";
 import {
   readShowcaseStudioIntakeStatusForUser,
   type SupabaseShowcaseStudioReadClient,
@@ -422,12 +424,14 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
           };
         }
 
+        const mappedCollectionRows = await Promise.all(collectionRows.map(mapCollectionToolItem));
+
         return {
           status: "connected",
           dataSource: "persisted",
           publicPieceCount: collectionRows.filter((row) => readString(row.visibility) === "public").length,
           privatePieceCount: collectionRows.filter((row) => readString(row.visibility) !== "public").length,
-          rarestRevealCount: collectionRows.filter((row) => row.is_rarest_reveal === true).length,
+          rarestRevealCount: mappedCollectionRows.filter((row) => row.isRarestReveal).length,
           piecesWithRevealStoryCount: collectionRows.filter((row) => Boolean(readString(row.reveal_story))).length,
           showcaseCollections: showcaseCollections.map((collection) => ({
             id: readString(collection.id),
@@ -468,13 +472,15 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
           return catalogCheck.result;
         }
 
+        const requestedRarestReveal = isRarestReveal ?? false;
+        const savedRarestReveal = normalizeRarestRevealSelection(showcaseStatus, requestedRarestReveal);
         const result = await persistShowcasePieceForAccount(saveContext.supabase, saveContext.accountState, {
           jewelryItemId: trimmedItemId,
           showcaseStatus,
           visibility,
           revealStory: revealStory ?? "",
           note: note ?? "",
-          isRarestReveal: isRarestReveal ?? false,
+          isRarestReveal: requestedRarestReveal,
         });
 
         return result.ok
@@ -482,7 +488,11 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
               status: "saved",
               saved: true,
               message: "Sparkle Showcase piece saved.",
-              guidance: "Nic-Nac may now say the Showcase piece save succeeded because the save tool returned saved.",
+              isRarestReveal: savedRarestReveal,
+              rarityWasNormalizedOff: requestedRarestReveal && !savedRarestReveal,
+              guidance: requestedRarestReveal && !savedRarestReveal
+                ? "The Showcase piece save succeeded, but Rarest Reveal stayed off because only owned pieces can be Rarest Reveals. Explain that clearly to the customer."
+                : "Nic-Nac may now say the Showcase piece save succeeded because the save tool returned saved.",
             }
           : mapSaveFailure("showcase", result.reason);
       },
@@ -869,6 +879,15 @@ async function mapCollectionToolItem(row: Record<string, unknown>) {
   const note = readString(row.note);
   const revealStory = readString(row.reveal_story);
 
+  const state = normalizeCollectionState(row.state);
+  const showcaseStatus = normalizeShowcaseStatus(row.showcase_status, state);
+  const isRarestReveal = qualifiesForRarestReveals({
+    bpLabel: catalogItem?.bpLabel,
+    isRarestReveal: row.is_rarest_reveal === true,
+    showcaseStatus,
+    state,
+  });
+
   return {
     collectionItemId: readString(row.id),
     itemId,
@@ -876,11 +895,11 @@ async function mapCollectionToolItem(row: Record<string, unknown>) {
     itemName: catalogItem?.name ?? null,
     collectionName: catalogItem?.collectionName ?? null,
     jewelryType: catalogItem?.jewelryType ?? null,
-    state: normalizeCollectionState(row.state),
+    state,
     visibility: normalizeVisibility(row.visibility),
-    showcaseStatus: readString(row.showcase_status) || normalizeCollectionState(row.state),
+    showcaseStatus,
     isHighlighted: row.is_highlighted === true,
-    isRarestReveal: row.is_rarest_reveal === true,
+    isRarestReveal,
     hasNote: Boolean(note),
     noteSnippet: cleanSnippet(note, 160),
     hasRevealStory: Boolean(revealStory),
@@ -929,6 +948,15 @@ function normalizeCollectionState(value: unknown): "owned" | "wishlist" | "priva
   return value === "owned" || value === "wishlist" || value === "private_note_only"
     ? value
     : "private_note_only";
+}
+
+function normalizeShowcaseStatus(
+  value: unknown,
+  fallback: "owned" | "wishlist" | "private_note_only",
+): SparkleShowcaseItemStatus {
+  return value === "owned" || value === "wishlist" || value === "iso" || value === "private_note_only"
+    ? value
+    : fallback;
 }
 
 function normalizeAcquisitionSource(value: unknown): "manual" | "wishlist" | "sparkle_finder_lead" | "nic_nac_request" | "unknown" {

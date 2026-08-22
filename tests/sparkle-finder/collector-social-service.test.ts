@@ -182,7 +182,7 @@ describe("Collector social service", () => {
     const highlights = await getPersistedFollowedShowcaseHighlights({
       supabase: {
         rpc: async (functionName, args) => {
-          expect(functionName).toBe("sparkle_finder_list_followed_showcase_highlights");
+          expect(functionName).toBe("sparkle_finder_list_followed_showcase_highlights_v2");
           expect(args).toEqual({ result_limit: 6 });
           return {
             error: null,
@@ -198,11 +198,14 @@ describe("Collector social service", () => {
               personal_photo_url: "https://images.example/reveal.jpg",
               is_rarest_reveal: true,
               updated_at: "2026-08-22T19:30:00.000Z",
+              state: "owned",
+              showcase_status: "owned",
               private_note: "must never be mapped",
             }],
           };
         },
       },
+      catalogItemById: async () => undefined,
     });
 
     expect(highlights).toEqual([expect.objectContaining({
@@ -214,12 +217,89 @@ describe("Collector social service", () => {
     expect(JSON.stringify(highlights)).not.toContain("must never be mapped");
   });
 
+  it("classifies owned Diamonds and Unicorns as Rarest without promoting wanted pieces", async () => {
+    const calls: string[] = [];
+    const highlights = await getPersistedFollowedShowcaseHighlights({
+      supabase: {
+        rpc: async (functionName) => {
+          calls.push(functionName);
+          return {
+            error: null,
+            data: [
+              followedHighlightRow({ jewelry_item_id: "owned-diamond", state: "owned", showcase_status: "owned" }),
+              followedHighlightRow({ collection_item_id: "wanted-item", jewelry_item_id: "wanted-unicorn", state: "wishlist", showcase_status: "iso" }),
+            ],
+          };
+        },
+      },
+      catalogItemById: async (itemId) => ({
+        id: itemId,
+        itemNumber: itemId,
+        name: itemId,
+        collectionName: "Test",
+        jewelryType: "ring",
+        imageUrl: "",
+        bpLabel: itemId === "owned-diamond" ? "diamond" : "unicorn",
+        knownRepListingIds: [],
+      }),
+      limit: 50,
+    });
+
+    expect(calls).toEqual(["sparkle_finder_list_followed_showcase_highlights_v2"]);
+    expect(highlights).toEqual([
+      expect.objectContaining({ jewelryItemId: "owned-diamond", isRarestReveal: true }),
+      expect.objectContaining({ jewelryItemId: "wanted-unicorn", isRarestReveal: false }),
+    ]);
+  });
+
+  it("falls back safely to the unchanged v1 RPC when v2 is unavailable", async () => {
+    const calls: string[] = [];
+    const highlights = await getPersistedFollowedShowcaseHighlights({
+      supabase: {
+        rpc: async (functionName) => {
+          calls.push(functionName);
+          return functionName === "sparkle_finder_list_followed_showcase_highlights_v2"
+            ? { data: null, error: { message: "function not found" } }
+            : { data: [followedHighlightRow({ is_rarest_reveal: true })], error: null };
+        },
+      },
+      catalogItemById: async () => {
+        throw new Error("v1 rows must not be catalog-enriched without ownership fields");
+      },
+    });
+
+    expect(calls).toEqual([
+      "sparkle_finder_list_followed_showcase_highlights_v2",
+      "sparkle_finder_list_followed_showcase_highlights",
+    ]);
+    expect(highlights).toEqual([expect.objectContaining({ isRarestReveal: true })]);
+  });
+
   it("fails closed when followed Showcase highlight reads fail", async () => {
     await expect(getPersistedFollowedShowcaseHighlights({
       supabase: { rpc: async () => ({ data: [], error: { message: "blocked" } }) },
     })).resolves.toBeNull();
   });
 });
+
+function followedHighlightRow(overrides: Record<string, unknown> = {}) {
+  return {
+    user_id: "user-123",
+    showcase_handle: "casey-finds",
+    display_name: "Casey Finds",
+    showcase_tagline: "Jewel tones.",
+    photo_url: null,
+    collection_item_id: "owned-item",
+    jewelry_item_id: "owned-diamond",
+    reveal_story: "A public Showcase story.",
+    personal_photo_url: null,
+    is_rarest_reveal: false,
+    updated_at: "2026-08-22T19:30:00.000Z",
+    state: "owned",
+    showcase_status: "owned",
+    ...overrides,
+  };
+}
 
 function createCollectorReadClient({
   data,
