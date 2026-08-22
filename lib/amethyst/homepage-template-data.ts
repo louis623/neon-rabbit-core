@@ -323,8 +323,8 @@ function liveQueueStateFromSnapshot(
 function liveQueueSummaryFromSnapshot(
   snapshot: LiveQueueSnapshot | null | undefined,
 ) {
-  if (!snapshot) return 'Live Queue opens when the show starts'
-  if (!snapshot.isFresh) return 'Live Queue last sync is stale'
+  if (!snapshot) return 'Live Queue will open closer to the next show.'
+  if (!snapshot.isFresh) return 'Live Queue is waiting for an update.'
   if (snapshot.currentCustomer) {
     return `Live Queue: ${snapshot.currentCustomer} is currently unboxing`
   }

@@ -675,6 +675,36 @@ describe('Amethyst homepage template data wiring', () => {
     ])
   })
 
+  it('uses reassuring public copy when a Live Queue has not opened or needs an update', () => {
+    const noQueueYet = enrichAmethystHomepageFeatureData(
+      defaultAmethystHomepageTemplateData,
+    )
+    const waitingForUpdate = enrichAmethystHomepageFeatureData(
+      defaultAmethystHomepageTemplateData,
+      {
+        liveQueueSnapshot: {
+          syncCode: 'MHF-7342',
+          queue: ['Jamie'],
+          queueLength: 1,
+          currentCustomer: 'Jamie',
+          onDeckCustomer: null,
+          lastUpdated: '2026-06-20T18:00:00Z',
+          ageSeconds: 240,
+          staleAfterSeconds: 180,
+          isFresh: false,
+        },
+      },
+    )
+
+    expect(noQueueYet.liveQueueSummary).toBe(
+      'Live Queue will open closer to the next show.',
+    )
+    expect(waitingForUpdate.liveQueueSummary).toBe(
+      'Live Queue is waiting for an update.',
+    )
+    expect(waitingForUpdate.liveQueueSummary).not.toContain('stale')
+  })
+
   it('uses workspace-backed ticker and queue payloads in the public homepage export', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
