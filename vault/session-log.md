@@ -4,6 +4,15 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 22, 2026 - Dance Floor terminology and first training release
+
+- Replaced the active product term **Trade Board** with **Dance Floor** across rep/customer workspace copy, public customer-site templates, SEO/social collateral, onboarding language, and public/legal copy. The new vocabulary is intentional: the surface is the Dance Floor; each rep-listed, trade-eligible jewelry piece is a **dancer**; and a trade remains the exchange process.
+- Updated Nic-Nac's shared knowledge, prompts, and guardrails so it coaches reps to add dancers and tells customers to request an available dancer rather than create a listing. Durable workflow/database/API names intentionally remain stable to protect existing links and persisted state.
+- Updated Help & Resources with the rep-facing workflow **Add a dancer to your Dance Floor** and dancer-focused trade-request guidance. Focused Help/Resources, Nic-Nac, customer-template, and public-landing coverage passed: 179 tests. The production build passed.
+- Committed `c6cc8e0c feat: rename Trade Board to Dance Floor`, pushed it to the allowlisted branch, and manually released it as `dpl_Ekz9UEa2bE7ZZ9TzP6xEnVSUwuFB`. Both `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to that exact deployment. Live public root and `/amethyst/Trade.html` confirmed Dance Floor copy. Authenticated reviewer acceptance remained unavailable due to the known runtime defect; no Louis or customer account was used.
+
+---
+
 ## August 21-22, 2026 - Nic-Nac clear-history hardening and Live Queue public-copy polish
 
 - Diagnosed the recurring Nic-Nac “Clear conversation” failure as a scope gap: the browser only cleared its current conversation ID, while a second active persisted thread could remain eligible for the rep’s latest-conversation lookup and reappear after sign-in. The fix is server-owned and rep-scoped: it marks all currently active conversation rows for that rep as cleared, preserves them for audit continuity, and returns the retired IDs. Focused persistence, routing, and workspace tests passed (14 tests), the production build passed, and `62942282 fix: prevent cleared Nic-Nac threads from reopening` was manually released as `dpl_AQosKipNWRHTzEPH2rx3ADe9qv5L`. No Louis or customer account was used.

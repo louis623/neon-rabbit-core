@@ -1,5 +1,15 @@
 # Project State
 
+## August 22, 2026 Session - Dance Floor terminology release
+
+- **Trade Board is now Dance Floor throughout active Sparkle Suite language:** rep/customer UI, customer-site templates, SEO/social collateral, onboarding copy, Nic-Nac prompts and guardrails, and Help & Resources all use **Dance Floor**. Jewelry offered there are **dancers**. A trade remains the exchange/process. Internal database tables, API routes, stable feature IDs, and existing URLs intentionally retain their legacy technical names for compatibility.
+- **Training begins with concrete dancer language:** the Help & Resources workflow is now **“Add a dancer to your Dance Floor”** and walks reps through sending item details, confirming catalog facts, providing the customer-facing jewelry photo, and adding the dancer. Trade-request guidance now explicitly refers to requested dancers and dancer status.
+- **Release:** exact commit `c6cc8e0c` was manually released as `dpl_Ekz9UEa2bE7ZZ9TzP6xEnVSUwuFB`. Eight focused Help/Resources, Nic-Nac, public-template, and landing suites passed (179 tests), production build passed, and both `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to that deployment. Public root and `/amethyst/Trade.html` were checked live; authenticated synthetic UI acceptance remains unavailable because of the known browser/reviewer-runtime defect, and no Louis/customer account was used.
+
+**Last updated:** August 22, 2026
+
+---
+
 ## August 21-22, 2026 Session continuation - Nic-Nac history and Live Queue public-copy fixes
 
 - **Nic-Nac Clear Conversation now prevents old-thread resurrection:** clearing is a durable, rep-scoped lifecycle action. The server now retires every active Nic-Nac conversation for that workspace while retaining message rows for audit continuity, so a stale tab or second persisted thread cannot become the next-login “latest” conversation. Focused persistence/routing/workspace tests passed (14 tests), the production build passed, and exact commit `62942282` was manually released as `dpl_AQosKipNWRHTzEPH2rx3ADe9qv5L`.
