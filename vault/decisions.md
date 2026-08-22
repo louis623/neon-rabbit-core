@@ -1,5 +1,21 @@
 # Decision Log
 
+## August 22, 2026 - Dance Floor language and training are one product contract
+
+**Use Dance Floor for the surface, dancer for the jewelry, and trade for the exchange.**
+
+This vocabulary applies across rep and customer UI, public pages, accessibility text, Help & Resources, and Nic-Nac responses. Stable technical identifiers may retain legacy names when changing them would risk routes, APIs, persisted data, or integrations, but those names must not leak into active product copy.
+
+**Written and video training follow the same mobile-first easy-button path.**
+
+The canonical dancer-intake sequence is: start **Add dancer** or ask Nic-Nac; provide an item number or readable identification tag; provide the clear photo customers will see; provide ring size when applicable; answer only missing questions; review; and confirm. Identification evidence and the customer-facing dancer image are separate inputs. Copy changes should close a real comprehension gap, not rewrite working instructions for novelty. The companion video should show one complete example from a phone, mirror the guide's words and order, end on the visible Dance Floor result, and remain concise.
+
+**Birthday Collection corrections update canonical catalog identity.**
+
+When an item's collection month/year is wrong, correct the underlying catalog association and verify item number, product name, and target month/year together. Do not treat it as customer-birthday data or merely patch a rendered label. The confirmed corrections from this session are `NK12032` / **Glowing Up Glam** to **January 2026** and `ER97948` / **The Curve That Waited** to **November 2025**.
+
+---
+
 ## August 22, 2026 - Authentication and payment are separate actions
 
 **Signing in must never open or create Stripe checkout.**

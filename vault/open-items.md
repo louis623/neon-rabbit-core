@@ -5,6 +5,8 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Record and publish the phone-first “Add a dancer” tutorial** - use a safe demo item and prepared identification/customer-facing photos to show one complete mobile Sparkle Suite workflow from **Dance Floor > Add dancer** through the finished visible dancer. Keep it short, follow the exact Help & Resources sequence and vocabulary, avoid real customer information, publish it to the Sparkle Suite YouTube channel, and then replace/link the existing Help resource video placeholder. This is a training tutorial, not a YouTube LIVE selling or checkout workflow.
+
 - [x] **Implement the receive-only Sparkle Suite Message Center and Resource Library plan** - released August 17 as deployment `dpl_29K7Gb6FbyQEnQtugA8FgG3T6bDP` from exact app tip `9497b117`. Header inbox, strict rep receive-only boundaries, Control Center publishing, signup notices, immutable monthly reports/birthdays, and versioned Blog/Video/FAQ/Help publication announcements are live. Delivery remains workspace-only with no email, SMS, external push, rep reply, or rep-to-rep messaging.
 
 - [ ] **Complete authenticated synthetic Message Center browser acceptance after reviewer isolation is repaired** - database-backed reviewer smoke and local desktop/mobile rendered QA pass, but the live in-app browser retained a customer session instead of switching to `sparkle-reviewer+local`. Do not sign out or use Louis/customer accounts as a workaround. Repair the isolated reviewer-token/session path, then verify live unread/read/archive controls, report rendering, Resource filters/search, and reset.

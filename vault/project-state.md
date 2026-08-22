@@ -1,5 +1,19 @@
 # Project State
 
+## August 22, 2026 Session closeout - catalog, Dance Floor, training, Nic-Nac, and sign-in
+
+- **Two jewelry catalog records were corrected at the canonical collection level:** `NK12032`, **Glowing Up Glam**, is a **January 2026** Birthday Collection item rather than July 2026. `ER97948`, **The Curve That Waited**, is a **November 2025** Birthday Collection item rather than April 2026. These are catalog month/year corrections, not customer-birthday changes.
+- **Dance Floor is now the durable product vocabulary:** the rep/customer surface is the **Dance Floor**, jewelry made available there are **dancers**, and a **trade** remains the exchange. Active UI, public-site copy, Help & Resources, accessibility text, and Nic-Nac guidance were audited for consistency. Legacy route, API, table, and field identifiers remain technical-only for compatibility.
+- **The dancer-intake help path is now an intentional easy-button workflow:** a rep can open **Dance Floor > Add dancer** or ask Nic-Nac for help, send the item number or a readable tag photo, send one clear customer-facing jewelry photo, supply ring size when applicable, answer only the missing questions, review, and confirm. The guide explicitly separates the identification/tag image from the customer-facing dancer photo and permits a clean, website-ready boxed display photo.
+- **The companion training video direction is phone-first and short:** record one complete dancer addition in the mobile Sparkle Suite workspace, using demo-safe materials and the same sequence and words as the written guide. Show the finished dancer on the Dance Floor, give a brief recap, and avoid turning the tutorial into a full feature tour. The existing Help & Resources video placeholder can be linked after the Sparkle Suite YouTube video is recorded and published.
+- **Nic-Nac's tools now remain available throughout an authenticated workspace conversation:** routing chooses the relevant action but no longer removes otherwise authorized tools after a follow-up answer or topic change. Required-setup isolation, product boundaries, rep scoping, validation, and approval dialogs remain in force. The exact reported Dance Floor removal continuation was covered and passed synthetic production replay.
+- **Authentication, access, and payment are now structurally separate:** signing in never starts Stripe checkout. Google forces account selection; Sparkle Suite then verifies the chosen identity against a Louis-provisioned workspace. Unknown or incomplete legacy identities are signed out with a clear no-account message. A valid operator-provisioned rep begins the fixed five-day access period at first successful sign-in and can choose subscription checkout later from **Account**; protected internal/demo accounts remain exempt from checkout.
+- **Final session production baseline:** exact branch tip `40520678d64210b54bb0ca86b0102e4efb308b75` is live as `dpl_EQceicceu3fNf2sqBHtbAiBL1ujw`. Both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` resolve to it. The session used synthetic or read-only evidence only for authentication and workflow acceptance; no real customer account, live checkout, charge, or Stripe-object mutation was used. Authenticated synthetic browser acceptance remains open where already documented.
+
+**Last updated:** August 22, 2026
+
+---
+
 ## August 22, 2026 Session - Sign-in and five-day access hardening
 
 - **Sign-in no longer starts Stripe checkout:** Nic-Nac has no checkout side effect for `checkout_required` or `payment_pending`. Those states now show an inactive-access explanation and a deliberate different-email action. Subscription checkout remains only in the authenticated **Account** billing surface after the rep chooses it and accepts the terms.
