@@ -232,26 +232,27 @@ const WORKFLOW_RESOURCES: HelpResource[] = [
     group: 'Dance Floor',
     category: 'Dance Floor',
     title: 'Add a dancer to your Dance Floor',
-    summary: 'Send the dancer details in any order, then use a clear jewelry photo for the Dance Floor.',
+    summary:
+      'Easy button: send the item number or tag photo and a clear photo of the jewelry. Nic-Nac will tell you what is missing.',
     body:
-      'The order does not matter. Nic-Nac needs readable item details and a clear, close, centered jewelry photo for the customer-facing dancer image. A boxed display photo is fine when the jewelry is cleanly visible and looks good for the website.',
+      'You can send either photo first. The item-info tag or label tells Nic-Nac which dancer it is. The clear jewelry photo is the photo customers see on the Dance Floor. They do two different jobs. A boxed display photo works when the jewelry is cleanly visible and looks good on the website.',
     goal: 'Add one dancer with correct details and a customer-facing jewelry photo.',
     useWhen: 'Use this when you have jewelry you are willing to make available for trade.',
     beforeYouStart: [
       'Item number or readable item-info tag/photo',
-      'Collection name if the database does not already have it',
-      'Clear, close, centered jewelry photo',
+      'Clear, close, centered photo of the jewelry itself for customers to see',
+      'Ring size, if it is a ring and you have the size',
     ],
     steps: [
-      'Send the item number or a readable item-info tag/photo.',
-      'Let Nic-Nac check the Sparkle Suite jewelry database and read any details you already sent.',
-      'If the item is already found, confirm the match and dancer details.',
-      'If the item is missing, provide any missing details in chat or with a readable label/details photo.',
-      'Provide a clear, close, centered jewelry photo for the customer-facing dancer image.',
-      'Review the dancer and add it to your Dance Floor.',
+      'Open the Dance Floor and choose Add dancer, or tell Nic-Nac: “Help me add a dancer to my Dance Floor.”',
+      'Send the item number or a readable item-info tag/photo so Nic-Nac can identify the dancer.',
+      'Send a clear, close, centered photo of the jewelry itself. This is the photo customers will see on your Dance Floor.',
+      'Let Nic-Nac check the jewelry database. It will use what you already sent and ask only for anything still missing.',
+      'If Nic-Nac finds the dancer, confirm the match. If it cannot find it, send the missing details it asks for. For a ring, add the size if Nic-Nac asks for it.',
+      'Review the dancer details and customer-facing photo. When they look right, confirm the add.',
     ],
     goodResult:
-      'Your dancer appears on the Dance Floor with correct details, available status, and a clear jewelry photo.',
+      'Your dancer appears on the Dance Floor with the right details, available status, and the clear photo customers should see.',
     nicNacPrompt: 'Help me add a dancer to my Dance Floor.',
     stillStuck:
       'Ask Nic-Nac what information is missing. If support is needed, include the item number, photos uploaded, and where the flow stopped.',
@@ -262,7 +263,7 @@ const WORKFLOW_RESOURCES: HelpResource[] = [
       'Ask Nic-Nac what info is missing',
     ],
     video: {
-      title: 'Adding dancers and taking light-box photos',
+      title: 'Add a dancer to your Dance Floor: a complete walkthrough',
       provider: 'youtube',
       status: 'placeholder',
     },

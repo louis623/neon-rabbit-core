@@ -202,18 +202,19 @@ describe('help resources', () => {
     })
 
     expect(guide?.steps).toEqual([
-      'Send the item number or a readable item-info tag/photo.',
-      'Let Nic-Nac check the Sparkle Suite jewelry database and read any details you already sent.',
-      'If the item is already found, confirm the match and dancer details.',
-      'If the item is missing, provide any missing details in chat or with a readable label/details photo.',
-      'Provide a clear, close, centered jewelry photo for the customer-facing dancer image.',
-      'Review the dancer and add it to your Dance Floor.',
+      'Open the Dance Floor and choose Add dancer, or tell Nic-Nac: “Help me add a dancer to my Dance Floor.”',
+      'Send the item number or a readable item-info tag/photo so Nic-Nac can identify the dancer.',
+      'Send a clear, close, centered photo of the jewelry itself. This is the photo customers will see on your Dance Floor.',
+      'Let Nic-Nac check the jewelry database. It will use what you already sent and ask only for anything still missing.',
+      'If Nic-Nac finds the dancer, confirm the match. If it cannot find it, send the missing details it asks for. For a ring, add the size if Nic-Nac asks for it.',
+      'Review the dancer details and customer-facing photo. When they look right, confirm the add.',
     ])
 
-    expect(guide?.body).toContain('The order does not matter')
-    expect(guide?.body).toContain('readable item details')
-    expect(guide?.body).toContain('clear, close, centered jewelry photo')
-    expect(guide?.body).toContain('A boxed display photo is fine')
+    expect(guide?.body).toContain('item-info tag or label tells Nic-Nac which dancer it is')
+    expect(guide?.body).toContain('photo customers see on the Dance Floor')
+    expect(guide?.body).toContain('They do two different jobs')
+    expect(guide?.body).toContain('A boxed display photo works')
+    expect(guide?.beforeYouStart).toContain('Ring size, if it is a ring and you have the size')
     expect(guide?.body).not.toContain('packaging photos are not final board photos')
     expect(guide?.body).not.toContain('white background')
     expect(guide?.quickActions).toContain('Add a dancer to Dance Floor')
@@ -241,7 +242,7 @@ describe('help resources', () => {
       ...(guide?.quickActions ?? []),
     ].join(' ')
 
-    expect(combinedText).toContain('Customers describe the piece they just revealed')
+    expect(combinedText).toContain('Customers describe the dancer they just revealed')
     expect(combinedText).toContain('recommended reveal screenshot')
     expect(combinedText).toContain('Dance Floor request inbox')
     expect(combinedText).toContain('Nic-Nac trade request cards')
