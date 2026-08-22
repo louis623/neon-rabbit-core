@@ -2,6 +2,7 @@
 
 ## 2026-08-22 - Dance Floor Vocabulary Alignment
 
+- Created `docs/plans/2026-08-22-collection-showcase-value-plan.md` to turn the five collection/social value ideas into five independently deployable releases: real persisted public Showcases, a stronger visual Collection showroom with durable Hero Piece selection, easy reveal-story and Showcase Collection management, phone-friendly sharing with public metadata, and bounded followed-Showcase discovery. The plan preserves privacy/RLS, mobile-first layout, existing backend capabilities, one-way safe social behavior, and the no-marketplace boundary.
 - Completed a second, stricter terminology audit focused on Nic-Nac scripting, model prompts, tool descriptions/results, memory normalization, accessibility labels, manual smoke/training copy, auth copy, library availability labels, Showcase lead copy, and customer-facing regression tests.
 - Replaced remaining vague or legacy-facing labels with `dancer`, `dancers`, or `dancer leads`, including Nic-Nac confidence labels and screen-reader copy. Added an explicit model rule that compatibility fields such as `availableListingCount`, `listingId`, `boardItemCount`, and `repBoardUrl` are internal only and must be translated before Nic-Nac responds.
 - Expanded legacy-memory normalization and copy guardrails to catch `board context`, `board data`, `board details`, `board shortcuts`, `board inventory`, `board matches`, `board paths`, and `board links` in addition to the original banned terms.
