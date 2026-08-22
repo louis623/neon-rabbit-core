@@ -30,7 +30,7 @@ describe('self-serve onboarding checklist', () => {
     expect(combinedText).toContain('Add public links and social profiles')
     expect(combinedText).toContain('Adjust site copy')
     expect(combinedText).toContain('Add or update shows')
-    expect(combinedText).toContain('Set up starter trade board content')
+    expect(combinedText).toContain('Set up starter dance floor content')
     expect(combinedText).toContain('Learn the calculator')
     expect(combinedText).toContain('Understand the Chrome extension and Live Queue')
     expect(combinedText).toContain('Review publish/share readiness')

@@ -57,7 +57,7 @@ const listings: AmethystTradeBoardListing[] = [
   },
 ]
 
-describe('Amethyst trade board filters', () => {
+describe('Amethyst dance floor filters', () => {
   it('derives sorted, deduplicated filter options from listings', () => {
     expect(deriveTradeBoardFilterOptions(listings)).toEqual({
       collections: ['Birthday', 'OG', 'Stacks'],

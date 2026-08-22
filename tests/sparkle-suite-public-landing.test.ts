@@ -51,7 +51,7 @@ describe('Sparkle Suite public landing page', () => {
       eyebrow: 'Rep workspace',
       heading: 'Run the show with less scramble behind the scenes.',
       body:
-        'Instead of chasing show details across scattered tools, reps get one workspace for Live queue, Trade board, Live event calendar, email and SMS updates, customer-site customizations, and Nic-Nac, the built-in assistant for live-show support.',
+        'Instead of chasing show details across scattered tools, reps get one workspace for Live queue, Dance Floor, Live event calendar, email and SMS updates, customer-site customizations, and Nic-Nac, the built-in assistant for live-show support.',
     })
 
     expect(sparkleSuitePublicLandingContent.customerSiteProof).toMatchObject({
@@ -69,7 +69,7 @@ describe('Sparkle Suite public landing page', () => {
     expect(sparkleSuitePublicLandingContent.assets).toEqual({
       tradeBoardDesktopProof: {
         src: '/sparkle-suite/landing/trade-board-desktop-proof.png',
-        alt: 'Sparkle Suite customer Trade Board preview on desktop.',
+        alt: 'Sparkle Suite customer Dance Floor preview on desktop.',
       },
       nicNacWorkspaceProof: {
         src: '/sparkle-suite/landing/nic-nac-workspace-proof.png',
@@ -163,7 +163,7 @@ describe('Sparkle Suite public landing page', () => {
     )
     expect(html).toContain('Sparkle Suite Standard')
     expect(html).not.toContain('aria-label="Included in Sparkle Suite"')
-    expect(html).toContain('Real Sparkle Suite Trade Board preview')
+    expect(html).toContain('Real Sparkle Suite Dance Floor preview')
     expect(html).toContain('Real Sparkle Suite Nic-Nac workspace preview')
     expect(html).toContain('$49.99')
     expect(html).toContain('$74.99/month')
@@ -207,7 +207,7 @@ describe('Sparkle Suite public landing page', () => {
     expect(html).toContain('TikTok')
   })
 
-  it('uses local product screenshot assets for Trade Board and workspace proof', () => {
+  it('uses local product screenshot assets for Dance Floor and workspace proof', () => {
     const html = renderLanding()
     const assets = Object.values(sparkleSuitePublicLandingContent.assets)
 
@@ -271,9 +271,9 @@ describe('Sparkle Suite public landing page', () => {
     }
   })
 
-  it('keeps deterministic public Nic-Nac fallback grounded on TradeBoard rules', () => {
+  it('keeps deterministic public Nic-Nac fallback grounded on Dance Floor rules', () => {
     const liveShowTradeAnswer = answerPublicNicNacQuestion(
-      'How does the trade board work during a live show?',
+      'How does the dance floor work during a live show?',
     )
     const valueAnswer = answerPublicNicNacQuestion(
       'Can a customer pay the difference if the item is worth more?',
@@ -282,10 +282,10 @@ describe('Sparkle Suite public landing page', () => {
 
     expect(liveShowTradeAnswer.kind).toBe('answer')
     expect(liveShowTradeAnswer.message).toContain(
-      'Customers do not add their own items',
+      'Customers do not add dancers to the Dance Floor',
     )
     expect(liveShowTradeAnswer.message).toContain(
-      'request to trade for an available rep listing',
+      'request to trade for an available dancer',
     )
     expect(valueAnswer.kind).toBe('answer')
     expect(valueAnswer.message).toContain('item-for-item only')

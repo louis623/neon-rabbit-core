@@ -49,7 +49,7 @@ import {
 import { AuthError } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
 
-describe('trade board route', () => {
+describe('dance floor route', () => {
   beforeEach(() => {
     getAuthenticatedNicNacContextMock.mockReset()
     getPaidNicNacContextMock.mockReset()
@@ -62,7 +62,7 @@ describe('trade board route', () => {
     processRepCustomListingPhotoUrlMock.mockReset()
   })
 
-  it('returns the authenticated rep trade board summary', async () => {
+  it('returns the authenticated rep dance floor summary', async () => {
     getPaidNicNacContextMock.mockResolvedValueOnce({
       repId: 'rep-1',
       rep: { id: 'rep-1' },
@@ -355,7 +355,7 @@ describe('trade board route', () => {
     })
   })
 
-  it('requires a paid subscription before loading the trade board', async () => {
+  it('requires a paid subscription before loading the dance floor', async () => {
     getPaidNicNacContextMock.mockRejectedValueOnce(
       new ServiceError({
         code: 'SPARKLE_SUBSCRIPTION_REQUIRED',
@@ -378,7 +378,7 @@ describe('trade board route', () => {
     })
   })
 
-  it('requires a paid subscription before adding a trade board listing', async () => {
+  it('requires a paid subscription before adding a dance floor listing', async () => {
     getPaidNicNacContextMock.mockRejectedValueOnce(
       new ServiceError({
         code: 'SPARKLE_SUBSCRIPTION_REQUIRED',

@@ -147,7 +147,7 @@ export const privacyPolicyDocument: LegalDocument = {
         "respond to requests or inquiries",
         "manage waitlist, signup, or onboarding workflows",
         "send requested SMS or email updates",
-        "send live show reminders, event updates, trade board updates, launch updates, or occasional promotional announcements when you have opted in",
+        "send live show reminders, event updates, dance floor updates, launch updates, or occasional promotional announcements when you have opted in",
         "maintain consent and opt-out records",
         "improve Sparkle Suite services",
         "protect against misuse, spam, fraud, or unauthorized access",
@@ -157,7 +157,7 @@ export const privacyPolicyDocument: LegalDocument = {
     {
       title: "Nic-Nac, Memory, And AI-Assisted Features",
       paragraphs: [
-        "Sparkle Suite includes Nic-Nac, an AI-assisted workflow, website, live show, Trade Board, support, and business helper. When you use Nic-Nac or related AI-assisted features, Sparkle Suite may process conversation messages, uploaded images, workflow state, tool results, representative account details, website setup details, show details, Trade Board details, customer-audience details, support context, and saved memory notes.",
+        "Sparkle Suite includes Nic-Nac, an AI-assisted workflow, website, live show, Dance Floor, support, and business helper. When you use Nic-Nac or related AI-assisted features, Sparkle Suite may process conversation messages, uploaded images, workflow state, tool results, representative account details, website setup details, show details, Dance Floor details, customer-audience details, support context, and saved memory notes.",
         "Nic-Nac memory is a product feature. Sparkle Suite may save bounded notes, preferences, summaries, conversation telemetry, tool activity, and troubleshooting context so Nic-Nac can provide more consistent help, avoid repeated mistakes, improve support, and operate safely across Sparkle Suite and linked Sparkle Finder experiences.",
       ],
       bullets: [
@@ -172,7 +172,7 @@ export const privacyPolicyDocument: LegalDocument = {
       title: "SMS Privacy Notice",
       paragraphs: [
         "If you opt in to receive text messages from Neon Rabbit Digital Services, Sparkle Suite, or a Sparkle Suite representative site, we may collect your name, phone number, SMS opt-in status, consent timestamp, message preferences, and message interaction data so we can send the messages you requested.",
-        "SMS messages may include launch updates, live show reminders, event updates, trade board updates, customer updates, and occasional promotional announcements.",
+        "SMS messages may include launch updates, live show reminders, event updates, dance floor updates, customer updates, and occasional promotional announcements.",
         "Message frequency may vary. Message and data rates may apply. Consent is not a condition of purchase.",
         "You can opt out of SMS messages at any time by replying STOP. You can request help by replying HELP.",
       ],
@@ -265,7 +265,7 @@ export const termsAndConditionsDocument: LegalDocument = {
     {
       title: "About Sparkle Suite",
       paragraphs: [
-        "Sparkle Suite is a software and website system created by Neon Rabbit Digital Services to help independent representatives manage parts of their online presence, including representative websites, live reveal queue display, customer updates, event reminders, trade board updates, and related tools.",
+        "Sparkle Suite is a software and website system created by Neon Rabbit Digital Services to help independent representatives manage parts of their online presence, including representative websites, live reveal queue display, customer updates, event reminders, dance floor updates, and related tools.",
         "Sparkle Suite is not owned by, operated by, endorsed by, or officially affiliated with Bomb Party, LLC. Bomb Party names, trademarks, products, and related references belong to their respective owner.",
       ],
     },
@@ -281,7 +281,7 @@ export const termsAndConditionsDocument: LegalDocument = {
     {
       title: "Representative Website Content",
       paragraphs: [
-        "Sparkle Suite representative websites may include show information, live queue information, trade board details, representative updates, links, signup forms, and related content.",
+        "Sparkle Suite representative websites may include show information, live queue information, dance floor details, representative updates, links, signup forms, and related content.",
         "Representatives are responsible for reviewing their own website content, business information, show details, trade details, and customer-facing information.",
         "Neon Rabbit Digital Services may provide tools, templates, automation, or support, but representatives remain responsible for final business decisions, customer interactions, and compliance with any applicable Bomb Party policies or legal requirements.",
       ],
@@ -289,9 +289,9 @@ export const termsAndConditionsDocument: LegalDocument = {
     {
       title: "Nic-Nac And AI-Assisted Features",
       paragraphs: [
-        "Sparkle Suite includes Nic-Nac and related AI-assisted tools that can help with setup, website content, Trade Board workflows, live show planning, customer-audience workflows, support, and business organization within Sparkle Suite.",
+        "Sparkle Suite includes Nic-Nac and related AI-assisted tools that can help with setup, website content, Dance Floor workflows, live show planning, customer-audience workflows, support, and business organization within Sparkle Suite.",
         "Nic-Nac may use saved memory and workspace context to provide more consistent help over time. Nic-Nac is not a human employee, lawyer, accountant, financial advisor, medical provider, therapist, or official Bomb Party representative.",
-        "AI-assisted output may be incomplete, inaccurate, or require review. Representatives remain responsible for reviewing their own website content, show details, Trade Board listings, customer communications, business decisions, and compliance with applicable platform, carrier, legal, and Bomb Party requirements.",
+        "AI-assisted output may be incomplete, inaccurate, or require review. Representatives remain responsible for reviewing their own website content, show details, Dance Floor listings, customer communications, business decisions, and compliance with applicable platform, carrier, legal, and Bomb Party requirements.",
         "Nic-Nac tool access is permission-based and product-surface gated. Sparkle Suite workspace actions must be performed from the appropriate Sparkle Suite account surface. Neon Rabbit Digital Services may limit, refuse, suspend, or redirect Nic-Nac use that is off-mission, abusive, unsafe, excessive, or outside the intended Sparkle Suite and Sparkle Finder scope.",
       ],
     },
@@ -306,7 +306,7 @@ export const termsAndConditionsDocument: LegalDocument = {
         "launch updates",
         "live show reminders",
         "event updates",
-        "trade board updates",
+        "dance floor updates",
         "customer updates",
         "website or onboarding updates",
         "occasional promotional announcements",

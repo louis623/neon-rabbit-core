@@ -24,7 +24,7 @@ const cards: NicNacMemoryCard[] = [
     scope: 'suite_rep_private',
     ownerId: 'suite_rep:suite-rep-1',
     title: 'Workspace note',
-    summary: 'Brittany uses Trade Board first during cleanup.',
+    summary: 'Brittany uses Dance Floor first during cleanup.',
     priority: 10,
   },
   {

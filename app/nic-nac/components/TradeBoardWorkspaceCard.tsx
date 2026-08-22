@@ -219,9 +219,9 @@ export function TradeBoardWorkspaceCard({
       <section className={styles.heroCard}>
         <div className={styles.heroHeader}>
           <div>
-            <div className={surfaceStyles.cardTitle}>Trade Board</div>
+            <div className={surfaceStyles.cardTitle}>Dance Floor</div>
             <div className={surfaceStyles.cardSubtitle}>
-              Keep today&apos;s swaps, quick adds, and board checks moving without
+              Keep today&apos;s swaps, quick adds, and Dance Floor checks moving without
               digging through the whole queue.
             </div>
           </div>
@@ -363,7 +363,7 @@ export function TradeBoardWorkspaceCard({
             </div>
           </div>
         </div>
-        <div className={styles.summaryStats} aria-label="Trade Board work summary">
+        <div className={styles.summaryStats} aria-label="Dance Floor work summary">
           <div
             className={`${styles.summaryStat} ${
               requests.length > 0 ? styles.summaryStatActive : ''
@@ -402,7 +402,7 @@ export function TradeBoardWorkspaceCard({
           <div>
             <div className={surfaceStyles.walletSettingsTitle}>Quick add</div>
             <div className={surfaceStyles.helperNote}>
-              Know the item number? Add it in one step.
+              Know the item number? Add a dancer in one step.
             </div>
           </div>
         </div>
@@ -426,7 +426,7 @@ export function TradeBoardWorkspaceCard({
               disabled={actionState.pendingKey === 'quick-add'}
               onClick={onQuickAddListing}
             >
-              {actionState.pendingKey === 'quick-add' ? 'Adding...' : 'Add to board'}
+              {actionState.pendingKey === 'quick-add' ? 'Adding...' : 'Add dancer'}
             </button>
           </div>
         ) : (
@@ -440,21 +440,21 @@ export function TradeBoardWorkspaceCard({
       <section className={styles.sectionCard}>
         <div className={styles.sectionHeader}>
           <div>
-            <div className={surfaceStyles.walletSettingsTitle}>Browse board</div>
+            <div className={surfaceStyles.walletSettingsTitle}>Browse dancers</div>
             <div className={surfaceStyles.helperNote}>
               Start with search. Open filters only when you need a tighter match.
             </div>
           </div>
           <span className={surfaceStyles.rosterTag}>
             {tradeBoardState.status === 'ready' && boardSummary
-              ? `${boardSummary.totalPieces} live pieces`
-              : 'Loading board'}
+              ? `${boardSummary.totalPieces} live dancer${boardSummary.totalPieces === 1 ? '' : 's'}`
+              : 'Loading Dance Floor'}
           </span>
         </div>
         {tradeBoardState.status === 'ready' && boardSummary ? (
           <>
             <label className={surfaceStyles.searchField}>
-              <span className={surfaceStyles.searchLabel}>Search your active board</span>
+              <span className={surfaceStyles.searchLabel}>Search your active dancers</span>
               <input
                 type="text"
                 className={`${surfaceStyles.searchInput} ph-no-capture`}
@@ -526,7 +526,7 @@ export function TradeBoardWorkspaceCard({
               inventoryResults.length > 0 ? (
                 <div
                   className={styles.boardInventoryCarousel}
-                  aria-label="Filtered active board pieces"
+                  aria-label="Filtered active dancers"
                 >
                   <div className={styles.boardInventoryCarouselHeader}>
                     <span className={surfaceStyles.helperNote}>{carousel.rangeLabel}</span>
@@ -800,8 +800,8 @@ export function TradeBoardWorkspaceCard({
                   </div>
                   <div className={surfaceStyles.helperNote}>
                     {item.replacementStatus === 'needs_ring_size'
-                      ? 'Add ring size to put this reveal back on the board.'
-                      : 'Finish catalog details after the show to put this reveal back on the board.'}
+                      ? 'Add ring size to put this reveal back on the Dance Floor.'
+                      : 'Finish catalog details after the show to put this reveal back on the Dance Floor.'}
                   </div>
                 </div>
               </div>

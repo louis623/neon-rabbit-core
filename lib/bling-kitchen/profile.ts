@@ -1,4 +1,4 @@
-﻿import type { AmethystHomepageTemplateData } from '@/lib/amethyst/homepage-template-data'
+import type { AmethystHomepageTemplateData } from '@/lib/amethyst/homepage-template-data'
 import type { AmethystJoinTemplateData } from '@/lib/amethyst/join-template-data'
 import type { AmethystTradeTemplateData } from '@/lib/amethyst/trade-template-data'
 import type { SiteSettingsDashboardResult } from '@/lib/services/types'
@@ -130,11 +130,11 @@ export function applyBlingKitchenTrade(
     publicSiteVariant: 'bling_kitchen_hybrid',
     repName: BLING_KITCHEN_PROFILE.publicName,
     businessName: BLING_KITCHEN_PROFILE.businessName,
-    tradeHeroTitle: 'BlingKitchen Trade Board',
+    tradeHeroTitle: 'BlingKitchen Dance Floor',
     tradeHeroSub:
       "Browse Heather's available trade pieces and request a standard Sparkle Suite item-for-item swap.",
     tickerTopText:
-      'Trade Board open - item-for-item only - same collection and jewelry type - Heather reviews every request',
+      'Dance Floor open - item-for-item only - same collection and jewelry type - Heather reviews every request',
     shopUrl: BLING_KITCHEN_PROFILE.shopUrl,
     footerTagline:
       'Serving sparkle from the heart of the home, with rep-reviewed trades from BlingKitchen.',

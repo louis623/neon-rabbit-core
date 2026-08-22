@@ -14,9 +14,9 @@ export type WorkspaceLaunchAction =
   | 'open_site_preview'
 
 const LAUNCH_PROMPTS: Record<WorkspaceLaunchAction, string | null> = {
-  add_trade_piece: 'Add a piece to Trade Board',
+  add_trade_piece: 'Add a piece to Dance Floor',
   add_calendar_show: 'Add a Show to the Calendar',
-  check_board: "What's on my Trade Board right now?",
+  check_board: "What's on my Dance Floor right now?",
   open_site_preview: null,
 }
 

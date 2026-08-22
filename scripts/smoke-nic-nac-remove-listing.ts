@@ -84,7 +84,7 @@ type RemoveListingSmokeResult = {
 export const REMOVE_LISTING_HARD_FAIL_PATTERNS = [
   /i can['’]t actually (remove|delete|change|update)/i,
   /i['’]m not able to (remove|delete|change|update)/i,
-  /not able to access (the )?trade board tool/i,
+  /not able to access (the )?dance floor tool/i,
   /only have notes access/i,
   /remove it manually/i,
   /delete it manually/i,
@@ -781,7 +781,7 @@ export async function runRemoveListingSmoke(
       expectedAssistantCount: 1,
       requiredTools: ['list_my_trade_board'],
       turns,
-      text: `What is on my Trade Board right now? I am checking for ${target.itemNumber}.`,
+      text: `What is on my Dance Floor right now? I am checking for ${target.itemNumber}.`,
     })
 
     messages = await sendTurn({
@@ -795,7 +795,7 @@ export async function runRemoveListingSmoke(
       requiredTools: ['remove_listing'],
       turns,
       text:
-        `Remove ${target.itemNumber} from my Trade Board because I listed it by mistake. ` +
+        `Remove ${target.itemNumber} from my Dance Floor because I listed it by mistake. ` +
         `It is the ${target.designName} piece.`,
     })
 
@@ -836,7 +836,7 @@ export async function runRemoveListingSmoke(
       turns,
       cleanup,
       message:
-        'Nic-Nac remove-listing smoke passed through real /api/nic-nac list, approval-requested remove_listing, approval continuation, database removal/request cancellation assertions, public Trade Board hidden proof, and cleanup.',
+        'Nic-Nac remove-listing smoke passed through real /api/nic-nac list, approval-requested remove_listing, approval continuation, database removal/request cancellation assertions, public Dance Floor hidden proof, and cleanup.',
     }
   } catch (error) {
     const cleanup: RemoveListingSmokeResult['cleanup'] = { deletedRows: {} }

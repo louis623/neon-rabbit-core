@@ -34,7 +34,7 @@ export const PUBLIC_NIC_NAC_KNOWLEDGE = {
     NIC_NAC_TRADEBOARD_KNOWLEDGE.summary,
     NIC_NAC_TRADEBOARD_KNOWLEDGE.boundaries,
     'Sparkle Suite does not guarantee trades or equal value.',
-    'Sparkle Suite does not decide what items can be traded for what items on the fly; the current TradeBoard rules define eligibility.',
+    'Sparkle Suite does not decide what items can be traded for what items on the fly; the current Dance Floor rules define eligibility.',
     NIC_NAC_TRADEBOARD_KNOWLEDGE.repControl,
   ].join(' '),
   tradeBoardLingo: [
@@ -43,7 +43,7 @@ export const PUBLIC_NIC_NAC_KNOWLEDGE = {
     'Do not say customers add dancers to the dance floor; customers request a rep-listed dancer when they do not want the item number just revealed for them.',
   ].join(' '),
   tradeBoardLiveShowFlow:
-    "TradeBoard shows the rep's available trade listings. " +
+    "Dance Floor shows the rep's available dancers. " +
     NIC_NAC_TRADEBOARD_KNOWLEDGE.customerFlow,
   tradeBoardEligibilityRules: [
     NIC_NAC_TRADEBOARD_KNOWLEDGE.eligibilityRules,
@@ -60,7 +60,7 @@ export const PUBLIC_NIC_NAC_KNOWLEDGE = {
   calendar:
     'The live event calendar gives customers a clear place to find upcoming live shows. The customer site can help customers save event details, but public Nic-Nac cannot create calendar invites, update a rep calendar, or schedule reminders from the public page.',
   updateConsentRules:
-    'Email and SMS updates are for opted-in contacts and may include live show reminders, event updates, trade board updates, launch updates, onboarding updates, account/customer updates, and occasional promotional announcements. SMS consent is optional and not a condition of purchase. Message frequency may vary. Message and data rates may apply. SMS recipients can reply STOP to opt out and HELP for help. Opted-out customers need to opt back in themselves. Public Nic-Nac cannot send texts or emails from the public page or inspect private customer rosters, wallets, message logs, or consent records.',
+    'Email and SMS updates are for opted-in contacts and may include live show reminders, event updates, dance floor updates, launch updates, onboarding updates, account/customer updates, and occasional promotional announcements. SMS consent is optional and not a condition of purchase. Message frequency may vary. Message and data rates may apply. SMS recipients can reply STOP to opt out and HELP for help. Opted-out customers need to opt back in themselves. Public Nic-Nac cannot send texts or emails from the public page or inspect private customer rosters, wallets, message logs, or consent records.',
   pricing: {
     buildFee: sparkleSuitePublicLandingContent.pricing.buildFee.price,
     monthly: sparkleSuitePublicLandingContent.pricing.standard.price,
@@ -73,7 +73,7 @@ export const PUBLIC_NIC_NAC_KNOWLEDGE = {
   toolDetails: {
     liveq: 'LiveQ helps customers follow live-show queue details more easily.',
     tradeboard:
-      "TradeBoard helps customers browse the rep's available trade listings and request to trade a piece they just revealed.",
+      "Dance Floor helps customers browse the rep's available dancers and request to trade for the one they want.",
     calendar:
       'The live event calendar gives customers a clear place to find upcoming live shows.',
     updates:
@@ -96,10 +96,10 @@ export function buildPublicNicNacKnowledgeText() {
     `Setup: ${PUBLIC_NIC_NAC_KNOWLEDGE.setup}`,
     `Customization: ${PUBLIC_NIC_NAC_KNOWLEDGE.customization}`,
     `Signup page: ${PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.purpose} ${PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields} ${PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.safety} ${PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.nextSteps}`,
-    `TradeBoard rules: ${PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardRules}`,
-    `TradeBoard Bomb Party lingo: ${PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLingo}`,
-    `TradeBoard live-show flow: ${PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow}`,
-    `TradeBoard eligibility and value rules: ${PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardEligibilityRules}`,
+    `Dance Floor rules: ${PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardRules}`,
+    `Dance Floor terminology: ${PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLingo}`,
+    `Dance Floor live-show flow: ${PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow}`,
+    `Dance Floor eligibility and value rules: ${PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardEligibilityRules}`,
     `LiveQ data boundary: ${PUBLIC_NIC_NAC_KNOWLEDGE.liveQDataBoundary}`,
     `LiveQ troubleshooting boundary: ${PUBLIC_NIC_NAC_KNOWLEDGE.liveQTroubleshooting}`,
     `Calendar: ${PUBLIC_NIC_NAC_KNOWLEDGE.calendar}`,

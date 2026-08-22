@@ -389,7 +389,7 @@ function Header({ businessName }) {
         </div>
         <nav className="hp-header-nav" aria-label="Primary">
           <a {...linkProps(HOME_HREF)} className="hp-header-link">Home</a>
-          <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link">Trade Board</a>
+          <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link">Dance Floor</a>
           {PANTRY_HREF ? <a {...linkProps(PANTRY_HREF)} className="hp-header-link">In the Pantry</a> : null}
           <a {...linkProps(JOIN_HREF)} className="hp-header-link" aria-current="page">Join Team</a>
         </nav>
@@ -402,7 +402,7 @@ function Header({ businessName }) {
 const ANNOUNCEMENT_TICKER_SPEED_PPS = 46;
 const TRADE_TICKER_SPEED_PPS = 55.2;
 const EMPTY_TRADE_TICKER_ITEM = {
-  name: "Trade Board listings will appear here after pieces are added.",
+  name: "Dance Floor listings will appear here after pieces are added.",
   type: "",
   collection: "",
   isEmpty: true,
@@ -525,7 +525,7 @@ function Ticker({ topText }) {
         {items.flatMap((item) => item.parts.filter((part) => part.href)).map((part, index) => (
           <a key={`${part.href}-${index}`} {...linkProps(part.href)}>{part.text}</a>
         ))}
-        <a {...linkProps(TRADE_BOARD_HREF)}>Browse current trade board highlights</a>
+        <a {...linkProps(TRADE_BOARD_HREF)}>Browse current dance floor highlights</a>
       </div>
       <div className="hp-ticker-row">
         <span className="hp-ticker-label">Announcements</span>
@@ -541,7 +541,7 @@ function Ticker({ topText }) {
         </div>
       </div>
       <div className="hp-ticker-row reverse">
-        <span className="hp-ticker-label">Trade Board</span>
+        <span className="hp-ticker-label">Dance Floor</span>
         <div className="hp-ticker-track" data-ticker-pps={TRADE_TICKER_SPEED_PPS} aria-hidden="true">
           {tickerTrades.map((tr, index) => tr.isEmpty ? (
             <span
@@ -951,7 +951,7 @@ function Footer({ businessName }) {
         <div className="hp-footer-col">
           <ul>
             <li><a {...linkProps(FOOTER_LINKS.home || "/amethyst/Homepage.html")}>Home</a></li>
-            <li><a {...linkProps(FOOTER_LINKS.tradeBoard || TRADE_BOARD_HREF)}>Trade Board</a></li>
+            <li><a {...linkProps(FOOTER_LINKS.tradeBoard || TRADE_BOARD_HREF)}>Dance Floor</a></li>
             {PANTRY_HREF && <li><a {...linkProps(PANTRY_HREF)}>In the Pantry</a></li>}
             <li><a {...linkProps(FOOTER_LINKS.joinTeam || "/amethyst/Join.html")}>Join Team</a></li>
           </ul>

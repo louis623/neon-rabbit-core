@@ -8,7 +8,7 @@ import {
 import { renderTradeBoardIntakePromptState } from '@/lib/nic-nac/workflows/trade-board-intake-prompt'
 import type { TradeBoardIntakePromptState } from '@/lib/nic-nac/workflows/trade-board-intake-types'
 
-describe('Trade Board intake route context', () => {
+describe('Dance Floor intake route context', () => {
   it('inherits label_details role after Nic-Nac asks for a label/details photo', () => {
     const messages: UIMessage[] = [
       {
@@ -126,7 +126,7 @@ describe('Trade Board intake route context', () => {
           {
             type: 'text',
             text:
-              'Perfect - I got the details for ER13229, The Florence Earrings.\n\nI still need the separate customer-facing jewelry photo to post it to Trade Board. A clear boxed display photo is totally fine.',
+              'Perfect - I got the details for ER13229, The Florence Earrings.\n\nI still need the separate customer-facing jewelry photo to post it to Dance Floor. A clear boxed display photo is totally fine.',
           },
         ],
       } as UIMessage,
@@ -208,7 +208,7 @@ describe('Trade Board intake route context', () => {
     expect(inferDeclaredPhotoRoleFromConversation(messages, 0)).toBe('unknown')
   })
 
-  it('keeps trade board intents when workflow intents are active', () => {
+  it('keeps dance floor intents when workflow intents are active', () => {
     expect(mergeWorkflowToolIntents(['memory'], ['trade_board', 'catalog'])).toEqual([
       'memory',
       'trade_board',
@@ -274,7 +274,7 @@ describe('Trade Board intake route context', () => {
           {
             id: 'user-1',
             role: 'user',
-            parts: [{ type: 'text', text: 'Add ER13229 to my Trade Board' }],
+            parts: [{ type: 'text', text: 'Add ER13229 to my Dance Floor' }],
           } as UIMessage,
         ],
         latestUserMessageId: 'user-1',
@@ -353,7 +353,7 @@ describe('Trade Board intake route context', () => {
           {
             id: 'user-1',
             role: 'user',
-            parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+            parts: [{ type: 'text', text: 'Add a piece to Dance Floor' }],
           } as UIMessage,
         ],
         latestUserMessageId: 'user-1',
@@ -414,7 +414,7 @@ describe('Trade Board intake route context', () => {
             {
               type: 'text',
               text:
-                'Done - ER13229, The Florence Earrings, is now on your Trade Board as available. It is using the catalog photo right now. If you want, I can also add trade preferences or a custom listing photo.',
+                'Done - ER13229, The Florence Earrings, is now on your Dance Floor as available. It is using the catalog photo right now. If you want, I can also add trade preferences or a custom listing photo.',
             },
           ],
         } as UIMessage,

@@ -10,7 +10,7 @@ export const ER13229_LIVE_SEQUENCE = {
   turns: [
     {
       kind: 'start',
-      text: 'Add a piece to Trade Board',
+      text: 'Add a piece to Dance Floor',
     },
     {
       kind: 'label_photo',

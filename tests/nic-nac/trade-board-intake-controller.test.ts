@@ -29,7 +29,7 @@ function baseState(
   }
 }
 
-describe('Trade Board intake controller', () => {
+describe('Dance Floor intake controller', () => {
   it('creates an empty active workflow state', () => {
     const state = createEmptyTradeBoardIntakeState({
       id: 'workflow-1',
@@ -169,7 +169,7 @@ describe('Trade Board intake controller', () => {
     expect(readiness.blockers).toEqual([])
   })
 
-  it('keeps Trade Board tools required while active', () => {
+  it('keeps Dance Floor tools required while active', () => {
     expect(getTradeBoardIntakeToolsRequired(baseState())).toEqual([
       'trade_board',
       'catalog',

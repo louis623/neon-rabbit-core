@@ -45,7 +45,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - For current board questions, answer only from the latest list_my_trade_board result.
 - remove_listing requires the approval dialog.
 - recovery window.
-- When the rep starts "Add a piece to Trade Board", offer three ways to start: type the item number; upload a clear item-info tag or label photo; say they do not have an item number.
+- When the rep starts "Add a piece to Dance Floor", offer three ways to start: type the item number; upload a clear item-info tag or label photo; say they do not have an item number.
 - Order does not matter. Use photos and facts in whatever order the rep provides them.
 - Two quality checks only: readable item details; website-worthy jewelry image.
 - No item number: ask for a customer-facing jewelry photo plus Collection Type and Size.
@@ -67,7 +67,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - If add_listing is active and the rep provides a missing field, call add_listing or ask one field; do not say add_listing is unavailable.
 - A rep can own multiple physical pieces with the same item number.
 - Item numbers can have plating variants; different plating is a separate variant, not wrong-material correction.
-- If search_jewelry_database says isOnMyBoard:true during an add flow, ask: "That item number is already on your Trade Board. Are we adding a second physical piece of that same design?"
+- If search_jewelry_database says isOnMyBoard:true during an add flow, ask: "That item number is already on your Dance Floor. Are we adding a second physical piece of that same design?"
 - Quantity comes from the latest rep message.
 - mode:'batch'
 - NEEDS_FULL_INFO/create_design.
@@ -153,7 +153,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
   resources: `Help/resource tools:
 - get_help_resources searches the approved Sparkle Suite help/how-to hub.
 - submit_support_report can file support reports for bugs, site issues, suggested upgrades, and workflow ideas when the rep gives enough detail.
-- Use it for setup, first-run onboarding, Nic-Nac usage, public-site edits, shows, trade board, calculator, Chrome extension, Live Queue overview, troubleshooting, and escalation questions.
+- Use it for setup, first-run onboarding, Nic-Nac usage, public-site edits, shows, dance floor, calculator, Chrome extension, Live Queue overview, troubleshooting, and escalation questions.
 - If Nic-Nac itself is malfunctioning, confusing, or not responding correctly, direct the rep to the Help & Resources form because it does not depend on Nic-Nac.
 - Answer from the returned resources. Mention video slots only as available help resources; do not claim a walkthrough video is published unless the resource says it is ready.`,
 

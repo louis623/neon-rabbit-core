@@ -135,7 +135,7 @@ describe('public site slug route', () => {
     }
   })
 
-  it('renders the trade board with slug canonicals and rep-targeted template data', async () => {
+  it('renders the dance floor with slug canonicals and rep-targeted template data', async () => {
     const admin = { marker: 'admin' }
     createAdminClientMock.mockReturnValue(admin)
     resolveAmethystPreviewRepMock.mockResolvedValue({

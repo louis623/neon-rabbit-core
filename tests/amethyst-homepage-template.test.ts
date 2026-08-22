@@ -202,7 +202,7 @@ describe('Amethyst homepage template data wiring', () => {
         'const tickerTrades = buildTickerLoopItems(tradeTickerSource, 15);',
       )
       expect(jsx).not.toContain(
-        '<span className="hp-ticker-empty">Trade Board listings will appear here after pieces are added.</span>',
+        '<span className="hp-ticker-empty">Dance Floor listings will appear here after pieces are added.</span>',
       )
       expect(jsx).toMatch(
         /className="hp-ticker-empty"[\s\S]*?data-ticker-segment-start=[\s\S]*?data-ticker-segment-repeat-start=/,
@@ -470,7 +470,7 @@ describe('Amethyst homepage template data wiring', () => {
     )
 
     expect(html).toContain(
-      '<meta name="description" content="Shop live jewelry reveals, trade board highlights, and upcoming shows with Sparkle by Sasha." />',
+      '<meta name="description" content="Shop live jewelry reveals, dance floor highlights, and upcoming shows with Sparkle by Sasha." />',
     )
     expect(html).toContain(
       '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Homepage.html" />',
@@ -542,7 +542,7 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
 
-    const footerLabels = ['Home', 'Trade Board', 'Join Team']
+    const footerLabels = ['Home', 'Dance Floor', 'Join Team']
 
     for (const source of [homepage, trade, join]) {
       for (const label of footerLabels) {
@@ -600,7 +600,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('View full queue')
     expect(jsx).toContain('function LiveQueueModal')
     expect(jsx).not.toContain('Next to reveal')
-    expect(jsx).not.toContain('Open trade board')
+    expect(jsx).not.toContain('Open dance floor')
     expect(jsx).not.toContain('<LiveQueueSection />')
     expect(jsx).toContain('className="hp-sticky-stack"')
     expect(css).toContain('.hp-trade-preview')
@@ -612,7 +612,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).not.toContain('top: 144px;')
   })
 
-  it('enriches targeted homepage data with workspace Trade Board and Live Queue state', () => {
+  it('enriches targeted homepage data with workspace Dance Floor and Live Queue state', () => {
     const data = enrichAmethystHomepageFeatureData(
       {
         ...defaultAmethystHomepageTemplateData,
@@ -829,7 +829,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('bk-home-cta-label">{link.label}</span>')
   })
 
-  it('keeps watch actions together and makes the Trade Board hero action span their row', () => {
+  it('keeps watch actions together and makes the Dance Floor hero action span their row', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
       'utf8',
@@ -846,10 +846,10 @@ describe('Amethyst homepage template data wiring', () => {
     expect(standardHero).toContain('className="hp-hero-cta-stack"')
     expect(standardHero).toContain('className="hp-hero-cta-primary-row"')
     expect(standardHero.indexOf('Shop Bomb Party')).toBeLessThan(
-      standardHero.indexOf('Browse the trade board'),
+      standardHero.indexOf('Browse the dance floor'),
     )
     expect(standardHero.indexOf('heroWatchLinks.map((link) =>')).toBeLessThan(
-      standardHero.indexOf('Browse the trade board'),
+      standardHero.indexOf('Browse the dance floor'),
     )
     expect(standardHero).toContain('hp-hero-trade-board-cta')
     expect(standardHero).toContain('isHeatherBlingKitchenSite && CONTENT.pantryPageUrl')

@@ -152,7 +152,7 @@ export async function runNonItemNumberTradeBoardSmoke(
       fixturePath: asset.fixturePath,
       missing: asset.missing,
       message:
-        'Non-item-number Trade Board smoke needs one individual jewelry photo fixture.',
+        'Non-item-number Dance Floor smoke needs one individual jewelry photo fixture.',
     }
   }
 
@@ -163,7 +163,7 @@ export async function runNonItemNumberTradeBoardSmoke(
       status: 'missing_env',
       fixturePath: asset.fixturePath,
       missing: missingEnv,
-      message: 'Non-item-number Trade Board smoke is missing required environment.',
+      message: 'Non-item-number Dance Floor smoke is missing required environment.',
     }
   }
 
@@ -195,7 +195,7 @@ export async function runNonItemNumberTradeBoardSmoke(
       parts: [
         {
           type: 'text',
-          text: 'Add a piece to my Trade Board. I do not have an item number for this one.',
+          text: 'Add a piece to my Dance Floor. I do not have an item number for this one.',
         },
       ],
       turns,
@@ -281,7 +281,7 @@ export async function runNonItemNumberTradeBoardSmoke(
         workflow,
         cleanup,
         message:
-          'Non-item-number Trade Board intake workflow did not complete after replay.',
+          'Non-item-number Dance Floor intake workflow did not complete after replay.',
       }
     }
 
@@ -307,7 +307,7 @@ export async function runNonItemNumberTradeBoardSmoke(
         listing,
         cleanup,
         message:
-          'Created listing was not verified as a non-item-number Trade Board row.',
+          'Created listing was not verified as a non-item-number Dance Floor row.',
       }
     }
 
@@ -330,7 +330,7 @@ export async function runNonItemNumberTradeBoardSmoke(
         listing,
         cleanup,
         message:
-          'Created listing was not present in the public Trade Board payload.',
+          'Created listing was not present in the public Dance Floor payload.',
       }
     }
     const leaks = findForbiddenPublicSourceLanguage(
@@ -353,7 +353,7 @@ export async function runNonItemNumberTradeBoardSmoke(
         workflow,
         listing,
         cleanup,
-        message: `Public Trade Board payload leaked source language: ${leaks.join(', ')}`,
+        message: `Public Dance Floor payload leaked source language: ${leaks.join(', ')}`,
       }
     }
 
@@ -375,7 +375,7 @@ export async function runNonItemNumberTradeBoardSmoke(
       listing,
       cleanup,
       message:
-        'Non-item-number Trade Board smoke passed through Nic-Nac, verified the listing row, checked the public payload, and cleaned up.',
+        'Non-item-number Dance Floor smoke passed through Nic-Nac, verified the listing row, checked the public payload, and cleaned up.',
     }
   } catch (error) {
     if (createdListingIds.length === 0) {

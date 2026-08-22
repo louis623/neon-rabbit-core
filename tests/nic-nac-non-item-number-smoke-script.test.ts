@@ -7,7 +7,7 @@ import {
   runNonItemNumberTradeBoardSmoke,
 } from '@/scripts/smoke-nic-nac-trade-board-non-item-number'
 
-describe('Nic-Nac non-item-number Trade Board smoke script', () => {
+describe('Nic-Nac non-item-number Dance Floor smoke script', () => {
   it('is registered as an explicit smoke command', () => {
     expect(packageJson.scripts['smoke:nic-nac:trade-board-non-item-number']).toBe(
       'tsx scripts/smoke-nic-nac-trade-board-non-item-number.ts',

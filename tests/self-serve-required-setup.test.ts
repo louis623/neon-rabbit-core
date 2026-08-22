@@ -139,7 +139,7 @@ describe('self-serve required setup service contract', () => {
       'Customer-facing site theme',
     )
     expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).toContain(
-      'Trade Board orientation',
+      'Dance Floor orientation',
     )
     expect(REQUIRED_SETUP_STEPS.map((step) => step.label)).not.toContain(
       'Email and SMS update readiness',

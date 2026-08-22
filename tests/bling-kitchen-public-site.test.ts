@@ -89,7 +89,7 @@ describe('BlingKitchen hybrid public site contract', () => {
     expect(script).toContain('"pantryPageUrl":"/amethyst/Pantry.html"')
   })
 
-  it('keeps Trade Board and Join mechanics standard while linking Heather Pantry', () => {
+  it('keeps Dance Floor and Join mechanics standard while linking Heather Pantry', () => {
     const trade = mapPreviewSettingsToTradeTemplateData(
       blingKitchenSettings,
       blingKitchenExtras,

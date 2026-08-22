@@ -17,13 +17,13 @@ describe('workspace launch actions', () => {
 
   it('maps quick actions to Nic-Nac starter prompts', () => {
     expect(getLaunchPromptForWorkspaceAction('add_trade_piece')).toBe(
-      'Add a piece to Trade Board',
+      'Add a piece to Dance Floor',
     )
     expect(getLaunchPromptForWorkspaceAction('add_calendar_show')).toBe(
       'Add a Show to the Calendar',
     )
     expect(getLaunchPromptForWorkspaceAction('check_board')).toBe(
-      "What's on my Trade Board right now?",
+      "What's on my Dance Floor right now?",
     )
   })
 })

@@ -92,15 +92,15 @@ export function publicNicNacHandoffMessage() {
 }
 
 function publicNicNacTradeBoardCorrectionMessage() {
-  return "Customers do not add their own items or dancers. Customers do not create TradeBoard listings. If a rep calls TradeBoard the dance floor, the dancers are the rep-listed trade-eligible pieces already shown there. A customer can request to trade for an available rep listing, or request a rep-listed dancer, when they do not want the piece they just revealed. The rep has both pieces during the live show; customers do not ship or photograph a separate trade item. The rep controls the board, sets the final trade rules, and can approve or decline each request."
+  return "Customers do not add their own dancers. Dancers are the rep-listed, trade-eligible jewelry already on the Dance Floor. A customer can request to trade for an available dancer when they do not want the item just revealed. The rep has both pieces during the live show, sets the final rules, and approves or declines each request. Customers do not ship or photograph a separate trade item."
 }
 
 function publicNicNacShippingCorrectionMessage() {
-  return 'Sparkle Suite does not handle shipping, automate shipping, hold inventory, or vendor fulfillment for trades. TradeBoard helps organize the request and lets the workspace track approved, shipped, and completed status, but the rep handles the actual exchange and follow-through.'
+  return 'Sparkle Suite does not handle shipping, automate shipping, hold inventory, or vendor fulfillment for trades. Dance Floor organizes the request and lets the workspace track approved, shipped, and completed status, but the rep handles the actual exchange and follow-through.'
 }
 
 function publicNicNacValueCorrectionMessage() {
-  return 'MSRP is reference only. Current TradeBoard rules are item-for-item only, same collection, and same jewelry type, with no pay-the-difference and no credit or payout. Sparkle Suite does not guarantee equal value; the rep makes the final approval decision.'
+  return 'MSRP is reference only. Current Dance Floor rules are item-for-item only, same collection, and same jewelry type, with no pay-the-difference and no credit or payout. Sparkle Suite does not guarantee equal value; the rep makes the final approval decision.'
 }
 
 export function sanitizePublicNicNacAnswer(message: string) {

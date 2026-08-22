@@ -19,7 +19,7 @@ describe('Amethyst homepage template', () => {
     expect(html).toContain('aria-label="Menu"')
     expect(html).toContain('Shop')
     expect(html).toContain('Watch Live')
-    expect(html).toContain('Trade Board')
+    expect(html).toContain('Dance Floor')
     expect(html).toContain('Upcoming Shows')
     expect(html).toContain('It&#x27;s a live jewelry reveal')
     expect(html).toContain('Never miss a show.')
@@ -45,7 +45,7 @@ describe('Amethyst homepage template', () => {
     expect(html).not.toContain('Hosting Soon')
     expect(html).not.toContain('>TT</a>')
     expect(html).not.toContain('>FB</a>')
-    expect(html).not.toContain('Featured Trade Board')
+    expect(html).not.toContain('Featured Dance Floor')
   })
 
   it('uses the supplied site content instead of hardcoded rep-specific strings', () => {

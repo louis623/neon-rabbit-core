@@ -259,7 +259,7 @@ export async function collectMonthlyReportData(args: {
     safeCount(
       () => countForPeriod(args.supabase, 'trade_listings', args.repId, period),
       'trade_listings_added',
-      'Trade Board listings added',
+      'Dance Floor listings added',
     ),
     safeCount(
       () =>
@@ -310,7 +310,7 @@ export async function collectMonthlyReportData(args: {
             .eq('rep_id', args.repId)
             .eq('status', 'available'),
         'active_trade_listings',
-        'Active Trade Board listings',
+        'Active Dance Floor listings',
       ),
       safeCount(
         () =>

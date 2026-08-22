@@ -20,9 +20,9 @@ const reportRow = {
   report_type: 'bug',
   urgency: 'blocking',
   status: 'open',
-  page_or_workflow: 'Trade Board',
-  title: 'Trade board item vanished',
-  details: 'Rep says a Trade Board item disappeared after approving a trade.',
+  page_or_workflow: 'Dance Floor',
+  title: 'Dance Floor item vanished',
+  details: 'Rep says a Dance Floor item disappeared after approving a trade.',
   expected_result: 'Replacement listing should appear.',
   actual_result: 'No replacement listing is visible.',
   contact_ok: true,
@@ -194,8 +194,8 @@ describe('runSupportAuditForReport', () => {
         status: 'completed',
         facts: expect.objectContaining({
           report: expect.objectContaining({
-            title: 'Trade board item vanished',
-            workflow: 'Trade Board',
+            title: 'Dance Floor item vanished',
+            workflow: 'Dance Floor',
           }),
           profile: expect.objectContaining({
             clientName: "Jane's Sparkle Party",
@@ -222,14 +222,14 @@ describe('runSupportAuditForReport', () => {
       }),
     )
     expect(result.alertPayload).toMatchObject({
-      title: 'Bug: Trade board item vanished',
+      title: 'Bug: Dance Floor item vanished',
       urgency: 'blocking',
       clientName: "Jane's Sparkle Party",
       showName: "Jane's Sparkle Party Live",
       phone: '555-123-4567',
       email: 'jane@example.com',
       reportId: 'report-1',
-      issue: 'Rep says a Trade Board item disappeared after approving a trade.',
+      issue: 'Rep says a Dance Floor item disappeared after approving a trade.',
       auditStatus: 'completed',
       summary:
         'The account is active and a similar trade cleanup lesson may apply.',

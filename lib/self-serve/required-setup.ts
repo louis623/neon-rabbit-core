@@ -29,7 +29,7 @@ export const REQUIRED_SETUP_STEPS = [
   },
   {
     id: 'trade_board_orientation',
-    label: 'Trade Board orientation',
+    label: 'Dance Floor orientation',
     required: true,
   },
   {

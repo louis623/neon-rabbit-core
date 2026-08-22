@@ -52,7 +52,7 @@ function hasNestedDeclaration(
 function getTradeBoardSectionLabels(html: string) {
   return Array.from(
     html.matchAll(
-      />(Trade Board|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Trade follow-up|Fulfillment queue)</g,
+      />(Dance Floor|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Trade follow-up|Fulfillment queue)</g,
     ),
     (match) => match[1].replace('&#x27;', "'"),
   )
@@ -122,7 +122,7 @@ const TRADE_BOARD_READY_STATE = {
   },
 }
 
-describe('Nic-Nac trade board surface reset', () => {
+describe('Nic-Nac dance floor surface reset', () => {
   it('uses shared workspace primitives instead of DashboardPlaceholder shell styles', () => {
     const source = readFileSync(
       resolve(
@@ -138,7 +138,7 @@ describe('Nic-Nac trade board surface reset', () => {
     expect(source).not.toContain("from './DashboardPlaceholder.module.css'")
   })
 
-  it('keeps trade board-private surface structure out of WorkspaceSurface', () => {
+  it('keeps dance floor-private surface structure out of WorkspaceSurface', () => {
     const workspaceSurfaceCss = readFileSync(
       resolve(
         process.cwd(),
@@ -362,7 +362,7 @@ describe('Nic-Nac trade board surface reset', () => {
       }),
     )
     expect(getTradeBoardSectionLabels(html)).toEqual([
-      'Trade Board',
+      'Dance Floor',
       "Today's trade work",
       'Quick add',
       'Browse board',

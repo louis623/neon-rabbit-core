@@ -151,7 +151,7 @@ function Hero({ t }) {
           <p className="hp-hero-sub slot" data-slot="hero sub">{t.heroSub}</p>
           <div className="hp-hero-ctas">
             <button className="hp-btn-primary hp-btn-sparkle">
-              Browse the trade board
+              Browse the dance floor
               <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
             </button>
             <a href="#" className="hp-btn-outline">Shop Bomb Party ↗</a>
@@ -186,7 +186,7 @@ function Ticker({ topText }) {
         </div>
       </div>
       <div className="hp-ticker-row reverse">
-        <span className="hp-ticker-label">Trade Board</span>
+        <span className="hp-ticker-label">Dance Floor</span>
         <div className="hp-ticker-track">
           {[...trades, ...trades, ...trades].map((tr, i) => (
             <a key={i} href="#" className="hp-ticker-trade">
@@ -501,7 +501,7 @@ function Footer({ businessName }) {
         <div className="hp-footer-col">
           <h4>Shop</h4>
           <ul>
-            <li><a href="#">Trade Board</a></li>
+            <li><a href="#">Dance Floor</a></li>
             <li><a href="#">Bomb Party Catalog</a></li>
             <li><a href="#">Pre-orders</a></li>
             <li><a href="#">Past shows</a></li>
@@ -533,7 +533,7 @@ function Footer({ businessName }) {
         <p>
           Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party® is a registered trademark of Bomb Party LLC.
           This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names,
-          trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Trade Board
+          trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Dance Floor
           listings are sold by the rep and not by Bomb Party LLC.
         </p>
       </div>

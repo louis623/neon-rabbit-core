@@ -67,13 +67,13 @@ export const AMETHYST_PUBLIC_PAGES: Record<
     path: '/amethyst/Homepage.html',
     title: "Jane's Sparkle Party - Live jewelry reveals",
     description:
-      "Shop live jewelry reveals, trade board highlights, and upcoming shows with Jane's Sparkle Party.",
+      "Shop live jewelry reveals, dance floor highlights, and upcoming shows with Jane's Sparkle Party.",
   },
   trade: {
     path: '/amethyst/Trade.html',
-    title: "Jane's Sparkle Party - Trade Board",
+    title: "Jane's Sparkle Party - Dance Floor",
     description:
-      "Browse Jane's Sparkle Party trade board listings and request fair jewelry trades from live reveal customers.",
+      "Browse Jane's Sparkle Party dance floor listings and request fair jewelry trades from live reveal customers.",
   },
   join: {
     path: '/amethyst/Join.html',

@@ -791,7 +791,7 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
     })
 
     try {
-      const response = await POST(requestFor('Add a piece to Trade Board'))
+      const response = await POST(requestFor('Add a piece to Dance Floor'))
       await response.text()
 
       expect(response.status).toBe(200)

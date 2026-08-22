@@ -81,7 +81,7 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('NEEDS_FULL_INFO')
     expect(prompt).toContain('create_design')
     expect(prompt).toContain(
-      'When the rep starts "Add a piece to Trade Board", offer three ways to start',
+      'When the rep starts "Add a piece to Dance Floor", offer three ways to start',
     )
     expect(prompt).toContain('type the item number')
     expect(prompt).toContain('upload a clear item-info tag or label photo')
@@ -160,7 +160,7 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt.length).toBeLessThan(9_800)
   })
 
-  it('includes active workflow prompt state before Trade Board instructions', () => {
+  it('includes active workflow prompt state before Dance Floor instructions', () => {
     const prompt = buildNicNacSystemPrompt({
       intents: ['trade_board'],
       activeToolNames: ['add_listing', 'search_jewelry_database'],

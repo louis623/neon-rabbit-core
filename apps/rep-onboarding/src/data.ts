@@ -219,7 +219,7 @@ export const resources: Resource[] = [
   {
     id: 'sparkle-suite-preview',
     title: 'Sparkle Suite Next Step',
-    description: 'Soft handoff for reps who are ready for a public site, customer resources, live queue, and trade board tools.',
+    description: 'Soft handoff for reps who are ready for a public site, customer resources, live queue, and dance floor tools.',
     url: '',
     sourceType: 'sparkle-suite',
     category: 'Sparkle Suite',
@@ -483,7 +483,7 @@ export const nicNacAnswers: NicNacAnswer[] = [
   },
   {
     id: 'sparkle-suite',
-    triggers: ['website', 'live queue', 'customers', 'trade board', 'sparkle suite', 'rep tools'],
+    triggers: ['website', 'live queue', 'customers', 'dance floor', 'sparkle suite', 'rep tools'],
     response: 'Sparkle Suite can help reps with a public site, customer resources, live queue support, and future tools once the basics are in place. For now, finish your onboarding steps first.',
     resourceIds: ['sparkle-suite-preview'],
     shouldEscalate: false,

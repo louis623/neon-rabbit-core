@@ -833,7 +833,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
     const supabaseMock = makeConversationLookupMock([
       {
         parts: [
-          { type: 'text', text: 'Please add to my trade board' },
+          { type: 'text', text: 'Please add to my dance floor' },
           {
             type: 'file',
             mediaType: 'image/jpeg',
@@ -864,7 +864,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
     const supabaseMock = makeConversationLookupMock([
       {
         parts: [
-          { type: 'text', text: 'Please add to my trade board' },
+          { type: 'text', text: 'Please add to my dance floor' },
           {
             type: 'file',
             mediaType: 'image/jpeg',
@@ -2126,7 +2126,7 @@ describe('add_listing - active workflow readiness guard', () => {
         parts: [
           {
             type: 'text',
-            text: 'That item number is already on your Trade Board. Are we adding a second physical piece of that same design?',
+            text: 'That item number is already on your Dance Floor. Are we adding a second physical piece of that same design?',
           },
         ],
       },

@@ -184,8 +184,8 @@ export async function runTradeBoardPressureSmoke(
     failed,
     steps: stepSummaries,
     message: ok
-      ? `Nic-Nac Trade Board pressure smoke passed ${passed}/${stepSummaries.length} deployed smoke workflows.`
-      : `Nic-Nac Trade Board pressure smoke failed ${failed}/${stepSummaries.length} deployed smoke workflows.`,
+      ? `Nic-Nac Dance Floor pressure smoke passed ${passed}/${stepSummaries.length} deployed smoke workflows.`
+      : `Nic-Nac Dance Floor pressure smoke failed ${failed}/${stepSummaries.length} deployed smoke workflows.`,
   }
 }
 

@@ -32,7 +32,7 @@ function ProductHero() {
         <p>{hero.body}</p>
         <LandingButton href={hero.primaryCta.href} label={hero.primaryCta.label} />
       </div>
-      <div className="sl2-product-stack" aria-label="Real Sparkle Suite Trade Board preview">
+      <div className="sl2-product-stack" aria-label="Real Sparkle Suite Dance Floor preview">
         <img
           className="sl2-shot sl2-shot--trade-board-proof"
           src={assets.tradeBoardDesktopProof.src}

@@ -24,18 +24,18 @@ export const sparkleSuitePublicLandingContent = {
     eyebrow: 'Rep workspace',
     heading: 'Run the show with less scramble behind the scenes.',
     body:
-      'Instead of chasing show details across scattered tools, reps get one workspace for Live queue, Trade board, Live event calendar, email and SMS updates, customer-site customizations, and Nic-Nac, the built-in assistant for live-show support.',
+      'Instead of chasing show details across scattered tools, reps get one workspace for Live queue, Dance Floor, Live event calendar, email and SMS updates, customer-site customizations, and Nic-Nac, the built-in assistant for live-show support.',
   },
   customerSiteProof: {
     eyebrow: 'Customer-facing site',
     heading: 'Make the customer side feel like you.',
     body:
-      'Choose a look that fits your brand, then give customers one polished place to find your show, queue, trade board, and updates.',
+      'Choose a look that fits your brand, then give customers one polished place to find your show, queue, dance floor, and updates.',
   },
   assets: {
     tradeBoardDesktopProof: {
       src: '/sparkle-suite/landing/trade-board-desktop-proof.png',
-      alt: 'Sparkle Suite customer Trade Board preview on desktop.',
+      alt: 'Sparkle Suite customer Dance Floor preview on desktop.',
     },
     nicNacWorkspaceProof: {
       src: '/sparkle-suite/landing/nic-nac-workspace-proof.png',
@@ -73,7 +73,7 @@ export const sparkleSuitePublicLandingContent = {
     },
     included: [
       'Customer site',
-      'Trade board',
+      'Dance Floor',
       'Live queue',
       'Live event calendar',
       'Email updates',

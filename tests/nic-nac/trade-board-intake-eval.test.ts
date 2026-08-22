@@ -4,7 +4,7 @@ import {
   summarizeHardFailDetection,
 } from '@/lib/nic-nac/workflows/trade-board-intake-eval'
 
-describe('Trade Board intake hard-fail detection', () => {
+describe('Dance Floor intake hard-fail detection', () => {
   it('detects manual workaround and unavailable-tool language', () => {
     const text =
       "I can't actually add listings from chat. Log into your workspace and add it manually."

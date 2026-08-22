@@ -9,7 +9,7 @@ export const prelaunchContent = {
   secondaryCtaLabel: 'What Is Sparkle Suite?',
   heroFeatures: [
     {
-      title: 'Trade board',
+      title: 'Dance Floor',
       body: 'that gives customers a cleaner way to browse and request trade pieces.',
     },
     {
@@ -37,7 +37,7 @@ export const prelaunchContent = {
   previewItems: [
     {
       number: '01',
-      title: 'Trade board',
+      title: 'Dance Floor',
       body: 'Keep wants, haves, and pending swaps organized without digging through messages.',
     },
     {
@@ -66,10 +66,10 @@ export const prelaunchContent = {
   valueHeading: 'Why it stands out',
   valueSubheading: 'The edge customers can actually feel.',
   valueBody:
-    "Sparkle Suite is built for reps who want more than a link page and a handful of workarounds. Your site, trade board, live queue, event calendar, customer updates, and Nic-Nac all work together in one setup that feels more polished to customers and easier to run on your side. That means a better experience up front, smoother flow while you're live, and fewer details to keep chasing by hand.",
+    "Sparkle Suite is built for reps who want more than a link page and a handful of workarounds. Your site, dance floor, live queue, event calendar, customer updates, and Nic-Nac all work together in one setup that feels more polished to customers and easier to run on your side. That means a better experience up front, smoother flow while you're live, and fewer details to keep chasing by hand.",
   valueCards: [
     {
-      title: 'Trade board people actually want to use',
+      title: 'Dance Floor people actually want to use',
       body: 'Make swaps feel more organized than screenshots, comments, and DMs.',
     },
     {
@@ -100,7 +100,7 @@ export const prelaunchContent = {
   suiteItems: [
     {
       number: '01',
-      title: 'Trade board',
+      title: 'Dance Floor',
       body: 'Give customers and fellow reps a cleaner trade experience that feels more organized than chasing pieces through comments and messages.',
     },
     {
@@ -178,7 +178,7 @@ export const prelaunchContent = {
     included: [
       'Customer-facing site',
       'Live queue',
-      'Trade board / dance floor',
+      'Dance Floor / dance floor',
       'Live event calendar',
       'Email and SMS updates',
       'Nic-Nac live-show AI assistant',

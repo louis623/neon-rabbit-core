@@ -17,7 +17,7 @@ export function PrelaunchBenefits() {
               </h2>
               <p>
                 Sparkle Suite is built for reps who want more than a link page
-                and a handful of workarounds. Your site, trade board, live
+                and a handful of workarounds. Your site, dance floor, live
                 queue, event calendar, customer updates, and Nic-Nac all work
                 together in one setup that feels more polished to customers and
                 easier to run on your side.

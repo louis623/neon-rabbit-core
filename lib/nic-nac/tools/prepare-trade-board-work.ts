@@ -1,4 +1,4 @@
-// Tool: prepare_trade_board_work - read-only resolver for TradeBoard work.
+// Tool: prepare_trade_board_work - read-only resolver for Dance Floor work.
 // It gives Nic-Nac the app-owned next path before write tools run.
 
 import { z } from 'zod'
@@ -97,7 +97,7 @@ export function makePrepareTradeBoardWorkTool(ctx: {
 }) {
   return tool({
     description:
-      'Read-only resolver for TradeBoard and jewelry database work. Use this first when the rep wants to add, remove, view, facilitate, or correct TradeBoard/jewelry database work. It decides whether the item is an existing catalog design, a new catalog intake, a board-management action, or a trade-request workflow before write tools run.',
+      'Read-only resolver for Dance Floor and jewelry database work. Use this first when the rep wants to add, remove, view, facilitate, or correct Dance Floor/jewelry database work. It decides whether the item is an existing catalog design, a new catalog intake, a dancer-management action, or a trade-request workflow before write tools run.',
     inputSchema,
     execute: async (input) => {
       if (input.action === 'remove_piece') {
@@ -137,7 +137,7 @@ export function makePrepareTradeBoardWorkTool(ctx: {
                 ? 'I found more than one active physical piece for that item. Which exact listing should I remove?'
                 : undefined,
           guidance:
-            'Remove only the rep TradeBoard listing, and use remove_listing because it has the approval dialog. If more than one active physical listing matches, ask the rep to choose the exact listingId before calling remove_listing. Do not remove or delete the shared jewelry database record.',
+            'Remove only the rep Dance Floor dancer, and use remove_listing because it has the approval dialog. If more than one active physical listing matches, ask the rep to choose the exact listingId before calling remove_listing. Do not remove or delete the shared jewelry database record.',
         }
       }
 
@@ -295,7 +295,7 @@ export function makePrepareTradeBoardWorkTool(ctx: {
           requiredBeforeAction.includes('ringSize')
             ? 'What ring size is this physical piece?'
             : match.isOnMyBoard
-              ? 'That item number is already on your Trade Board. Are we adding a second physical piece of that same design?'
+              ? 'That item number is already on your Dance Floor. Are we adding a second physical piece of that same design?'
               : null,
         nextTool: 'add_listing',
         catalogDeletionAllowed: false,

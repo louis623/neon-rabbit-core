@@ -295,7 +295,7 @@ function buildSuggestedQuestions(submission: PrelaunchIntakeReviewSubmission) {
   }
   if (submission.team.name) {
     questions.push(
-      `How does the ${submission.team.name} team currently share links, trade board examples, and launch updates?`,
+      `How does the ${submission.team.name} team currently share links, dance floor examples, and launch updates?`,
     )
   }
   if (submission.brandVibe || submission.colorPreferences) {

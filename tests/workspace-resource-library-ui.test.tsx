@@ -32,10 +32,10 @@ describe('workspace resource library UI', () => {
             id: 'video-1',
             resourceKey: 'trade-board-video',
             resourceType: 'video',
-            title: 'Trade Board walkthrough',
-            summary: 'See the Trade Board workflow.',
+            title: 'Dance Floor walkthrough',
+            summary: 'See the Dance Floor workflow.',
             body: '',
-            category: 'Trade Board',
+            category: 'Dance Floor',
             tags: ['trade'],
             thumbnailUrl: null,
             videoProvider: 'youtube',
@@ -57,7 +57,7 @@ describe('workspace resource library UI', () => {
     expect(html).toContain('Videos')
     expect(html).toContain('Plan a strong month')
     expect(html).toContain('Read article')
-    expect(html).toContain('Trade Board walkthrough')
+    expect(html).toContain('Dance Floor walkthrough')
     expect(html).toContain('Watch video')
   })
 

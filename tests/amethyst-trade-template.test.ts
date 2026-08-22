@@ -45,7 +45,7 @@ function makeTradeListing(
 }
 
 describe('Amethyst trade page template wiring', () => {
-  it('ships mobile sticky and coarse pointer CSS safeguards for the trade board', () => {
+  it('ships mobile sticky and coarse pointer CSS safeguards for the dance floor', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.css'),
       'utf8',
@@ -288,14 +288,14 @@ describe('Amethyst trade page template wiring', () => {
     )
 
     expect(html).toContain(
-      '<meta name="description" content="Browse Sparkle by Sasha trade board listings and request fair jewelry trades from live reveal customers." />',
+      '<meta name="description" content="Browse Sparkle by Sasha dance floor listings and request fair jewelry trades from live reveal customers." />',
     )
     expect(html).toContain(
       '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Trade.html" />',
     )
     expect(html).toContain('<meta name="robots" content="index,follow" />')
     expect(html).toContain(
-      '<meta property="og:title" content="Sparkle by Sasha - Trade Board" />',
+      '<meta property="og:title" content="Sparkle by Sasha - Dance Floor" />',
     )
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
   })
@@ -350,7 +350,7 @@ describe('Amethyst trade page template wiring', () => {
     expect(css).toContain('.tp-filter-search')
   })
 
-  it('ships mobile scanning affordances for filtering the customer trade board', () => {
+  it('ships mobile scanning affordances for filtering the customer dance floor', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.jsx'),
       'utf8',
@@ -369,7 +369,7 @@ describe('Amethyst trade page template wiring', () => {
     expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-filters[\s\S]*?position:\s*sticky;/)
   })
 
-  it('limits large trade boards with search, sort, lazy images, and load-more rendering', () => {
+  it('limits large dance floors with search, sort, lazy images, and load-more rendering', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.jsx'),
       'utf8',

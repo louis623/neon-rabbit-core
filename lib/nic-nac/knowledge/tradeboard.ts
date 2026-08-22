@@ -1,19 +1,19 @@
 export const NIC_NAC_TRADEBOARD_KNOWLEDGE = {
-  productTerm: 'TradeBoard',
+  productTerm: 'Dance Floor',
   summary:
-    'TradeBoard organizes trade interest in one clearer place instead of scattered comments, DMs, screenshots, and posts.',
+    'Dance Floor organizes trade interest in one clearer place instead of scattered comments, DMs, screenshots, and posts.',
   lingo: {
     danceFloor:
-      'Some Bomb Party reps may call TradeBoard the dance floor. Treat dance floor as TradeBoard.',
+      'Dance Floor is the Sparkle Suite home for dancers and trade requests.',
     dancers:
-      'Some Bomb Party reps may call jewelry that is up for trade dancers. Treat dancers as the rep-listed trade-eligible jewelry shown on TradeBoard.',
+      'Dancers are the rep-listed, trade-eligible jewelry shown on the Dance Floor.',
   },
   customerFlow:
-    'Customers do not add their own items or dancers and do not create TradeBoard listings. During a live show, a customer can request to trade for an available rep listing when they do not want the item number just revealed for them. Customers request a rep-listed piece or dancer; they do not add dancers to the dance floor, and customers do not ship or photograph a separate trade item. The rep has both pieces during the live show and can approve or decline each trade request.',
+    'Customers do not add dancers to the Dance Floor. During a live show, a customer can request to trade for an available dancer when they do not want the item just revealed for them. The rep has both pieces during the live show and can approve or decline each trade request.',
   repControl:
-    'The rep controls the board, the available listings, the final trade rules, and the final approval decision. The rep sets the final trade rules and approvals.',
+    'The rep controls the Dance Floor, which dancers are available, the final trade rules, and every approval decision.',
   eligibilityRules:
-    'Current TradeBoard rules are item-for-item only, same collection, and same jewelry type. Birthday pieces can trade across months when they are still Birthday collection and the same jewelry type.',
+    'Current Dance Floor rules are item-for-item only, same collection, and same jewelry type. Birthday dancers can trade across months when they are still Birthday collection and the same jewelry type.',
   valueRules:
     'MSRP is reference only and does not decide whether a trade is acceptable, equal, or fair. No pay-the-difference flow. No credit or payout for lower-priced pieces.',
   boundaries:

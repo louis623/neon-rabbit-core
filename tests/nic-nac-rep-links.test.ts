@@ -36,7 +36,7 @@ describe('Nic-Nac rep customer links', () => {
     )
   })
 
-  it('uses public site slugs for customer-facing trade boards', () => {
+  it('uses public site slugs for customer-facing dance floors', () => {
     expect(
       buildCustomerTradeBoardHref({
         repId: 'rep-1',

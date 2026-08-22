@@ -70,7 +70,7 @@ export const PHASE_11_SMOKE_MANIFEST: Phase11SmokeManifestEntry[] = [
     },
     defaultProviderActions: [],
     nextAction:
-      'Promote the browser walkthrough into a repeatable local workflow smoke for dashboard tabs, calendar, trade board, audience, and billing summary.',
+      'Promote the browser walkthrough into a repeatable local workflow smoke for dashboard tabs, calendar, dance floor, audience, and billing summary.',
   },
   {
     id: 'live-show',

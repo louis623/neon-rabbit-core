@@ -1,7 +1,6 @@
 export const NIC_NAC_TRADE_TERMS = [
   'trade',
   'tradeboard',
-  'trade board',
   'dance floor',
   'dancers',
   'shipping',

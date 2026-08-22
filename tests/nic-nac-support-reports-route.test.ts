@@ -92,7 +92,7 @@ describe('support reports route', () => {
         method: 'POST',
         body: JSON.stringify({
           details:
-            'Trade Board froze during my live show when I tried to add ER13229.',
+            'Dance Floor froze during my live show when I tried to add ER13229.',
         }),
       },
     ))
@@ -107,9 +107,9 @@ describe('support reports route', () => {
         reportType: 'bug',
         urgency: 'blocking',
         title:
-          'Trade Board froze during my live show when I tried to add ER13229',
+          'Dance Floor froze during my live show when I tried to add ER13229',
         details:
-          'Trade Board froze during my live show when I tried to add ER13229.',
+          'Dance Floor froze during my live show when I tried to add ER13229.',
         contactOk: true,
       }),
     )

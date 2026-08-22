@@ -70,7 +70,7 @@ export function NicNacHomeWorkspaceCard({
       <div className={styles.glanceGrid}>
         <button type="button" onClick={onOpenTradeBoard}>
           <Gem aria-hidden="true" />
-          <span>Trade Board</span>
+          <span>Dance Floor</span>
         </button>
         <button type="button" onClick={onOpenCalendar}>
           <CalendarDays aria-hidden="true" />

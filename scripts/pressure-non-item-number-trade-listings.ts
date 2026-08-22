@@ -174,7 +174,7 @@ export async function runNonItemNumberPressure(
     })
     if (!publicPreviewListingsHaveIds(publicListings, createdListingIds)) {
       throw new Error(
-        `Public Trade Board payload did not include all pressure listings. Found ${publicListings.length} row(s).`,
+        `Public Dance Floor payload did not include all pressure listings. Found ${publicListings.length} row(s).`,
       )
     }
     const publicLeaks = findForbiddenPublicSourceLanguage(
@@ -182,7 +182,7 @@ export async function runNonItemNumberPressure(
     )
     if (publicLeaks.length > 0) {
       throw new Error(
-        `Public Trade Board payload leaked source language: ${publicLeaks.join(', ')}`,
+        `Public Dance Floor payload leaked source language: ${publicLeaks.join(', ')}`,
       )
     }
 

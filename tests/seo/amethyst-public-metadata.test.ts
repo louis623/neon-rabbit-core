@@ -15,7 +15,7 @@ describe('Amethyst public metadata helpers', () => {
       path: '/amethyst/Homepage.html',
       title: "Jane's Sparkle Party - Live jewelry reveals",
       description:
-        "Shop live jewelry reveals, trade board highlights, and upcoming shows with Jane's Sparkle Party.",
+        "Shop live jewelry reveals, dance floor highlights, and upcoming shows with Jane's Sparkle Party.",
       robots: 'index,follow',
       canonicalUrl: 'https://www.yoursparklesuite.com/amethyst/Homepage.html',
       openGraph: {
@@ -23,7 +23,7 @@ describe('Amethyst public metadata helpers', () => {
         siteName: 'Sparkle Suite',
         title: "Jane's Sparkle Party - Live jewelry reveals",
         description:
-          "Shop live jewelry reveals, trade board highlights, and upcoming shows with Jane's Sparkle Party.",
+          "Shop live jewelry reveals, dance floor highlights, and upcoming shows with Jane's Sparkle Party.",
         url: 'https://www.yoursparklesuite.com/amethyst/Homepage.html',
         image: 'https://www.yoursparklesuite.com/opengraph-image',
       },
@@ -31,7 +31,7 @@ describe('Amethyst public metadata helpers', () => {
         card: 'summary_large_image',
         title: "Jane's Sparkle Party - Live jewelry reveals",
         description:
-          "Shop live jewelry reveals, trade board highlights, and upcoming shows with Jane's Sparkle Party.",
+          "Shop live jewelry reveals, dance floor highlights, and upcoming shows with Jane's Sparkle Party.",
         image: 'https://www.yoursparklesuite.com/opengraph-image',
       },
     })
@@ -45,13 +45,13 @@ describe('Amethyst public metadata helpers', () => {
     expect(tags).toEqual([
       {
         tag: 'title',
-        text: "Jane's Sparkle Party - Trade Board",
+        text: "Jane's Sparkle Party - Dance Floor",
       },
       {
         tag: 'meta',
         name: 'description',
         content:
-          "Browse Jane's Sparkle Party trade board listings and request fair jewelry trades from live reveal customers.",
+          "Browse Jane's Sparkle Party dance floor listings and request fair jewelry trades from live reveal customers.",
       },
       {
         tag: 'meta',
@@ -76,13 +76,13 @@ describe('Amethyst public metadata helpers', () => {
       {
         tag: 'meta',
         property: 'og:title',
-        content: "Jane's Sparkle Party - Trade Board",
+        content: "Jane's Sparkle Party - Dance Floor",
       },
       {
         tag: 'meta',
         property: 'og:description',
         content:
-          "Browse Jane's Sparkle Party trade board listings and request fair jewelry trades from live reveal customers.",
+          "Browse Jane's Sparkle Party dance floor listings and request fair jewelry trades from live reveal customers.",
       },
       {
         tag: 'meta',
@@ -102,13 +102,13 @@ describe('Amethyst public metadata helpers', () => {
       {
         tag: 'meta',
         name: 'twitter:title',
-        content: "Jane's Sparkle Party - Trade Board",
+        content: "Jane's Sparkle Party - Dance Floor",
       },
       {
         tag: 'meta',
         name: 'twitter:description',
         content:
-          "Browse Jane's Sparkle Party trade board listings and request fair jewelry trades from live reveal customers.",
+          "Browse Jane's Sparkle Party dance floor listings and request fair jewelry trades from live reveal customers.",
       },
       {
         tag: 'meta',

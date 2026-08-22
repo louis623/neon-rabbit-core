@@ -81,7 +81,7 @@ type CatalogCorrectionSmokeResult = {
 const HARD_FAIL_PATTERNS = [
   /i can['’`]?t (?:actually )?(?:open|pull|look up|access|correct|fix|update|change)/i,
   /i['’`]?m not able to (?:open|pull|look up|access|correct|fix|update|change)/i,
-  /not able to access (the )?(catalog|jewelry database|trade board) tool/i,
+  /not able to access (the )?(catalog|jewelry database|dance floor) tool/i,
   /only have notes access/i,
   /fix it manually/i,
   /update it manually/i,
@@ -793,7 +793,7 @@ export async function runCatalogCorrectionSmoke(
       turns,
       cleanup,
       message:
-        'Nic-Nac catalog correction smoke passed through real /api/nic-nac search, report_jewelry_catalog_issue approval replay, catalog/audit/workflow assertions, public Trade Board MSRP proof, and cleanup.',
+        'Nic-Nac catalog correction smoke passed through real /api/nic-nac search, report_jewelry_catalog_issue approval replay, catalog/audit/workflow assertions, public Dance Floor MSRP proof, and cleanup.',
     }
   } catch (error) {
     const cleanup: CatalogCorrectionSmokeResult['cleanup'] = { deletedRows: {} }

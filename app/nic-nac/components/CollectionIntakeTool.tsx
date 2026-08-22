@@ -114,7 +114,7 @@ export function CollectionIntakeTool() {
       <section className={styles.intro}>
         <div>
           <span className={styles.eyebrow}>Bulk Collection Intake</span>
-          <h2>Bulk-add jewelry to your Trade Board.</h2>
+          <h2>Bulk-add jewelry to your Dance Floor.</h2>
           <p>
             Select one photo folder, keep each piece together in capture order,
             then review only the pairings and fields that need a human eye.
@@ -248,7 +248,7 @@ export function CollectionIntakeTool() {
                 {activeQueue === 'matched'
                   ? 'Verified-data candidate'
                   : activeQueue === 'board-only'
-                    ? 'Trade Board-only candidate'
+                    ? 'Dance Floor-only candidate'
                     : 'Exception review'}
               </span>
               <h3>
@@ -361,7 +361,7 @@ export function CollectionIntakeTool() {
 
       <section className={styles.rules} aria-label="Collection intake safeguards">
         <div>
-          <strong>Trade Board-only minimum</strong>
+          <strong>Dance Floor-only minimum</strong>
           <span>Jewelry photo + collection type.</span>
         </div>
         <div>

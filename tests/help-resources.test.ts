@@ -16,7 +16,7 @@ describe('help resources', () => {
       'Embed a TikTok video on your customer-facing site',
       'Get ready for a live show',
       'Use Live Queue during a show',
-      'Add jewelry to your Trade Board',
+      'Add a dancer to your Dance Floor',
       'Handle trade requests',
       'Manage customers and updates',
       'Billing and account basics',
@@ -42,7 +42,7 @@ describe('help resources', () => {
     expect(workflows.length).toBe(12)
 
     for (const workflow of workflows) {
-      expect(workflow.group).toMatch(/Setup|Live Shows|Trade Board|Customers & Account|Help/)
+      expect(workflow.group).toMatch(/Setup|Live Shows|Dance Floor|Customers & Account|Help/)
       expect(workflow.goal).toBeTruthy()
       expect(workflow.useWhen).toBeTruthy()
       expect(workflow.beforeYouStart.length).toBeGreaterThanOrEqual(1)
@@ -60,7 +60,7 @@ describe('help resources', () => {
 
     expect(featureReferences).toEqual([
       'Customer Site',
-      'Trade Board',
+      'Dance Floor',
       'Live Queue',
       'Live Event Calendar',
       'Email Updates',
@@ -190,24 +190,24 @@ describe('help resources', () => {
     expect(combinedText).toContain('provider-specific DNS setup')
   })
 
-  it('documents flexible Add Jewelry intake with only the real photo/readability boundaries', () => {
-    const guide = getHelpResources('add jewelry trade board boxed display clear centered')
+  it('documents flexible dancer intake with only the real photo/readability boundaries', () => {
+    const guide = getHelpResources('add jewelry dance floor boxed display clear centered')
       .find((resource) => resource.id === 'add-jewelry-to-trade-board')
 
     expect(guide).toMatchObject({
       type: 'workflow',
-      group: 'Trade Board',
-      title: 'Add jewelry to your Trade Board',
-      nicNacPrompt: 'Help me add a piece to my Trade Board.',
+      group: 'Dance Floor',
+      title: 'Add a dancer to your Dance Floor',
+      nicNacPrompt: 'Help me add a dancer to my Dance Floor.',
     })
 
     expect(guide?.steps).toEqual([
       'Send the item number or a readable item-info tag/photo.',
       'Let Nic-Nac check the Sparkle Suite jewelry database and read any details you already sent.',
-      'If the item is already found, confirm the match and listing details.',
+      'If the item is already found, confirm the match and dancer details.',
       'If the item is missing, provide any missing details in chat or with a readable label/details photo.',
-      'Provide a clear, close, centered jewelry photo for the customer-facing board image.',
-      'Review the listing and add it to your board.',
+      'Provide a clear, close, centered jewelry photo for the customer-facing dancer image.',
+      'Review the dancer and add it to your Dance Floor.',
     ])
 
     expect(guide?.body).toContain('The order does not matter')
@@ -216,7 +216,7 @@ describe('help resources', () => {
     expect(guide?.body).toContain('A boxed display photo is fine')
     expect(guide?.body).not.toContain('packaging photos are not final board photos')
     expect(guide?.body).not.toContain('white background')
-    expect(guide?.quickActions).toContain('Add a piece to Trade Board')
+    expect(guide?.quickActions).toContain('Add a dancer to Dance Floor')
   })
 
   it('documents the customer reveal screenshot flow for trade requests', () => {
@@ -225,7 +225,7 @@ describe('help resources', () => {
 
     expect(guide).toMatchObject({
       type: 'workflow',
-      group: 'Trade Board',
+      group: 'Dance Floor',
       category: 'Trade Requests',
       title: 'Handle trade requests',
       nicNacPrompt: 'Help me handle my trade requests.',
@@ -243,7 +243,7 @@ describe('help resources', () => {
 
     expect(combinedText).toContain('Customers describe the piece they just revealed')
     expect(combinedText).toContain('recommended reveal screenshot')
-    expect(combinedText).toContain('Trade Board request inbox')
+    expect(combinedText).toContain('Dance Floor request inbox')
     expect(combinedText).toContain('Nic-Nac trade request cards')
     expect(combinedText).toContain('expires after 48 hours')
     expect(combinedText).toContain('same collection and same jewelry type')

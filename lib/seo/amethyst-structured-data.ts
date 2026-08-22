@@ -141,7 +141,7 @@ export function buildAmethystPublicPageJsonLd(
       '@type': 'ProfessionalService',
       '@id': `${origin}/#professional-service`,
       name: `${input.businessName} live jewelry reveals`,
-      serviceType: 'Live jewelry reveals and customer trade board support',
+      serviceType: 'Live jewelry reveals and customer dance floor support',
       provider: {
         '@id': repId,
       },

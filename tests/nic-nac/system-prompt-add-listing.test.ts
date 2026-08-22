@@ -20,7 +20,7 @@ describe('Nic-Nac system prompt — add listing flow', () => {
 
   it('starts guided trade-board intake with item number, label, or non-item-number paths', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'When the rep starts "Add a piece to Trade Board", offer three ways to start',
+      'When the rep starts "Add a piece to Dance Floor", offer three ways to start',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('type the item number')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(

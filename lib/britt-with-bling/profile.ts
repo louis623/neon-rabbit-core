@@ -369,7 +369,7 @@ export function applyBrittWithBlingHomepage(
     aboutParagraphs: [
       'Experience the thrill of a live jewelry reveal with Brittany and the Britt with Bling community.',
       'Order your jewelry, return to the live party, and watch the fizz reveal your new favorite sparkle.',
-      'When a reveal is not quite your style, the Sparkle Suite Trade Board gives the community a rep-reviewed place to swap.',
+      'When a reveal is not quite your style, the Sparkle Suite Dance Floor gives the community a rep-reviewed place to swap.',
     ],
     aboutMediaSlots: [
       {
@@ -432,7 +432,7 @@ export function applyBrittWithBlingTrade(
     publicSiteVariant: 'britt_with_bling_hybrid',
     repName: BRITT_WITH_BLING_PROFILE.publicName,
     businessName: BRITT_WITH_BLING_PROFILE.businessName,
-    tradeHeroTitle: 'Britt with Bling Trade Board',
+    tradeHeroTitle: 'Britt with Bling Dance Floor',
     tradeHeroSub:
       'When Brittany adds available pieces, you can request a rep-reviewed item-for-item swap here.',
     footerTagline:

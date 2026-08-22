@@ -168,7 +168,7 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(enriched.tickerTopText).not.toContain('stale')
   })
 
-  it('keeps Trade Board mechanics standard while dressing it for BWB', () => {
+  it('keeps Dance Floor mechanics standard while dressing it for BWB', () => {
     const trade = mapPreviewSettingsToTradeTemplateData(
       brittWithBlingSettings,
       brittWithBlingExtras,
@@ -176,7 +176,7 @@ describe('Britt With Bling hybrid public site contract', () => {
 
     expect(trade.businessName).toBe('Britt with Bling')
     expect(trade.repName).toBe('Brittany')
-    expect(trade.tradeHeroTitle).toBe('Britt with Bling Trade Board')
+    expect(trade.tradeHeroTitle).toBe('Britt with Bling Dance Floor')
     expect(trade.tradeHeroSub).toContain('When Brittany adds available pieces')
     expect(trade.tradeHeroSub).not.toContain('standard Sparkle Suite')
     expect(trade.tradeRules).toContain('Item-for-item only.')
@@ -347,7 +347,7 @@ describe('Britt With Bling hybrid public site contract', () => {
     ).not.toMatch(/readdy|storage\.readdy-site/i)
   })
 
-  it('renders BWB homepage, Trade Board, and Join shells with BWB branding', () => {
+  it('renders BWB homepage, Dance Floor, and Join shells with BWB branding', () => {
     const homepageJsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
       'utf8',

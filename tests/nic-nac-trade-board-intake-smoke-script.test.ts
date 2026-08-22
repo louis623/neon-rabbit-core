@@ -7,7 +7,7 @@ import {
   requireTradeBoardSmokeAssets,
 } from '@/scripts/smoke-nic-nac-trade-board-intake'
 
-describe('Nic-Nac Trade Board intake smoke script', () => {
+describe('Nic-Nac Dance Floor intake smoke script', () => {
   it('exports hard-fail phrases used by the smoke gate', () => {
     expect(HARD_FAIL_PHRASES).toContain("I can't actually add listings")
     expect(HARD_FAIL_PHRASES).toContain(
@@ -31,7 +31,7 @@ describe('Nic-Nac Trade Board intake smoke script', () => {
     expect(HARD_FAIL_PHRASES).toContain('preflight stage')
   })
 
-  it('expects the current Trade Board resolver and write tools in deployed replays', () => {
+  it('expects the current Dance Floor resolver and write tools in deployed replays', () => {
     expect(REQUIRED_OBSERVED_TOOLS).toEqual([
       'prepare_trade_board_work',
       'add_listing',
@@ -42,7 +42,7 @@ describe('Nic-Nac Trade Board intake smoke script', () => {
   it('parses smoke cases from cases.txt-style content', () => {
     const cases = parseTradeBoardIntakeSmokeCases(`
 CASE ER13229_LABEL_ONLY
-message=Add ER13229 to my Trade Board
+message=Add ER13229 to my Dance Floor
 upload=ER13229-label.jpg
 expect=ask_for_jewelry_front_photo
 fail=The photo of the earrings needs
@@ -52,7 +52,7 @@ END
     expect(cases).toEqual([
       {
         id: 'ER13229_LABEL_ONLY',
-        message: 'Add ER13229 to my Trade Board',
+        message: 'Add ER13229 to my Dance Floor',
         uploads: ['ER13229-label.jpg'],
         expect: ['ask_for_jewelry_front_photo'],
         fail: ['The photo of the earrings needs'],

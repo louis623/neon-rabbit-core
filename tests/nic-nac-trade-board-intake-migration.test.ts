@@ -10,7 +10,7 @@ const migration = readFileSync(
   'utf8',
 )
 
-describe('Nic-Nac Trade Board intake workflow migration', () => {
+describe('Nic-Nac Dance Floor intake workflow migration', () => {
   it('creates workflow session and photo tables', () => {
     expect(migration).toContain(
       'create table if not exists public.trade_board_intake_sessions',

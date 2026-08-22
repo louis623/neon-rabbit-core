@@ -24,9 +24,9 @@ describe('shared Nic-Nac knowledge', () => {
     )
   })
 
-  it('defines TradeBoard, dance floor, and dancers terminology once', () => {
-    expect(NIC_NAC_TRADEBOARD_KNOWLEDGE.productTerm).toBe('TradeBoard')
-    expect(NIC_NAC_TRADEBOARD_KNOWLEDGE.lingo.danceFloor).toContain('TradeBoard')
+  it('defines Dance Floor and dancers terminology once', () => {
+    expect(NIC_NAC_TRADEBOARD_KNOWLEDGE.productTerm).toBe('Dance Floor')
+    expect(NIC_NAC_TRADEBOARD_KNOWLEDGE.lingo.danceFloor).toContain('Dance Floor')
     expect(NIC_NAC_TRADEBOARD_KNOWLEDGE.lingo.dancers).toContain(
       'trade-eligible jewelry',
     )
@@ -35,7 +35,7 @@ describe('shared Nic-Nac knowledge', () => {
     )
     expect(NIC_NAC_TRADEBOARD_KNOWLEDGE.customerFlow).toContain('request')
     expect(NIC_NAC_TRADEBOARD_KNOWLEDGE.customerFlow).toContain(
-      'item number just revealed',
+      'item just revealed',
     )
   })
 
@@ -108,7 +108,7 @@ describe('shared Nic-Nac knowledge', () => {
 
     expect(text).toContain('Sparkle Suite')
     expect(text).toContain('Nic-Nac')
-    expect(text).toContain('dance floor')
+    expect(text).toContain('Dance Floor')
     expect(text).toContain('dancers')
     expect(text).toContain('item-for-item only')
     expect(text).toContain('MSRP is reference only')
@@ -118,17 +118,17 @@ describe('shared Nic-Nac knowledge', () => {
     expect(text).toContain('Do not lie, hallucinate, or make things up')
   })
 
-  it('keeps the shared knowledge as the source for core TradeBoard lingo', () => {
+  it('keeps the shared knowledge as the source for Dance Floor terminology', () => {
     const text = buildNicNacCoreKnowledgeText()
 
-    expect(text.match(/dance floor/g)?.length).toBeGreaterThanOrEqual(1)
+    expect(text.match(/Dance Floor/g)?.length).toBeGreaterThanOrEqual(1)
     expect(text.match(/dancers/g)?.length).toBeGreaterThanOrEqual(1)
-    expect(text).toContain('Customers do not add their own items or dancers')
+    expect(text).toContain('Customers do not add dancers to the Dance Floor')
   })
 
   it('exports shared trade terminology for guardrails', () => {
     expect(NIC_NAC_TRADE_TERMS).toContain('tradeboard')
-    expect(NIC_NAC_TRADE_TERMS).toContain('trade board')
+    expect(NIC_NAC_TRADE_TERMS).toContain('dance floor')
     expect(NIC_NAC_TRADE_TERMS).toContain('dance floor')
     expect(NIC_NAC_TRADE_TERMS).toContain('dancers')
   })

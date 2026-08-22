@@ -19,10 +19,10 @@ describe('Sparkle Suite Markdown-for-agents builder', () => {
       repName: 'Sasha Patel',
       repLocation: 'Chicago, Illinois',
       summary:
-        'Sparkle by Sasha hosts live Bomb Party jewelry reveals and a customer trade board.',
+        'Sparkle by Sasha hosts live Bomb Party jewelry reveals and a customer dance floor.',
       publicPages: [
         { title: 'Home', path: '/amethyst/Homepage.html' },
-        { title: 'Trade Board', path: '/amethyst/Trade.html' },
+        { title: 'Dance Floor', path: '/amethyst/Trade.html' },
         { title: 'Join Team', path: '/amethyst/Join.html' },
       ],
       liveShows: [
@@ -44,7 +44,7 @@ describe('Sparkle Suite Markdown-for-agents builder', () => {
     expect(markdown).toContain('Rep: Sasha Patel')
     expect(markdown).toContain('Location: Chicago, Illinois')
     expect(markdown).toContain(
-      '- [Trade Board](https://sparklebysasha.example/amethyst/Trade.html)',
+      '- [Dance Floor](https://sparklebysasha.example/amethyst/Trade.html)',
     )
     expect(markdown).toContain(
       '- Unicorn Magic Drop: 2099-11-12T20:00:00.000Z',

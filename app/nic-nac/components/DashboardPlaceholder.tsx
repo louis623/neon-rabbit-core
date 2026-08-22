@@ -119,7 +119,7 @@ const WORKSPACE_SECTIONS = [
   },
   {
     key: 'trade-board',
-    label: 'Trade Board',
+    label: 'Dance Floor',
     shortLabel: 'Trade',
     icon: Gem,
   },
@@ -691,8 +691,8 @@ const REVIEW_MESSAGE_FIXTURES: WorkspaceMessageSummary[] = [
     deliveryId: 'review-message-help-update',
     messageType: 'announcement',
     direction: 'nr_to_rep',
-    subject: 'Trade Board help was updated',
-    title: 'Trade Board help was updated',
+    subject: 'Dance Floor help was updated',
+    title: 'Dance Floor help was updated',
     summary: 'The request and fulfillment steps now include clearer follow-up guidance.',
     body: 'Open Help & Resources to see what changed.',
     category: 'help_update',
@@ -1322,7 +1322,7 @@ const SORT_OPTIONS: Array<{ value: RosterSort; label: string }> = [
 const HELP_RESOURCE_GROUP_ORDER = [
   'Setup',
   'Live Shows',
-  'Trade Board',
+  'Dance Floor',
   'Customers & Account',
   'Help',
 ] as const
@@ -2611,7 +2611,7 @@ type WorkspacePreviewState =
   | {
       mode: 'live_site_preview'
       href: string
-      title: 'Live Site Preview' | 'Customer Trade Board Preview'
+      title: 'Live Site Preview' | 'Customer Dance Floor Preview'
     }
 
 export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
@@ -3094,7 +3094,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       signal,
     })
     if (!response.ok) {
-      throw new Error(`trade board request failed: ${response.status}`)
+      throw new Error(`dance floor request failed: ${response.status}`)
     }
 
     const payload = (await response.json()) as TradeBoardResponsePayload
@@ -4615,7 +4615,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       setTradeBoardActionState({
         pendingKey: null,
         error: null,
-        helperMessage: 'Listing added to your board.',
+        helperMessage: 'Dancer added to your Dance Floor.',
       })
     } catch (error) {
       setTradeBoardActionState({
@@ -4657,7 +4657,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       setTradeBoardActionState({
         pendingKey: null,
         error: null,
-        helperMessage: 'Listing removed from your board.',
+        helperMessage: 'Dancer removed from your Dance Floor.',
       })
     } catch (error) {
       setTradeBoardActionState({
@@ -4717,13 +4717,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       const replacementStatus = payload?.result?.replacementStatus
       const approveMessage =
         replacementStatus === 'added_to_board'
-          ? 'Trade approved. Added the revealed piece back to your board.'
+          ? 'Trade approved. Added the revealed dancer back to your Dance Floor.'
           : replacementStatus === 'needs_ring_size'
             ? 'Trade approved. I saved the item number to this swap; add the ring size after the show to put it on the board.'
             : replacementStatus === 'needs_catalog_details'
               ? 'Trade approved. I saved the item number to this swap; finish the catalog details after the show.'
               : skippedRevealedItemNumber
-                ? 'Trade approved. Add the revealed piece later with Nic-Nac when you are ready.'
+                ? 'Trade approved. Add the revealed dancer later with Nic-Nac when you are ready.'
               : 'Trade request approved.'
       setTradeBoardActionState({
         pendingKey: null,
@@ -4785,7 +4785,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         helperMessage:
           nextStatus === 'shipped'
             ? 'Fulfillment moved to shipped.'
-            : 'Fulfillment marked completed. Add the received piece to your board when you are ready.',
+            : 'Fulfillment marked completed. Add the received dancer to your Dance Floor when you are ready.',
       })
     } catch (error) {
       setTradeBoardActionState({
@@ -5596,7 +5596,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     openWorkspacePreview({
       mode: 'live_site_preview',
       href: customerTradeBoardHref,
-      title: 'Customer Trade Board Preview',
+      title: 'Customer Dance Floor Preview',
     })
   }
   const handleOpenCustomerSitePreview = () => {
@@ -6397,7 +6397,7 @@ function ConceptHomeWorkspace({
           onClick={() => onLaunchAction('add_trade_piece')}
         >
           <span className={styles.railLaunchPieceIcon} aria-hidden="true">+</span>
-          <span>Add a piece</span>
+          <span>Add a dancer</span>
         </button>
         <ConceptPanel title="Trade Info" icon={<CalendarDays aria-hidden="true" />}>
           <MetricRows
@@ -6440,7 +6440,7 @@ function ConceptHomeWorkspace({
           <div className={styles.mobileHeroQuickActions}>
             <button type="button" onClick={() => onLaunchAction('add_trade_piece')}>
               <span className={styles.railLaunchPieceIcon} aria-hidden="true">+</span>
-              Add a piece
+              Add a dancer
             </button>
           </div>
         </div>
@@ -7750,7 +7750,7 @@ export function HelpResourcesCard({
           onChange={(event) =>
             updateReportForm('details', event.target.value)
           }
-          placeholder="Example: Trade Board froze when I tried to add ER13229, or I have an idea for show reminders."
+          placeholder="Example: Dance Floor froze when I tried to add ER13229, or I have an idea for show reminders."
         />
       </label>
       {reportSubmitState.error ? (
@@ -10429,7 +10429,7 @@ function getSparkleSuiteCheckoutReview(
     cancellation: 'Cancel anytime from billing. Access continues through the paid billing period.',
     included: [
       'Customer-facing site',
-      'Trade board / dance floor',
+      'Dance Floor / dance floor',
       'LiveQ',
       ...pricing.included.slice(3),
     ],

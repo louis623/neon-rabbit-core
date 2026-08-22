@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ER13229_LIVE_SEQUENCE } from './fixtures/trade-board-er13229-sequence'
 
-describe('ER13229 Trade Board live sequence fixture', () => {
+describe('ER13229 Dance Floor live sequence fixture', () => {
   it('documents the required real-rep turn order and hard-fail phrases', () => {
     expect(ER13229_LIVE_SEQUENCE).toMatchObject({
       itemNumber: 'ER13229',

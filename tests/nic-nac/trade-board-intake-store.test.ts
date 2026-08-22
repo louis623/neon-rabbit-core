@@ -48,7 +48,7 @@ function makeBuilder(result: { data: unknown; error: unknown }) {
   return { builder, calls }
 }
 
-describe('Trade Board intake store', () => {
+describe('Dance Floor intake store', () => {
   it('maps session rows to camelCase workflow state', () => {
     const mapped = mapTradeBoardIntakeSessionRow({
       id: 'workflow-1',

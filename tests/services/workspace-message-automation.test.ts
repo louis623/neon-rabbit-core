@@ -192,7 +192,7 @@ describe('workspace message automation', () => {
                     resource_key: 'trade-guide',
                     resource_type: 'blog',
                     title: 'Trade smarter',
-                    summary: 'A practical Trade Board guide.',
+                    summary: 'A practical Dance Floor guide.',
                     action_url: '/nic-nac?section=resources&resource=trade-guide',
                     video_url: null,
                     status: 'published',

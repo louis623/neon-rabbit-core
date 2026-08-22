@@ -691,7 +691,7 @@ export async function runFulfillmentUpdateSmoke(
 
     const finalAssistantText = extractAssistantText(messages)
     if (
-      !/add the piece|add (?:the )?received piece|add .* to (?:your|my) (?:Trade Board|board)|piece .* received/i.test(
+      !/add the piece|add (?:the )?received piece|add .* to (?:your|my) (?:Dance Floor|board)|piece .* received/i.test(
         finalAssistantText,
       )
     ) {

@@ -23,7 +23,7 @@ beforeEach(() => {
 })
 
 describe('generic Trade workflow context', () => {
-  it('starts a durable remove-listing workflow and retains Trade Board tools', async () => {
+  it('starts a durable remove-listing workflow and retains Dance Floor tools', async () => {
     getActiveTradeWorkflowSessionMock.mockResolvedValueOnce(null)
     createTradeWorkflowSessionMock.mockResolvedValueOnce({
       id: 'workflow-1',
@@ -47,7 +47,7 @@ describe('generic Trade workflow context', () => {
       supabase: {} as never,
       repId: 'rep-1',
       conversationId: 'conversation-1',
-      latestUserText: 'remove ER13229 from my trade board',
+      latestUserText: 'remove ER13229 from my dance floor',
       latestToolIntents: ['trade_board'],
       latestUserMessageId: 'message-1',
       mode: 'workspace',

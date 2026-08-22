@@ -506,7 +506,7 @@ export const nicNacAnswers: NicNacAnswer[] = [
   },
   {
     id: 'sparkle-suite',
-    triggers: ['website', 'live queue', 'customers', 'trade board', 'sparkle suite'],
+    triggers: ['website', 'live queue', 'customers', 'dance floor', 'sparkle suite'],
     response: 'Sparkle Suite can help reps with a public site, customer resources, live queue support, and future tools once the basics are in place. For now, finish your Start Strong setup first.',
     resourceIds: [],
     shouldEscalate: false,

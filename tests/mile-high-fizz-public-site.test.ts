@@ -188,7 +188,7 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect(css).toContain('--mhf-bg-elevated: var(--hp-bg-elevated)')
   })
 
-  it('keeps Trade Board standard while dressing it for Mile High Fizz', () => {
+  it('keeps Dance Floor standard while dressing it for Mile High Fizz', () => {
     const trade = mapPreviewSettingsToTradeTemplateData(
       mileHighFizzSettings,
       mileHighFizzExtras,
@@ -196,7 +196,7 @@ describe('Mile High Fizz hybrid public site contract', () => {
 
     expect(trade.businessName).toBe('Mile High Fizz')
     expect(trade.repName).toBe('Lindsey')
-    expect(trade.tradeHeroTitle).toContain('Mile High Fizz Trade Board')
+    expect(trade.tradeHeroTitle).toContain('Mile High Fizz Dance Floor')
     expect(trade.tradeRules).toContain('Item-for-item only.')
     expect(trade.footerLinks.home).toBe('/amethyst/Homepage.html')
     expect(trade.footerLinks.tradeBoard).toBe('/amethyst/Trade.html')
@@ -206,7 +206,7 @@ describe('Mile High Fizz hybrid public site contract', () => {
     )
   })
 
-  it('renders the public Trade Board in Mile High Fizz styling without changing mechanics', () => {
+  it('renders the public Dance Floor in Mile High Fizz styling without changing mechanics', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.jsx'),
       'utf8',

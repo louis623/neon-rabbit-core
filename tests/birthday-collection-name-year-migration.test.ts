@@ -30,7 +30,7 @@ describe('Birthday collection name year migration', () => {
     expect(sql).toContain('NOT (name ~')
   })
 
-  it('backfills active Trade Board intake session collection names with their year', () => {
+  it('backfills active Dance Floor intake session collection names with their year', () => {
     const sql = readMigration()
 
     expect(sql).toContain('UPDATE public.trade_board_intake_sessions')

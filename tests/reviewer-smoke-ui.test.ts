@@ -357,7 +357,7 @@ describe('reviewer smoke UI wiring', () => {
 
   it('uses the streamlined primary workspace navigation', () => {
     expect(dashboardPlaceholder).toContain("label: 'Nic-Nac'")
-    expect(dashboardPlaceholder).toContain("label: 'Trade Board'")
+    expect(dashboardPlaceholder).toContain("label: 'Dance Floor'")
     expect(dashboardPlaceholder).toContain("label: 'Calendar'")
     expect(dashboardPlaceholder).toContain("label: 'Tools'")
     expect(dashboardPlaceholder).toContain('SECONDARY_WORKSPACE_SECTIONS')

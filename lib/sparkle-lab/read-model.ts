@@ -141,7 +141,7 @@ export const SPARKLE_LAB_SECTIONS: Array<{
   {
     id: 'sparkle_suite_lab',
     label: 'Sparkle Suite Lab',
-    description: 'Rep business health, site health, Trade Board patterns, and launch risks.',
+    description: 'Rep business health, site health, Dance Floor patterns, and launch risks.',
   },
   {
     id: 'sparkle_finder_lab',

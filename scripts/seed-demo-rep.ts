@@ -269,7 +269,7 @@ export function buildDemoSeedPlan(input: { email: string; now?: Date }): DemoSee
       },
     },
     siteSettings: {
-      tagline: 'Sparkle picks, trade board favorites, and show-night fizz.',
+      tagline: 'Sparkle picks, dance floor favorites, and show-night fizz.',
       bannerText: 'Demo launch week: join the next live for first-look trades.',
       bannerVisible: true,
       tickerText: 'New demo listings added before every live show.',

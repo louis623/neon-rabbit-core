@@ -823,7 +823,7 @@ export async function runTradeRequestDecisionSmoke(
       requiredTools: ['get_trade_requests'],
       turns,
       text:
-        `Open my Trade Board request inbox and list the pending incoming trade requests. ` +
+        `Open my Dance Floor request inbox and list the pending incoming trade requests. ` +
         `I am looking for request ${targets.approve.requestId} from ${targets.approve.customerName} ` +
         `and request ${targets.reject.requestId} from ${targets.reject.customerName}.`,
     })

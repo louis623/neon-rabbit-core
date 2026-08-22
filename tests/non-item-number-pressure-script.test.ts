@@ -6,7 +6,7 @@ import {
   publicPreviewListingsHaveIds,
 } from '@/scripts/pressure-non-item-number-trade-listings'
 
-describe('non-item-number Trade Board pressure script', () => {
+describe('non-item-number Dance Floor pressure script', () => {
   it('is registered as an explicit pressure command', () => {
     expect(packageJson.scripts['pressure:non-item-number-trade-listings']).toBe(
       'tsx scripts/pressure-non-item-number-trade-listings.ts',

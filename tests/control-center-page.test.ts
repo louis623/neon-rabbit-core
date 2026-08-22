@@ -125,8 +125,8 @@ describe('SparkleSuiteControlCenterPage', () => {
         status: 'open',
         audit_status: 'completed',
         source: 'help_form',
-        title: 'Trade Board item vanished',
-        page_or_workflow: 'Trade Board',
+        title: 'Dance Floor item vanished',
+        page_or_workflow: 'Dance Floor',
         details: 'The replacement listing did not show after approval.',
         client_snapshot: {
           clientName: 'Jane Roberts',
@@ -199,7 +199,7 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('Report Detail')
     expect(html).toContain('Rep Profile')
     expect(html).toContain('Resolution')
-    expect(html).toContain('Trade Board item vanished')
+    expect(html).toContain('Dance Floor item vanished')
     expect(html).toContain('Jane Roberts')
     expect(html).toContain("Jane&#x27;s Sparkle Party")
     expect(html).toContain('Founder')

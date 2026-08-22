@@ -53,7 +53,7 @@ describe('Sparkle Suite prelaunch page', () => {
   it('renders the official waitlist sections with compliance copy', () => {
     const html = renderToStaticMarkup(createElement(PrelaunchPage))
 
-    expect(html).toContain('Trade board people actually want to use')
+    expect(html).toContain('Dance Floor people actually want to use')
     expect(html).toContain('Live queue customers can follow')
     expect(html).toContain('Live event calendar that stays current')
     expect(html).toContain('Email updates from one home base')

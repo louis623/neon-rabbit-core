@@ -13,10 +13,10 @@ describe('required Nic-Nac setup prompt', () => {
     )
     expect(prompt).toContain('rep has approved the final preview')
     expect(prompt).toContain('About page')
-    expect(prompt).toContain('Trade Board orientation')
+    expect(prompt).toContain('Dance Floor orientation')
     expect(prompt).toContain('The Light Box is ordered by Sparkle Suite after payment')
     expect(prompt).toContain('repApprovedPreview')
-    expect(prompt).not.toContain('populate the Trade Board before unlock')
+    expect(prompt).not.toContain('populate the Dance Floor before unlock')
   })
 
   it('uses clear account-basics language for customer-facing setup fields', () => {
@@ -211,13 +211,13 @@ describe('required Nic-Nac setup prompt', () => {
     )
     expect(prompt).toContain('Do not amplify hype claims')
     expect(prompt).toContain(
-      'Use customer-facing website, Sparkle Suite Workspace, Live Queue, Trade Board, and customer-facing site theme',
+      'Use customer-facing website, Sparkle Suite Workspace, Live Queue, Dance Floor, and customer-facing site theme',
     )
     expect(prompt).not.toContain('LiveQ')
     expect(prompt).not.toContain('TradeBoard')
   })
 
-  it('explains Trade Board and Light Box clearly before unlock', () => {
+  it('explains Dance Floor and Light Box clearly before unlock', () => {
     const prompt = buildRequiredSetupPrompt()
 
     expect(prompt).toContain('Light Box')
@@ -226,10 +226,10 @@ describe('required Nic-Nac setup prompt', () => {
       'The Light Box helps with consistent jewelry photos when a piece is not in the master jewelry library',
     )
     expect(prompt).toContain(
-      'Do not require any Trade Board inventory before unlock',
+      'Do not require any Dance Floor inventory before unlock',
     )
     expect(prompt).toContain(
-      'Trade Board helps reps organize customer trade requests instead of chasing DMs, comments, and screenshots',
+      'Dance Floor helps reps organize customer trade requests instead of chasing DMs, comments, and screenshots',
     )
   })
 

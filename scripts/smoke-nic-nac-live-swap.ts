@@ -86,7 +86,7 @@ type LiveSwapSmokeResult = {
 const HARD_FAIL_PATTERNS = [
   /i can['’`]?t (?:actually )?(?:open|pull|look up|access|approve|swap|capture|add|update|change)/i,
   /i['’`]?m not able to (?:open|pull|look up|access|approve|swap|capture|add|update|change)/i,
-  /not able to access (the )?(trade request|swap|trade board) tool/i,
+  /not able to access (the )?(trade request|swap|dance floor) tool/i,
   /only have notes access/i,
   /approve it manually/i,
   /add it manually/i,
@@ -831,7 +831,7 @@ export async function runLiveSwapSmoke(
       requiredTools: ['get_trade_requests'],
       turns,
       text:
-        `Open my pending Trade Board request inbox. I am looking for request ${target.requestId} ` +
+        `Open my pending Dance Floor request inbox. I am looking for request ${target.requestId} ` +
         `from ${target.customerName} for ${target.outgoingItemNumber}.`,
     })
 

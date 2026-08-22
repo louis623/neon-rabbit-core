@@ -94,16 +94,16 @@ describe('sendGoogleChatSupportAlert', () => {
 
   it('formats enriched Support Auditor alerts with client, issue, findings, and first action', () => {
     const text = buildSupportAuditAlertText({
-      title: 'Bug: Trade board item vanished',
+      title: 'Bug: Dance Floor item vanished',
       urgency: 'blocking',
       clientName: 'Jane Roberts',
       showName: "Jane's Sparkle Party",
       phone: '555-123-4567',
       email: 'jane@example.com',
       reportId: 'report-1',
-      issue: 'Rep says a Trade Board item disappeared after approving a trade.',
+      issue: 'Rep says a Dance Floor item disappeared after approving a trade.',
       source: 'Help form',
-      workflow: 'Trade Board',
+      workflow: 'Dance Floor',
       auditStatus: 'completed',
       summary:
         'The account is active and a trade cleanup lesson may apply.',
@@ -117,15 +117,15 @@ describe('sendGoogleChatSupportAlert', () => {
 
     expect(text).toBe(
       'Sparkle Suite support report\n\n' +
-        '[Blocking] Bug: Trade board item vanished\n\n' +
+        '[Blocking] Bug: Dance Floor item vanished\n\n' +
         'Client: Jane Roberts\n' +
         "Show: Jane's Sparkle Party\n" +
         'Phone: 555-123-4567\n' +
         'Email: jane@example.com\n' +
         'Report ID: report-1\n\n' +
-        'Issue: Rep says a Trade Board item disappeared after approving a trade.\n' +
+        'Issue: Rep says a Dance Floor item disappeared after approving a trade.\n' +
         'Submitted from: Help form\n' +
-        'Workflow: Trade Board\n\n' +
+        'Workflow: Dance Floor\n\n' +
         'Support Auditor: Completed\n' +
         'Summary: The account is active and a trade cleanup lesson may apply.\n\n' +
         'Key findings:\n' +
@@ -141,16 +141,16 @@ describe('sendGoogleChatSupportAlert', () => {
       'https://chat.googleapis.com/v1/spaces/support/messages?key=key&token=token'
 
     const payload = {
-      title: 'Bug: Trade board item vanished',
+      title: 'Bug: Dance Floor item vanished',
       urgency: 'blocking' as const,
       clientName: 'Jane Roberts',
       showName: "Jane's Sparkle Party",
       phone: '555-123-4567',
       email: 'jane@example.com',
       reportId: 'report-1',
-      issue: 'Rep says a Trade Board item disappeared after approving a trade.',
+      issue: 'Rep says a Dance Floor item disappeared after approving a trade.',
       source: 'Help form',
-      workflow: 'Trade Board',
+      workflow: 'Dance Floor',
       auditStatus: 'completed' as const,
       summary: 'The account is active.',
       findings: ['Similar prior lesson found.'],

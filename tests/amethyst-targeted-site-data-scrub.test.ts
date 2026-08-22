@@ -127,9 +127,9 @@ const cleanTemplateData = {
   trade: {
     repName: 'Clean Rep',
     businessName: 'Clean Smoke Sparkle',
-    tradeHeroTitle: 'Trade Board coming soon.',
+    tradeHeroTitle: 'Dance Floor coming soon.',
     tradeHeroSub: 'Listings will appear after this rep adds trade pieces.',
-    tickerTopText: 'Trade Board listings will appear here after pieces are added.',
+    tickerTopText: 'Dance Floor listings will appear here after pieces are added.',
     shopUrl: 'https://shop.example/clean',
     footerTagline: 'Clean Smoke Sparkle updates.',
     legalDisclaimer:

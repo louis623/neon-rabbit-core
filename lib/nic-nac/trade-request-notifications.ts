@@ -28,7 +28,7 @@ export function buildTradeRequestNotificationText(
     `New trade request from ${summary.customerName} for ${requestedItem}.`,
     `They offered: ${summary.customerDescription}`,
     summary.revealScreenshot
-      ? 'They included a reveal screenshot in the Trade Board request inbox.'
+      ? 'They included a reveal screenshot in the Dance Floor request inbox.'
       : null,
     `Review it against the same-collection + same-type rule first: ${collectionLine}.`,
     msrpLine,

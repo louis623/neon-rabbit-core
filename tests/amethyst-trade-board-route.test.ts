@@ -14,7 +14,7 @@ describe('GET /api/amethyst/trade-board', () => {
     loadAmethystTradeBoardPreviewListingsMock.mockReset()
   })
 
-  it('returns the current available trade board listings without caching', async () => {
+  it('returns the current available dance floor listings without caching', async () => {
     loadAmethystTradeBoardPreviewListingsMock.mockResolvedValueOnce([
       { id: 'listing-1', name: 'Birthday Bloom Ring' },
     ])

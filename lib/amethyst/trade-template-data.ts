@@ -118,12 +118,12 @@ export const defaultAmethystTradeTemplateData: AmethystTradeTemplateData = {
   tradeHeroSub:
     'This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.',
   tickerTopText:
-    'Trade board open now | Item-for-item only | Same collection + same jewelry type | Birthday pieces can trade across months',
+    'Dance Floor open now | Item-for-item only | Same collection + same jewelry type | Birthday pieces can trade across months',
   shopUrl: 'https://bombparty.com',
   footerTagline:
     'Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle.',
   legalDisclaimer:
-    'Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party is a registered trademark of Bomb Party LLC. This trade board is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. Trades are private agreements between the customer and the rep. MSRP is shown for reference only and is not the basis for trade matching.',
+    'Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party is a registered trademark of Bomb Party LLC. This dance floor is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. Trades are private agreements between the customer and the rep. MSRP is shown for reference only and is not the basis for trade matching.',
   tradeRules: [
     'Item-for-item only.',
     'No pay-the-difference requests.',

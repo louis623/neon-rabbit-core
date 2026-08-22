@@ -116,7 +116,7 @@ export async function getOrCreateTradeBoardIntakeContext(args: {
     }
   } catch (err) {
     if (isMissingWorkflowSchemaError(err)) {
-      console.warn('[nic-nac] Trade Board intake workflow schema is unavailable', {
+      console.warn('[nic-nac] Dance Floor intake workflow schema is unavailable', {
         conversationId: args.conversationId,
       })
       return emptyWorkflowContext('latest_turn_intent')
@@ -145,21 +145,21 @@ export function hasTradeBoardIntakeSignal(messages: UIMessage[]): boolean {
     hasExplicitTradeBoardAddSignal(text) ||
     /\b[A-Z]{1,4}\d{3,}\b/.test(text) ||
     (hasImage &&
-      /\b(label|details|tag|jewelry|customer-facing|trade board|add a piece)\b/i.test(
+      /\b(label|details|tag|jewelry|customer-facing|dance floor|add a piece)\b/i.test(
         assistantText,
       ))
   )
 }
 
 function hasExplicitTradeBoardAddSignal(text: string): boolean {
-  return /\badd\b[\s\S]{0,80}\b(trade board|board|listing|piece|item)\b/i.test(
+  return /\badd\b[\s\S]{0,80}\b(dance floor|board|listing|piece|item)\b/i.test(
     text,
   )
 }
 
 function assistantIsPostCompletionFollowUp(text: string): boolean {
   return (
-    /\bnow on your Trade Board as available\b/i.test(text) ||
+    /\bnow on your Dance Floor as available\b/i.test(text) ||
     /\busing the catalog photo right now\b/i.test(text) ||
     /\bI can also add trade preferences or a custom listing photo\b/i.test(text)
   )

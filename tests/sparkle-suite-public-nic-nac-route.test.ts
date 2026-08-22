@@ -200,9 +200,9 @@ describe('public Nic-Nac rep and TradeBoard hardening bank', () => {
     expect(generateTextMock).toHaveBeenCalledTimes(1)
   })
 
-  it('sends TradeBoard rules and rep context to the model', async () => {
+  it('sends Dance Floor rules and rep context to the model', async () => {
     generateTextMock.mockResolvedValueOnce({
-      text: 'TradeBoard helps reps keep trade interest easier to follow.',
+      text: 'Dance Floor helps reps keep trade interest easier to follow.',
     })
 
     await POST(publicNicNacRequest('How are you going to facilitate trades?'))
@@ -210,13 +210,12 @@ describe('public Nic-Nac rep and TradeBoard hardening bank', () => {
     const modelPayload = JSON.stringify(generateTextMock.mock.calls[0][0])
 
     expect(modelPayload).toContain('potential Bomb Party representatives')
-    expect(modelPayload).toContain('TradeBoard organizes trade interest')
-    expect(modelPayload).toContain('TradeBoard the dance floor')
-    expect(modelPayload).toContain('jewelry that is up for trade dancers')
-    expect(modelPayload).toContain('Treat dance floor as TradeBoard')
+    expect(modelPayload).toContain('Dance Floor organizes trade interest')
+    expect(modelPayload).toContain('Dance Floor is the Sparkle Suite home')
+    expect(modelPayload).toContain('Dancers are the rep-listed')
     expect(modelPayload).toContain('Do not say customers add dancers')
     expect(modelPayload).toContain('Sparkle Suite does not handle shipping')
-    expect(modelPayload).toContain('The rep sets the final trade rules and approvals')
+    expect(modelPayload).toContain('The rep controls the Dance Floor')
     expect(modelPayload).toContain('item-for-item only')
     expect(modelPayload).toContain('same collection')
     expect(modelPayload).toContain('same jewelry type')
@@ -244,22 +243,22 @@ describe('public Nic-Nac rep and TradeBoard hardening bank', () => {
     expect(modelPayload).toContain('cannot send texts or emails from the public page')
   })
 
-  it('postflight-corrects TradeBoard hallucinations from the model', async () => {
+  it('postflight-corrects Dance Floor hallucinations from the model', async () => {
     generateTextMock.mockResolvedValueOnce({
       text:
-        'During a live show, customers can add their own items to TradeBoard in real time.',
+        'During a live show, customers can add their own items to the Dance Floor in real time.',
     })
 
     const response = await POST(
-      publicNicNacRequest('How does the trade board work during a live show?'),
+      publicNicNacRequest('How does the dance floor work during a live show?'),
     )
     const body = await response.json()
 
     expect(response.status).toBe(200)
     expect(body.kind).toBe('answer')
-    expect(body.message).toContain('Customers do not add their own items')
-    expect(body.message).toContain('request to trade for an available rep listing')
-    expect(body.message).not.toContain('add their own items to TradeBoard')
+    expect(body.message).toContain('Customers do not add their own dancers')
+    expect(body.message).toContain('request to trade for an available dancer')
+    expect(body.message).not.toContain('add their own items to the Dance Floor')
   })
 
   it('postflight-corrects dance floor and dancer hallucinations from the model', async () => {
@@ -275,8 +274,8 @@ describe('public Nic-Nac rep and TradeBoard hardening bank', () => {
 
     expect(response.status).toBe(200)
     expect(body.kind).toBe('answer')
-    expect(body.message).toContain('Customers do not add their own items or dancers')
-    expect(body.message).toContain('request a rep-listed dancer')
+    expect(body.message).toContain('Customers do not add their own dancers')
+    expect(body.message).toContain('request to trade for an available dancer')
     expect(body.message).not.toContain('customers can add dancers')
   })
 

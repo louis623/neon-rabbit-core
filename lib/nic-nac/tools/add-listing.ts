@@ -1,4 +1,4 @@
-// Tool: add_listing — write. Adds one or more pieces to the rep's trade board.
+// Tool: add_listing — write. Adds one or more pieces to the rep's dance floor.
 // Two modes: single (one item number) and batch (an array of items). Handles
 // NEEDS_FULL_INFO (unknown design) by creating the design first when the rep
 // supplies the new-design fields on a follow-up call.
@@ -420,7 +420,7 @@ async function requireDuplicatePhysicalPieceConfirmationIfNeeded(input: {
   throw new NicNacToolError({
     code: 'DUPLICATE_PHYSICAL_CONFIRMATION_REQUIRED',
     userMessage:
-      'That item number is already on your Trade Board. Are we adding a second physical piece of that same design?',
+      'That item number is already on your Dance Floor. Are we adding a second physical piece of that same design?',
   })
 }
 
@@ -1765,7 +1765,7 @@ async function runBatch(
       addedCount: recoveredNewDesignAdds.length + result.added.length,
       needCollectionCount: result.pending.needCollection.length,
       needFullInfoCount: result.pending.needFullInfo.length,
-      note: 'Already-listed item numbers are physical inventory; each added unit gets its own Trade Board listing.',
+      note: 'Already-listed item numbers are physical inventory; each added unit gets its own Dance Floor listing.',
     },
   }
 }
@@ -1780,7 +1780,7 @@ export function makeAddListingTool(ctx: {
 }) {
   return tool({
     description:
-      "Adds one or more pieces to the authenticated rep's trade board. Supports single + batch. " +
+      "Adds one or more pieces to the authenticated rep's dance floor. Supports single + batch. " +
       "Three entry paths are supported: item number, label photo, or item number + label photo. When photos are attached to the conversation, extract the item number and supporting fields from the reveal box via vision before calling — don't ask the rep to type fields you can read off the photo. " +
       "For rings (RG item numbers), capture ringSize before saving. Ring size is usually printed on the box instead of the label; if you cannot read it from a box/details photo, ask the rep for the ring size. " +
       "If the resolved item exists in the jewelry database, pass mode:'single' and itemNumber for one piece, or mode:'batch' and items[] for several pieces at once. " +

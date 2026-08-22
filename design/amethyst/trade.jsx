@@ -181,7 +181,7 @@ function Ticker({ topText }) {
         </div>
       </div>
       <div className="hp-ticker-row reverse">
-        <span className="hp-ticker-label">Trade Board</span>
+        <span className="hp-ticker-label">Dance Floor</span>
         <div className="hp-ticker-track">
           {[...trades, ...trades, ...trades].map((tr, i) => (
             <a key={i} href="#" className="hp-ticker-trade">
@@ -206,7 +206,7 @@ function LRQRail({ live }) {
           <span className="ofs-dot" />
           <span>Live Reveal Queue</span>
         </div>
-        <div className="tp-lrq-meta">No show running right now. Browse the trade board — when you find something, tap "I Want This."</div>
+        <div className="tp-lrq-meta">No show running right now. Browse the dance floor — when you find something, tap "I Want This."</div>
         <div className="tp-lrq-stats">
           <div>
             <strong>Tue · 8pm</strong>
@@ -331,7 +331,7 @@ function TradeHero({ repName, businessName }) {
   return (
     <section className="tp-hero">
       <div className="tp-hero-inner">
-        <div className="tp-hero-eyebrow">Trade Board</div>
+        <div className="tp-hero-eyebrow">Dance Floor</div>
         <h1 className="tp-hero-title slot" data-slot="trade hero title">Pieces ready to trade.</h1>
         <p className="tp-hero-sub slot" data-slot="trade hero sub">
           Got a reveal that's not your style? Browse what <span className="slot" data-slot="rep name">{repName}</span> has on the board. Find one you love, send a request, and trade one-for-one. No money, no fuss.
@@ -579,7 +579,7 @@ function EmptyState({ repName }) {
   return (
     <div className="tp-empty">
       <div className="tp-empty-glyph">✦</div>
-      <h3 className="tp-empty-title">Trade board's empty right now.</h3>
+      <h3 className="tp-empty-title">Dance Floor's empty right now.</h3>
       <p className="tp-empty-sub">
         <strong>{repName}</strong> stocks the board during live shows. Catch the next reveal — there'll be plenty to trade by the end of the night.
       </p>
@@ -662,7 +662,7 @@ function Footer({ businessName }) {
         <div className="hp-footer-col">
           <h4>Shop</h4>
           <ul>
-            <li><a href="Trade.html">Trade Board</a></li>
+            <li><a href="Trade.html">Dance Floor</a></li>
             <li><a href="#">Bomb Party Catalog</a></li>
             <li><a href="#">Pre-orders</a></li>
             <li><a href="#">Past shows</a></li>
@@ -694,7 +694,7 @@ function Footer({ businessName }) {
         <p>
           {businessName} is operated by an independent Bomb Party Representative. Bomb Party® is a registered trademark of Bomb Party LLC.
           This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names,
-          trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Trade Board
+          trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Dance Floor
           listings are sold by the rep and not by Bomb Party LLC.
         </p>
       </div>
@@ -841,7 +841,7 @@ function App() {
 
         {t.showLegal && (
           <div className="tp-legal slot" data-slot="brand separation footer">
-            All listings are offered by <strong>{t.repName}</strong>, an Independent Bomb Party Representative. Trades are private agreements between you and the rep. Bomb Party® is a registered trademark of Bomb Party LLC. This trade board is not endorsed by, affiliated with, or operated by Bomb Party LLC. MSRP values are self-reported and not verified by the platform.
+            All listings are offered by <strong>{t.repName}</strong>, an Independent Bomb Party Representative. Trades are private agreements between you and the rep. Bomb Party® is a registered trademark of Bomb Party LLC. This dance floor is not endorsed by, affiliated with, or operated by Bomb Party LLC. MSRP values are self-reported and not verified by the platform.
           </div>
         )}
 
@@ -866,8 +866,8 @@ function App() {
       />
 
       {/* TWEAKS PANEL */}
-      <TweaksPanel title="Tweaks" subtitle="Tune the trade board" defaultWidth={380}>
-        <TweakSection title="Trade board" subtitle="Page-specific behavior">
+      <TweaksPanel title="Tweaks" subtitle="Tune the dance floor" defaultWidth={380}>
+        <TweakSection title="Dance Floor" subtitle="Page-specific behavior">
           <TweakRadio
             label="Live state"
             value={t.liveState}

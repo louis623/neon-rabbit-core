@@ -14,7 +14,7 @@ const ANNOUNCEMENT_TICKER_SPEED_PPS = 46
 const TRADE_TICKER_SPEED_PPS = 55.2
 const EMPTY_TRADE_TICKER_ITEM = {
   id: 'empty-trade-board',
-  message: 'Trade Board listings will appear here after pieces are added.',
+  message: 'Dance Floor listings will appear here after pieces are added.',
   isEmpty: true as const,
 }
 type TradeTickerItem =
@@ -228,7 +228,7 @@ function AmethystTicker({ content }: { content: AmethystSiteContent }) {
 
       <div className="relative flex h-[38px] items-center overflow-hidden bg-white">
         <div className="absolute inset-y-0 left-0 z-10 flex min-w-40 items-center bg-[linear-gradient(90deg,white_0%,white_70%,transparent_100%)] px-[18px] font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--amethyst-fg-muted)]">
-          Trade Board
+          Dance Floor
         </div>
         <div
           className="amethyst-ticker-track pl-[170px]"

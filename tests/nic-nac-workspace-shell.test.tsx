@@ -42,7 +42,7 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(html).toContain('role="tab"')
     expect(html).toContain('aria-selected="true"')
     expect(html).toContain('role="tabpanel"')
-    expect(html).toContain('>Trade Board<')
+    expect(html).toContain('>Dance Floor<')
     expect(html).not.toContain('>Jewelry Library<')
     expect(html).toContain('>Calendar<')
     expect(html).not.toContain(

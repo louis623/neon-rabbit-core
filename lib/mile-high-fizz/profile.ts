@@ -61,7 +61,7 @@ export function applyMileHighFizzHomepage(
     aboutHeadline: 'What is a Bomb Party?',
     aboutParagraphs: [
       'Experience the thrilling, must-watch excitement of a Bomb Party jewelry reveal. Submit your order and watch live as Lindsey fizzes, opens, and reveals your beautiful, unique piece of handcrafted jewelry.',
-      'Join the live party to share in the fun of discovering your next favorite pieces, then keep an eye on the Sparkle Suite Trade Board when a reveal is not quite your style.',
+      'Join the live party to share in the fun of discovering your next favorite pieces, then keep an eye on the Sparkle Suite Dance Floor when a reveal is not quite your style.',
       'Order your jewelry, watch Lindsey live on TikTok, and receive your handcrafted jewelry shipped directly to you, ready to enjoy.',
     ],
     signupTitle: 'Never Miss a Show!',
@@ -107,7 +107,7 @@ export function applyMileHighFizzTrade(
     publicSiteVariant: 'mile_high_fizz_hybrid',
     repName: MILE_HIGH_FIZZ_PROFILE.publicName,
     businessName: MILE_HIGH_FIZZ_PROFILE.businessName,
-    tradeHeroTitle: 'Mile High Fizz Trade Board',
+    tradeHeroTitle: 'Mile High Fizz Dance Floor',
     tradeHeroSub:
       "Browse Lindsey's available trade pieces and request an item-for-item swap from a live reveal.",
     footerTagline:

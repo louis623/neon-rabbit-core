@@ -86,7 +86,7 @@ import { getHelpResources } from '@/lib/services/help-resources'
 function getTradeBoardSectionLabels(html: string) {
   return Array.from(
     html.matchAll(
-      />(Trade Board|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Trade follow-up|Fulfillment queue)</g,
+      />(Dance Floor|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Trade follow-up|Fulfillment queue)</g,
     ),
     (match) => match[1].replace('&#x27;', "'"),
   )
@@ -549,7 +549,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Need help?')
     expect(html).not.toContain('Trade history')
     expect(html).toContain('Nic-Nac')
-    expect(html).toContain('Trade Board')
+    expect(html).toContain('Dance Floor')
     expect(html).not.toContain('Jewelry Library')
     expect(html).toContain('Calendar')
     expect(html).toContain('Tools')
@@ -738,7 +738,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Pick what you are trying to do')
     expect(html).toContain('Workflow Playbook')
     expect(html).toContain('Start here: Learn your Sparkle Suite workspace')
-    expect(html).toContain('Add jewelry to your Trade Board')
+    expect(html).toContain('Add jewelry to your Dance Floor')
     expect(html).toContain('Goal')
     expect(html).toContain('Use this when')
     expect(html).toContain('Before you start')
@@ -901,7 +901,7 @@ describe('DashboardPlaceholder', () => {
 
     const html = renderToStaticMarkup(
       createElement(WorkspaceAccessNotice, {
-        sectionLabel: 'Trade Board',
+        sectionLabel: 'Dance Floor',
         state: {
           status: 'ready',
           summary: {
@@ -917,7 +917,7 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('Trade Board needs account setup')
+    expect(html).toContain('Dance Floor needs account setup')
     expect(html).toContain('Your account page has the current checkout or billing step.')
     expect(html).toContain('Open account')
     expect(html).toContain('Stripe Billing and Payments')
@@ -1715,7 +1715,7 @@ describe('DashboardPlaceholder', () => {
     expect(tabsCss).toContain('.labelShort')
   })
 
-  it('keeps the extracted trade board surfaces light instead of reverting to espresso-heavy cards', () => {
+  it('keeps the extracted dance floor surfaces light instead of reverting to espresso-heavy cards', () => {
     const css = readFileSync(
       resolve(
         process.cwd(),
@@ -1975,7 +1975,7 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(getTradeBoardSectionLabels(html)).toEqual([
-      'Trade Board',
+      'Dance Floor',
       "Today's trade work",
       'Quick add',
       'Browse board',
@@ -2001,7 +2001,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Loading board pieces...')
   })
 
-  it('renders trade follow-up items in the Trade Board workspace', () => {
+  it('renders trade follow-up items in the Dance Floor workspace', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {
         tradeBoardState: TRADE_BOARD_READY_STATE,
@@ -2100,7 +2100,7 @@ describe('DashboardPlaceholder', () => {
     expect(source).not.toContain('topDesign')
   })
 
-  it('builds active trade board fetch URLs with limit and offset', () => {
+  it('builds active dance floor fetch URLs with limit and offset', () => {
     expect(buildTradeBoardFetchUrl()).toBe(
       '/api/nic-nac/trade-board?status=available&limit=12',
     )
@@ -2109,7 +2109,7 @@ describe('DashboardPlaceholder', () => {
     )
   })
 
-  it('keeps removed listings out of the active trade board cards', () => {
+  it('keeps removed listings out of the active dance floor cards', () => {
     const html = renderToStaticMarkup(
       createElement(TradeBoardWorkspaceCard, {
         tradeBoardState: {
@@ -2911,7 +2911,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Cancel anytime from billing.')
     expect(html).toContain('After checkout unlocks')
     expect(html).toContain('Customer-facing site')
-    expect(html).toContain('Trade board / dance floor')
+    expect(html).toContain('Dance Floor / dance floor')
     expect(html).toContain('Checkout alone does not send customer texts')
     expect(html).toContain('Read the Sparkle Suite terms before checkout.')
     expect(html).toContain('Read Terms and Conditions')

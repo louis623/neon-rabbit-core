@@ -115,7 +115,7 @@ function Header() {
       <div className="hp-header-inner">
         <nav className="hp-header-nav" aria-label="Primary">
           <a {...linkProps(HOME_HREF)} className="hp-header-link">Home</a>
-          <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link">Trade Board</a>
+          <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link">Dance Floor</a>
           <ComingSoonNavItem />
         </nav>
         <div className="hp-brand">
@@ -153,7 +153,7 @@ function Footer() {
           <h4>Navigate</h4>
           <ul>
             <li><a {...linkProps(HOME_HREF)}>Home</a></li>
-            <li><a {...linkProps(TRADE_BOARD_HREF)}>Trade Board</a></li>
+            <li><a {...linkProps(TRADE_BOARD_HREF)}>Dance Floor</a></li>
             <li><ComingSoonFooterItem /></li>
           </ul>
         </div>

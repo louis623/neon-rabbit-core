@@ -9,7 +9,7 @@ export const NIC_NAC_CORE_KNOWLEDGE = {
     'Setup includes built-in support from Nic-Nac to help set up the Sparkle Suite backend/workspace and customer-facing website, including basic customization and live-show settings.',
   publicToolNames: [
     'Customer site',
-    'TradeBoard',
+    'Dance Floor',
     'LiveQ',
     'Live event calendar',
     'Email updates',

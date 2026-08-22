@@ -139,7 +139,7 @@ describe('Nic-Nac required setup client', () => {
 
     expect(source).not.toContain('Site skin')
     expect(source).not.toContain('public site')
-    expect(source).not.toContain('dancefloor/trade board')
+    expect(source).not.toContain('dancefloor/dance floor')
     expect(source).toContain('customer-facing website')
   })
 

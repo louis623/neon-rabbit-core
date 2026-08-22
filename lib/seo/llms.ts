@@ -91,7 +91,7 @@ export function buildSparkleLlmsText(input: SparkleLlmsInput): string {
     '## Agent Use',
     '',
     `- Content-Signal: ${SPARKLE_AGENT_CONTENT_SIGNAL}`,
-    '- Use this file to understand public shopping, trade board, and team information.',
+    '- Use this file to understand public shopping, dance floor, and team information.',
     '- Do not treat this file as permission to train on private customer or rep data.',
     ...(glossary.length ? ['', ...glossary] : []),
     '',
@@ -104,15 +104,15 @@ export function buildDefaultSparkleLlmsText(origin: string | URL): string {
     businessName: "Jane's Sparkle Party",
     repName: 'Jane',
     summary:
-      "Jane's Sparkle Party is a Sparkle Suite-powered customer site for live Bomb Party jewelry reveals, trade board browsing, and team information.",
+      "Jane's Sparkle Party is a Sparkle Suite-powered customer site for live Bomb Party jewelry reveals, dance floor browsing, and team information.",
     publicPages: [
       { title: 'Home', path: '/amethyst/Homepage.html' },
-      { title: 'Trade Board', path: '/amethyst/Trade.html' },
+      { title: 'Dance Floor', path: '/amethyst/Trade.html' },
       { title: 'Join Team', path: '/amethyst/Join.html' },
     ],
     glossary: [
       {
-        term: 'Trade Board',
+        term: 'Dance Floor',
         definition:
           'A public customer board for browsing jewelry trade listings and requesting fair trades.',
       },

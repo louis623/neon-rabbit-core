@@ -142,7 +142,7 @@ function Ticker({ topText }) {
         </div>
       </div>
       <div className="hp-ticker-row reverse">
-        <span className="hp-ticker-label">Trade Board</span>
+        <span className="hp-ticker-label">Dance Floor</span>
         <div className="hp-ticker-track">
           {[...trades, ...trades, ...trades].map((tr, i) => (
             <a key={i} href="Trade.html" className="hp-ticker-trade">
@@ -419,7 +419,7 @@ function Footer({ businessName }) {
         <div className="hp-footer-col">
           <h4>Shop</h4>
           <ul>
-            <li><a href="Trade.html">Trade Board</a></li>
+            <li><a href="Trade.html">Dance Floor</a></li>
             <li><a href="#">Bomb Party Catalog</a></li>
             <li><a href="#">Pre-orders</a></li>
             <li><a href="#">Past shows</a></li>

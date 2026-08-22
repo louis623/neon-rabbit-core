@@ -1604,7 +1604,7 @@ export function PrelaunchIntakeReviewPageContent({
                       activeLaunchBuild.repId,
                     )}`}
                   >
-                    Trade board
+                    Dance Floor
                   </a>
                   <a
                     className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 transition hover:border-slate-400 hover:bg-slate-100"

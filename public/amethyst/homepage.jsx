@@ -618,7 +618,7 @@ function Hero({ t, isLive, liveShow }) {
                     ))}
                   </div>
                   <a {...linkProps(getTradeBoardHref())} className="hp-btn-primary hp-btn-sparkle hp-hero-trade-board-cta">
-                    Browse the trade board
+                    Browse the dance floor
                     <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
                   </a>
                   {isHeatherBlingKitchenSite && CONTENT.pantryPageUrl && (
@@ -643,7 +643,7 @@ function Hero({ t, isLive, liveShow }) {
 const ANNOUNCEMENT_TICKER_SPEED_PPS = 46;
 const TRADE_TICKER_SPEED_PPS = 55.2;
 const EMPTY_TRADE_TICKER_ITEM = {
-  name: "Trade Board listings will appear here after pieces are added.",
+  name: "Dance Floor listings will appear here after pieces are added.",
   type: "",
   collection: "",
   isEmpty: true,
@@ -999,7 +999,7 @@ function Ticker({ topText }) {
           <a key={`${part.href}-${index}`} {...linkProps(part.href)}>{part.text}</a>
         ))}
         <p>{getLiveQueueSummary("Live Queue opens when the show starts.")}</p>
-        <a {...linkProps(getTradeBoardHref())}>Browse current trade board highlights</a>
+        <a {...linkProps(getTradeBoardHref())}>Browse current dance floor highlights</a>
       </div>
       <div className="hp-ticker-row">
         <span className="hp-ticker-label">Announcements</span>
@@ -1015,7 +1015,7 @@ function Ticker({ topText }) {
         </div>
       </div>
       <div className="hp-ticker-row reverse">
-        <span className="hp-ticker-label">Trade Board</span>
+        <span className="hp-ticker-label">Dance Floor</span>
         <div className="hp-ticker-track" data-ticker-pps={TRADE_TICKER_SPEED_PPS} aria-hidden="true">
           {tickerTrades.map((tr, i) => tr.isEmpty ? (
             <span
@@ -1783,7 +1783,7 @@ function Footer({ businessName }) {
         <div className="hp-footer-col">
           <ul>
             <li><a {...linkProps(CONTENT.footerLinks?.home || withCurrentSearch("/amethyst/Homepage.html"))}>Home</a></li>
-            <li><a {...linkProps(getTradeBoardHref())}>Trade Board</a></li>
+            <li><a {...linkProps(getTradeBoardHref())}>Dance Floor</a></li>
             {CONTENT.pantryPageUrl && <li><a {...linkProps(CONTENT.pantryPageUrl)}>In the Pantry</a></li>}
             {joinTeamHref && <li><a {...linkProps(joinTeamHref)}>Join Team</a></li>}
           </ul>
@@ -1864,7 +1864,7 @@ function SparkleSuiteHeaderStack({ t, scheduleIsLive, effectiveLrqState, onOpenQ
           </div>
           <nav className="hp-header-nav" aria-label="Primary">
             <a href="#top" className="hp-header-link" aria-current="page">Home</a>
-            <a {...linkProps(getTradeBoardHref())} className="hp-header-link">Trade Board</a>
+            <a {...linkProps(getTradeBoardHref())} className="hp-header-link">Dance Floor</a>
             {CONTENT.pantryPageUrl ? (
               <a {...linkProps(CONTENT.pantryPageUrl)} className="hp-header-link">In the Pantry</a>
             ) : null}

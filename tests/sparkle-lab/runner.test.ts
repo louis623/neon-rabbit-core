@@ -98,7 +98,7 @@ describe('Sparkle Lab deterministic runner', () => {
       {
         id: 'support-1',
         title: 'Blocking report',
-        details: 'Trade Board failure during show.',
+        details: 'Dance Floor failure during show.',
         urgency: 'blocking',
       },
     ])

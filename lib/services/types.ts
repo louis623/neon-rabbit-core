@@ -719,7 +719,7 @@ export type HelpResourceType =
 export type HelpResourceGroup =
   | 'Setup'
   | 'Live Shows'
-  | 'Trade Board'
+  | 'Dance Floor'
   | 'Customers & Account'
   | 'Help'
   | 'Feature Index'

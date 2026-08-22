@@ -245,7 +245,7 @@ export const defaultAmethystHomepageTemplateData: AmethystHomepageTemplateData =
   footerTagline:
     'Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle.',
   legalDisclaimer:
-    'Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party is a registered trademark of Bomb Party LLC. This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names, trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Trade Board listings are sold by the rep and not by Bomb Party LLC.',
+    'Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party is a registered trademark of Bomb Party LLC. This site is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Bomb Party LLC. All product names, trademarks, and registered trademarks are property of their respective owners. Live show schedules subject to change. Dance Floor listings are sold by the rep and not by Bomb Party LLC.',
   showcaseVideoCaption: '@sparklebysasha - "When the box hits different..."',
   showcaseVideoUrl: '#',
   showcaseImageUrl: '',
@@ -332,8 +332,8 @@ function liveQueueSummaryFromSnapshot(
 }
 
 function tradeBoardSummaryFromListings(listings: AmethystTradeBoardListing[]) {
-  if (listings.length === 0) return 'Trade Board ready for new listings'
-  return `Trade Board: ${listings.length} available ${listings.length === 1 ? 'piece' : 'pieces'}`
+  if (listings.length === 0) return 'Dance Floor ready for new listings'
+  return `Dance Floor: ${listings.length} available ${listings.length === 1 ? 'piece' : 'pieces'}`
 }
 
 const CUSTOMER_READY_LIVE_QUEUE_SUMMARY =
@@ -521,7 +521,7 @@ export function buildAmethystHomepageBootstrapScript(
     `  href('.hp-hero-ctas .hp-btn-outline', streamLinks.shop || '#');`,
     `  href('.hp-hero-ctas .hp-btn-watch', streamLinks.watch || streamLinks.tiktok || '#');`,
     `  href('.hp-signup-consent a', footerLinks.privacy || '#');`,
-    `  all('.hp-footer-col:nth-of-type(2) a').forEach(function (node) { var label = (node.textContent || '').trim(); var value = label === 'Home' ? (footerLinks.home || '/amethyst/Homepage.html') : label === 'Trade Board' ? (footerLinks.tradeBoard || '/amethyst/Trade.html') : label === 'In the Pantry' ? (content.pantryPageUrl || '') : label === 'Join Team' ? (footerLinks.joinTeam || '') : ''; if (value) node.setAttribute('href', value); if (!value) { var item = node.closest('li'); if (item) item.style.display = 'none'; } });`,
+    `  all('.hp-footer-col:nth-of-type(2) a').forEach(function (node) { var label = (node.textContent || '').trim(); var value = label === 'Home' ? (footerLinks.home || '/amethyst/Homepage.html') : label === 'Dance Floor' ? (footerLinks.tradeBoard || '/amethyst/Trade.html') : label === 'In the Pantry' ? (content.pantryPageUrl || '') : label === 'Join Team' ? (footerLinks.joinTeam || '') : ''; if (value) node.setAttribute('href', value); if (!value) { var item = node.closest('li'); if (item) item.style.display = 'none'; } });`,
     `  [footerLinks.privacy, footerLinks.terms, footerLinks.accessibility].forEach(function (value, index) { var node = all('.legal-row a')[index]; if (node && value) node.setAttribute('href', value); });`,
     `};`,
   ].join('\n')

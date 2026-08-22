@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { chooseNicNacToolChoiceForStep } from '@/lib/nic-nac/tool-choice-policy'
 
 describe('Nic-Nac tool choice policy', () => {
-  it('forces add_listing when the active Trade Board intake workflow is ready to add', () => {
+  it('forces add_listing when the active Dance Floor intake workflow is ready to add', () => {
     expect(
       chooseNicNacToolChoiceForStep({
         requireToolCall: true,
@@ -44,7 +44,7 @@ describe('Nic-Nac tool choice policy', () => {
     ).toEqual({ type: 'tool', toolName: 'update_site_setting' })
   })
 
-  it('keeps required tool choice for contextual Trade Board turns that are not ready yet', () => {
+  it('keeps required tool choice for contextual Dance Floor turns that are not ready yet', () => {
     expect(
       chooseNicNacToolChoiceForStep({
         requireToolCall: true,
@@ -87,7 +87,7 @@ describe('Nic-Nac tool choice policy', () => {
         },
         latestUserText: 'Yes',
         previousAssistantText:
-          'That item number is already on your Trade Board. Are we adding a second physical piece of that same design?',
+          'That item number is already on your Dance Floor. Are we adding a second physical piece of that same design?',
       }),
     ).toEqual({ type: 'tool', toolName: 'add_listing' })
   })
@@ -118,7 +118,7 @@ describe('Nic-Nac tool choice policy', () => {
           'get_trade_requests',
         ],
         latestUserText:
-          'Open my pending Trade Board request inbox for this customer.',
+          'Open my pending Dance Floor request inbox for this customer.',
       }),
     ).toEqual({ type: 'tool', toolName: 'get_trade_requests' })
   })

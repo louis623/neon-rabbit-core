@@ -242,7 +242,7 @@ export async function runTradeBoardIntakeSmoke(
       fixtureDir,
       missing: assets.missing,
       message:
-        'Nic-Nac Trade Board smoke needs the ER13229 label and boxed jewelry fixture photos before live API replay can run.',
+        'Nic-Nac Dance Floor smoke needs the ER13229 label and boxed jewelry fixture photos before live API replay can run.',
     }
   }
 
@@ -253,7 +253,7 @@ export async function runTradeBoardIntakeSmoke(
       status: 'missing_env',
       fixtureDir,
       missingEnv,
-      message: 'Nic-Nac Trade Board smoke is missing required environment.',
+      message: 'Nic-Nac Dance Floor smoke is missing required environment.',
     }
   }
 
@@ -284,7 +284,7 @@ export async function runTradeBoardIntakeSmoke(
       conversationId,
       currentMessages: messages,
       turn: 'start',
-      parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+      parts: [{ type: 'text', text: 'Add a piece to Dance Floor' }],
       expectedAssistantCount: 1,
       turns,
     })
@@ -338,7 +338,7 @@ export async function runTradeBoardIntakeSmoke(
         parts: [
           {
             type: 'text',
-            text: 'Add a second physical pair of ER13229 to my Trade Board.',
+            text: 'Add a second physical pair of ER13229 to my Dance Floor.',
           },
         ],
         expectedAssistantCount: 4,
@@ -394,7 +394,7 @@ export async function runTradeBoardIntakeSmoke(
         turns,
         workflow,
         message:
-          'Trade Board intake workflow did not complete after the ER13229 replay.',
+          'Dance Floor intake workflow did not complete after the ER13229 replay.',
       }
     }
 
@@ -437,7 +437,7 @@ export async function runTradeBoardIntakeSmoke(
       listingIds,
       cleanup,
       message:
-        'ER13229 Trade Board intake smoke passed through the real Nic-Nac API and verified the listing workflow.',
+        'ER13229 Dance Floor intake smoke passed through the real Nic-Nac API and verified the listing workflow.',
     }
   } catch (error) {
     return {

@@ -50,7 +50,7 @@ describe('submit_support_report tool', () => {
     const result = await tool.execute({
       reportType: 'workflow_idea',
       urgency: 'showtime_urgent',
-      pageOrWorkflow: 'Trade Board cleanup',
+      pageOrWorkflow: 'Dance Floor cleanup',
       title: 'Make cleanup easier',
       details: 'I need a faster way to clear pieces after a live show.',
       expectedResult: 'One review screen for cleanup.',
@@ -64,7 +64,7 @@ describe('submit_support_report tool', () => {
       runId: 'run-1',
       reportType: 'workflow_idea',
       urgency: 'showtime_urgent',
-      pageOrWorkflow: 'Trade Board cleanup',
+      pageOrWorkflow: 'Dance Floor cleanup',
       title: 'Make cleanup easier',
       details: 'I need a faster way to clear pieces after a live show.',
       expectedResult: 'One review screen for cleanup.',

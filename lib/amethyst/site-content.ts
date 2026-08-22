@@ -110,13 +110,13 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
   heroEyebrow: 'Live reveals · every Tuesday · 8pm local time',
   heroHeadline: 'Real jewelry. Live reveals. Pure sparkle.',
   heroSub:
-    "I'm Sasha. Customers drop in to watch live reveals, browse the trade board, and grab their favorite pieces before the next show starts.",
+    "I'm Sasha. Customers drop in to watch live reveals, browse the dance floor, and grab their favorite pieces before the next show starts.",
   announcementText: 'Text club gets first dibs on drops and reminders.',
   announcementItems: [
     'Live tonight · 8pm local time',
     'Use code AMETHYST15',
     'Pre-orders close Friday',
-    'Trade board refresh after every reveal',
+    'Dance Floor refresh after every reveal',
   ],
   bombPartyLearnMoreUrl: 'https://bombparty.com',
   shopUrl: 'https://bombparty.com',
@@ -244,7 +244,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
     'Customers order a sealed jewelry box, then join the live reveal to watch what comes out in real time. Every box includes real jewelry, with rare Diamond Territory and Unicorn Magic pieces mixed into the regular drops.',
   signupEyebrow: 'Stay in the loop',
   signupTitle: 'Never miss a show.',
-  signupSub: 'Get a heads-up when Sasha goes live, plus first looks at new trade board listings and featured collections.',
+  signupSub: 'Get a heads-up when Sasha goes live, plus first looks at new dance floor listings and featured collections.',
   signupConsent:
     'Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from Sparkle by Sasha. Message and data rates may apply. Reply STOP to unsubscribe.',
   joinTeamEyebrow: 'Join the team',
@@ -254,7 +254,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
   footerTagline: 'Live jewelry reveals every week. Real pieces, real community, real sparkle.',
   footerShopLinks: [
     { label: 'Home', href: '#top' },
-    { label: 'Trade Board', href: '#trade-board' },
+    { label: 'Dance Floor', href: '#trade-board' },
     { label: 'Join Team', href: '/amethyst/Join.html' },
   ],
   footerAboutLinks: [
@@ -272,10 +272,10 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
     { label: 'YouTube', shortLabel: 'YT', href: '#watch-live' },
   ],
   legalDisclaimer:
-    'Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party and related marks belong to Bomb Party LLC. Trade board listings, show schedules, and rep communications are managed by the individual rep.',
+    'Sparkle by Sasha is operated by an independent Bomb Party Representative. Bomb Party and related marks belong to Bomb Party LLC. Dance Floor listings, show schedules, and rep communications are managed by the individual rep.',
   navLinks: [
     { label: 'Home', href: '#top' },
-    { label: 'Trade Board', href: '#trade-board' },
+    { label: 'Dance Floor', href: '#trade-board' },
     { label: 'Join Team', href: '#join-team' },
     {
       label: 'Learn about Bomb Party',
@@ -294,12 +294,12 @@ export function makeAmethystSiteContent(
     overrides.businessName ?? defaultAmethystSiteContent.businessName
   const heroSub = redactPublicRepFullName(
     overrides.heroSub ??
-      `I'm ${repName}. Customers drop in to watch live reveals, browse the trade board, and grab their favorite pieces before the next show starts.`,
+      `I'm ${repName}. Customers drop in to watch live reveals, browse the dance floor, and grab their favorite pieces before the next show starts.`,
     rawRepName,
   )
   const signupSub = redactPublicRepFullName(
     overrides.signupSub ??
-      `Get a heads-up when ${repName} goes live, plus first looks at new trade board listings and featured collections.`,
+      `Get a heads-up when ${repName} goes live, plus first looks at new dance floor listings and featured collections.`,
     rawRepName,
   )
 
@@ -314,7 +314,7 @@ export function makeAmethystSiteContent(
       `Choose SMS, email, or both. Marketing consent stays separate from reminders and updates from ${businessName}. Message and data rates may apply. Reply STOP to unsubscribe.`,
     legalDisclaimer:
       overrides.legalDisclaimer ??
-      `${businessName} is operated by an independent Bomb Party Representative. Bomb Party and related marks belong to Bomb Party LLC. Trade board listings, show schedules, and rep communications are managed by the individual rep.`,
+      `${businessName} is operated by an independent Bomb Party Representative. Bomb Party and related marks belong to Bomb Party LLC. Dance Floor listings, show schedules, and rep communications are managed by the individual rep.`,
     repName,
   }
 }

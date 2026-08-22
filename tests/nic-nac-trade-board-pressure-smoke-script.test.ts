@@ -7,14 +7,14 @@ import {
   summarizePressureStep,
 } from '@/scripts/smoke-nic-nac-trade-board-pressure'
 
-describe('Nic-Nac Trade Board pressure smoke script', () => {
+describe('Nic-Nac Dance Floor pressure smoke script', () => {
   it('is registered as an explicit smoke command', () => {
     expect(packageJson.scripts['smoke:nic-nac:trade-board-pressure']).toBe(
       'tsx scripts/smoke-nic-nac-trade-board-pressure.ts',
     )
   })
 
-  it('covers the deployed Trade Board workflow family in order', () => {
+  it('covers the deployed Dance Floor workflow family in order', () => {
     expect(TRADE_BOARD_PRESSURE_SMOKE_STEPS.map((step) => step.name)).toEqual([
       'trade-board-intake',
       'trade-board-non-item-number',

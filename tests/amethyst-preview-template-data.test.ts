@@ -28,7 +28,7 @@ const demoSettings: SiteSettingsDashboardResult = {
   bannerVisible: true,
   tickerText: 'New demo listings added before every live show.',
   tickerVisible: true,
-  tagline: 'Sparkle picks, trade board favorites, and show-night fizz.',
+  tagline: 'Sparkle picks, dance floor favorites, and show-night fizz.',
   heroImageUrl: '',
   heroAnimationType: 'sparkle_rise',
   teamName: 'Sparkle Demo Circle',
@@ -130,7 +130,7 @@ describe('Amethyst preview template data', () => {
     expect(data.businessName).toBe('Sparkle Suite Demo Boutique')
     expect(data.teamName).toBe('Sparkle Demo Circle')
     expect(data.tagline).toBe(
-      'Sparkle picks, trade board favorites, and show-night fizz.',
+      'Sparkle picks, dance floor favorites, and show-night fizz.',
     )
     expect(data.heroMotion).toBe('sparkle_rise')
     expect(data.tickerTopText).toBe(

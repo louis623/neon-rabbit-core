@@ -325,7 +325,7 @@ describe('add_listing — batch mode', () => {
     ).rejects.toMatchObject({
       code: 'DUPLICATE_PHYSICAL_CONFIRMATION_REQUIRED',
       userMessage:
-        'That item number is already on your Trade Board. Are we adding a second physical piece of that same design?',
+        'That item number is already on your Dance Floor. Are we adding a second physical piece of that same design?',
     })
     expect(addListingMock).not.toHaveBeenCalled()
   })
@@ -362,7 +362,7 @@ describe('add_listing — batch mode', () => {
         parts: [
           {
             type: 'text',
-            text: 'That item number is already on your Trade Board. Are we adding another physical piece of the same design?',
+            text: 'That item number is already on your Dance Floor. Are we adding another physical piece of the same design?',
           },
         ],
       },
@@ -413,7 +413,7 @@ describe('add_listing — batch mode', () => {
         parts: [
           {
             type: 'text',
-            text: 'That item number is already on your Trade Board. Are we adding a second physical piece of that same design?',
+            text: 'That item number is already on your Dance Floor. Are we adding a second physical piece of that same design?',
           },
         ],
       },

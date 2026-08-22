@@ -10,7 +10,7 @@ const migration = readFileSync(
   'utf8',
 )
 
-describe('Nic-Nac Trade Board intake photo upsert index migration', () => {
+describe('Nic-Nac Dance Floor intake photo upsert index migration', () => {
   it('replaces the partial photo identity index with an upsert-inferable unique index', () => {
     expect(migration).toContain(
       'drop index if exists public.idx_trade_board_intake_photos_message_attachment',

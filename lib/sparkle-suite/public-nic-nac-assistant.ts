@@ -143,7 +143,7 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
   if (
     includesAny(question, [
       'tradeboard',
-      'trade board',
+      'dance floor',
       'trade',
       'shipping',
       'ship',
@@ -192,7 +192,7 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
     return {
       kind: 'answer',
       message:
-        'Sparkle Suite supports your live-show workflow with LiveQ, TradeBoard, a live event calendar, and email/SMS updates so your customers can follow what is happening more easily.',
+        'Sparkle Suite supports your live-show workflow with LiveQ, Dance Floor, a live event calendar, and email/SMS updates so your customers can follow what is happening more easily.',
     }
   }
 

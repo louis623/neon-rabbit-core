@@ -80,7 +80,7 @@ export type {
   JewelryPhotoPreflightResult,
 } from './jewelry-photo-preflight'
 
-// Trade Board
+// Dance Floor
 export {
   getMyBoard,
   removeListing,

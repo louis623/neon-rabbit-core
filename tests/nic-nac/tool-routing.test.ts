@@ -54,7 +54,7 @@ describe('Nic-Nac tool routing', () => {
   })
 
   it('routes the guided add-a-piece chip to trade-board tools', () => {
-    const intents = getToolIntentsForText('Add a piece to Trade Board')
+    const intents = getToolIntentsForText('Add a piece to Dance Floor')
 
     expect(intents).toContain('trade_board')
     expect(listToolNamesForIntents(intents)[0]).toBe('prepare_trade_board_work')
@@ -144,7 +144,7 @@ describe('Nic-Nac tool routing', () => {
   it.each([
     'Where is the Live Queue walkthrough video?',
     'Show me the how-to for editing my public site links.',
-    'Walk me through adding jewelry to my trade board.',
+    'Walk me through adding jewelry to my dance floor.',
   ])('keeps "%s" on the read-only resources tool', (text) => {
     const intents = getToolIntentsForText(text)
 
@@ -158,7 +158,7 @@ describe('Nic-Nac tool routing', () => {
   it.each([
     'report a bug',
     'file an issue with my public site',
-    'suggest an upgrade for Trade Board cleanup',
+    'suggest an upgrade for Dance Floor cleanup',
     'I have a workflow idea',
     'Nic-Nac is broken',
   ])('routes support report language "%s" to resources', (text) => {
@@ -182,7 +182,7 @@ describe('Nic-Nac tool routing', () => {
     ])
   })
 
-  it('keeps add-listing tools active when workflow state requires Trade Board tools', () => {
+  it('keeps add-listing tools active when workflow state requires Dance Floor tools', () => {
     const intents = mergeWorkflowToolIntents(['memory'], ['trade_board', 'catalog'])
     const toolNames = listToolNamesForIntents(intents)
 
@@ -191,7 +191,7 @@ describe('Nic-Nac tool routing', () => {
     expect(toolNames).toContain('search_jewelry_database')
   })
 
-  it('does not duplicate routed tools when latest turn and workflow both include Trade Board', () => {
+  it('does not duplicate routed tools when latest turn and workflow both include Dance Floor', () => {
     const intents = mergeWorkflowToolIntents(['trade_board'], ['trade_board', 'catalog'])
 
     expect(intents).toEqual(['trade_board', 'catalog'])
@@ -251,7 +251,7 @@ describe('Nic-Nac tool routing', () => {
         parts: [
           {
             type: 'text',
-            text: 'Please add this necklace to my trade board.',
+            text: 'Please add this necklace to my dance floor.',
           },
         ],
       },
@@ -291,7 +291,7 @@ describe('Nic-Nac tool routing', () => {
         parts: [
           {
             type: 'text',
-            text: 'Please add this necklace to my trade board.',
+            text: 'Please add this necklace to my dance floor.',
           },
         ],
       },
@@ -747,9 +747,9 @@ describe('Nic-Nac tool routing', () => {
     expect(toolNames).toContain('get_trade_swap_cleanup')
   })
 
-  it('routes Trade Board request inbox language to trade request tools', () => {
+  it('routes Dance Floor request inbox language to trade request tools', () => {
     const intents = getToolIntentsForText(
-      'Open my pending Trade Board request inbox for Morgan.',
+      'Open my pending Dance Floor request inbox for Morgan.',
     )
     const toolNames = listToolNamesForIntents(intents)
 
@@ -762,7 +762,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'request',
         role: 'user',
-        parts: [{ type: 'text', text: 'trade board listing' }],
+        parts: [{ type: 'text', text: 'dance floor listing' }],
       },
       {
         id: 'assistant',
@@ -792,7 +792,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'request',
         role: 'user',
-        parts: [{ type: 'text', text: 'trade board listing' }],
+        parts: [{ type: 'text', text: 'dance floor listing' }],
       },
       {
         id: 'assistant',
@@ -825,7 +825,7 @@ describe('Nic-Nac tool routing', () => {
         parts: [
           {
             type: 'text',
-            text: 'Please add NK18149, The Harper Necklace, to my trade board. I have 4 of this item.',
+            text: 'Please add NK18149, The Harper Necklace, to my dance floor. I have 4 of this item.',
           },
         ],
       },
@@ -868,7 +868,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'start',
         role: 'user',
-        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+        parts: [{ type: 'text', text: 'Add a piece to Dance Floor' }],
       },
       {
         id: 'assistant',
@@ -899,7 +899,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'start',
         role: 'user',
-        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+        parts: [{ type: 'text', text: 'Add a piece to Dance Floor' }],
       },
       {
         id: 'assistant',
@@ -925,7 +925,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'request',
         role: 'user',
-        parts: [{ type: 'text', text: 'Find The Florence Earrings for my trade board.' }],
+        parts: [{ type: 'text', text: 'Find The Florence Earrings for my dance floor.' }],
       },
       {
         id: 'assistant',
@@ -955,7 +955,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'start',
         role: 'user',
-        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+        parts: [{ type: 'text', text: 'Add a piece to Dance Floor' }],
       },
       {
         id: 'assistant-ask',
@@ -973,7 +973,7 @@ describe('Nic-Nac tool routing', () => {
         parts: [
           {
             type: 'text',
-            text: "I don't have a direct tool to add pieces to your Trade Board from here.",
+            text: "I don't have a direct tool to add pieces to your Dance Floor from here.",
           },
         ],
       },
@@ -995,7 +995,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'start',
         role: 'user',
-        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+        parts: [{ type: 'text', text: 'Add a piece to Dance Floor' }],
       },
       {
         id: 'assistant',
@@ -1027,7 +1027,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'start',
         role: 'user',
-        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+        parts: [{ type: 'text', text: 'Add a piece to Dance Floor' }],
       },
       {
         id: 'assistant-ask',
@@ -1051,7 +1051,7 @@ describe('Nic-Nac tool routing', () => {
         parts: [
           {
             type: 'text',
-            text: "I don't have a direct tool to add pieces to your Trade Board from here.",
+            text: "I don't have a direct tool to add pieces to your Dance Floor from here.",
           },
         ],
       },
@@ -1081,7 +1081,7 @@ describe('Nic-Nac tool routing', () => {
         parts: [
           {
             type: 'text',
-            text: 'I want this item added to the jewelry database as well as my trade board.',
+            text: 'I want this item added to the jewelry database as well as my dance floor.',
           },
           {
             type: 'file',
@@ -1126,7 +1126,7 @@ describe('Nic-Nac tool routing', () => {
         parts: [
           {
             type: 'text',
-            text: 'Please add this piece to my jewelry database and trade board.',
+            text: 'Please add this piece to my jewelry database and dance floor.',
           },
           {
             type: 'file',
@@ -1173,7 +1173,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'start',
         role: 'user',
-        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+        parts: [{ type: 'text', text: 'Add a piece to Dance Floor' }],
       },
       {
         id: 'assistant-item',
@@ -1244,7 +1244,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'start',
         role: 'user',
-        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+        parts: [{ type: 'text', text: 'Add a piece to Dance Floor' }],
       },
       {
         id: 'assistant-label',
@@ -1296,7 +1296,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'request',
         role: 'user',
-        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+        parts: [{ type: 'text', text: 'Add a piece to Dance Floor' }],
       },
       {
         id: 'assistant-photo',
@@ -1331,7 +1331,7 @@ describe('Nic-Nac tool routing', () => {
       {
         id: 'start',
         role: 'user',
-        parts: [{ type: 'text', text: 'Add a piece to Trade Board' }],
+        parts: [{ type: 'text', text: 'Add a piece to Dance Floor' }],
       },
       {
         id: 'assistant-start',

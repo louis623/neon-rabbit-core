@@ -44,7 +44,7 @@ export function makeApproveTradeSwapTool(ctx: {
 }) {
   return tool({
     description:
-      "Approve a live-show Trade Board swap for the authenticated rep. Ask the rep exactly: \"Which item number was just revealed for the customer?\" " +
+      "Approve a live-show Dance Floor swap for the authenticated rep. Ask the rep exactly: \"Which item number was just revealed for the customer?\" " +
       'Use this instead of plain approve_trade when approving an in-show swap: the customer gets the requested board piece, and Sparkle Suite captures the just-revealed item number so it can be added back to the board or finished after the show. ' +
       'If the item number has multiple plating/material variants, include revealedMaterial when the rep provides it. If the revealed item is a ring and the rep knows the size, include revealedRingSize. Requires explicit user approval.',
     inputSchema,

@@ -38,9 +38,9 @@ export const SELF_SERVE_ONBOARDING_CHECKLIST: SelfServeOnboardingChecklistItem[]
   },
   {
     id: 'trade-board',
-    title: 'Set up starter trade board content',
+    title: 'Set up starter dance floor content',
     description: 'Add the first pieces customers can request and learn the listing status flow.',
-    nicNacPrompt: 'Ask Nic-Nac to help set up starter trade board content.',
+    nicNacPrompt: 'Ask Nic-Nac to help set up starter dance floor content.',
   },
   {
     id: 'calculator',

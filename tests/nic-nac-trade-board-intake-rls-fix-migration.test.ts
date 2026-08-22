@@ -10,7 +10,7 @@ const migration = readFileSync(
   'utf8',
 )
 
-describe('Nic-Nac Trade Board intake workflow RLS fix migration', () => {
+describe('Nic-Nac Dance Floor intake workflow RLS fix migration', () => {
   it('replaces broad workflow policies with role-scoped policies', () => {
     expect(migration).toContain(
       'drop policy if exists trade_board_intake_sessions_own_data',

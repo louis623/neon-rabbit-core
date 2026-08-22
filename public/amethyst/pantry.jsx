@@ -305,7 +305,7 @@ function PantryPage() {
         <nav className="bk-nav" aria-label="BlingKitchen navigation">
           <a {...linkProps(links.home)}>Home</a>
           <a aria-current="page" {...linkProps(links.pantry)}>In the Pantry</a>
-          <a {...linkProps(links.trade)}>Trade Board</a>
+          <a {...linkProps(links.trade)}>Dance Floor</a>
           <a {...linkProps(links.join)}>Join Team</a>
         </nav>
         <a className="bk-shop" {...linkProps(links.shop)}>Shop</a>
@@ -385,7 +385,7 @@ function PantryPage() {
         <p>{CONTENT.businessName || "BlingKitchen"} is operated by an independent Bomb Party Representative.</p>
         <div>
           <a {...linkProps(links.home)}>Home</a>
-          <a {...linkProps(links.trade)}>Trade Board</a>
+          <a {...linkProps(links.trade)}>Dance Floor</a>
           <a {...linkProps(links.join)}>Join Team</a>
           <a {...linkProps(links.contact)}>Contact</a>
         </div>

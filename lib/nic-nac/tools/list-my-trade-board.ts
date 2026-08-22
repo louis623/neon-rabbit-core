@@ -1,4 +1,4 @@
-// Tool: list_my_trade_board — returns the authed rep's trade board.
+// Tool: list_my_trade_board — returns the authed rep's dance floor.
 // Authorization gate: repId comes from the authenticated session, bound into
 // the tool closure at the route handler. The Zod input schema does NOT accept
 // repId — any model-supplied rep ID in the prompt is ignored.
@@ -37,7 +37,7 @@ function explainTradeBoardError(err: unknown): never {
 export function makeListMyTradeBoardTool(ctx: { repId: string; supabase: SupabaseClient }) {
   return tool({
     description:
-      "List the authenticated rep's trade board (their jewelry listings). " +
+      "List the authenticated rep's dance floor (their jewelry listings). " +
       'Use this whenever the user asks about their board, their listings, what they have up for trade, or their inventory. ' +
       'Optionally filter by status.',
     inputSchema,

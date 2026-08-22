@@ -77,7 +77,7 @@ type SwapCleanupSmokeResult = {
 const HARD_FAIL_PATTERNS = [
   /i can['']t actually (add|update|fix|complete|change)/i,
   /i['']m not able to (add|update|fix|complete|change)/i,
-  /not able to access (the )?(trade board|swap cleanup|add listing) tool/i,
+  /not able to access (the )?(dance floor|swap cleanup|add listing) tool/i,
   /only have notes access/i,
   /add it manually/i,
   /log into your workspace and add/i,
@@ -759,7 +759,7 @@ export async function runSwapCleanupSmoke(
       turns,
       text:
         `For swap ${target.swapId}, ${target.replacementItemNumber} is a size 8 ring. ` +
-        'Add that revealed ring back to my Trade Board now.',
+        'Add that revealed ring back to my Dance Floor now.',
     })
 
     await assertSwapCleanupState({

@@ -127,7 +127,7 @@ describe('Amethyst join page template data wiring', () => {
     expect(jsx).toContain('function SocialLogo')
     expect(jsx).toContain('<SocialLogo {...link} />')
     expect(jsx).toContain('aria-label={link.label}')
-    expect(jsx).toContain('Trade Board')
+    expect(jsx).toContain('Dance Floor')
     expect(jsx).toContain('Join Team')
     expect(jsx).toContain('"/amethyst/Homepage.html"')
   })
@@ -148,7 +148,7 @@ describe('Amethyst join page template data wiring', () => {
     expect(jsx).toContain('View full queue')
     expect(jsx).toContain('function LiveQueueModal')
     expect(jsx).not.toContain('Next to reveal')
-    expect(jsx).not.toContain('Open trade board')
+    expect(jsx).not.toContain('Open dance floor')
     expect(css).toContain('.hp-queue-modal-mask')
   })
 

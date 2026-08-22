@@ -28,7 +28,7 @@ describe('Nic-Nac mission guard', () => {
     'Please update my BlingKitchen recipe copy on the customer site.',
     'Write a caption for my live show after a rough day.',
     'I am overwhelmed with my show setup. Help me make a checklist.',
-    'Which July Birthday 2026 earrings are on my Trade Board?',
+    'Which July Birthday 2026 earrings are on my Dance Floor?',
   ])('allows mission-related requests: %s', (text) => {
     expect(classifyNicNacMissionScopeForText(text)).toEqual({
       action: 'allow',

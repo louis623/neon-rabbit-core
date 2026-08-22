@@ -261,7 +261,7 @@ function buildFindings(input: {
   if (input.affectedArea === 'trade_board') {
     findings.push({
       severity: 'attention',
-      message: 'Trade Board workflow needs report-specific cleanup review.',
+      message: 'Dance Floor workflow needs report-specific cleanup review.',
     })
   }
   return findings

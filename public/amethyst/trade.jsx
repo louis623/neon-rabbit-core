@@ -23,7 +23,7 @@ const DEFAULTS = window.TRADE_TWEAK_DEFAULTS || {
   showLegal: true,
   showFooter: true,
   showNicNac: true,
-  tickerTopText: "Trade board open now | Item-for-item only | Same collection + same jewelry type | Birthday pieces can trade across months",
+  tickerTopText: "Dance Floor open now | Item-for-item only | Same collection + same jewelry type | Birthday pieces can trade across months",
   tradeHeroTitle: "Trade for the piece you wanted to love.",
   tradeHeroSub: "This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.",
   primaryColor: "#5C0EFF",
@@ -694,7 +694,7 @@ function Header({ businessName }) {
         </div>
         <nav className="hp-header-nav" aria-label="Primary">
           <a {...linkProps(HOME_HREF)} className="hp-header-link">Home</a>
-          <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link" aria-current="page">Trade Board</a>
+          <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link" aria-current="page">Dance Floor</a>
           {PANTRY_HREF ? <a {...linkProps(PANTRY_HREF)} className="hp-header-link">In the Pantry</a> : null}
           {JOIN_TEAM_HREF && (
             isBrittWithBlingHybrid || isBlingKitchenHybrid ? (
@@ -713,7 +713,7 @@ function Header({ businessName }) {
 const ANNOUNCEMENT_TICKER_SPEED_PPS = 46;
 const TRADE_TICKER_SPEED_PPS = 55.2;
 const EMPTY_TRADE_TICKER_ITEM = {
-  name: "Trade Board listings will appear here after pieces are added.",
+  name: "Dance Floor listings will appear here after pieces are added.",
   type: "",
   collection: "",
   isEmpty: true,
@@ -852,7 +852,7 @@ function Ticker({ topText }) {
         {items.flatMap((item) => item.parts.filter((part) => part.href)).map((part, index) => (
           <a key={`${part.href}-${index}`} {...linkProps(part.href)}>{part.text}</a>
         ))}
-        <a {...linkProps(TRADE_BOARD_HREF)}>Browse current trade board highlights</a>
+        <a {...linkProps(TRADE_BOARD_HREF)}>Browse current dance floor highlights</a>
       </div>
       <div className="hp-ticker-row">
         <span className="hp-ticker-label">Announcements</span>
@@ -868,7 +868,7 @@ function Ticker({ topText }) {
         </div>
       </div>
       <div className="hp-ticker-row reverse">
-        <span className="hp-ticker-label">Trade Board</span>
+        <span className="hp-ticker-label">Dance Floor</span>
         <div className="hp-ticker-track" data-ticker-pps={TRADE_TICKER_SPEED_PPS} aria-hidden="true">
           {tickerTrades.map((tr, index) => tr.isEmpty ? (
             <span
@@ -1477,7 +1477,7 @@ function EmptyState({ repName }) {
   return (
     <div className="tp-empty">
       <div className="tp-empty-glyph">?</div>
-      <h3 className="tp-empty-title">Trade board is empty right now.</h3>
+      <h3 className="tp-empty-title">Dance Floor is empty right now.</h3>
       <p className="tp-empty-sub">
         <strong>{repName}</strong> adds listings after live reveals. Check back after the next show for fresh one-for-one trade options.
       </p>
@@ -1528,7 +1528,7 @@ function Footer({ businessName }) {
         <div className="hp-footer-col">
           <ul>
             <li><a {...linkProps(HOME_HREF)}>Home</a></li>
-            <li><a {...linkProps(TRADE_BOARD_HREF)}>Trade Board</a></li>
+            <li><a {...linkProps(TRADE_BOARD_HREF)}>Dance Floor</a></li>
             {PANTRY_HREF && <li><a {...linkProps(PANTRY_HREF)}>In the Pantry</a></li>}
             {JOIN_TEAM_HREF && <li><a {...linkProps(JOIN_TEAM_HREF)}>Join Team</a></li>}
           </ul>
@@ -1574,7 +1574,7 @@ function App() {
 
   useEffect(() => {
     applyTargetedMetadata(
-      `${t.businessName} - Trade Board`,
+      `${t.businessName} - Dance Floor`,
       `Browse available trade pieces from ${t.businessName}.`,
     );
   }, [t.businessName]);
@@ -1900,8 +1900,8 @@ function App() {
         repName={repName}
       />
 
-      <TweaksPanel title="Tweaks" subtitle="Tune the trade board" defaultWidth={380}>
-        <TweakSection title="Trade board" subtitle="Page-specific behavior">
+      <TweaksPanel title="Tweaks" subtitle="Tune the dance floor" defaultWidth={380}>
+        <TweakSection title="Dance Floor" subtitle="Page-specific behavior">
           <TweakRadio
             label="Live state"
             value={t.liveState}

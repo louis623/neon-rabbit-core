@@ -124,9 +124,9 @@ function buildTargetedPageText(
   if (isBlingKitchen) {
     if (page === 'trade') {
       return {
-        title: 'BlingKitchen Trade Board - Heather Daugherty',
+        title: 'BlingKitchen Dance Floor - Heather Daugherty',
         description:
-          "Browse Heather's BlingKitchen trade board for live-show jewelry swaps.",
+          "Browse Heather's BlingKitchen dance floor for live-show jewelry swaps.",
       }
     }
 
@@ -156,7 +156,7 @@ function buildTargetedPageText(
 
   if (page === 'trade') {
     return {
-      title: `${businessName} - Trade Board`,
+      title: `${businessName} - Dance Floor`,
       description: `Browse available trade pieces from ${businessName}.`,
     }
   }

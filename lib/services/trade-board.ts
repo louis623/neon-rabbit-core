@@ -1,4 +1,4 @@
-// Trade Board service — stable facade for the existing 4 callers
+// Dance Floor service — stable facade for the existing 4 callers
 // (lib/nic-nac/tools/list-my-trade-board.ts, lib/nic-nac/tools/remove-listing.ts,
 // scripts/verify-trade-board.ts, scripts/red-team.ts). Public surface
 // (getMyBoard, removeListing, TradeBoardError, and the legacy types) is

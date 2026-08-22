@@ -95,7 +95,7 @@ function HeroSection({ content }: { content: AmethystSiteContent }) {
               className="inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-[var(--amethyst-fg)] transition hover:-translate-y-0.5"
               href="#events"
             >
-              Browse the trade board
+              Browse the dance floor
             </a>
             {shopLink ? (
               <a
