@@ -20,7 +20,7 @@ export type NicNacFindMatch = {
   listing: RepBoardListing;
   nextLiveShow: LiveShow | null;
   matchType: Exclude<MatchType, "near_match">;
-  confidenceLabel: "Exact item lead" | "Same collection and type";
+  confidenceLabel: "Exact dancer lead" | "Similar dancer lead";
 };
 
 export type NicNacFindResult =
@@ -162,7 +162,7 @@ function createApiNicNacMatch(
       showUrl: match.customerSiteUrl,
     },
     matchType,
-    confidenceLabel: matchType === "exact_item" ? "Exact item lead" : "Same collection and type",
+    confidenceLabel: matchType === "exact_item" ? "Exact dancer lead" : "Similar dancer lead",
   };
 }
 
@@ -189,7 +189,7 @@ function createNicNacMatch(
       listing,
       nextLiveShow,
       matchType,
-      confidenceLabel: matchType === "exact_item" ? "Exact item lead" : "Same collection and type",
+      confidenceLabel: matchType === "exact_item" ? "Exact dancer lead" : "Similar dancer lead",
     },
   ];
 }

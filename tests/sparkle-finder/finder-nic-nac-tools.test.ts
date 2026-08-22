@@ -161,7 +161,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
         },
       ],
       guidance:
-        "Use dancer leads for Dance Floor and next-show discovery only. Do not mutate Sparkle Suite Dance Floors from Finder.",
+        "Use dancer leads for Dance Floor and next-show discovery only. listingId, listedAt, and availableListingCount are internal compatibility fields and must not appear as product terminology. Do not mutate Sparkle Suite Dance Floors from Finder.",
     });
   });
 
@@ -783,7 +783,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
     expect(String((result as { guidance?: unknown }).guidance)).toContain("original_label, jewelry_front");
   });
 
-  it("lists persisted favorite reps with bounded show and board context", async () => {
+  it("lists persisted favorite reps with bounded show and Dance Floor context", async () => {
     const supabase = createFavoriteRepSupabase();
     const tools = buildFinderNicNacTools(
       {
@@ -809,7 +809,8 @@ describe("Sparkle Finder Nic-Nac tools", () => {
           hasRepPath: true,
         },
       ],
-      guidance: "Use favorite reps for rep-first discovery, show timing, and Dance Floor shortcuts only.",
+      guidance:
+        "Use favorite reps for rep-first discovery, show timing, and Dance Floor shortcuts only. boardItemCount and hasBoardPath are internal compatibility fields; describe their meaning with dancers and Dance Floor language.",
     });
   });
 

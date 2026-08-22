@@ -24,7 +24,7 @@ const quickPrompts = [
   {
     icon: Search,
     label: "I am looking for a piece",
-    prompt: "Tell me what you remember and I will search the library and rep leads.",
+    prompt: "Tell me what you remember and I will search the library and dancer leads.",
   },
   {
     icon: Camera,
@@ -44,7 +44,7 @@ const quickPrompts = [
   {
     icon: Heart,
     label: "Find my favorite reps' next lives",
-    prompt: "Check favorite reps and rep leads for upcoming live show times.",
+    prompt: "Check favorite reps and dancer leads for upcoming live show times.",
   },
   {
     icon: Users,

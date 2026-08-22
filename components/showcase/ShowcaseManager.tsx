@@ -244,7 +244,7 @@ function ShowcaseStudioIntakePanel({
 
       <div className="flex flex-wrap items-center gap-2 border-t border-[rgba(238,44,155,0.14)] bg-[var(--sparkle-paper)] px-4 py-3 text-xs font-bold text-[var(--sparkle-ink-muted)]">
         <Search aria-hidden="true" className="size-4 text-[var(--sparkle-coral)]" />
-        Mark the piece as something you are looking for while the Studio review is pending, then use rep leads when a matching library record appears.
+        Mark the piece as something you are looking for while the Studio review is pending, then use dancer leads when a matching library record appears.
       </div>
     </div>
   );

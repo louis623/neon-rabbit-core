@@ -123,7 +123,7 @@ export function renderItemDetailPageContent(
 
         <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">
           <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
-            Known rep availability
+            Known dancer leads
           </h2>
           <div className="mt-4 grid gap-3">
             {apiAvailabilityRows.length > 0 ? (
@@ -195,7 +195,5 @@ function capitalize(value: string) {
 }
 
 function formatMatchType(value: string) {
-  const label = value.replaceAll("_", " ");
-
-  return label.charAt(0).toUpperCase() + label.slice(1);
+  return value === "exact_item" ? "Exact dancer lead" : "Similar dancer lead";
 }

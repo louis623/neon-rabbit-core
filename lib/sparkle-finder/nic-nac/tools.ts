@@ -163,6 +163,8 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
             photoUrl: item.imageUrl,
             availableListingCount: item.availableListingCount ?? 0,
           })),
+          guidance:
+            "availableListingCount is an internal compatibility field that counts dancers. Use dancer or dancers in every visible response.",
         };
       },
     });
@@ -234,7 +236,7 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
           count: leads.length,
           leads: leads.slice(0, limit ?? 8),
           guidance:
-            "Use dancer leads for Dance Floor and next-show discovery only. Do not mutate Sparkle Suite Dance Floors from Finder.",
+            "Use dancer leads for Dance Floor and next-show discovery only. listingId, listedAt, and availableListingCount are internal compatibility fields and must not appear as product terminology. Do not mutate Sparkle Suite Dance Floors from Finder.",
         };
       },
     });
@@ -703,7 +705,8 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
             hasBoardPath: Boolean(card.repBoardUrl),
             hasRepPath: Boolean(card.repSiteUrl),
           })),
-          guidance: "Use favorite reps for rep-first discovery, show timing, and Dance Floor shortcuts only.",
+          guidance:
+            "Use favorite reps for rep-first discovery, show timing, and Dance Floor shortcuts only. boardItemCount and hasBoardPath are internal compatibility fields; describe their meaning with dancers and Dance Floor language.",
         };
       },
     });

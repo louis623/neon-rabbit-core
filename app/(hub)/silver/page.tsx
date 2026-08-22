@@ -99,7 +99,7 @@ export function renderSilverPageContent(
             {isLocalPreview
               ? "Stage owned pieces, pieces you are looking for, rare reveals, and profile details against Sparkle Finder's fixture-backed preview."
               : entitlements.canUseSilverProfileActions
-                ? "Build, track, highlight, and share the pieces you own or hope to find, then use rep leads when a wanted piece appears."
+                ? "Build, track, highlight, and share the pieces you own or hope to find, then use dancer leads when a wanted piece appears."
                 : "View your signed-in profile and saved library state. Silver access unlocks Sparkle Showcase saves."}
           </p>
           <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--sparkle-ink-muted)]">

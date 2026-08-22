@@ -17,7 +17,7 @@ export function RepLeadPanel({ piece }: { piece: SparkleShowcasePiece }) {
         </div>
         <div>
           <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-semibold text-[var(--sparkle-plum-deep)]">
-            {wanted ? "Find reps with this piece" : "Rep leads"}
+            {wanted ? "Find dancer leads for this piece" : "Dancer leads"}
           </h2>
           <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">
             Sparkle Finder checks the Dance Floor first so the hunt can lead back to active Sparkle Suite reps.
@@ -34,7 +34,7 @@ export function RepLeadPanel({ piece }: { piece: SparkleShowcasePiece }) {
               <article className="rounded border border-[var(--sparkle-border)] bg-[var(--sparkle-paper-soft)] p-3" key={lead.listingId}>
                 <p className="text-sm font-bold text-[var(--sparkle-plum-deep)]">{rep?.businessName ?? "Sparkle Suite rep"}</p>
                 <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--sparkle-coral)]">
-                  {lead.matchType === "exact_item" ? "Exact item lead" : "Same Bomb Party Collection and type"}
+                  {lead.matchType === "exact_item" ? "Exact dancer lead" : "Similar dancer lead"}
                 </p>
                 <Link
                   className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
@@ -47,7 +47,7 @@ export function RepLeadPanel({ piece }: { piece: SparkleShowcasePiece }) {
             );
           })
         ) : (
-          <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">No rep leads yet.</p>
+          <p className="text-sm leading-6 text-[var(--sparkle-ink-muted)]">No dancer leads yet.</p>
         )}
       </div>
     </section>

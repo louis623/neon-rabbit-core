@@ -135,7 +135,7 @@ export function FinderNicNacChatbot({
         ))}
 
         {status === "ready" && leads.length > 0 ? (
-          <div className="finder-nic-nac-chatbot__lead-stack" aria-label="Nic-Nac matched leads">
+          <div className="finder-nic-nac-chatbot__lead-stack" aria-label="Nic-Nac matched dancer leads">
             {leads.map((lead) => (
               <NicNacLeadCard key={lead.id} lead={lead} />
             ))}
@@ -180,7 +180,7 @@ function NicNacLeadCard({ lead }: { lead: FinderNicNacLead }) {
       </div>
       <span>{lead.matchTypeLabel}</span>
       <p className="finder-nic-nac-chatbot__lead-copy">
-        Nic-Nac found a fresh lead. You may be able to find this piece with {lead.businessName}
+        Nic-Nac found a fresh dancer lead. You may be able to find this piece with {lead.businessName}
         {lead.showStartsAt ? (
           <>
             {" "}

@@ -49,8 +49,8 @@ export function FindThisForMe({ accountState, jewelryItemId, compact = false, av
               : emptyState,
         },
         {
-          label: "Match rep leads",
-          response: "Exact item leads show first, then I widen to same collection and jewelry type from known rep-hosted paths. I only call it a lead when the show is inside the next 48 hours.",
+          label: "Match dancer leads",
+          response: "Exact dancer leads show first, then I widen to the same collection and jewelry type from known rep-hosted paths. I only call it a lead when the show is inside the next 48 hours.",
         },
         {
           label: "Next show context",
@@ -73,7 +73,7 @@ function NicNacUpgradePrompt({ compact }: { compact: boolean }) {
           response: "Silver lets me check saved collection and pieces you are looking for against bounded Finder leads.",
         },
         {
-          label: "Match rep leads",
+          label: "Match dancer leads",
           response: "With Silver, I can compare your target piece against known dancers on rep Dance Floors.",
         },
         {
@@ -115,15 +115,13 @@ function NicNacEmptyPrompt({ compact }: { compact: boolean }) {
 
 function formatLeadCount(count: number, dataSource: NicNacDataSource) {
   const sourceLabel = dataSource === "api" ? "Sparkle Suite" : "preview";
-  const leadLabel = count === 1 ? "lead" : "leads";
+  const leadLabel = count === 1 ? "dancer lead" : "dancer leads";
 
   return `${count} ${sourceLabel} ${leadLabel}`;
 }
 
 function formatMatchType(value: string) {
-  const label = value.replaceAll("_", " ");
-
-  return label.charAt(0).toUpperCase() + label.slice(1);
+  return value === "exact_item" ? "Exact dancer" : "Similar dancer";
 }
 
 function buildLead(match: NicNacFindMatch, dataSource: NicNacDataSource) {

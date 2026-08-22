@@ -33,7 +33,7 @@ export function renderSignUpPageContent(searchParams: SignUpSearchParams = {}) {
               Start your 45-day Silver trial
             </h1>
             <p className="max-w-2xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
-              Create one Sparkle Finder account for the jewelry library, rep availability, and Silver collector tools.
+              Create one Sparkle Finder account for the jewelry library, dancer leads, and Silver collector tools.
               Your first 45 days include Silver access. After that, continue Silver for $4.99/month or keep browsing on Free.
             </p>
             <div className="grid gap-3 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 shadow-[var(--sparkle-shadow-sm)]">

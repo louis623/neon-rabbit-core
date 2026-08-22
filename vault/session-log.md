@@ -2,6 +2,10 @@
 
 ## 2026-08-22 - Dance Floor Vocabulary Alignment
 
+- Completed a second, stricter terminology audit focused on Nic-Nac scripting, model prompts, tool descriptions/results, memory normalization, accessibility labels, manual smoke/training copy, auth copy, library availability labels, Showcase lead copy, and customer-facing regression tests.
+- Replaced remaining vague or legacy-facing labels with `dancer`, `dancers`, or `dancer leads`, including Nic-Nac confidence labels and screen-reader copy. Added an explicit model rule that compatibility fields such as `availableListingCount`, `listingId`, `boardItemCount`, and `repBoardUrl` are internal only and must be translated before Nic-Nac responds.
+- Expanded legacy-memory normalization and copy guardrails to catch `board context`, `board data`, `board details`, `board shortcuts`, `board inventory`, `board matches`, `board paths`, and `board links` in addition to the original banned terms.
+- Second-pass verification passed: focused terminology/Nic-Nac/route tests (`164`), full Vitest suite (`39` files, `532` tests), lint, production build, `git diff --check`, and a final active-source terminology scan. Remaining board/listing names are compatibility recognizers, stable routes, API/tool names, types, database fields, payload keys, or test descriptions of internal behavior.
 - Audited active UI, state copy, customer legal content, manual smoke instructions, Nic-Nac prompts/tool descriptions/results, tests, and current project memory for legacy trade terminology.
 - Standardized the feature name to `Dance Floor` and its inventory to `dancers`, while preserving compatibility identifiers such as `/rep-boards`, `RepBoardListing`, `listingId`, database fields, URLs, and the `find_rep_board_availability` tool name.
 - Added copy guardrails and prompt-memory normalization so legacy input can still be understood without leaking legacy terminology into customer- or rep-visible responses.

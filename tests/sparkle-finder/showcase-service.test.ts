@@ -48,7 +48,7 @@ describe("Sparkle Showcase service", () => {
     expect(JSON.stringify(spotlight)).not.toContain("Deleted comment should stay hidden");
   });
 
-  it("returns rep leads for wanted showcase pieces", () => {
+  it("returns dancer leads for wanted showcase pieces", () => {
     const spotlight = getRevealSpotlight("sparkle-mama", "jewel-rainbow-crown-ring");
 
     expect(spotlight).toBeDefined();

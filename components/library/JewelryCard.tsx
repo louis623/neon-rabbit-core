@@ -16,14 +16,14 @@ export function formatAvailabilityCount(
       return "No dancers right now";
     }
 
-    return count === 1 ? "1 available" : `${count} available`;
+    return count === 1 ? "1 dancer" : `${count} dancers`;
   }
 
   if (knownRepListingIds.length > 0) {
-    return knownRepListingIds.length === 1 ? "Known rep lead" : "Known rep leads";
+    return knownRepListingIds.length === 1 ? "Known dancer lead" : "Known dancer leads";
   }
 
-  return "Availability unknown";
+  return "Dancer availability unknown";
 }
 
 export function JewelryCard({ item }: JewelryCardProps) {

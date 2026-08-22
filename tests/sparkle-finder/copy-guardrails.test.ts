@@ -54,6 +54,7 @@ describe("findSparkleFinderCopyViolations", () => {
     const copy = [
       "Open the Trade Board or a rep board.",
       "Browse board pieces, trade pieces, available pieces, and Dance Floor listings.",
+      "Review board context, board data, board details, board shortcuts, board inventory, board matches, board paths, and board links.",
       "Visit the dance floor.",
     ].join(" ");
 
@@ -64,6 +65,14 @@ describe("findSparkleFinderCopyViolations", () => {
       "trade piece",
       "available piece",
       "Dance Floor listing",
+      "board context",
+      "board data",
+      "board detail",
+      "board shortcut",
+      "board inventory",
+      "board match",
+      "board path",
+      "board link",
       "incorrectly capitalized Dance Floor",
     ]);
   });

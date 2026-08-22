@@ -903,7 +903,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Review one-way followed collectors and their public Showcase status.");
     expect(markup).not.toContain("Find collectors with public Showcases like mine");
     expect(markup).not.toContain("Show followed collectors");
-    expect(markup).toContain("rep leads");
+    expect(markup).toContain("dancer leads");
     expect(markup).not.toContain("buy from");
     expect(markup).not.toContain("message seller");
   });
@@ -1084,12 +1084,12 @@ describe("Sparkle Finder hub routes", () => {
 
     const markup = renderToStaticMarkup(renderLibraryPageContent(items));
 
-    expect(markup).toContain("2 available");
+    expect(markup).toContain("2 dancers");
     expect(markup).toContain("2026");
     expect(markup).toContain("rose gold");
   });
 
-  it("shows known rep lead metadata when library card counts are unknown but leads exist", () => {
+  it("shows known dancer lead metadata when library card counts are unknown but leads exist", () => {
     const singularItems: JewelryItem[] = [
       {
         id: "design-known-lead",
@@ -1118,10 +1118,10 @@ describe("Sparkle Finder hub routes", () => {
     const singularMarkup = renderToStaticMarkup(renderLibraryPageContent(singularItems));
     const pluralMarkup = renderToStaticMarkup(renderLibraryPageContent(pluralItems));
 
-    expect(singularMarkup).toContain("Known rep lead");
-    expect(singularMarkup).not.toContain("Known rep leads");
+    expect(singularMarkup).toContain("Known dancer lead");
+    expect(singularMarkup).not.toContain("Known dancer leads");
     expect(singularMarkup).not.toContain("No dancers right now");
-    expect(pluralMarkup).toContain("Known rep leads");
+    expect(pluralMarkup).toContain("Known dancer leads");
     expect(pluralMarkup).not.toContain("No dancers right now");
   });
 
@@ -1141,7 +1141,7 @@ describe("Sparkle Finder hub routes", () => {
 
     const markup = renderToStaticMarkup(renderLibraryPageContent(items));
 
-    expect(markup).toContain("Availability unknown");
+    expect(markup).toContain("Dancer availability unknown");
     expect(markup).not.toContain("No dancers right now");
   });
 
@@ -1219,7 +1219,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("bg-cover");
   });
 
-  it("renders the item detail route with rep availability and focused Nic-Nac CTA", () => {
+  it("renders the item detail route with dancer leads and focused Nic-Nac CTA", () => {
     const markup = renderToStaticMarkup(
       renderItemDetailPageContent({ itemId: "jewel-rainbow-crown-ring" }, getLocalDevAuthState("silver")),
     );
@@ -1228,7 +1228,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("Sierra Sparkle Studio");
     expect(markup).toContain(">Nic-Nac</h2>");
     expect(markup).toContain("finder-nic-nac-chatbot");
-    expect(markup).toContain("Exact item");
+    expect(markup).toContain("Exact dancer lead");
     expect(markup).toContain("/rep-boards?listing=rainbow-crown");
     expect(markup).not.toContain("sparklesuite.example");
   });
@@ -1320,7 +1320,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain(">Nic-Nac</h2>");
     expect(markup).toContain("Show timing context");
     expect(markup).not.toContain("Browse for free. Let Nic-Nac hunt for you with Silver.");
-    expect(markup).not.toContain("Exact item lead");
+    expect(markup).not.toContain("Nic-Nac found a fresh dancer lead");
     expect(markup).not.toContain("Next show");
   });
 
@@ -1473,7 +1473,7 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).toContain("@caseyfinds");
     expect(markup).toContain("Looking for jewel tones and unicorns.");
     expect(markup).toContain(
-      "Build, track, highlight, and share the pieces you own or hope to find, then use rep leads when a wanted piece appears.",
+      "Build, track, highlight, and share the pieces you own or hope to find, then use dancer leads when a wanted piece appears.",
     );
     expect(markup).toContain("Edit Profile");
     expect(markup).toContain('data-smoke="profile-summary-card"');

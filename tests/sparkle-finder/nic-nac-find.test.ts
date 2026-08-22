@@ -24,7 +24,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
 
     expect(result.results.map((match) => match.matchType)).toEqual(["exact_item", "same_collection_type"]);
     expect(result.results[0]).toMatchObject({
-      confidenceLabel: "Exact item lead",
+      confidenceLabel: "Exact dancer lead",
       rep: {
         businessName: "Sierra Sparkle Studio",
         siteUrl: "https://sparklesuite.example/reps/sierra",
@@ -57,7 +57,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
     });
     expect(result.results.map((match) => match.matchType)).toEqual(["exact_item", "same_collection_type"]);
     expect(result.results[0]).toMatchObject({
-      confidenceLabel: "Exact item lead",
+      confidenceLabel: "Exact dancer lead",
       matchedItem: {
         id: "design-api",
       },
@@ -86,7 +86,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(result.results).toHaveLength(1);
     expect(result.results[0]).toMatchObject({
       matchType: "same_collection_type",
-      confidenceLabel: "Same collection and type",
+      confidenceLabel: "Similar dancer lead",
       matchedItem: {
         id: "jewel-moon-orbit-ring",
         collectionName: "Orbit Garden",
@@ -151,7 +151,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
 
     expect(markup).toContain(">Nic-Nac</h2>");
     expect(markup).toContain("finder-nic-nac-chatbot");
-    expect(markup).toContain("0 preview leads");
+    expect(markup).toContain("0 preview dancer leads");
     expect(markup).toContain("No shows in the next 48 hours currently have this dancer.");
     expect(markup).not.toContain("Sierra Sparkle Studio");
     expect(markup).not.toContain("View Dance Floor");
@@ -170,10 +170,10 @@ describe("Nic-Nac find-this-for-me flow", () => {
       }),
     );
 
-    expect(markup).toContain("1 Sparkle Suite lead");
+    expect(markup).toContain("1 Sparkle Suite dancer lead");
     expect(markup).toContain("Demo Glow Show");
     expect(markup).toContain("Rep: Demo");
-    expect(markup).toContain("Nic-Nac found a fresh lead");
+    expect(markup).toContain("Nic-Nac found a fresh dancer lead");
     expect(markup).toContain("View Dance Floor");
     expect(markup).toContain("View Show");
     expect(markup).toContain("https://www.yoursparklesuite.com/demo-show?c=rep-demo");
@@ -190,7 +190,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
       }),
     );
 
-    expect(markup).toContain("0 preview leads");
+    expect(markup).toContain("0 preview dancer leads");
     expect(markup).toContain("No shows in the next 48 hours currently have this dancer.");
     expect(markup).not.toContain("/rep-boards?listing=rainbow-crown");
     expect(markup).not.toContain("Sparkle Suite lead");
@@ -206,7 +206,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(markup).toContain("Find a library piece");
     expect(markup).toContain("Open Showcase Studio");
     expect(markup).not.toContain("Sierra Sparkle Studio");
-    expect(markup).not.toContain("Exact item lead");
+    expect(markup).not.toContain("Exact dancer lead");
   });
 
   it("uses the shared Sparkle Suite Nic-Nac chatbot language and mark", () => {
@@ -224,7 +224,7 @@ describe("Nic-Nac find-this-for-me flow", () => {
     expect(markup).toContain("finder-nic-nac-chatbot__thread");
     expect(markup).not.toContain("Same Nic-Nac from Sparkle Suite");
     expect(markup).toContain("Check saved pieces");
-    expect(markup).toContain("Match rep leads");
+    expect(markup).toContain("Match dancer leads");
     expect(markup).toContain("Next show context");
     expect(markup).toContain("<textarea");
     expect(markup).toContain("Message Nic-Nac");

@@ -25,9 +25,10 @@ You are the same Nic-Nac experience from Sparkle Suite, adapted to the customer 
 
 Core behavior:
 - Help customers add, find, organize, highlight, and track jewelry.
-- Be a Sparkle Finder expert: library, collection, Showcase, missing-piece Studio, favorite reps, live shows, rep availability leads, public collectors, Public Showcases, and one-way follows.
+- Be a Sparkle Finder expert: library, collection, Showcase, missing-piece Studio, favorite reps, live shows, dancer leads, public collectors, Public Showcases, and one-way follows.
 - Approved trade vocabulary: the feature is always the Dance Floor, and jewelry offered there are dancers. A trade remains a trade.
 - Never use legacy board or listing vocabulary for the Dance Floor or its dancers in customer- or rep-visible responses.
+- Tool payloads may contain compatibility fields such as availableListingCount, listingId, listedAt, boardItemCount, hasBoardPath, repBoardUrl, or boardUrl. Treat those names as internal only: translate their meaning to Dance Floor, dancers, or dancer leads in every visible response.
 - Light friendly chat is okay when it stays around Sparkle Finder, collecting, reps, lives, jewelry, or using the product.
 - Do not become an open-ended life-story chatbot.
 - Never invent pieces, reps, shows, prices, saves, or tool results.
@@ -61,7 +62,7 @@ const intentPrompts: Record<FinderNicNacToolIntent, string> = {
 - Save private Finder intake before bridging a privacy-safe payload to Suite/Nic-Nac review.`,
 
   availability: `Availability tools:
-- Use rep availability leads, live shows, and same collection/type fallbacks to help customers find pieces through reps.
+- Use dancer leads, live shows, and same collection/type fallbacks to help customers find pieces through reps.
 - Do not turn this into customer-to-customer trading.`,
 
   profile: `Profile tools:
@@ -70,7 +71,7 @@ const intentPrompts: Record<FinderNicNacToolIntent, string> = {
 
   rep_discovery: `Rep discovery tools:
 - Help customers find and remember favorite Bomb Party reps in the Sparkle Suite/Finder ecosystem.
-- Use favorite reps, rep names, live shows, and availability context to make discovery feel personal.`,
+- Use favorite reps, rep names, live shows, and dancer-lead context to make discovery feel personal.`,
 
   social: `Social discovery tools:
 - Help customers find public collectors, Public Showcases, followed collectors, and one-way follows.
@@ -116,10 +117,13 @@ Only call tools in the active list. If the customer needs something outside the 
 function normalizeDanceFloorVocabulary(copy: string): string {
   return copy
     .replace(/\b(?:rep\s+)?trade\s+boards?\s+(?:items?|listings?|pieces?)\b/gi, "dancers")
-    .replace(/\brep\s+boards?\s+(?:items?|listings?|pieces?)\b/gi, "dancers")
+    .replace(/\brep\s+boards?\s+(?:items?|listings?|pieces?|inventory)\b/gi, "dancers")
+    .replace(/\bboard\s+(?:items?|listings?|pieces?|inventory)\b/gi, "dancers")
+    .replace(/\bavailable\s+listings?\b/gi, "dancers")
+    .replace(/\bboard\s+matches?\b/gi, "dancer leads")
     .replace(/\b(?:rep\s+)?trade\s+boards?\b/gi, "Dance Floor")
     .replace(/\brep\s+boards?\b/gi, "Dance Floor")
-    .replace(/\bboard\s+(paths?|links?)\b/gi, "Dance Floor $1")
+    .replace(/\bboard\s+(paths?|links?|context|data|details?|shortcuts?)\b/gi, "Dance Floor $1")
     .replace(/\bboard\s+pieces?\b/gi, "dancers")
     .replace(/\btrade\s+pieces?\b/gi, "dancers")
     .replace(/\bavailable\s+pieces?\b/gi, "dancers")

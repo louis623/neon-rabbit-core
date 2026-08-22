@@ -39,7 +39,7 @@ export function renderSignInPageContent(searchParams: SignInSearchParams = {}) {
               Sign in to open Sparkle Finder
             </h1>
             <p className="max-w-2xl text-base leading-7 text-[var(--sparkle-ink-muted)]">
-              Use your Sparkle Finder account for the library, rep availability, Silver collection tools, and focused
+              Use your Sparkle Finder account for the library, dancer leads, Silver collection tools, and focused
               Nic-Nac requests. New accounts start with a 45-day Silver trial.
             </p>
             {notice ? (

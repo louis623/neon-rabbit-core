@@ -41,7 +41,7 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.getByRole("heading", { name: "Rainbow Crown Ring" })).toBeVisible();
     await expect(page.getByText("Reveal Spotlight", { exact: true })).toBeVisible();
     await expect(page.getByText("Diamond Reveal", { exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Rep leads" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Dancer leads" })).toBeVisible();
     await expect(page.getByText("That reveal was unreal.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Share Reveal Spotlight" })).toHaveAttribute(
       "href",

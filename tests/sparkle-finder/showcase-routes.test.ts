@@ -47,7 +47,7 @@ describe("Sparkle Showcase public routes", () => {
     expect(markup).not.toContain("DM");
   });
 
-  it("renders a shareable Reveal Spotlight with rep leads and comments", () => {
+  it("renders a shareable Reveal Spotlight with dancer leads and comments", () => {
     const spotlight = getRevealSpotlight("sparkle-mama", "jewel-rainbow-crown-ring")!;
     const markup = renderToStaticMarkup(renderRevealSpotlightPageContent(spotlight));
 
@@ -55,8 +55,8 @@ describe("Sparkle Showcase public routes", () => {
     expect(markup).toContain("Rainbow Crown Ring");
     expect(markup).toContain("Bomb Party Collection: Celestial Lights");
     expect(markup).toContain("Diamond Reveal");
-    expect(markup).toContain("Rep leads");
-    expect(markup).toContain("Exact item lead");
+    expect(markup).toContain("Dancer leads");
+    expect(markup).toContain("Exact dancer lead");
     expect(markup).toContain("Open Dance Floor");
     expect(markup).toContain("That reveal was unreal.");
     expect(markup).not.toContain("Deleted comment should stay hidden");
