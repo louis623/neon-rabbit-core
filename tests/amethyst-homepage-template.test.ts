@@ -309,6 +309,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toMatch(/@media\s+\(max-width:\s*640px\)[\s\S]*?\.hp-ticker-track[\s\S]*?min-width:\s*max-content;/)
     expect(css).toContain('.hp-sticky-stack')
     expect(css).toMatch(/\.hp-sticky-stack\s*\{[\s\S]*?position:\s*sticky;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*900px\)[\s\S]*?\.hp-sticky-stack,[\s\S]*?\.bk-home-header,[\s\S]*?\.mhf-header,[\s\S]*?\.bwb-header\s*\{[\s\S]*?position:\s*static;/)
     expect(css).toMatch(/body\.homepage\s+#root,[\s\S]*?body\.tradepage\s+#root,[\s\S]*?body\.joinpage\s+#root\s*\{[\s\S]*?overflow:\s*visible;/)
     expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.hp-header-link[\s\S]*?min-height:\s*44px;/)
     expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.hp-queue-modal-close[\s\S]*?min-width:\s*44px;/)

@@ -45,15 +45,14 @@ function makeTradeListing(
 }
 
 describe('Amethyst trade page template wiring', () => {
-  it('ships mobile sticky and coarse pointer CSS safeguards for the dance floor', () => {
+  it('keeps desktop Dance Floor controls sticky while mobile controls scroll with the page', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.css'),
       'utf8',
     )
 
-    expect(css).toMatch(/@media\s+\(max-width:\s*900px\)[\s\S]*?\.tp-drawer[\s\S]*?top:\s*var\(--hp-mobile-sticky-drawer-top\);/)
-    expect(css).toMatch(/@media\s+\(max-width:\s*900px\)[\s\S]*?\.tp-filters[\s\S]*?top:\s*var\(--hp-mobile-sticky-filters-top\);/)
-    expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-filters[\s\S]*?position:\s*sticky;/)
+    expect(css).toMatch(/\.tp-filters\s*\{[\s\S]*?position:\s*sticky;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*900px\)[\s\S]*?\.tp-drawer,[\s\S]*?\.tp-filters\s*\{[\s\S]*?position:\s*static;/)
     expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.tp-filter-pill[\s\S]*?min-height:\s*44px;/)
     expect(css).toMatch(/@media\s+\(pointer:\s*coarse\)[\s\S]*?\.tp-card-close[\s\S]*?min-width:\s*44px;/)
     expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.tp-card-expand-mask[\s\S]*?animation:\s*none\s*!important;/)
@@ -366,7 +365,7 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).toContain('id="trade-filter-panel"')
     expect(css).toContain('.tp-mobile-filter-cue')
     expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-mobile-filter-cue[\s\S]*?display:\s*flex;/)
-    expect(css).toMatch(/@media\s+\(max-width:\s*700px\)[\s\S]*?\.tp-filters[\s\S]*?position:\s*sticky;/)
+    expect(css).toMatch(/@media\s+\(max-width:\s*900px\)[\s\S]*?\.tp-drawer,[\s\S]*?\.tp-filters\s*\{[\s\S]*?position:\s*static;/)
   })
 
   it('limits large dance floors with search, sort, lazy images, and load-more rendering', () => {

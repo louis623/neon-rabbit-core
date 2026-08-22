@@ -6331,3 +6331,18 @@ body.champagne-botanical .hp-trade-card {
     animation: none;
   }
 }
+
+/* Customer browsing mode: keep the full site chrome sticky on desktop, but
+   let it clear the viewport on phones and tablets so dancers can take over.
+   This remains at the end so brand-specific header rules cannot re-pin it. */
+@media (max-width: 900px) {
+  .hp-sticky-stack,
+  .bk-home-header,
+  .mhf-header,
+  .bwb-header {
+    position: static;
+    top: auto;
+    z-index: auto;
+    box-shadow: none;
+  }
+}

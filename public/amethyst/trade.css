@@ -467,6 +467,7 @@ body.britt-with-bling-trade .hp-footer {
   }
   .tp-lrq-rail { display: none; }
 }
+
 .tp-drawer-bar {
   display: flex;
   align-items: center;
@@ -2241,4 +2242,16 @@ body.bg-emerald-garden .tp-card-expand-photo {
   background:
     radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.82), transparent 12rem),
     linear-gradient(135deg, #e8eee3, #c7d7c2 52%, #f1e5cf);
+}
+
+/* On touch-sized customer views, browse controls should scroll away with the
+   site chrome instead of permanently covering dancers. Kept at the end so
+   compact-phone filter rules above cannot pin them again. */
+@media (max-width: 900px) {
+  .tp-drawer,
+  .tp-filters {
+    position: static;
+    top: auto;
+    z-index: auto;
+  }
 }
