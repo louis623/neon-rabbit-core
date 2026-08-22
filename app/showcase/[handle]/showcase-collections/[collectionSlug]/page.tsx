@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
@@ -32,12 +33,19 @@ type ShowcaseCollectionPageProps = {
   }>;
 };
 
+const getCachedShowcaseCollectionForRoute = cache(
+  (handle: string, collectionSlug: string, viewerUserId: string | null) =>
+    getShowcaseCollectionForRoute(handle, collectionSlug, { viewerUserId }),
+);
+
 export async function generateMetadata({ params }: ShowcaseCollectionPageProps): Promise<Metadata> {
   const { collectionSlug, handle } = await params;
   const accountState = await getCollectionAccountState();
-  const route = await getShowcaseCollectionForRoute(handle, collectionSlug, {
-    viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
-  });
+  const route = await getCachedShowcaseCollectionForRoute(
+    handle,
+    collectionSlug,
+    accountState.status === "authenticated" ? accountState.customer.id : null,
+  );
   if (!route) return createUnavailableShowcaseMetadata();
   return route.access === "public"
     ? createShowcaseCollectionMetadata(route.showcase, route.collection)
@@ -47,9 +55,11 @@ export async function generateMetadata({ params }: ShowcaseCollectionPageProps):
 export default async function ShowcaseCollectionPage({ params }: ShowcaseCollectionPageProps) {
   const accountState = await getCollectionAccountState();
   const { collectionSlug, handle } = await params;
-  const route = await getShowcaseCollectionForRoute(handle, collectionSlug, {
-    viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
-  });
+  const route = await getCachedShowcaseCollectionForRoute(
+    handle,
+    collectionSlug,
+    accountState.status === "authenticated" ? accountState.customer.id : null,
+  );
   if (!route) {
     notFound();
   }
@@ -62,11 +72,11 @@ export default async function ShowcaseCollectionPage({ params }: ShowcaseCollect
   );
 }
 
-async function getCollectionAccountState() {
+const getCollectionAccountState = cache(async () => {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   return getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
-}
+});
 
 export function renderShowcaseCollectionPageContent(
   showcase: SparkleShowcase,

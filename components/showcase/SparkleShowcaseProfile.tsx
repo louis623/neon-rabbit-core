@@ -45,8 +45,8 @@ export function SparkleShowcaseProfile({ showcase, viewerUserId, isPrivatePrevie
             </h1>
             <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--sparkle-ink-muted)]">{profile.tagline}</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Stat label="Public pieces" value={showcase.pieces.length} />
-              <Stat label="Rare reveals" value={showcase.rarestReveals.length} />
+              <Stat label="Public pieces" value={showcase.publicPieceCount ?? showcase.pieces.length} />
+              <Stat label="Rare reveals" value={showcase.rarestRevealCount ?? showcase.rarestReveals.length} />
               <Stat label="Followers" value={profile.followerCount} />
               <Stat label="Following" value={profile.followingCount} />
             </div>

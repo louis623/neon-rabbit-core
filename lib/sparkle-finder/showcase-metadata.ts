@@ -14,7 +14,8 @@ export function createSparkleShowcaseMetadata(showcase: SparkleShowcase): Metada
   );
   const canonicalUrl = getCanonicalShowcaseUrl(buildSparkleShowcasePath(showcase.profile.handle));
   const imageUrl = getPublicPieceImage(
-    showcase.pieces.find((piece) => piece.state === "owned" && piece.showcaseStatus === "owned" && piece.isHighlighted) ??
+    showcase.heroPiece ??
+      showcase.pieces.find((piece) => piece.state === "owned" && piece.showcaseStatus === "owned" && piece.isHighlighted) ??
       showcase.pieces.find(qualifiesForRarestReveals) ??
       showcase.pieces[0],
   );

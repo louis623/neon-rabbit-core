@@ -90,6 +90,21 @@ describe("public Sparkle Showcase metadata", () => {
     expect(serialized).not.toContain("PRIVATE-EMAIL");
   });
 
+  it("uses the exact public Hero Piece as the share cover even when it is outside the first piece page", () => {
+    const heroPiece = {
+      ...publicPiece,
+      id: "hero-outside-first-page",
+      jewelryItemId: "hero-jewelry",
+      personalPhotoUrl: "https://cdn.example.test/exact-hero-cover.jpg",
+    };
+    const metadata = createSparkleShowcaseMetadata({ ...showcase, heroPiece });
+
+    expect(metadata.openGraph?.images).toEqual([
+      expect.objectContaining({ url: "https://cdn.example.test/exact-hero-cover.jpg" }),
+    ]);
+    expect(metadata.twitter?.images).toEqual(["https://cdn.example.test/exact-hero-cover.jpg"]);
+  });
+
   it("builds canonical Showcase Collection metadata", () => {
     const metadata = createShowcaseCollectionMetadata(showcase, showcaseCollection);
 

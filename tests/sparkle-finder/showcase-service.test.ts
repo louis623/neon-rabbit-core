@@ -2,12 +2,16 @@ import { describe, expect, it, vi } from "vitest";
 import { getJewelryItemById } from "../../lib/sparkle-finder/service";
 import {
   getPublicSparkleShowcaseByHandle,
+  getPublicShowcaseCommentPage,
+  getPublicShowcasePiecePage,
   getRevealSpotlight,
   getRevealSpotlightForRoute,
   getSparkleShowcaseForRoute,
   getShowcaseCollectionBySlug,
+  getShowcaseCollectionForRoute,
   getShowcasePieceRepLeads,
   isPublicSparkleShowcaseTarget,
+  publicShowcaseReadLimits,
   type SupabaseShowcaseReadClient,
 } from "../../lib/sparkle-finder/showcase-service";
 
@@ -99,6 +103,7 @@ describe("Sparkle Showcase service", () => {
     expect(JSON.stringify(showcase)).not.toContain("owner-private-note");
     expect(client.selections.find((selection) => selection.table === "sparkle_finder_collection_items")?.columns).not.toContain("note");
     expect(client.selections.find((selection) => selection.table === "sparkle_finder_profiles")?.columns).not.toContain("email");
+    expect(client.selections.some((selection) => selection.table === "sparkle_finder_collector_follows")).toBe(false);
   });
 
   it("validates action targets through the server-only public field boundary", async () => {
@@ -140,6 +145,174 @@ describe("Sparkle Showcase service", () => {
     });
 
     expect(spotlight?.comments.map((comment) => comment.body)).toEqual(["A persisted piece comment"]);
+  });
+
+  it("bounds initial payloads, batches joins and authors, and keeps stable newest-first ordering", async () => {
+    const extraPieces = Array.from({ length: 30 }, (_, index) => persistedPieceRow(index));
+    const heroOutsidePage = {
+      ...persistedPieceRow(90),
+      id: "hero-outside-page",
+      jewelry_item_id: "hero-catalog-piece",
+      is_highlighted: true,
+      is_rarest_reveal: true,
+      updated_at: "2020-01-01T00:00:00.000Z",
+    };
+    const extraCollections = Array.from({ length: 15 }, (_, index) => ({
+      id: `collection-${index.toString().padStart(2, "0")}`,
+      user_id: "owner-user",
+      title: `Collection ${index}`,
+      slug: `collection-${index}`,
+      description: "Bounded collection",
+      visibility: "public",
+      created_at: `2026-07-${(index + 1).toString().padStart(2, "0")}T12:00:00.000Z`,
+    }));
+    const extraJoins = extraCollections.map((collection, index) => ({
+      showcase_collection_id: collection.id,
+      collection_item_id: extraPieces[index].id,
+    }));
+    const extraComments = Array.from({ length: 25 }, (_, index) => ({
+      id: `comment-${index.toString().padStart(2, "0")}`,
+      showcase_user_id: "owner-user",
+      author_user_id: index % 2 === 0 ? "viewer-user" : "author-two",
+      target_type: "showcase",
+      target_id: "owner-user",
+      body: `Comment ${index}`,
+      deleted_at: null,
+      created_at: `2026-08-${(index + 1).toString().padStart(2, "0")}T12:00:00.000Z`,
+      updated_at: `2026-08-${(index + 1).toString().padStart(2, "0")}T12:00:00.000Z`,
+    }));
+    const client = persistedClient({ heroCollectionItemId: "hero-outside-page", extraRows: {
+      sparkle_finder_collection_items: [...extraPieces, heroOutsidePage],
+      sparkle_finder_profiles: [{ user_id: "author-two", display_name: "Second Author", profile_visibility: "sparkle_finder" }],
+      sparkle_finder_showcase_collection_items: extraJoins,
+      sparkle_finder_showcase_collections: extraCollections,
+      sparkle_finder_showcase_comments: extraComments,
+    } });
+
+    const showcase = await getPublicSparkleShowcaseByHandle("real-sparkles", {
+      allowFixtureFallback: false,
+      catalogItemById: boundedCatalogItem,
+      supabase: client,
+      viewerUserId: "viewer-user",
+    });
+
+    expect(showcase?.pieces).toHaveLength(publicShowcaseReadLimits.pieces);
+    expect(showcase?.publicPieceCount).toBe(32);
+    expect(showcase?.rarestRevealCount).toBe(2);
+    expect(showcase?.heroPiece?.id).toBe("hero-outside-page");
+    expect(showcase?.pieces.map((piece) => piece.id)).not.toContain("hero-outside-page");
+    expect(showcase?.showcaseCollections.length).toBeLessThanOrEqual(publicShowcaseReadLimits.collections);
+    expect(showcase?.comments).toHaveLength(publicShowcaseReadLimits.comments);
+    expect(showcase?.comments[0].body).toBe("Comment 24");
+    expect(client.selections.filter((selection) => selection.table === "sparkle_finder_showcase_collection_items")).toHaveLength(1);
+    const authorRead = client.selections.find((selection) =>
+      selection.table === "sparkle_finder_profiles" && selection.inFilters.some(([column]) => column === "user_id"));
+    expect(authorRead?.inFilters[0][1].sort()).toEqual(["author-two", "viewer-user"]);
+    expect(client.selections.find((selection) => selection.table === "sparkle_finder_collection_items")?.limit).toBe(publicShowcaseReadLimits.pieces);
+    expect(client.selections.find((selection) => selection.table === "sparkle_finder_collection_items")?.inFilters).toEqual(expect.arrayContaining([
+      ["state", ["owned", "wishlist"]],
+      ["showcase_status", ["owned", "wishlist", "iso"]],
+    ]));
+  });
+
+  it("uses exact target reads so detail routes resolve items beyond profile-page caps", async () => {
+    const distantPiece = persistedPieceRow(40);
+    const distantCollection = {
+      id: "collection-distant", user_id: "owner-user", title: "Distant", slug: "distant",
+      description: "Past the profile cap", visibility: "public", created_at: "2025-01-01T00:00:00.000Z",
+    };
+    const client = persistedClient({ extraRows: {
+      sparkle_finder_collection_items: [distantPiece, ...Array.from({ length: 30 }, (_, index) => persistedPieceRow(index))],
+      sparkle_finder_showcase_collection_items: [{ showcase_collection_id: distantCollection.id, collection_item_id: distantPiece.id }],
+      sparkle_finder_showcase_collections: [distantCollection, ...Array.from({ length: 15 }, (_, index) => ({
+        id: `other-${index}`, user_id: "owner-user", title: `Other ${index}`, slug: `other-${index}`,
+        description: "Other", visibility: "public", created_at: `2026-08-${(index + 1).toString().padStart(2, "0")}T00:00:00.000Z`,
+      }))],
+    } });
+
+    const spotlight = await getRevealSpotlightForRoute("real-sparkles", String(distantPiece.jewelry_item_id), {
+      allowFixtureFallback: false, catalogItemById: boundedCatalogItem, supabase: client,
+    });
+    const collection = await getShowcaseCollectionForRoute("real-sparkles", "distant", {
+      allowFixtureFallback: false, catalogItemById: boundedCatalogItem, supabase: client,
+    });
+
+    expect(spotlight?.spotlight.piece.id).toBe(distantPiece.id);
+    expect(collection?.collection.pieceIds).toEqual([distantPiece.id]);
+  });
+
+  it("paginates public pieces with an opaque stable cursor and no gaps or duplicates", async () => {
+    const extraPieces = Array.from({ length: 30 }, (_, index) => persistedPieceRow(index));
+    const client = persistedClient({ extraRows: { sparkle_finder_collection_items: extraPieces } });
+    const options = { allowFixtureFallback: false, catalogItemById: boundedCatalogItem, supabase: client } as const;
+
+    const first = await getPublicShowcasePiecePage("real-sparkles", options);
+    const second = await getPublicShowcasePiecePage("real-sparkles", { ...options, cursor: first?.nextCursor });
+    const ids = [...(first?.items ?? []), ...(second?.items ?? [])].map((piece) => piece.id);
+
+    expect(first?.items).toHaveLength(publicShowcaseReadLimits.pieces);
+    expect(first?.nextCursor).toEqual(expect.any(String));
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids).toContain("piece-00");
+    expect(ids).toContain("piece-29");
+    await expect(getPublicShowcasePiecePage("real-sparkles", { ...options, cursor: "not-a-cursor" })).resolves.toBeUndefined();
+    expect(client.selections.filter((selection) => selection.table === "sparkle_finder_collection_items").some(
+      (selection) => selection.limit === publicShowcaseReadLimits.pieces + 1,
+    )).toBe(true);
+  });
+
+  it("paginates permitted Showcase comments without duplicates and reapplies viewer-author blocks", async () => {
+    const comments = Array.from({ length: 25 }, (_, index) => ({
+      id: `page-comment-${index.toString().padStart(2, "0")}`,
+      showcase_user_id: "owner-user",
+      author_user_id: index === 24 ? "blocked-author" : "viewer-user",
+      target_type: "showcase",
+      target_id: "owner-user",
+      body: `Page comment ${index}`,
+      deleted_at: null,
+      created_at: `2026-08-${(index + 1).toString().padStart(2, "0")}T12:00:00.000Z`,
+      updated_at: `2026-08-${(index + 1).toString().padStart(2, "0")}T12:00:00.000Z`,
+    }));
+    const client = persistedClient({
+      blocks: [{ blocker_user_id: "viewer-user", blocked_user_id: "blocked-author" }],
+      extraRows: {
+        sparkle_finder_profiles: [{ user_id: "blocked-author", display_name: "Blocked", profile_visibility: "sparkle_finder" }],
+        sparkle_finder_showcase_comments: comments,
+      },
+    });
+    const options = { allowFixtureFallback: false, supabase: client, viewerUserId: "viewer-user" } as const;
+    const target = { id: "owner-user", type: "showcase" as const };
+
+    const first = await getPublicShowcaseCommentPage("real-sparkles", target, options);
+    const second = await getPublicShowcaseCommentPage("real-sparkles", target, { ...options, cursor: first?.nextCursor });
+    const items = [...(first?.items ?? []), ...(second?.items ?? [])];
+
+    expect(first?.items).toHaveLength(publicShowcaseReadLimits.comments);
+    expect(first?.nextCursor).toEqual(expect.any(String));
+    expect(new Set(items.map((comment) => comment.id)).size).toBe(items.length);
+    expect(items.map((comment) => comment.body)).not.toContain("Page comment 24");
+  });
+
+  it.each([
+    { blocker_user_id: "viewer-user", blocked_user_id: "author-two" },
+    { blocker_user_id: "author-two", blocked_user_id: "viewer-user" },
+  ])("suppresses a blocked comment author for the signed-in viewer without hiding the Showcase", async (block) => {
+    const client = persistedClient({
+      blocks: [block],
+      extraRows: {
+        sparkle_finder_profiles: [{ user_id: "author-two", display_name: "Blocked Author", profile_visibility: "sparkle_finder" }],
+        sparkle_finder_showcase_comments: [{
+          id: "blocked-author-comment", showcase_user_id: "owner-user", author_user_id: "author-two",
+          target_type: "showcase", target_id: "owner-user", body: "Must stay hidden", deleted_at: null,
+          created_at: "2026-08-20T12:00:00.000Z", updated_at: "2026-08-20T12:00:00.000Z",
+        }],
+      },
+    });
+    const showcase = await getPublicSparkleShowcaseByHandle("real-sparkles", {
+      allowFixtureFallback: false, catalogItemById: persistedCatalogItem, supabase: client, viewerUserId: "viewer-user",
+    });
+    expect(showcase).toBeDefined();
+    expect(showcase?.comments.map((comment) => comment.body)).not.toContain("Must stay hidden");
   });
 
   it("resolves real Sparkle Suite catalog ids instead of requiring a fixture jewelry id", async () => {
@@ -284,11 +457,15 @@ type Row = Record<string, unknown>;
 
 function persistedClient({
   blocks = [],
+  extraRows = {},
+  heroCollectionItemId = null,
   jewelryItemId = "jewel-rainbow-crown-ring",
   profileVisibility = "sparkle_finder",
   showcaseVisibility = "public",
 }: {
   blocks?: Row[];
+  extraRows?: Partial<Record<string, Row[]>>;
+  heroCollectionItemId?: string | null;
   jewelryItemId?: string;
   profileVisibility?: "private" | "sparkle_finder";
   showcaseVisibility?: "private" | "public";
@@ -299,6 +476,7 @@ function persistedClient({
         user_id: "owner-user", display_name: "Real Collector", state: "VA", tiktok_handle: "@real",
         bio: "Collector bio", photo_url: null, profile_visibility: profileVisibility,
         showcase_handle: "real-sparkles", showcase_tagline: "Real persisted sparkle.", showcase_visibility: showcaseVisibility,
+        hero_collection_item_id: heroCollectionItemId,
       },
       { user_id: "viewer-user", display_name: "Viewing Collector", profile_visibility: "sparkle_finder" },
     ],
@@ -348,14 +526,45 @@ function persistedClient({
     ],
     sparkle_finder_collector_blocks: blocks,
   };
-  const selections: Array<{ table: string; columns: string }> = [];
+  for (const [table, rows] of Object.entries(extraRows)) {
+    tables[table] = [...(tables[table] ?? []), ...(rows ?? [])];
+  }
+  const selections: Array<{
+    columns: string;
+    filters: Array<[string, string | boolean | null]>;
+    inFilters: Array<[string, string[]]>;
+    limit?: number;
+    orders: Array<[string, boolean]>;
+    table: string;
+  }> = [];
   const client = {
     selections,
+    rpc: async (functionName: string) => {
+      if (functionName !== "sparkle_finder_get_public_showcase_social_summary") return { data: null, error: new Error("unknown rpc") };
+      const blockRows = tables.sparkle_finder_collector_blocks;
+      const blocked = (left: string, right: string) => blockRows.some((row) =>
+        (row.blocker_user_id === left && row.blocked_user_id === right) ||
+        (row.blocker_user_id === right && row.blocked_user_id === left));
+      const follows = tables.sparkle_finder_collector_follows;
+      const publicPieces = tables.sparkle_finder_collection_items.filter((row) =>
+        row.user_id === "owner-user" && row.visibility === "public" &&
+        ["owned", "wishlist"].includes(String(row.state)) &&
+        ["owned", "wishlist", "iso"].includes(String(row.showcase_status)));
+      return { data: [{
+        follower_count: follows.filter((row) => row.followed_user_id === "owner-user" && !blocked(String(row.follower_user_id), "owner-user")).length,
+        following_count: follows.filter((row) => row.follower_user_id === "owner-user" && !blocked("owner-user", String(row.followed_user_id))).length,
+        is_followed_by_viewer: follows.some((row) => row.follower_user_id === "viewer-user" && row.followed_user_id === "owner-user") && !blocked("viewer-user", "owner-user"),
+        public_piece_count: publicPieces.length,
+        rarest_reveal_count: publicPieces.filter((row) => row.state === "owned" && row.showcase_status === "owned" && row.is_rarest_reveal === true).length,
+        hero_collection_item_id: heroCollectionItemId,
+      }], error: null };
+    },
     from(table: string) {
       return {
         select(columns: string) {
-          selections.push({ table, columns });
-          return queryBuilder(tables[table] ?? []);
+          const selection = { table, columns, filters: [], inFilters: [], orders: [] } as (typeof selections)[number];
+          selections.push(selection);
+          return queryBuilder(tables[table] ?? [], selection);
         },
       };
     },
@@ -363,11 +572,45 @@ function persistedClient({
   return client as typeof client & SupabaseShowcaseReadClient;
 }
 
-function queryBuilder(source: Row[]) {
+function queryBuilder(
+  source: Row[],
+  selection: {
+    filters: Array<[string, string | boolean | null]>;
+    inFilters: Array<[string, string[]]>;
+    limit?: number;
+    orders: Array<[string, boolean]>;
+  },
+) {
   const filters: Array<{ column: string; value: string | boolean }> = [];
-  const filtered = () => source.filter((row) => filters.every((filter) => row[filter.column] === filter.value));
+  const inFilters: Array<{ column: string; values: string[] }> = [];
+  const nullFilters: string[] = [];
+  const orders: Array<{ ascending: boolean; column: string }> = [];
+  let resultLimit: number | undefined;
+  const filtered = () => {
+    const rows = source.filter((row) =>
+      filters.every((filter) => row[filter.column] === filter.value) &&
+      inFilters.every((filter) => filter.values.includes(String(row[filter.column]))) &&
+      nullFilters.every((column) => row[column] === null || row[column] === undefined));
+    rows.sort((left, right) => {
+      for (const order of orders) {
+        const comparison = String(left[order.column] ?? "").localeCompare(String(right[order.column] ?? ""));
+        if (comparison !== 0) return order.ascending ? comparison : -comparison;
+      }
+      return 0;
+    });
+    return resultLimit === undefined ? rows : rows.slice(0, resultLimit);
+  };
   const builder = {
-    eq(column: string, value: string | boolean) { filters.push({ column, value }); return builder; },
+    eq(column: string, value: string | boolean) { filters.push({ column, value }); selection.filters.push([column, value]); return builder; },
+    in(column: string, values: string[]) { inFilters.push({ column, values }); selection.inFilters.push([column, values]); return builder; },
+    is(column: string, value: null) { nullFilters.push(column); selection.filters.push([column, value]); return builder; },
+    limit(count: number) { resultLimit = count; selection.limit = count; return builder; },
+    order(column: string, options: { ascending?: boolean } = {}) {
+      const ascending = options.ascending ?? true;
+      orders.push({ column, ascending });
+      selection.orders.push([column, ascending]);
+      return builder;
+    },
     maybeSingle: async () => ({ data: filtered()[0] ?? null, error: null }),
     then<TResult1 = { data: Row[]; error: null }, TResult2 = never>(
       onfulfilled?: ((value: { data: Row[]; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
@@ -377,4 +620,34 @@ function queryBuilder(source: Row[]) {
     },
   };
   return builder;
+}
+
+function persistedPieceRow(index: number): Row {
+  const suffix = index.toString().padStart(2, "0");
+  return {
+    id: `piece-${suffix}`,
+    user_id: "owner-user",
+    jewelry_item_id: `catalog-piece-${suffix}`,
+    state: "owned",
+    is_highlighted: false,
+    visibility: "public",
+    showcase_status: "owned",
+    reveal_story: `Story ${index}`,
+    personal_photo_url: null,
+    is_rarest_reveal: false,
+    updated_at: `2026-08-${((index % 28) + 1).toString().padStart(2, "0")}T12:00:00.000Z`,
+  };
+}
+
+function boundedCatalogItem(itemId: string) {
+  return Promise.resolve({
+    id: itemId,
+    name: `Catalog ${itemId}`,
+    collectionName: "Bounded Reads",
+    jewelryType: "ring" as const,
+    imageUrl: "/fixtures/jewelry/rainbow-crown-ring.jpg",
+    bpLabel: "standard" as const,
+    itemNumber: itemId,
+    knownRepListingIds: [],
+  });
 }

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import type { Metadata } from "next";
 import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
@@ -28,12 +29,19 @@ type RevealSpotlightPageProps = {
   }>;
 };
 
+const getCachedRevealSpotlightForRoute = cache(
+  (handle: string, pieceId: string, viewerUserId: string | null) =>
+    getRevealSpotlightForRoute(handle, pieceId, { viewerUserId }),
+);
+
 export async function generateMetadata({ params }: RevealSpotlightPageProps): Promise<Metadata> {
   const { handle, pieceId } = await params;
   const accountState = await getRevealAccountState();
-  const route = await getRevealSpotlightForRoute(handle, pieceId, {
-    viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
-  });
+  const route = await getCachedRevealSpotlightForRoute(
+    handle,
+    pieceId,
+    accountState.status === "authenticated" ? accountState.customer.id : null,
+  );
 
   if (!route) return createUnavailableShowcaseMetadata();
   return route.access === "public"
@@ -44,9 +52,11 @@ export async function generateMetadata({ params }: RevealSpotlightPageProps): Pr
 export default async function RevealSpotlightPage({ params }: RevealSpotlightPageProps) {
   const accountState = await getRevealAccountState();
   const { handle, pieceId } = await params;
-  const route = await getRevealSpotlightForRoute(handle, pieceId, {
-    viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
-  });
+  const route = await getCachedRevealSpotlightForRoute(
+    handle,
+    pieceId,
+    accountState.status === "authenticated" ? accountState.customer.id : null,
+  );
 
   if (!route) {
     notFound();
@@ -55,11 +65,11 @@ export default async function RevealSpotlightPage({ params }: RevealSpotlightPag
   return renderRevealSpotlightPageContent(route.spotlight, accountState, route.access === "owner_private_preview");
 }
 
-async function getRevealAccountState() {
+const getRevealAccountState = cache(async () => {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   return getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
-}
+});
 
 export function renderRevealSpotlightPageContent(
   spotlight: RevealSpotlightData,

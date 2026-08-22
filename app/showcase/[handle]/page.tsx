@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import type { Metadata } from "next";
 import { SparkleFinderFooter } from "@/components/layout/SparkleFinderFooter";
 import { SparkleFinderNav } from "@/components/layout/SparkleFinderNav";
@@ -27,12 +28,17 @@ type SparkleShowcasePageProps = {
   }>;
 };
 
+const getCachedSparkleShowcaseForRoute = cache((handle: string, viewerUserId: string | null) =>
+  getSparkleShowcaseForRoute(handle, { viewerUserId }),
+);
+
 export async function generateMetadata({ params }: SparkleShowcasePageProps): Promise<Metadata> {
   const { handle } = await params;
   const accountState = await getShowcaseAccountState();
-  const route = await getSparkleShowcaseForRoute(handle, {
-    viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
-  });
+  const route = await getCachedSparkleShowcaseForRoute(
+    handle,
+    accountState.status === "authenticated" ? accountState.customer.id : null,
+  );
 
   if (!route) return createUnavailableShowcaseMetadata();
   return route.access === "public"
@@ -43,9 +49,10 @@ export async function generateMetadata({ params }: SparkleShowcasePageProps): Pr
 export default async function SparkleShowcasePage({ params }: SparkleShowcasePageProps) {
   const accountState = await getShowcaseAccountState();
   const { handle } = await params;
-  const route = await getSparkleShowcaseForRoute(handle, {
-    viewerUserId: accountState.status === "authenticated" ? accountState.customer.id : null,
-  });
+  const route = await getCachedSparkleShowcaseForRoute(
+    handle,
+    accountState.status === "authenticated" ? accountState.customer.id : null,
+  );
 
   if (!route) {
     notFound();
@@ -54,11 +61,11 @@ export default async function SparkleShowcasePage({ params }: SparkleShowcasePag
   return renderSparkleShowcasePageContent(route.showcase, accountState, route.access === "owner_private_preview");
 }
 
-async function getShowcaseAccountState() {
+const getShowcaseAccountState = cache(async () => {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   return getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
-}
+});
 
 export function renderSparkleShowcasePageContent(
   showcase: SparkleShowcase,

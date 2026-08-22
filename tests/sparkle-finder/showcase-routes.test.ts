@@ -47,6 +47,18 @@ describe("Sparkle Showcase public routes", () => {
     expect(markup).not.toContain("DM");
   });
 
+  it("renders exact public totals instead of capped first-page array lengths", async () => {
+    const showcase = (await getPublicSparkleShowcaseByHandle("sparkle-mama", fixtureOptions()))!;
+    const markup = renderToStaticMarkup(renderSparkleShowcasePageContent({
+      ...showcase,
+      publicPieceCount: 99,
+      rarestRevealCount: 17,
+    }));
+
+    expect(markup).toContain("99 Public pieces");
+    expect(markup).toContain("17 Rare reveals");
+  });
+
   it("renders a shareable Reveal Spotlight with dancer leads and comments", async () => {
     const spotlight = (await getRevealSpotlight("sparkle-mama", "jewel-rainbow-crown-ring", fixtureOptions()))!;
     const markup = renderToStaticMarkup(renderRevealSpotlightPageContent(spotlight));

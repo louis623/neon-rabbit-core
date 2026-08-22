@@ -67,6 +67,9 @@ export type SparkleShowcase = {
   profile: SparkleShowcaseProfile;
   pieces: SparkleShowcasePiece[];
   rarestReveals: SparkleShowcasePiece[];
+  publicPieceCount?: number;
+  rarestRevealCount?: number;
+  heroPiece?: SparkleShowcasePiece | null;
   showcaseCollections: ShowcaseCollectionWithPieces[];
   comments: ShowcaseComment[];
 };
