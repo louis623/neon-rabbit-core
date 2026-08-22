@@ -1,5 +1,11 @@
 # Sparkle Finder Decisions
 
+## 2026-08-22 - Public Showcases Stay Bounded, Private, And Canonical
+
+Decision: Public Showcase routes use allowlisted, bounded server reads with exact database summary counts and the true Hero Piece for metadata. Route reads are cached per request, and all viewer/owner/comment-author relationships honor either-direction blocks. Production Vercel aliases canonicalize to `https://yoursparklefinder.com`, while preview deployments remain available for private testing. Supabase compromised-password protection remains enabled as a launch baseline.
+
+Reason: Collection pages must stay fast as customer data grows without weakening privacy, social-block behavior, share accuracy, or search-engine ownership of the customer domain.
+
 ## 2026-08-22 - Public Showcases Are Explicit, Bounded, And One-Way Social
 
 Decision: Collection data is private unless the owner explicitly makes the Showcase profile and relevant pieces or Showcase Collections public. Public reads must enforce every visibility boundary plus either-direction blocks, expose only allowlisted display fields, and never expose notes or email selections. Social discovery remains one-way: customers may follow and browse bounded public highlights, but Sparkle Finder does not add customer-to-customer messaging, offers, buying, selling, or trading.

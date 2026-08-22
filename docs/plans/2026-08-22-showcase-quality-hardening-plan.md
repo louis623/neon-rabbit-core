@@ -1,7 +1,7 @@
 # Sparkle Finder Showcase Quality Hardening Plan
 
 **Date:** August 22, 2026  
-**Status:** Approved direction; implementation not yet started  
+**Status:** Completed August 22, 2026 through commit `885e26d` and production deployment `dpl_5i3EPnnTDM2Yg1jFNZzqJ8oZLB34`
 **Goal:** Finish the collection and social-Showcase release to launch quality by closing the public-data privacy gap, repairing broken paths, improving phone-first owner controls, tightening copy and empty states, and making public Showcases resilient as usage grows.
 
 ## Outcome
@@ -362,4 +362,3 @@ Do not begin the next release until the current deployment is live on the custom
 - Major navigation or brand redesign.
 - Public acquisition-source details or private collection notes.
 - Schema rewrites when an additive policy, index, or helper can safely solve the problem.
-

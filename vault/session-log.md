@@ -1,5 +1,16 @@
 # Sparkle Finder Session Log
 
+## 2026-08-22 - Showcase Quality Hardening And Launch Pass
+
+- Completed the five approved hardening releases in order: public Showcase privacy/RLS (`2bf00cc`), public routes and owned-only rarity semantics (`61ddb23`), phone-first owner management (`1b2643b`), copy/state/feedback polish (`d522c19`), and bounded block-aware public reads (`383cbf7`).
+- Public Showcase services now use explicit safe-field allowlists, exact route-specific reads, stable keyset pagination, bounded piece/collection/comment windows, batched collection and author lookups, per-request React caching, exact aggregate totals, and the true Hero Piece as the share/metadata cover even when it is outside the first visible page.
+- Privacy checks cover profile, Showcase, piece, collection, comment, follow, and either-direction block visibility. Raw customer notes and account email are not exposed publicly. Production fixture fallback remains disabled.
+- Applied additive migrations `20260822210000_sparkle_finder_showcase_public_read_hardening.sql`, `20260822220000_sparkle_finder_owned_rarest_reveals.sql`, and `20260822230000_sparkle_finder_bounded_showcase_reads.sql`; the linked remote database reports current migration parity. The bounded summary RPC is service-role-only.
+- Enabled Supabase compromised-password protection and confirmed its security-advisor warning is gone. Eight remaining authenticated `SECURITY DEFINER` advisor warnings are intentional owner-scoped or bounded app RPCs. The remaining 44 RLS-init-plan and one overlapping-policy performance warnings are future scale cleanup, not a current privacy bypass.
+- Added a production canonical-domain guard in commit `885e26d`. `https://sparkle-finder-dev.vercel.app` permanently redirects to the same path/query at `https://yoursparklefinder.com`; `www` also resolves to the apex, while private preview deployments remain usable.
+- Verification passed: lint; focused route/privacy/auth/canonical tests; full Vitest suite (`52` files, `640` tests); production build; `git diff --check`; full release smoke (`19` required passed, `2` optional skipped); 320px, 390px, and desktop rendered reviews; live route/domain checks; and no recent Vercel runtime errors. Latest deployment `dpl_5i3EPnnTDM2Yg1jFNZzqJ8oZLB34` is `READY` and aliased to the customer domain.
+- No production customer data was created or changed. The production collection table had no rows during the read-only launch audit, so a positive public Showcase metadata check and signed-in mutation exercise remain designated-demo-data follow-ups.
+
 ## 2026-08-22 - Collection Showroom And Social Showcases
 
 - Completed all five approved collection-value releases: persisted public Showcases, a richer Collection showroom with durable Hero Piece selection, owner-managed reveal stories and Showcase Collections, native/clipboard sharing with canonical metadata, and bounded Followed Showcases discovery.
