@@ -1,5 +1,17 @@
 # Decision Log
 
+## August 22, 2026 - Authentication and payment are separate actions
+
+**Signing in must never open or create Stripe checkout.**
+
+Louis provisions each approved rep account first. The rep then signs in to the already-created workspace, which starts the fixed five-day access period on the first successful sign-in. Subscription checkout is a deliberate rep action from **Account** inside Sparkle Suite after the rep reviews and accepts the terms. Expiry or payment-required state may restrict the workspace, but it must not redirect to Stripe or create checkout merely because authentication succeeded.
+
+**Google authentication does not establish Sparkle Suite eligibility.**
+
+Google must show an explicit account picker. After Google authenticates an email, Sparkle Suite must independently verify that Louis provisioned a valid rep workspace. A missing identity—or an incomplete legacy onboarding row with no operator trial—must be locally signed out and shown **“No Sparkle Suite account is associated with this email.”** Normal login must not create a rep, trial, pricing reservation, or checkout session. Password login follows the same eligibility rule. Active protected/internal accounts remain valid without being forced through trial or checkout.
+
+---
+
 ## August 22, 2026 - Workspace tool availability is broader than tool prioritization
 
 **Every normal rep tool remains available on every authenticated Nic-Nac workspace turn.**

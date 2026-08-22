@@ -11,6 +11,10 @@ describe('reviewer smoke UI wiring', () => {
     resolve(process.cwd(), 'app/start/StartSparkleSuiteForm.tsx'),
     'utf8',
   )
+  const startPage = readFileSync(
+    resolve(process.cwd(), 'app/start/page.tsx'),
+    'utf8',
+  )
   const nicNacClient = readFileSync(
     resolve(process.cwd(), 'app/nic-nac/_client.tsx'),
     'utf8',
@@ -41,10 +45,6 @@ describe('reviewer smoke UI wiring', () => {
   )
   const dashboardPlaceholder = readFileSync(
     resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
-    'utf8',
-  )
-  const tradeBoardWorkspaceCard = readFileSync(
-    resolve(process.cwd(), 'app/nic-nac/components/TradeBoardWorkspaceCard.tsx'),
     'utf8',
   )
   const standard = readFileSync(
@@ -272,6 +272,9 @@ describe('reviewer smoke UI wiring', () => {
     expect(startForm).not.toContain('/api/self-serve/signup')
     expect(startForm).not.toContain('/api/stripe/create-checkout')
     expect(startForm).not.toContain('Continue with Google')
+    expect(startPage).toContain('inactive')
+    expect(startPage).toContain('account guard')
+    expect(startPage).not.toContain('review checkout')
   })
 
   it('reviews inactive access without opening checkout automatically', () => {

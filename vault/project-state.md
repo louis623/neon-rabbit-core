@@ -1,5 +1,16 @@
 # Project State
 
+## August 22, 2026 Session - Sign-in and five-day access hardening
+
+- **Sign-in no longer starts Stripe checkout:** Nic-Nac has no checkout side effect for `checkout_required` or `payment_pending`. Those states now show an inactive-access explanation and a deliberate different-email action. Subscription checkout remains only in the authenticated **Account** billing surface after the rep chooses it and accepts the terms.
+- **Wrong Google accounts fail clearly and safely:** Google sign-in now clears a stale local Sparkle Suite session and forces Google's account picker. A normal OAuth callback never provisions a missing rep. Unknown emails and incomplete legacy `onboarding` rows without an operator trial are signed out and returned to Login with **“No Sparkle Suite account is associated with this email.”** Password sign-in applies the same provisioned-account check.
+- **The operator-led five-day contract is preserved:** active operator-provisioned accounts can sign in; a pending workspace trial activates atomically at first successful sign-in and expires five days later; expired data remains saved while Account, security, recovery, billing, and Help stay available. Louis's active internal demo account remains valid without a checkout or trial row.
+- **Release:** application commit `7abbca0f` was manually released as `dpl_BER5PTRrXLP3vzQpzmdmSruDsggg`. Both Sparkle Suite domains resolve to that deployment. Focused auth, callback, trial, billing, setup, and reviewer coverage passed (248 tests), the production build passed locally and on Vercel, and the live Pixel-size Login rejection page passed visual inspection. No Stripe checkout, charge, account mutation, or real-user login was used for smoke; authenticated synthetic browser acceptance remains open.
+
+**Last updated:** August 22, 2026
+
+---
+
 ## August 22, 2026 Session - Nic-Nac workspace-wide tool availability
 
 - **Nic-Nac can now change tools at any point in an authenticated workspace chat:** every normal rep tool pack remains available on every workspace turn. Latest-turn intent and durable workflow state still select or pin the appropriate action, so making all tools available cannot redirect Calendar, site, or other work into Dance Floor preparation.

@@ -42,9 +42,9 @@ export default async function StartPage({
           <div className={styles.copy}>
             <h1>Review Sparkle Suite</h1>
             <p>
-              Use the protected synthetic paths below to review checkout,
-              required setup, and the workspace without using a personal
-              account.
+              Use the protected synthetic paths below to review the inactive
+              account guard, required setup, and the workspace without using a
+              personal account.
             </p>
             <div className={styles.accountArea}>
               <StartSparkleSuiteForm

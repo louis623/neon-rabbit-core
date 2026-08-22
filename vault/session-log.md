@@ -4,6 +4,17 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 22, 2026 - Sign-in, provisioned-account, and checkout separation
+
+- Diagnosed Louis's mobile Google-login failure from production evidence. The callback/session resolved to the old `louischapman1@gmail.com` auth identity and its incomplete onboarding rep row, then Nic-Nac automatically posted `/api/stripe/create-checkout`. Stripe rejected the stale customer id `cus_UbS708EPxBP92t`; no checkout session or charge was created. Read-only verification confirmed `louis@neonrabbit.net` remained the healthy active, `dashboard_unlocked`, non-live `$0` internal demo workspace.
+- Removed the automatic Stripe call from the Nic-Nac sign-in/setup state machine. `checkout_required` and `payment_pending` now render a plain inactive-access screen with no payment action. The only workspace subscription checkout remains the deliberate Account billing button after terms acceptance.
+- Forced Google's `select_account` prompt after clearing only the device's local Sparkle Suite session. Regular OAuth still cannot create a missing rep. The OAuth callback now signs out unknown identities, and both OAuth and password login reject incomplete onboarding rows with no operator trial as `account_not_found`. The Login page translates that code into **“No Sparkle Suite account is associated with this email. Try a different Google account or contact Louis.”**
+- Kept the operator-led access model intact: operator provision creates an active rep plus pending fixed five-day trial; first successful sign-in activates it; an expired legitimate trial can still sign in to restore billing; protected active/internal accounts do not require a trial or checkout at login.
+- Verification passed 248 focused tests, targeted ESLint, `git diff --check`, and a full local Next 16 production build. Browserless Pixel-size screenshots verified the rejection copy locally and on `https://www.yoursparklesuite.com/login?error=account_not_found`.
+- Committed and pushed `7abbca0f fix: keep checkout out of sign-in`, then manually released it as `dpl_BER5PTRrXLP3vzQpzmdmSruDsggg` / `sparkle-suite-8vz5atrp3-louis-2849s-projects.vercel.app`. Vercel inspection confirmed www and apex, plus all established Bri's Glowtique/Bling Kitchen aliases, resolve to the same ready production deployment. No production account/data repair, live checkout, charge, or real-user login occurred. Authenticated synthetic browser acceptance remains open.
+
+---
+
 ## August 22, 2026 - Nic-Nac workspace-wide tool availability
 
 - Reproduced Louis's demo-account defect from the supplied transcript: Nic-Nac successfully read the Dance Floor, then the reason reply **“Other, as we are doing it for testing purposes”** routed as a generic memory turn and no longer exposed `remove_listing`.
