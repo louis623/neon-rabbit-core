@@ -1,5 +1,11 @@
 # Sparkle Finder Decisions
 
+## 2026-08-22 - Public Showcases Are Explicit, Bounded, And One-Way Social
+
+Decision: Collection data is private unless the owner explicitly makes the Showcase profile and relevant pieces or Showcase Collections public. Public reads must enforce every visibility boundary plus either-direction blocks, expose only allowlisted display fields, and never expose notes or email selections. Social discovery remains one-way: customers may follow and browse bounded public highlights, but Sparkle Finder does not add customer-to-customer messaging, offers, buying, selling, or trading.
+
+Reason: Collections gain emotional and social value when customers can show them off safely, but that value must not weaken privacy or reopen the marketplace strategy. Explicit publication, strict server-side checks, and bounded read models keep the experience simple and safe.
+
 ## 2026-08-21 - Rep Discovery Is Automatic And Finder Owns Favorites
 
 Decision: The Reps directory automatically consumes eligible public rep profiles from Sparkle Suite. A rep does not need a Finder account, claim code, board, or scheduled show to appear. Finder claim credentials are only for a rep who wants to use Finder personally. Sparkle Finder owns customer favorite rows and aggregate favorite counts; Sparkle Suite must not supply Finder favorite totals.

@@ -1,5 +1,17 @@
 # Sparkle Finder Session Log
 
+## 2026-08-22 - Collection Showroom And Social Showcases
+
+- Completed all five approved collection-value releases: persisted public Showcases, a richer Collection showroom with durable Hero Piece selection, owner-managed reveal stories and Showcase Collections, native/clipboard sharing with canonical metadata, and bounded Followed Showcases discovery.
+- Public Showcase reads now use persisted Supabase data with strict field allowlists and explicit profile, Showcase, piece, collection, and bidirectional-block visibility checks. Production fixture fallback is disabled; the smoke-only fixture flag is confined to the local smoke runner.
+- The signed-in Collection experience now prefers personal photos, supports All/Owned/Wishlist/Diamonds/Unicorns/Found by Sparkle Finder filters, serializes only the first 12 mosaic pieces, and fetches additional bounded pages through an authenticated owner-scoped server action.
+- Silver customers can set public/private Showcase visibility, handle and tagline; create, edit, and delete Showcase Collections; assign pieces; edit reveal stories and personal photos; mark Rarest Reveal; and make exactly one owned item the Hero Piece. Owner mutations derive identity from the authenticated session and Silver membership instead of client-supplied owner IDs.
+- Sharing uses the device share sheet when available and clipboard fallback otherwise. Public Showcase, Showcase Collection, and Reveal Spotlight routes expose custom-domain canonical URLs plus route-specific SEO/social metadata only after public visibility checks.
+- Followed Showcases shows at most 12 newest public highlights from followed collectors, defaults the UI to six, excludes private-note-only pieces and either-direction blocks, and shows an honest empty state instead of fabricated production activity.
+- Applied migrations `20260822170000_sparkle_finder_single_hero_piece.sql` and `20260822193000_followed_showcase_highlights.sql`; a second `supabase db push --yes` reported the remote database was up to date.
+- Verification passed: lint; full Vitest suite (`44` files, `565` tests); production build; `git diff --check`; full Playwright release smoke (`18` passed, `2` optional skipped); and rendered 390px/1440px checks for Collection, Silver owner tools, and Followed Showcases with no horizontal overflow.
+- Pushed commit `85f786b` and deployed it Ready as `dpl_ZaPVexp3AWvtK75DuHLkdMvoNmLm`, aliased at `https://yoursparklefinder.com`. Live read-only checks confirmed the Coming Soon page, Google/email sign-in, protected account gates, and no browser console errors. The available browser session was signed out, so no production customer data was mutated and a signed-in live visual pass remains a designated-demo-account follow-up.
+
 ## 2026-08-22 - Dance Floor Vocabulary Alignment
 
 - Created `docs/plans/2026-08-22-collection-showcase-value-plan.md` to turn the five collection/social value ideas into five independently deployable releases: real persisted public Showcases, a stronger visual Collection showroom with durable Hero Piece selection, easy reveal-story and Showcase Collection management, phone-friendly sharing with public metadata, and bounded followed-Showcase discovery. The plan preserves privacy/RLS, mobile-first layout, existing backend capabilities, one-way safe social behavior, and the no-marketplace boundary.
