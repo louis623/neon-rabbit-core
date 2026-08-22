@@ -2,6 +2,7 @@ import {
   isAboutNarrativeCopySubmission,
   isAboutSectionCorrection,
 } from '@/lib/nic-nac/site-editing-intent'
+import type { NicNacToolIntent } from '@/lib/nic-nac/tools'
 
 type TradeBoardWorkflowForToolChoice = {
   status?: string
@@ -53,6 +54,7 @@ export function chooseNicNacToolChoiceForStep(args: {
   requireToolCall: boolean
   stepsLength: number
   activeToolNames: string[]
+  routedToolIntents?: NicNacToolIntent[]
   activeTradeBoardWorkflow?: TradeBoardWorkflowForToolChoice
   activeTradeWorkflow?: GenericTradeWorkflowForToolChoice
   activeCalendarWorkflow?: CalendarWorkflowForToolChoice
@@ -98,7 +100,10 @@ export function chooseNicNacToolChoiceForStep(args: {
   ) {
     return { type: 'tool', toolName: 'get_trade_requests' }
   }
-  if (args.activeToolNames.includes('prepare_trade_board_work')) {
+  if (
+    args.activeToolNames.includes('prepare_trade_board_work') &&
+    (args.routedToolIntents?.includes('trade_board') ?? true)
+  ) {
     return { type: 'tool', toolName: 'prepare_trade_board_work' }
   }
 
@@ -175,7 +180,7 @@ function textIsAffirmative(text: string): boolean {
 
 function textAsksDuplicatePhysicalPieceQuestion(text: string): boolean {
   return (
-    /\balready\s+on\s+your\s+Trade\s+Board\b/i.test(text) &&
+    /\balready\s+on\s+your\s+(?:Dance\s+Floor|Trade\s+Board)\b/i.test(text) &&
     /\b(?:another|second|additional|extra)\s+physical\s+piece\b/i.test(text) &&
     /\b(?:same|that\s+same)\s+design\b/i.test(text)
   )

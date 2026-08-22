@@ -71,6 +71,46 @@ describe('generic Trade workflow context', () => {
     )
   })
 
+  it('starts the same durable removal workflow when the rep says clear the Dance Floor', async () => {
+    getActiveTradeWorkflowSessionMock.mockResolvedValueOnce(null)
+    createTradeWorkflowSessionMock.mockResolvedValueOnce({
+      id: 'workflow-clear-1',
+      repId: 'rep-1',
+      conversationId: 'conversation-1',
+      workflowType: 'trade_board_remove_listing',
+      status: 'active',
+      phase: 'started',
+      intent: 'remove_listing',
+      knownFields: {},
+      missingFields: [],
+      blockers: [],
+      candidates: [],
+      approvalState: 'not_required',
+    })
+    updateTradeWorkflowSessionMock.mockImplementation((_client, state) =>
+      Promise.resolve(state),
+    )
+
+    await getOrCreateTradeWorkflowContext({
+      supabase: {} as never,
+      repId: 'rep-1',
+      conversationId: 'conversation-1',
+      latestUserText: 'Clear all dancers from my Dance Floor.',
+      latestToolIntents: ['trade_board'],
+      latestUserMessageId: 'message-clear-1',
+      mode: 'workspace',
+      nowIso: '2026-08-22T12:00:00.000Z',
+    })
+
+    expect(createTradeWorkflowSessionMock).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        workflowType: 'trade_board_remove_listing',
+        intent: 'remove_listing',
+      }),
+    )
+  })
+
   it('resumes an existing trade swap workflow even when the latest turn is terse', async () => {
     getActiveTradeWorkflowSessionMock.mockResolvedValueOnce({
       id: 'workflow-1',

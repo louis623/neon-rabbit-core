@@ -220,11 +220,32 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
   ],
 }
 
+// Authenticated workspace conversations keep every normal rep capability in
+// scope on every turn. Text routing and durable workflows still decide which
+// tool Nic-Nac should use, while product policy, tool-level authorization, and
+// approval gates remain the final safety boundaries. Required setup is kept
+// separate because that mode has its own deliberately restricted tool set.
+export const WORKSPACE_TOOL_INTENTS: readonly NicNacToolIntent[] = [
+  'memory',
+  'show_memory',
+  'trade_board',
+  'trade_requests',
+  'fulfillment',
+  'catalog',
+  'calendar',
+  'site',
+  'notification',
+  'audience',
+  'resources',
+]
+
 export function addWorkspaceBaselineToolIntents(
   intents: NicNacToolIntent[],
 ): NicNacToolIntent[] {
-  const merged = [...intents]
-  for (const intent of ['calendar'] as NicNacToolIntent[]) {
+  const merged: NicNacToolIntent[] = intents.filter(
+    (intent) => intent !== 'required_setup',
+  )
+  for (const intent of WORKSPACE_TOOL_INTENTS) {
     if (!merged.includes(intent)) merged.push(intent)
   }
   return merged
@@ -290,6 +311,8 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
   if (
     hasAny([
       /\bboard\b/,
+      /\bdance\s+floor\b/,
+      /\bdancers?\b/,
       /\blisting\b/,
       /\blistings\b/,
       /\bpiece\b/,
@@ -299,6 +322,7 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
       /\b(item|piece|listing|inventory)\b.*\badd\b/,
       /\btake down\b/,
       /\bremove\b/,
+      /\bclear\b.*\b(board|dance\s+floor|listing|listings|piece|pieces|item|items|dancer|dancers)\b/,
       /\brestore\b/,
       /\badd\b.*\bboard\b/,
       /\binventory\b/,

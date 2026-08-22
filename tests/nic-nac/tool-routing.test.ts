@@ -12,6 +12,7 @@ import {
   getToolIntentsForText,
   listToolNamesForIntents,
   shouldRequireToolCallForMessages,
+  WORKSPACE_TOOL_INTENTS,
 } from '@/lib/nic-nac/tools'
 import { mergeWorkflowToolIntents } from '@/lib/nic-nac/workflows/trade-board-intake-context'
 
@@ -705,12 +706,67 @@ describe('Nic-Nac tool routing', () => {
     expect(shouldRequireToolCallForMessages(messages, intents)).toBe(true)
   })
 
-  it('keeps Calendar tools in the paid workspace baseline even for a terse confirmation turn', () => {
+  it('keeps every authorized rep tool in the workspace baseline on every turn', () => {
     const intents = addWorkspaceBaselineToolIntents(['memory'])
+    const toolNames = listToolNamesForIntents(intents)
 
-    expect(intents).toEqual(['memory', 'calendar'])
-    expect(listToolNamesForIntents(intents)).toContain('add_show')
-    expect(listToolNamesForIntents(intents)).toContain('cancel_show')
+    expect(intents).toEqual(WORKSPACE_TOOL_INTENTS)
+    expect(toolNames).toEqual(
+      expect.arrayContaining([
+        'remove_listing',
+        'approve_trade',
+        'update_fulfillment_status',
+        'report_jewelry_catalog_issue',
+        'add_show',
+        'update_site_setting',
+        'send_email_notification',
+        'manage_customer_contact',
+        'get_help_resources',
+      ]),
+    )
+    expect(toolNames).not.toContain('unlock_required_setup')
+  })
+
+  it('keeps removal available after the exact removal-reason follow-up that lost it live', () => {
+    const messages = [
+      {
+        id: 'remove-all',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Clear all items from my trade board. We have zero items that should be on the trade board right now.',
+          },
+        ],
+      },
+      {
+        id: 'ask-reason',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'text',
+            text: 'I found one dancer. Which removal reason should I use: mistake, keeping, sold, or other?',
+          },
+        ],
+      },
+      {
+        id: 'reason',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Other, as we are doing it for testing purposes',
+          },
+        ],
+      },
+    ]
+
+    const latestTurnIntents = getToolIntentsForMessages(messages)
+    const workspaceIntents = addWorkspaceBaselineToolIntents(latestTurnIntents)
+
+    expect(latestTurnIntents).toEqual(['memory'])
+    expect(workspaceIntents).toContain('trade_board')
+    expect(listToolNamesForIntents(workspaceIntents)).toContain('remove_listing')
   })
 
   it('routes physical inventory add language to trade-board tools', () => {

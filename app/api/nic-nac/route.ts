@@ -542,12 +542,14 @@ export async function POST(request: Request) {
   if (calendarWorkflowContext.activeWorkflow) {
     activeWorkflowContexts.push(calendarWorkflowContext.activeWorkflow)
   }
-  const requestedToolIntents: NicNacToolIntent[] =
+  const routedToolIntents: NicNacToolIntent[] =
     mode === 'required_setup'
       ? latestToolIntents
-      : addWorkspaceBaselineToolIntents(
-          mergeActiveWorkflowToolIntents(latestToolIntents, activeWorkflowContexts),
-        )
+      : mergeActiveWorkflowToolIntents(latestToolIntents, activeWorkflowContexts)
+  const requestedToolIntents: NicNacToolIntent[] =
+    mode === 'required_setup'
+      ? routedToolIntents
+      : addWorkspaceBaselineToolIntents(routedToolIntents)
   const toolPolicy = filterNicNacToolIntentsForContext(
     productContext,
     requestedToolIntents,
@@ -564,7 +566,7 @@ export async function POST(request: Request) {
             ? 'fallback_memory'
             : 'latest_turn_intent'
   const requireToolCall =
-    shouldRequireToolCallForMessages(messages, toolIntents) ||
+    shouldRequireToolCallForMessages(messages, routedToolIntents) ||
     activeWorkflowRequiresToolCall(activeWorkflowContexts)
   const tools = buildToolsForIntents(
     {
@@ -749,6 +751,7 @@ export async function POST(request: Request) {
             requireToolCall,
             stepsLength: steps.length,
             activeToolNames,
+            routedToolIntents,
             activeTradeBoardWorkflow,
             activeTradeWorkflow: tradeWorkflowContext.sessionAfter
               ? {

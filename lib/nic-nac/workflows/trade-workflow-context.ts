@@ -517,7 +517,7 @@ function inferWorkflowTypeFromTurn(
   }
   if (
     latestToolIntents.includes('trade_board') &&
-    /\b(remove|take\s+down|delete|pull)\b[\s\S]{0,80}\b(listing|trade\s+board|board|piece|item)\b/i.test(
+    /\b(remove|take\s+down|delete|pull|clear)\b[\s\S]{0,80}\b(listing|trade\s+board|dance\s+floor|board|piece|item|dancer)\b/i.test(
       text,
     )
   ) {

@@ -207,4 +207,15 @@ describe('Nic-Nac tool choice policy', () => {
       }),
     ).toBe('required')
   })
+
+  it('does not let always-available Dance Floor tools hijack another routed workflow', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: true,
+        stepsLength: 0,
+        activeToolNames: ['prepare_trade_board_work', 'prepare_calendar_work'],
+        routedToolIntents: ['calendar'],
+      }),
+    ).toBe('required')
+  })
 })

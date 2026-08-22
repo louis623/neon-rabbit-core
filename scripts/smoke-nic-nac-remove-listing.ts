@@ -677,9 +677,9 @@ async function verifyRemovalDatabaseState(input: {
   if (listing.status !== 'removed') {
     throw new Error(`database assertion failed: listing status was ${listing.status}, not removed.`)
   }
-  if (listing.removal_reason !== 'mistake') {
+  if (listing.removal_reason !== 'other') {
     throw new Error(
-      `database assertion failed: removal reason was ${listing.removal_reason}, not mistake.`,
+      `database assertion failed: removal reason was ${listing.removal_reason}, not other.`,
     )
   }
   if (!listing.deleted_at) {
@@ -781,7 +781,8 @@ export async function runRemoveListingSmoke(
       expectedAssistantCount: 1,
       requiredTools: ['list_my_trade_board'],
       turns,
-      text: `What is on my Dance Floor right now? I am checking for ${target.itemNumber}.`,
+      text:
+        'Clear all dancers from my Dance Floor. We have zero dancers that should be on the Dance Floor right now.',
     })
 
     messages = await sendTurn({
@@ -794,9 +795,7 @@ export async function runRemoveListingSmoke(
       expectedAssistantCount: 2,
       requiredTools: ['remove_listing'],
       turns,
-      text:
-        `Remove ${target.itemNumber} from my Dance Floor because I listed it by mistake. ` +
-        `It is the ${target.designName} piece.`,
+      text: 'Other, as we are doing it for testing purposes',
     })
 
     messages = await approveTurn({
@@ -836,7 +835,7 @@ export async function runRemoveListingSmoke(
       turns,
       cleanup,
       message:
-        'Nic-Nac remove-listing smoke passed through real /api/nic-nac list, approval-requested remove_listing, approval continuation, database removal/request cancellation assertions, public Dance Floor hidden proof, and cleanup.',
+        'Nic-Nac remove-listing smoke passed the live multi-turn reason replay through real /api/nic-nac list, approval-requested remove_listing, approval continuation, database removal/request cancellation assertions, public Dance Floor hidden proof, and cleanup.',
     }
   } catch (error) {
     const cleanup: RemoveListingSmokeResult['cleanup'] = { deletedRows: {} }
