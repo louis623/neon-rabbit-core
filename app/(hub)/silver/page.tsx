@@ -100,7 +100,7 @@ export function renderSilverPageContent(
     });
 
   return (
-    <section className="grid gap-6">
+    <section className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-[var(--sparkle-coral)]">

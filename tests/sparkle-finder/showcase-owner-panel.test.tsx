@@ -53,6 +53,14 @@ describe("Showcase owner workflow", () => {
             slug: "purple-dreams",
             description: "Favorite purple reveals.",
             visibility: "private",
+            pieceIds: [collectionItem.id],
+          }, {
+            id: "116b1d77-6199-411c-8484-e3f5df1e4353",
+            customerId: "user-1",
+            title: "Never Leaving",
+            slug: "never-leaving",
+            description: "Forever favorites.",
+            visibility: "private",
             pieceIds: [],
           }],
         }}
@@ -69,8 +77,34 @@ describe("Showcase owner workflow", () => {
     expect(markup).toContain("Personal piece photo");
     expect(markup).toContain("Showcase story");
     expect(markup).toContain("Private Preview");
-    expect(markup).toContain("Showcase Collection");
+    expect(markup).toContain("Showcase Collections");
     expect(markup).toContain("Private notes are never included");
+    expect(markup).toContain("Your address: yoursparklefinder.com/showcase/");
+    expect(markup).toContain("casey-finds");
+    expect(markup).toContain("Included");
+    expect(markup).toContain("Not included");
+    expect(markup).toContain("never removes its jewelry from your Bling Vault");
+    expect(markup).toContain('aria-expanded="false"');
+    expect(markup).toContain("Edit piece details");
+    expect(markup).toContain("Catalog image");
+  });
+
+  it("shows the current personal photo and explicit replace/remove controls", () => {
+    const markup = renderToStaticMarkup(
+      <ShowcaseOwnerPanel
+        canSave
+        collectionItems={[{ ...collectionItem, personalPhotoUrl: "https://images.example/my-amethyst.jpg" }]}
+        data={{ handle: "casey-finds", tagline: "Purple stacks", visibility: "private", collections: [] }}
+        isLocalPreview={false}
+        savePieceAction={ownerAction}
+      />,
+    );
+
+    expect(markup).toContain("https://images.example/my-amethyst.jpg");
+    expect(markup).toContain("Your photo");
+    expect(markup).toContain("Replace photo");
+    expect(markup).toContain("Remove personal photo");
+    expect(markup).toContain('name="removePersonalPhoto"');
   });
 
   it("offers Rarest Reveal selection only for owned pieces", () => {
@@ -126,7 +160,38 @@ describe("Showcase owner workflow", () => {
     expect(source).toContain("accountState.customer.id !== data.user.id");
     expect(source).toContain("accountState.membership?.hasSilverAccess !== true");
     expect(source).toContain('.eq("user_id", verified.userId)');
+    expect(source).toContain('.select("showcase_handle")');
+    expect(source).toContain("revalidateShowcasePaths(previousHandle, handle)");
+    expect(source).toContain('.select("id")');
+    expect(source).toContain('readField(deleted.data, "id") !== collectionId');
+    expect(source).toContain("Every piece stayed in your Bling Vault");
     expect(source).not.toContain('formData.get("userId")');
     expect(source).not.toContain('formData.get("customerId")');
+  });
+
+  it("requires an inline second confirmation before collection deletion", () => {
+    const source = fs.readFileSync(
+      path.resolve(process.cwd(), "components/showcase/ShowcaseOwnerPanel.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("Remove “{collection.title}”?");
+    expect(source).toContain("Yes, remove collection");
+    expect(source).toContain("Keep collection");
+    expect(source).toContain("Every piece stays safely in your Bling Vault");
+    expect(source).toContain('role="alertdialog"');
+    expect(source).toContain("confirmButtonRef.current?.focus()");
+    expect(source).toContain("triggerRef.current?.focus()");
+  });
+
+  it("resets an unsaved photo preview after its save attempt finishes", () => {
+    const source = fs.readFileSync(
+      path.resolve(process.cwd(), "components/showcase/ShowcaseOwnerPanel.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("observedPendingRef.current");
+    expect(source).toContain("setPhotoResetKey((value) => value + 1)");
+    expect(source).toContain("showActionStatus ? <ActionStatus state={state} /> : null");
   });
 });

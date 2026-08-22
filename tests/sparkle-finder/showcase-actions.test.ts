@@ -89,7 +89,37 @@ describe("Sparkle Showcase actions", () => {
     expect(result).toEqual({ ok: false, reason: "silver_required" });
     expect(client.operations).toEqual([]);
   });
+
+  it("preserves, removes, and replaces a personal piece photo intentionally", async () => {
+    const accountState = currentAccountState("silver_paid");
+
+    const preserved = createFakePersistenceClient();
+    await persistShowcasePieceForAccount(preserved, accountState, showcasePieceInput());
+    expect(preserved.operations[0].values).not.toHaveProperty("personal_photo_url");
+
+    const removed = createFakePersistenceClient();
+    await persistShowcasePieceForAccount(removed, accountState, showcasePieceInput({ personalPhotoUrl: "" }));
+    expect(removed.operations[0].values).toHaveProperty("personal_photo_url", null);
+
+    const replaced = createFakePersistenceClient();
+    await persistShowcasePieceForAccount(replaced, accountState, showcasePieceInput({
+      personalPhotoUrl: "  https://images.example/new-photo.jpg  ",
+    }));
+    expect(replaced.operations[0].values).toHaveProperty("personal_photo_url", "https://images.example/new-photo.jpg");
+  });
 });
+
+function showcasePieceInput(overrides: { personalPhotoUrl?: string } = {}) {
+  return {
+    jewelryItemId: "jewel-aurora-drop-earrings",
+    showcaseStatus: "owned" as const,
+    visibility: "public" as const,
+    revealStory: "My favorite reveal.",
+    note: "Private owner note.",
+    isRarestReveal: false,
+    ...overrides,
+  };
+}
 
 function currentAccountState(accessState: SparkleFinderAccessState): CurrentSparkleFinderAccountState & { status: "authenticated" } {
   const hasSilverAccess = accessState !== "free";

@@ -17,21 +17,53 @@ export async function saveShowcaseProfileSetupAction(
   const tagline = cleanText(formData.get("tagline"), 160);
   const visibility = formData.get("visibility") === "public" ? "public" : "private";
 
-  if (handle.length < 3) {
+  if ((handle.match(/[a-z0-9]/g) ?? []).length < 3) {
     return { status: "error", message: "Choose a Showcase handle with at least 3 letters or numbers." };
   }
 
-  const { error } = await verified.supabase
+  const previousProfile = await verified.supabase
     .from("sparkle_finder_profiles")
-    .update({
-      showcase_handle: handle,
-      showcase_tagline: tagline,
-      showcase_visibility: visibility,
-      ...(visibility === "public" ? { profile_visibility: "sparkle_finder" } : {}),
-    })
-    .eq("user_id", verified.userId);
+    .select("showcase_handle")
+    .eq("user_id", verified.userId)
+    .maybeSingle();
 
-  if (error) {
+  if (previousProfile.error) {
+    return { status: "error", message: "Showcase settings could not be saved." };
+  }
+
+  const previousHandle = readField(previousProfile.data, "showcase_handle");
+  const showcaseValues = {
+    showcase_handle: handle,
+    showcase_tagline: tagline,
+    showcase_visibility: visibility,
+    ...(visibility === "public" ? { profile_visibility: "sparkle_finder" } : {}),
+  };
+  const savedProfile = previousProfile.data
+    ? await verified.supabase
+        .from("sparkle_finder_profiles")
+        .update(showcaseValues)
+        .eq("user_id", verified.userId)
+        .select("user_id,showcase_handle")
+        .maybeSingle()
+    : await verified.supabase
+        .from("sparkle_finder_profiles")
+        .insert({
+          user_id: verified.userId,
+          display_name: cleanText(verified.accountState.customer.displayName, 80) || "Sparkle Finder",
+          email: cleanText(verified.accountState.customer.email, 254),
+          state: cleanText(verified.accountState.customer.state, 40),
+          profile_visibility: visibility === "public" ? "sparkle_finder" : "private",
+          ...showcaseValues,
+        })
+        .select("user_id,showcase_handle")
+        .maybeSingle();
+
+  if (
+    savedProfile.error ||
+    readField(savedProfile.data, "user_id") !== verified.userId ||
+    readField(savedProfile.data, "showcase_handle") !== handle
+  ) {
+    const error = savedProfile.error;
     const code = typeof error === "object" && error && "code" in error ? String(error.code) : "";
     return {
       status: "error",
@@ -39,7 +71,7 @@ export async function saveShowcaseProfileSetupAction(
     };
   }
 
-  revalidateShowcasePaths(handle);
+  revalidateShowcasePaths(previousHandle, handle);
   return {
     status: "saved",
     message: visibility === "public" ? "Your Sparkle Showcase is public." : "Your Sparkle Showcase is private.",
@@ -94,16 +126,20 @@ export async function deleteShowcaseCollectionAction(
   const collectionId = cleanUuid(formData.get("collectionId"));
   if (!collectionId) return { status: "error", message: "Showcase Collection could not be removed." };
 
-  const { error } = await verified.supabase
+  const deleted = await verified.supabase
     .from("sparkle_finder_showcase_collections")
     .delete()
     .eq("id", collectionId)
-    .eq("user_id", verified.userId);
+    .eq("user_id", verified.userId)
+    .select("id")
+    .maybeSingle();
 
-  if (error) return { status: "error", message: "Showcase Collection could not be removed." };
+  if (deleted.error || readField(deleted.data, "id") !== collectionId) {
+    return { status: "error", message: "Showcase Collection could not be removed. Refresh and try again." };
+  }
 
   revalidateShowcasePaths();
-  return { status: "saved", message: "Showcase Collection removed. Your jewelry stayed in your collection." };
+  return { status: "saved", message: "Showcase Collection removed. Every piece stayed in your Bling Vault." };
 }
 
 export async function assignShowcasePieceAction(
@@ -182,7 +218,7 @@ async function getVerifiedOwner() {
       return { ok: false as const, state: deniedState() };
     }
 
-    return { ok: true as const, supabase, userId: data.user.id };
+    return { ok: true as const, supabase, userId: data.user.id, accountState };
   } catch {
     return { ok: false as const, state: { status: "error" as const, message: "Showcase saves are unavailable right now." } };
   }
@@ -209,9 +245,17 @@ function createSlug(title: string): string {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
 }
 
-function revalidateShowcasePaths(handle = "") {
+function revalidateShowcasePaths(...handles: string[]) {
   revalidatePath("/silver");
   revalidatePath("/collectors");
   revalidatePath("/showcase", "layout");
-  if (handle) revalidatePath(`/showcase/${handle}`);
+  for (const handle of new Set(handles.map(normalizeHandle).filter(Boolean))) {
+    revalidatePath(`/showcase/${handle}`);
+  }
+}
+
+function readField(value: unknown, field: string): string {
+  if (!value || typeof value !== "object") return "";
+  const fieldValue = (value as Record<string, unknown>)[field];
+  return typeof fieldValue === "string" ? fieldValue.trim() : "";
 }

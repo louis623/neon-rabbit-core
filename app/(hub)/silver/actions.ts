@@ -170,11 +170,15 @@ export async function saveShowcasePieceAction(
   const piecePhoto = await readOptionalProfilePhotoDataUrl(
     formData.get("personalPhoto"),
     formData.get("personalPhotoDataUrl"),
+    "Personal piece photo",
   );
 
   if (!piecePhoto.ok) {
     return piecePhoto.state;
   }
+
+  const removePersonalPhoto = formData.get("removePersonalPhoto") === "yes";
+  const personalPhotoUrl = removePersonalPhoto ? "" : piecePhoto.photoUrl;
 
   const result = await persistShowcasePieceForAccount(verified.client, verified.accountState, {
     jewelryItemId,
@@ -183,7 +187,7 @@ export async function saveShowcasePieceAction(
     visibility: parseShowcaseVisibility(formData.get("visibility")),
     revealStory: String(formData.get("revealStory") ?? ""),
     isRarestReveal: formData.get("isRarestReveal") === "yes",
-    ...(piecePhoto.photoUrl ? { personalPhotoUrl: piecePhoto.photoUrl } : {}),
+    ...(personalPhotoUrl !== undefined ? { personalPhotoUrl } : {}),
   });
 
   if (!result.ok) {
@@ -364,11 +368,12 @@ function readUploadFile(value: FormDataEntryValue | null): File {
 async function readOptionalProfilePhotoDataUrl(
   value: FormDataEntryValue | null,
   preparedValue: FormDataEntryValue | null = null,
+  photoLabel = "Profile photo",
 ): Promise<{ ok: true; photoUrl?: string } | { ok: false; state: SilverSaveActionState }> {
   const preparedPhotoUrl = typeof preparedValue === "string" ? preparedValue.trim() : "";
 
   if (preparedPhotoUrl) {
-    return validatePreparedProfilePhotoDataUrl(preparedPhotoUrl);
+    return validatePreparedProfilePhotoDataUrl(preparedPhotoUrl, photoLabel);
   }
 
   if (!(value instanceof File) || value.size === 0) {
@@ -380,7 +385,7 @@ async function readOptionalProfilePhotoDataUrl(
       ok: false,
       state: {
         status: "error",
-        message: "Upload a JPG, PNG, or WebP profile photo.",
+        message: `${photoLabel} must be a JPG, PNG, or WebP.`,
       },
     };
   }
@@ -390,7 +395,7 @@ async function readOptionalProfilePhotoDataUrl(
       ok: false,
       state: {
         status: "error",
-        message: "Profile photo must be 500 KB or smaller.",
+        message: `${photoLabel} must be 500 KB or smaller.`,
       },
     };
   }
@@ -405,7 +410,7 @@ async function readOptionalProfilePhotoDataUrl(
       ok: false,
       state: {
         status: "error",
-        message: "Profile photo could not be saved.",
+        message: `${photoLabel} could not be saved.`,
       },
     };
   }
@@ -413,13 +418,14 @@ async function readOptionalProfilePhotoDataUrl(
 
 function validatePreparedProfilePhotoDataUrl(
   photoUrl: string,
+  photoLabel = "Profile photo",
 ): { ok: true; photoUrl: string } | { ok: false; state: SilverSaveActionState } {
   if (!/^data:image\/(jpeg|png|webp);base64,[a-z0-9+/]+=*$/i.test(photoUrl)) {
     return {
       ok: false,
       state: {
         status: "error",
-        message: "Profile photo could not be prepared. Choose a JPG, PNG, or WebP.",
+        message: `${photoLabel} could not be prepared. Choose a JPG, PNG, or WebP.`,
       },
     };
   }
@@ -429,7 +435,7 @@ function validatePreparedProfilePhotoDataUrl(
       ok: false,
       state: {
         status: "error",
-        message: "Profile photo is too large. Try a smaller image.",
+        message: `${photoLabel} is too large. Try a smaller image.`,
       },
     };
   }

@@ -78,6 +78,29 @@ test.describe("Sparkle Showcase smoke", () => {
     await expectNoGuardrailCopy(page);
   });
 
+  test("Showcase owner management stays clear at phone widths", async ({ page }) => {
+    await page.context().clearCookies();
+    await page.context().addCookies([{ name: "sparkle_finder_auth_mode", value: "silver", url: baseUrl }]);
+
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
+
+      const panel = page.locator('[data-smoke="showcase-owner-panel"]');
+      await expect(panel).toBeVisible();
+      await page.getByLabel("Showcase handle").fill("My Very Sparkly Showcase");
+      await expect(page.getByText("yoursparklefinder.com/showcase/my-very-sparkly-showcase")).toBeVisible();
+
+      const firstEditor = panel.locator("details").first();
+      await firstEditor.locator("summary").click();
+      await expect(firstEditor.getByText("Personal piece photo")).toBeVisible();
+      await expect(firstEditor.getByText("Catalog image", { exact: true })).toBeVisible();
+      await expect(firstEditor.getByText("Showcase Collections", { exact: true })).toBeVisible();
+
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    }
+  });
+
   test("Silver preview exposes owner Sparkle Showcase controls without trading language", async ({ page }) => {
     await page.context().clearCookies();
     await page.context().addCookies([
@@ -150,7 +173,7 @@ test.describe("Sparkle Showcase smoke", () => {
     await expect(page.getByText("Added to Wishlist.").first()).toBeVisible();
     await page.getByRole("button", { name: "I Own This" }).first().click();
     await expect(page.getByLabel("Note").first()).toBeVisible();
-    await expect(page.getByLabel("Showcase collection").first()).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Showcase collection", exact: true }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Save to Collection" }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Help Me Find It" }).first()).toBeVisible();
     await expectNoGuardrailCopy(page);
