@@ -1,5 +1,15 @@
 # Decision Log
 
+## August 22, 2026 - Workspace tool availability is broader than tool prioritization
+
+**Every normal rep tool remains available on every authenticated Nic-Nac workspace turn.**
+
+Latest-text and durable-workflow routing still determine which action is relevant and whether a tool call must be pinned, but they no longer decide whether an otherwise authorized capability exists on that turn. This lets a rep change from Dance Floor work to Calendar, site, customer, resource, or other supported work anywhere in a chat without losing tools after a short correction or answer.
+
+Availability does not expand authority. Required setup keeps its restricted tools; non-workspace product contexts remain blocked by product policy; tools remain bound to the authenticated rep; service validation, row-level protections, and approval dialogs remain authoritative. A tool that is merely available must not hijack an unrelated routed workflow.
+
+---
+
 ## August 21-22, 2026 - Live Queue public status language is audience-sensitive
 
 **Customer-facing wording must describe the current experience, not the connector’s internals.**

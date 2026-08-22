@@ -1,5 +1,16 @@
 # Project State
 
+## August 22, 2026 Session - Nic-Nac workspace-wide tool availability
+
+- **Nic-Nac can now change tools at any point in an authenticated workspace chat:** every normal rep tool pack remains available on every workspace turn. Latest-turn intent and durable workflow state still select or pin the appropriate action, so making all tools available cannot redirect Calendar, site, or other work into Dance Floor preparation.
+- **Safety boundaries remain unchanged:** required setup keeps its isolated tool set; Finder, Sparkle Lab, public, and unauthenticated surfaces remain blocked by product policy; tool-level rep scoping and approval dialogs still govern mutations. Dance Floor removals remain one dancer and one approval at a time.
+- **The reported replay is covered directly:** “clear all dancers” now starts the durable removal workflow, and the follow-up “Other, as we are doing it for testing purposes” retains `remove_listing`. The live synthetic reviewer replay observed Dance Floor list/read, the approval-requested removal, the approved database mutation, public hiding, and complete fixture cleanup.
+- **Release:** application commit `7892a27f` was manually released as `dpl_7ro91iVU3m8P3PqdFYbbHt5WyiPm`. Both Sparkle Suite domains resolve to that deployment, all established Bri's Glowtique/Bling Kitchen aliases returned 200, and recent production error logs were empty. Focused routing/workflow/policy coverage passed (98 tests), the full Nic-Nac run had 1,060 passes plus 12 unrelated known/stale expectation failures, and the production build passed.
+
+**Last updated:** August 22, 2026
+
+---
+
 ## August 22, 2026 Session - Dance Floor terminology audit
 
 - **The Dance Floor vocabulary is now internally consistent in active copy:** the audit removed remaining customer and rep-facing uses of “board,” “listing,” and “piece” where they described trade inventory. The customer site, Help & Resources, Nic-Nac workspace, and Nic-Nac guidance now use **Dance Floor** for the surface and **dancer(s)** for trade-eligible jewelry. A **trade** remains the exchange process.

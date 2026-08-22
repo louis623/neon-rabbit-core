@@ -4,6 +4,17 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 22, 2026 - Nic-Nac workspace-wide tool availability
+
+- Reproduced Louis's demo-account defect from the supplied transcript: Nic-Nac successfully read the Dance Floor, then the reason reply **“Other, as we are doing it for testing purposes”** routed as a generic memory turn and no longer exposed `remove_listing`.
+- Changed authenticated workspace routing so every normal rep tool pack stays available throughout every conversation. Kept intent/workflow routing separate from availability so only the relevant workflow can force a tool; required setup remains isolated, and product policy continues to block workspace tools from Finder, Sparkle Lab, public, and unauthenticated contexts.
+- Added **Dance Floor**, **dancer**, and **clear** recognition to the Trade routing/controller boundary. “Clear all dancers from my Dance Floor” now starts the durable removal workflow. Existing per-rep authorization, service validation, and one-action/one-approval safeguards were not weakened.
+- Added deterministic coverage for the exact failing conversation and updated the real production removal smoke to replay the two turns. Focused routing/workflow/mission/policy/smoke-helper coverage passed (98 tests); the production build passed. A wider Nic-Nac run recorded 1,060 passes and 12 unrelated branch-wide failures already represented by stale UI/prompt assertions and the known recipe 503 expectation mismatch.
+- Committed and pushed `7892a27f fix: keep Nic-Nac workspace tools available`, then manually released it as `dpl_7ro91iVU3m8P3PqdFYbbHt5WyiPm`. `www.yoursparklesuite.com` and `yoursparklesuite.com` both resolve to that exact deployment; all established Bri's Glowtique/Bling Kitchen domain pairs returned 200; the new deployment had no recent error logs.
+- The live smoke used only `sparkle-reviewer+preview@neonrabbit.net`, seeded one temporary dancer/request, observed `prepare_trade_board_work`, `list_my_trade_board`, and then `remove_listing` on the previously failing reason turn, completed the approval continuation, verified database/public state, and deleted every seeded row. Louis's and customer accounts were not used; no browser session was required.
+
+---
+
 ## August 22, 2026 - Dance Floor terminology audit
 
 - Audited and tightened the first Dance Floor release after Louis requested a copy check. Replaced the remaining trade-inventory copy with the approved vocabulary: **Dance Floor** for the surface, **dancer(s)** for jewelry made available there, and **trade** for the exchange. This included public customer pages, the rep workspace, Help & Resources, Nic-Nac prompts, tool guidance, success/error states, search/filter labels, and accessibility labels.
