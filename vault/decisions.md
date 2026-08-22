@@ -1,5 +1,25 @@
 # Decision Log
 
+## August 21-22, 2026 - Live Queue public status language is audience-sensitive
+
+**Customer-facing wording must describe the current experience, not the connector’s internals.**
+
+- Fresh connected queue: **“Live Queue connected and ready”**.
+- No queue yet: **“Live Queue will open closer to the next show.”** This intentionally does not promise a queue only at show start, because reps may open it early for pre-orders.
+- Delayed synchronization: **“Live Queue is waiting for an update.”**
+
+Do not show “stale,” “stale link,” or similar technical/failure language on public customer sites. Operational diagnostics can retain accurate technical state internally, but public presentation should be calm and actionable.
+
+---
+
+## August 21-22, 2026 - Clearing Nic-Nac is rep-scoped, not tab-scoped
+
+**A Clear Conversation action retires every active persisted Nic-Nac thread for the authenticated rep.**
+
+The client-held conversation ID cannot be treated as the sole source of truth: restored tabs or multi-device use can leave another active thread that later wins the latest-conversation lookup. Mark active rows cleared for the authenticated rep, retain rows for audit continuity, and exclude cleared threads from latest lookup and hydration. This prevents old history from returning after a future sign-in without deleting operational records.
+
+---
+
 ## August 21, 2026 - Control Center Task List is the operational source of truth
 
 **Use the live operator list, not Open Brain, for active work tracking**

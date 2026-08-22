@@ -1,5 +1,17 @@
 # Project State
 
+## August 21-22, 2026 Session continuation - Nic-Nac history and Live Queue public-copy fixes
+
+- **Nic-Nac Clear Conversation now prevents old-thread resurrection:** clearing is a durable, rep-scoped lifecycle action. The server now retires every active Nic-Nac conversation for that workspace while retaining message rows for audit continuity, so a stale tab or second persisted thread cannot become the next-login “latest” conversation. Focused persistence/routing/workspace tests passed (14 tests), the production build passed, and exact commit `62942282` was manually released as `dpl_AQosKipNWRHTzEPH2rx3ADe9qv5L`.
+- **Live Queue popup close control is accessible:** the public shared customer-site close button now uses a visible dark glyph, hover/focus treatment, and an updated asset cache key. This was a customer-site template correction only; the protected Chrome extension was not touched. Commit `62a3c6f9` was manually released as `dpl_EKi7vdphq4QUyjWvpThfTp1ncS94` after 78 focused public-template tests and production build verification.
+- **Live Queue public copy is deliberately calm and customer-facing:** retain **“Live Queue connected and ready”** while fresh; show **“Live Queue will open closer to the next show.”** when no queue snapshot exists; and show **“Live Queue is waiting for an update.”** when synchronization is delayed. Do not expose “stale,” “stale link,” or technical connector language to customers. Commit `60aca000` was manually released as `dpl_5DPXXN8qsjWDbt7KR9FC8xyCVim1`; focused public-template coverage passed (79 tests), both Sparkle Suite aliases resolve to it, and Heather’s public BlingKitchen template was read-only verified as currently receiving a live connected queue.
+- **Heather’s assigned Live Queue code was verified read-only:** `BLI-3767` belongs to the BlingKitchen/Heather public-site record. Its `last_updated` field was null at the point checked, so it did not establish an active sync; no queue or extension state was changed.
+- **Live verification remains account-safe:** authenticated synthetic browser acceptance is still unavailable because of the existing Codex browser/reviewer-runtime defects. Do not use Louis’s or a customer’s account as a workaround.
+
+**Last updated:** August 22, 2026
+
+---
+
 ## August 21, 2026 Session - Message Center audit, Control Center Task List, and Brittany handoff prep
 
 - **Message Center automations audited healthy:** the daily recovery endpoint remains protected by `CRON_SECRET`; both required Message Center migrations are present; the customer-signup and resource-publication database triggers/functions are installed; and the outbox had no overdue retryable, failed, or stale-processing work. Focused automation coverage passed (83 tests). Current active-rep time zones are 12 `America/New_York` and 1 `America/Chicago`, so the 18:00 UTC daily run covers the present US-only audience. Revisit the schedule before adding a far-west or non-US rep.

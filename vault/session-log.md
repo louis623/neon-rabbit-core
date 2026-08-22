@@ -4,6 +4,16 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 21-22, 2026 - Nic-Nac clear-history hardening and Live Queue public-copy polish
+
+- Diagnosed the recurring Nic-Nac “Clear conversation” failure as a scope gap: the browser only cleared its current conversation ID, while a second active persisted thread could remain eligible for the rep’s latest-conversation lookup and reappear after sign-in. The fix is server-owned and rep-scoped: it marks all currently active conversation rows for that rep as cleared, preserves them for audit continuity, and returns the retired IDs. Focused persistence, routing, and workspace tests passed (14 tests), the production build passed, and `62942282 fix: prevent cleared Nic-Nac threads from reopening` was manually released as `dpl_AQosKipNWRHTzEPH2rx3ADe9qv5L`. No Louis or customer account was used.
+- Fixed the Live Reveal Queue modal close glyph on the shared public customer-site template. The prior white glyph on a white circular control was effectively invisible. Added dark foreground contrast, hover/focus styling, and an asset-cache bump without touching any protected Chrome extension file. The three public-template suites passed (78 tests), the production build passed, and `62a3c6f9 fix: improve live queue close contrast` was manually released as `dpl_EKi7vdphq4QUyjWvpThfTp1ncS94`.
+- Louis selected the public Live Queue copy contract: **“Live Queue connected and ready”** for a fresh connected queue; **“Live Queue will open closer to the next show.”** when no queue is active; and **“Live Queue is waiting for an update.”** during a delayed sync. Customer-facing UI must not call a connection “stale” or expose technical-link terminology. Added regression coverage for both fallback states; 79 focused public-template tests and the production build passed. `60aca000 fix: refine live queue public status copy` was manually released as `dpl_5DPXXN8qsjWDbt7KR9FC8xyCVim1`. Both `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to that deployment; a read-only BlingKitchen public-template check confirmed Heather’s current queue was connected and actively showing Kim as currently unboxing.
+- Performed a read-only Supabase verification of Heather’s Live Queue code: `BLI-3767` maps to BlingKitchen. The checked record had no `last_updated` value, which means it was not establishing a fresh sync at that instant; no queue, browser, or extension state was changed.
+- Authenticated synthetic browser acceptance could not be completed because of the known Codex browser/runtime and reviewer isolation limitations. The work stayed on safe public routes and tests; no personal or customer session was used as a fallback.
+
+---
+
 ## August 21, 2026 - Message Center automation audit and Brittany domain-handoff preparation
 
 - Audited the production Message Center automations without mutating production: verified the daily cron's `CRON_SECRET` boundary, both required migrations, signup/resource triggers and functions, and a clean outbox (no overdue retryable, failed, or stale-processing rows). The focused feature suite passed 83 tests. Current active-rep time zones are Eastern (12) and Central (1), so the existing daily 18:00 UTC run is currently safe for the US-only audience; reassess before adding farther-west or non-US time zones.
