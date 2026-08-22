@@ -34,7 +34,7 @@ describe('POST /api/account/activate-trial', () => {
   it('activates an authenticated rep trial idempotently', async () => {
     getAuthenticatedRepMock.mockResolvedValue({
       repId: 'rep-1',
-      rep: { id: 'rep-1' },
+      rep: { id: 'rep-1', status: 'active' },
     })
     activatePendingWorkspaceTrialMock.mockResolvedValue({
       status: 'active',
@@ -54,6 +54,40 @@ describe('POST /api/account/activate-trial', () => {
     expect(activatePendingWorkspaceTrialMock).toHaveBeenCalledWith({
       supabase: { kind: 'admin' },
       repId: 'rep-1',
+    })
+  })
+
+  it('rejects an incomplete rep record that was never provisioned', async () => {
+    getAuthenticatedRepMock.mockResolvedValue({
+      repId: 'rep-orphaned',
+      rep: { id: 'rep-orphaned', status: 'onboarding' },
+    })
+    activatePendingWorkspaceTrialMock.mockResolvedValue(null)
+
+    const response = await POST()
+
+    expect(response.status).toBe(404)
+    await expect(response.json()).resolves.toEqual({
+      error: 'account_not_found',
+      message: 'No Sparkle Suite account is associated with this email.',
+    })
+  })
+
+  it('allows an active internal account without starting checkout or requiring a trial row', async () => {
+    getAuthenticatedRepMock.mockResolvedValue({
+      repId: 'rep-internal',
+      rep: { id: 'rep-internal', status: 'active' },
+    })
+    activatePendingWorkspaceTrialMock.mockResolvedValue(null)
+
+    const response = await POST()
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      activated: false,
+      trialStartsAt: null,
+      trialEndsAt: null,
     })
   })
 

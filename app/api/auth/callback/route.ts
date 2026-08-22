@@ -80,6 +80,7 @@ export async function GET(request: Request) {
     { allowCreate: selfServeSignupCallback && selfServeOpen },
   )
   if (!workspace.repId) {
+    await supabase.auth.signOut({ scope: 'local' })
     const errorCode = selfServeSignupCallback
       ? 'self_serve_not_open'
       : 'account_not_found'
@@ -92,10 +93,17 @@ export async function GET(request: Request) {
     requestUrl.searchParams.get('next'),
   )
   if (!nextPath.startsWith('/reset-password')) {
-    await activatePendingWorkspaceTrial({
+    const trial = await activatePendingWorkspaceTrial({
       supabase: admin,
       repId: workspace.repId,
     })
+
+    if (!workspace.created && workspace.repStatus !== 'active' && !trial) {
+      await supabase.auth.signOut({ scope: 'local' })
+      return NextResponse.redirect(
+        new URL('/login?error=account_not_found', requestUrl.origin),
+      )
+    }
   }
 
   return redirectTo(requestUrl, requestUrl.searchParams.get('next'))

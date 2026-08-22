@@ -157,14 +157,12 @@ describe('Nic-Nac required setup client', () => {
     expect(client).toContain('void loadSetupState()')
   })
 
-  it('auto-opens checkout instead of rendering a duplicate checkout page', () => {
+  it('never opens checkout as a side effect of signing in', () => {
     expect(client).toContain("searchParams.get('onboarding') === 'checkout-required'")
-    expect(client).toContain('/api/stripe/create-checkout')
-    expect(client).toContain("planType: 'monthly'")
-    expect(client).toContain('agreementAccepted: true')
-    expect(client).toContain('void handleStartCheckout()')
-    expect(client).toContain('Opening checkout...')
-    expect(client).not.toContain('CheckoutRequiredHome')
+    expect(client).toContain('WorkspaceAccessPending')
+    expect(client).not.toContain('/api/stripe/create-checkout')
+    expect(client).not.toContain('handleStartCheckout')
+    expect(client).not.toContain('Opening checkout...')
     expect(client).not.toContain("onboarding') === 'self-serve-started'")
   })
 })

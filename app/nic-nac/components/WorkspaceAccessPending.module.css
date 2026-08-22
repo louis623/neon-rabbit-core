@@ -1,0 +1,84 @@
+.page {
+  min-height: var(--nic-nac-app-height, 100vh);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(194, 160, 255, 0.24), transparent 32rem),
+    linear-gradient(180deg, #fcfbff 0%, #f7f3ff 58%, #ffffff 100%);
+  color: #15122c;
+}
+
+.card {
+  width: min(100%, 520px);
+  padding: clamp(24px, 6vw, 40px);
+  border: 1px solid rgba(111, 77, 169, 0.2);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 70px rgba(72, 46, 117, 0.14);
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: #ed168c;
+  color: white;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.eyebrow {
+  margin: 18px 0 6px;
+  color: #715a91;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.card h1 {
+  margin: 0;
+  font-size: clamp(26px, 6vw, 36px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.card p:not(.eyebrow, .error) {
+  margin: 18px 0 0;
+  color: #574d69;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.card button {
+  width: 100%;
+  margin-top: 26px;
+  padding: 13px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #2f174e;
+  color: white;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.card button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.card button:focus-visible {
+  outline: 3px solid rgba(237, 22, 140, 0.45);
+  outline-offset: 3px;
+}
+
+.error {
+  margin: 14px 0 0;
+  color: #a31235;
+  font-size: 14px;
+  line-height: 1.45;
+}

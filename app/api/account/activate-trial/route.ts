@@ -9,11 +9,21 @@ export const dynamic = 'force-dynamic'
 
 export async function POST() {
   try {
-    const { repId } = await getAuthenticatedRep()
+    const { repId, rep } = await getAuthenticatedRep()
     const trial = await activatePendingWorkspaceTrial({
       supabase: createAdminClient(),
       repId,
     })
+
+    if (!trial && rep.status !== 'active') {
+      return NextResponse.json(
+        {
+          error: 'account_not_found',
+          message: 'No Sparkle Suite account is associated with this email.',
+        },
+        { status: 404 },
+      )
+    }
 
     return NextResponse.json({
       ok: true,

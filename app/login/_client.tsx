@@ -15,6 +15,16 @@ export default function LoginClient() {
   const [busy, setBusy] = useState(false)
   const redirect = safeRelativeRedirectPath(searchParams.get('redirect'))
   const passwordResetSuccess = searchParams.get('reset') === 'success'
+  const signInErrorCode = searchParams.get('error')
+  const callbackError =
+    signInErrorCode === 'account_not_found'
+      ? 'No Sparkle Suite account is associated with this email. Try a different Google account or contact Louis.'
+      : signInErrorCode === 'self_serve_not_open'
+        ? 'This email has not been set up for Sparkle Suite yet. Contact Louis before signing in.'
+        : signInErrorCode === 'missing_oauth_code' ||
+            signInErrorCode === 'oauth_exchange_failed'
+          ? 'Google sign-in did not finish. Please try again.'
+          : null
 
   return (
     <div
@@ -50,11 +60,14 @@ export default function LoginClient() {
             if (!trialResponse.ok) {
               await supabase.auth.signOut()
               const payload = (await trialResponse.json().catch(() => null)) as
-                | { error?: string }
+                | { error?: string; message?: string }
                 | null
               setError(
-                payload?.error ??
-                  'We could not start your trial. Please sign in again.',
+                payload?.error === 'account_not_found'
+                  ? 'No Sparkle Suite account is associated with this email. Contact Louis or sign in with a different email.'
+                  : payload?.message ??
+                      payload?.error ??
+                      'We could not start your trial. Please sign in again.',
               )
               return
             }
@@ -88,7 +101,11 @@ export default function LoginClient() {
             Your password has been updated. Sign in with your new password.
           </div>
         ) : null}
-        {error && <div style={{ color: '#b00020', fontSize: 13 }}>{error}</div>}
+        {(error || callbackError) && (
+          <div style={{ color: '#b00020', fontSize: 13 }}>
+            {error ?? callbackError}
+          </div>
+        )}
         <button
           type="submit"
           disabled={busy}
@@ -112,10 +129,14 @@ export default function LoginClient() {
           setBusy(true)
           try {
             const supabase = createClient()
+            await supabase.auth.signOut({ scope: 'local' })
             const { error: signErr } = await supabase.auth.signInWithOAuth({
               provider: 'google',
               options: {
                 redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(redirect)}`,
+                queryParams: {
+                  prompt: 'select_account',
+                },
               },
             })
             if (signErr) {

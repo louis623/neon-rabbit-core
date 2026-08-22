@@ -243,7 +243,7 @@ export async function ensureSelfServeWorkspaceForAuthUser(
 ) {
   const { data: existingRep, error } = await admin
     .from('reps')
-    .select('id')
+    .select('id, status')
     .eq('auth_user_id', account.authUserId)
     .maybeSingle()
 
@@ -251,6 +251,7 @@ export async function ensureSelfServeWorkspaceForAuthUser(
   if (existingRep) {
     return {
       repId: existingRep.id as string,
+      repStatus: existingRep.status as string,
       created: false,
     }
   }
@@ -258,6 +259,7 @@ export async function ensureSelfServeWorkspaceForAuthUser(
   if (options.allowCreate === false) {
     return {
       repId: null,
+      repStatus: null,
       created: false,
     }
   }
@@ -265,6 +267,7 @@ export async function ensureSelfServeWorkspaceForAuthUser(
   const created = await createSelfServeWorkspaceForAuthUser(account, admin)
   return {
     repId: created.repId,
+    repStatus: 'onboarding',
     created: true,
   }
 }

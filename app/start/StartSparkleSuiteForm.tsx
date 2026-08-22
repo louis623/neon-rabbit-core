@@ -88,7 +88,7 @@ export function StartSparkleSuiteForm({
           <span>Reviewer smoke mode</span>
           <h3>Review the customer path</h3>
           <p>
-            Use the synthetic checkout state or open seeded previews for setup
+            Review the inactive-account guard or open seeded previews for setup
             and workspace smoke checks.
           </p>
         </div>
@@ -101,7 +101,7 @@ export function StartSparkleSuiteForm({
           >
             {reviewerBusy === 'checkout_required'
               ? 'Preparing...'
-              : 'Start smoke checkout'}
+              : 'Review inactive account'}
           </button>
           <button
             type="button"

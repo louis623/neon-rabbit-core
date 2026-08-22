@@ -262,7 +262,7 @@ describe('reviewer smoke UI wiring', () => {
   it('keeps reviewer controls on the protected start route without public signup', () => {
     expect(startForm).toContain('/api/reviewer-smoke/session')
     expect(startForm).toContain('reviewerSmokeVisible')
-    expect(startForm).toContain('Start smoke checkout')
+    expect(startForm).toContain('Review inactive account')
     expect(startForm).toContain('Open setup preview')
     expect(startForm).toContain('Open workspace preview')
     expect(startForm).toContain("startReviewerSmoke('required_setup')")
@@ -274,12 +274,12 @@ describe('reviewer smoke UI wiring', () => {
     expect(startForm).not.toContain('Continue with Google')
   })
 
-  it('opens checkout automatically instead of rendering a duplicate checkout page', () => {
-    expect(nicNacClient).toContain('/api/stripe/create-checkout')
-    expect(nicNacClient).toContain('void handleStartCheckout()')
+  it('reviews inactive access without opening checkout automatically', () => {
+    expect(nicNacClient).not.toContain('/api/stripe/create-checkout')
+    expect(nicNacClient).not.toContain('handleStartCheckout')
     expect(nicNacClient).not.toContain('/api/reviewer-smoke/checkout')
     expect(nicNacClient).not.toContain('void handleSimulateReviewerCheckout()')
-    expect(nicNacClient).not.toContain('CheckoutRequiredHome')
+    expect(nicNacClient).toContain('WorkspaceAccessPending')
     expect(requiredSetupHome).not.toContain('Simulate paid checkout')
     expect(requiredSetupHome).not.toContain('Secure checkout')
   })
@@ -408,10 +408,10 @@ describe('reviewer smoke UI wiring', () => {
     expect(nicNacChatBody).toContain('consumedLaunchPromptRef.current = null')
   })
 
-  it('puts the trade request inbox before board inventory in the workspace card', () => {
+  it('puts the trade request inbox after quick-add and dancer browsing in the workspace card', () => {
     expect(tradeBoardWorkspaceCardHtml.indexOf('Today&#x27;s trade work')).toBeGreaterThan(-1)
     expect(tradeBoardWorkspaceCardHtml.indexOf('Quick add')).toBeGreaterThan(-1)
-    expect(tradeBoardWorkspaceCardHtml.indexOf('Browse board')).toBeGreaterThan(-1)
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Browse dancers')).toBeGreaterThan(-1)
     expect(tradeBoardWorkspaceCardHtml.indexOf('Request inbox')).toBeGreaterThan(-1)
     expect(tradeBoardWorkspaceCardHtml.indexOf('Trade follow-up')).toBeGreaterThan(-1)
     expect(tradeBoardWorkspaceCardHtml.indexOf('Fulfillment queue')).toBeGreaterThan(-1)
@@ -419,9 +419,9 @@ describe('reviewer smoke UI wiring', () => {
       tradeBoardWorkspaceCardHtml.indexOf('Quick add'),
     )
     expect(tradeBoardWorkspaceCardHtml.indexOf('Quick add')).toBeLessThan(
-      tradeBoardWorkspaceCardHtml.indexOf('Browse board'),
+      tradeBoardWorkspaceCardHtml.indexOf('Browse dancers'),
     )
-    expect(tradeBoardWorkspaceCardHtml.indexOf('Browse board')).toBeLessThan(
+    expect(tradeBoardWorkspaceCardHtml.indexOf('Browse dancers')).toBeLessThan(
       tradeBoardWorkspaceCardHtml.indexOf('Request inbox'),
     )
     expect(tradeBoardWorkspaceCardHtml.indexOf('Request inbox')).toBeLessThan(
@@ -441,12 +441,12 @@ describe('reviewer smoke UI wiring', () => {
       'Fulfillment updated, but part of the workspace did not refresh.',
     )
     expect(dashboardPlaceholder).toContain(
-      'Add the received piece to your board when you are ready.',
+      'Add the received dancer to your Dance Floor when you are ready.',
     )
   })
 
   it('keeps summary metrics out of board inventory', () => {
-    const browseBoardStart = tradeBoardWorkspaceCardHtml.indexOf('Browse board')
+    const browseBoardStart = tradeBoardWorkspaceCardHtml.indexOf('Browse dancers')
     const requestInboxStart = tradeBoardWorkspaceCardHtml.indexOf('Request inbox')
     const browseBoardMarkup = tradeBoardWorkspaceCardHtml.slice(
       browseBoardStart,
@@ -462,7 +462,7 @@ describe('reviewer smoke UI wiring', () => {
 
   it('uses search and filters to browse board inventory without a default full grid', () => {
     expect(tradeBoardWorkspaceCardQuietHtml).toContain(
-      'Search the board or open filters to find a live piece.',
+      'Search the Dance Floor or open filters to find a live dancer.',
     )
     expect(tradeBoardWorkspaceCardQuietHtml).toContain('Jewelry Type')
     expect(tradeBoardWorkspaceCardQuietHtml).toContain('Collection')

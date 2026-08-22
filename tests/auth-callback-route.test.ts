@@ -5,6 +5,7 @@ const createAdminClientMock = vi.fn()
 const cookiesMock = vi.fn()
 const exchangeCodeForSessionMock = vi.fn()
 const getUserMock = vi.fn()
+const signOutMock = vi.fn()
 
 vi.mock('@supabase/ssr', () => ({
   createServerClient: (...args: unknown[]) => createServerClientMock(...args),
@@ -27,10 +28,17 @@ function createCookieStore() {
   }
 }
 
-function createAdminMock(existingRep?: { id: string } | null) {
+function createAdminMock(existingRep?: { id: string; status?: string } | null) {
+  const normalizedExistingRep =
+    existingRep === null
+      ? null
+      : {
+          ...(existingRep ?? { id: 'rep-google' }),
+          status: existingRep?.status ?? 'active',
+        }
   const repsMaybeSingle = vi
     .fn()
-    .mockResolvedValue({ data: existingRep ?? null, error: null })
+    .mockResolvedValue({ data: normalizedExistingRep, error: null })
   const repsSingle = vi.fn().mockResolvedValue({
     data: {
       id: 'rep-google',
@@ -99,10 +107,12 @@ describe('GET /api/auth/callback', () => {
       },
       error: null,
     })
+    signOutMock.mockResolvedValue({ error: null })
     createServerClientMock.mockReturnValue({
       auth: {
         exchangeCodeForSession: exchangeCodeForSessionMock,
         getUser: getUserMock,
+        signOut: signOutMock,
       },
     })
     createAdminClientMock.mockReturnValue(createAdminMock({ id: 'rep-google' }))
@@ -225,6 +235,27 @@ describe('GET /api/auth/callback', () => {
     expect(admin.siteSettingsUpsert).not.toHaveBeenCalled()
     expect(admin.setupSessionUpsert).not.toHaveBeenCalled()
     expect(admin.smsWalletUpsert).not.toHaveBeenCalled()
+    expect(response.headers.get('location')).toBe(
+      'http://localhost/login?error=account_not_found',
+    )
+    expect(signOutMock).toHaveBeenCalledWith({ scope: 'local' })
+  })
+
+  it('rejects an old incomplete rep row as an unprovisioned email', async () => {
+    const admin = createAdminMock({
+      id: 'rep-orphaned',
+      status: 'onboarding',
+    })
+    createAdminClientMock.mockReturnValue(admin)
+
+    const response = await GET(
+      new Request('http://localhost/api/auth/callback?code=oauth-code'),
+    )
+
+    expect(admin.rpc).toHaveBeenCalledWith('activate_workspace_trial', {
+      p_rep_id: 'rep-orphaned',
+    })
+    expect(signOutMock).toHaveBeenCalledWith({ scope: 'local' })
     expect(response.headers.get('location')).toBe(
       'http://localhost/login?error=account_not_found',
     )

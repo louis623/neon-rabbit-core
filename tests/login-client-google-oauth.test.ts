@@ -10,7 +10,17 @@ describe('login Google OAuth source', () => {
     expect(source).toContain('signInWithOAuth')
     expect(source).toContain("provider: 'google'")
     expect(source).toContain('/api/auth/callback')
+    expect(source).toContain("await supabase.auth.signOut({ scope: 'local' })")
+    expect(source).toContain("prompt: 'select_account'")
     expect(source).not.toContain("authCallbackUrl.searchParams.set('signup'")
+  })
+
+  it('explains when Google authenticated an email without a provisioned account', () => {
+    const source = readFileSync('app/login/_client.tsx', 'utf8')
+
+    expect(source).toContain("searchParams.get('error')")
+    expect(source).toContain('No Sparkle Suite account is associated with this email.')
+    expect(source).toContain('Try a different Google account or contact Louis.')
   })
 
   it('uses the shared safe relative redirect helper before replacing routes', () => {

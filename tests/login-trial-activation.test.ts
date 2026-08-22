@@ -17,5 +17,7 @@ describe('login trial activation wiring', () => {
     expect(activationIndex).toBeGreaterThan(signInIndex)
     expect(source).toContain('if (!trialResponse.ok)')
     expect(source).toContain('await supabase.auth.signOut()')
+    expect(source).toContain("payload?.error === 'account_not_found'")
+    expect(source).toContain('No Sparkle Suite account is associated with this email.')
   })
 })

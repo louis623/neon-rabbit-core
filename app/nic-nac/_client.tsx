@@ -12,6 +12,7 @@ import { NicNacColumn } from './components/NicNacColumn'
 import { NicNacGlyph } from './components/NicNacGlyph'
 import { NicNacMobileShell } from './components/NicNacMobileShell'
 import { RequiredSetupHome } from './components/RequiredSetupHome'
+import { WorkspaceAccessPending } from './components/WorkspaceAccessPending'
 import {
   buildConversationStateUrl,
   canUseUrlConversationId,
@@ -203,11 +204,6 @@ type SetupStateResponse = {
   error?: string
 }
 
-type CheckoutResponse = {
-  url?: string | null
-  error?: string
-}
-
 type StripeSyncResponse = {
   synced?: boolean
   error?: string
@@ -252,11 +248,8 @@ export default function NicNacClient({
     'loading' | 'ready' | 'error'
   >('loading')
   const [setupStateError, setSetupStateError] = useState<string | null>(null)
-  const [checkoutBusy, setCheckoutBusy] = useState(false)
-  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [reviewerResetBusy, setReviewerResetBusy] = useState(false)
   const [reviewerResetError, setReviewerResetError] = useState<string | null>(null)
-  const checkoutRedirectStartedRef = useRef(false)
 
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [historyState, setHistoryState] = useState<{
@@ -849,32 +842,6 @@ export default function NicNacClient({
   const showReviewerSetupActions =
     reviewerSmokeVisible && isReviewerSmokeSetupState(setupState)
 
-  const handleStartCheckout = useCallback(async () => {
-    setCheckoutBusy(true)
-    setCheckoutError(null)
-    try {
-      const res = await fetch('/api/stripe/create-checkout', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          planType: 'monthly',
-          agreementAccepted: true,
-        }),
-      })
-      const body = (await res.json().catch(() => null)) as CheckoutResponse | null
-      if (!res.ok || !body?.url) {
-        throw new Error(body?.error ?? 'Unable to open Stripe checkout.')
-      }
-      window.location.href = body.url
-    } catch (err) {
-      setCheckoutError(
-        err instanceof Error ? err.message : 'Unable to open Stripe checkout.',
-      )
-      setCheckoutBusy(false)
-    }
-  }, [])
-
   const handleReviewerSetupReset = useCallback(async () => {
     setReviewerResetBusy(true)
     setReviewerResetError(null)
@@ -912,25 +879,6 @@ export default function NicNacClient({
     }
   }, [])
 
-  useEffect(() => {
-    if (
-      !isCheckoutRequiredMode ||
-      setupStateStatus !== 'ready' ||
-      checkoutRedirectStartedRef.current ||
-      checkoutError
-    ) {
-      return
-    }
-
-    checkoutRedirectStartedRef.current = true
-    void handleStartCheckout()
-  }, [
-    checkoutError,
-    handleStartCheckout,
-    isCheckoutRequiredMode,
-    setupStateStatus,
-  ])
-
   const chatContent = isReady ? (
     <NicNacChatBody
       key={conversationId}
@@ -963,26 +911,7 @@ export default function NicNacClient({
   )
 
   if (isCheckoutRequiredMode) {
-    return (
-      <div className={shellStyles.root}>
-        <div className={shellStyles.loading}>
-          {checkoutError ? checkoutError : 'Opening checkout...'}
-          {checkoutError ? (
-            <button
-              type="button"
-              className={shellStyles.retryLink}
-              disabled={checkoutBusy}
-              onClick={() => {
-                checkoutRedirectStartedRef.current = true
-                void handleStartCheckout()
-              }}
-            >
-              Try again
-            </button>
-          ) : null}
-        </div>
-      </div>
-    )
+    return <WorkspaceAccessPending status={setupStatus} />
   }
 
   if (isRequiredSetupMode && setupState) {
