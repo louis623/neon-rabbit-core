@@ -143,6 +143,21 @@ describe('Nic-Nac workspace shell reset', () => {
     expect(header).not.toContain('Refresh conversation')
   })
 
+  it('keeps the home workspace clear on phones and uses the Fold-open width deliberately', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/DashboardPlaceholder.module.css',
+      ),
+      'utf8',
+    )
+
+    expect(css).toContain('.nicNacHeroActions button::before')
+    expect(css).toContain('content: "+"')
+    expect(css).toContain('@media (min-width: 600px) and (max-width: 840px)')
+    expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))')
+  })
+
   it('does not use the espresso gradient as the dominant shell surface', () => {
     const css = readFileSync(
       resolve(
