@@ -20,7 +20,7 @@ describe('Nic-Nac system prompt — add listing flow', () => {
 
   it('starts guided trade-board intake with item number, label, or non-item-number paths', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'When the rep starts "Add a piece to Dance Floor", offer three ways to start',
+      'When the rep starts "Add a dancer to the Dance Floor", offer three ways to start',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('type the item number')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
@@ -62,7 +62,7 @@ describe('Nic-Nac system prompt — add listing flow', () => {
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('July Birthday 2026')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is centered, close, and clear',
+      'Boxed display photos for earrings, rings, necklaces, and similar dancers are acceptable when the jewelry is centered, close, and clear',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'Rejecting or demanding a retake is a last resort',
@@ -120,16 +120,16 @@ describe('Nic-Nac system prompt — add listing flow', () => {
 
   it('treats duplicate item numbers as separate physical listings', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'A rep can own multiple physical pieces with the same item number',
+      'A rep can own multiple physical dancers with the same item number',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'create one listing per physical piece',
+      'create one dancer for each physical item',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'If search_jewelry_database says isOnMyBoard:true during an add flow',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Are we adding a second physical piece of that same design?',
+      'Are we adding a second physical dancer of that same design?',
     )
   })
 })

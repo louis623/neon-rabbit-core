@@ -135,10 +135,10 @@ describe('Amethyst trade page template wiring', () => {
     )
 
     expect(defaultAmethystTradeTemplateData.tradeHeroSub).toBe(
-      'This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.',
+      'The Dance Floor is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.',
     )
     expect(jsx).toContain(
-      'This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.',
+      'The Dance Floor is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.',
     )
     expect(defaultAmethystTradeTemplateData.tradeHeroSub).not.toContain(
       'with no pay-the-difference and no credit payouts',
@@ -360,7 +360,7 @@ describe('Amethyst trade page template wiring', () => {
       'utf8',
     )
 
-    expect(jsx).toContain('Search or filter the board')
+    expect(jsx).toContain('Search or filter the Dance Floor')
     expect(jsx).toContain('className="tp-mobile-filter-cue"')
     expect(jsx).toContain('aria-controls="trade-filter-panel"')
     expect(jsx).toContain('id="trade-filter-panel"')
@@ -385,8 +385,8 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).toContain('sortTradeBoardListings')
     expect(jsx).toContain('const visibleTradeBoardPieces = filtered.slice(0, visibleCount)')
     expect(jsx).toContain('setVisibleCount((count) => count + BOARD_PAGE_SIZE)')
-    expect(jsx).toContain('Search by piece, collection, size')
-    expect(jsx).toContain('Sort board')
+    expect(jsx).toContain('Search by dancer, collection, size')
+    expect(jsx).toContain('Sort dancers')
     expect(jsx).toContain('Load more')
     expect(jsx).toContain('loading="lazy"')
     expect(jsx).toContain('decoding="async"')
@@ -409,7 +409,7 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).toContain('Shop live')
     expect(jsx).toContain('OG Halo Bloom Ring')
     expect(jsx).toContain('{tr.name} - {tr.type || "Jewelry"} - {tr.collection || "Collection pending"}')
-    expect(jsx).toContain('Listings will appear after this rep adds trade pieces.')
+    expect(jsx).toContain('Dancers will appear after this rep adds them to the Dance Floor.')
   })
 
   it('uses the shared sticky live reveal queue strip and modal trigger on trade', () => {
@@ -543,7 +543,7 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).toContain('<label>What did you just reveal?</label>')
     expect(jsx).toContain('placeholder="Example: July Birthday 2026 necklace"')
     expect(jsx).toContain('<label>Screenshot of your reveal (recommended)</label>')
-    expect(jsx).toContain('A screenshot helps the rep confirm the piece quickly. It expires after 48 hours.')
+    expect(jsx).toContain('A screenshot helps the rep confirm the dancer quickly. It expires after 48 hours.')
     expect(jsx).toContain('new FormData()')
     expect(jsx).toContain('form.append("revealScreenshot", payload.revealScreenshot)')
     expect(jsx).toContain(

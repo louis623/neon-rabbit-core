@@ -41,7 +41,7 @@ const WORKFLOW_RESOURCES: HelpResource[] = [
       'Review the dashboard as your home base.',
       'Open Nic-Nac when you want plain-English guidance.',
       'Use Site Settings for customer-facing site details.',
-      'Use Dance Floor for listings, requests, and trade follow-up.',
+    'Use the Dance Floor for dancers, requests, and trade follow-up.',
       'Use Calendar and Live Queue tools before and during live shows.',
       'Use Account for billing and site analytics.',
       'Use Help & Resources when you need the next workflow.',
@@ -177,12 +177,12 @@ const WORKFLOW_RESOURCES: HelpResource[] = [
       'Show date and time',
       'Live platform',
       'Customer site link',
-      'Current dance floor pieces',
+      'Current Dance Floor dancers',
     ],
     steps: [
       'Confirm the upcoming show appears in the calendar.',
       'Open the customer site link and check the visible show information.',
-      'Review the Dance Floor for stale or unavailable pieces.',
+      'Review the Dance Floor for unavailable dancers.',
       'Check Live Queue readiness based on current rollout instructions.',
       'Confirm any customer update feature is enabled only if it is production-ready for this account.',
       'Ask Nic-Nac to review anything that looks out of place.',
@@ -276,7 +276,7 @@ const WORKFLOW_RESOURCES: HelpResource[] = [
     summary:
       'Review customer trade requests, reveal screenshots, approvals, and follow-up without losing the thread.',
     body:
-      'Sparkle Suite organizes trade interest, but the rep still controls trade judgment, approvals, shipping, and follow-through. Customers describe the piece they just revealed and may attach a recommended reveal screenshot. The screenshot appears in the Dance Floor request inbox and on Nic-Nac trade request cards when available, then expires after 48 hours. Sparkle Suite does not guarantee equal value, settle disputes, or approve trades for the rep.',
+      'Sparkle Suite organizes trade interest, but the rep still controls trade judgment, approvals, shipping, and follow-through. Customers describe the dancer they just revealed and may attach a recommended reveal screenshot. The screenshot appears in the Dance Floor request inbox and on Nic-Nac trade request cards when available, then expires after 48 hours. Sparkle Suite does not guarantee equal value, settle disputes, or approve trades for the rep.',
     goal: 'Move trade requests through a clear decision and fulfillment rhythm.',
     useWhen: 'Use this when a customer requests a trade or a pending trade needs follow-up.',
     beforeYouStart: [
@@ -300,7 +300,7 @@ const WORKFLOW_RESOURCES: HelpResource[] = [
       'Each request has the right status, any reveal screenshot has been used as supporting context, and the rep knows what follow-up remains.',
     nicNacPrompt: 'Help me handle my trade requests.',
     stillStuck:
-      'Include the customer name, requested listing, customer description, whether a reveal screenshot is attached or expired, request status, and the decision you are trying to make. A missing screenshot alone should not block the trade if the description and show context are enough.',
+      'Include the customer name, requested dancer, customer description, whether a reveal screenshot is attached or expired, request status, and the decision you are trying to make. A missing screenshot alone should not block the trade if the description and show context are enough.',
     relatedFeatureIds: ['trade-board'],
     quickActions: [
       'Open request inbox',
@@ -439,7 +439,7 @@ const WORKFLOW_RESOURCES: HelpResource[] = [
 
 const FEATURE_REFERENCE_TITLES = [
   ['customer-site', 'Customer Site', 'Update your public-facing Sparkle Suite site details.'],
-  ['trade-board', 'Dance Floor', 'Manage listings, requests, and trade follow-up.'],
+  ['trade-board', 'Dance Floor', 'Manage dancers, requests, and trade follow-up.'],
   ['live-queue', 'Live Queue', 'Help customers follow queue state when rollout is active.'],
   [
     'live-event-calendar',

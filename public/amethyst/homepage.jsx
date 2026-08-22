@@ -643,7 +643,7 @@ function Hero({ t, isLive, liveShow }) {
 const ANNOUNCEMENT_TICKER_SPEED_PPS = 46;
 const TRADE_TICKER_SPEED_PPS = 55.2;
 const EMPTY_TRADE_TICKER_ITEM = {
-  name: "Dance Floor listings will appear here after pieces are added.",
+  name: "Dancers will appear here after the rep adds them to the Dance Floor.",
   type: "",
   collection: "",
   isEmpty: true,

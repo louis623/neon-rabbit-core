@@ -86,7 +86,7 @@ import { getHelpResources } from '@/lib/services/help-resources'
 function getTradeBoardSectionLabels(html: string) {
   return Array.from(
     html.matchAll(
-      />(Dance Floor|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Trade follow-up|Fulfillment queue)</g,
+      />(Dance Floor|Today(?:&#x27;|')s trade work|Quick add|Browse dancers|Request inbox|Trade follow-up|Fulfillment queue)</g,
     ),
     (match) => match[1].replace('&#x27;', "'"),
   )
@@ -527,7 +527,7 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('function WorkspaceAppHeader')
     expect(html).not.toContain('Saved here for future extension setup.')
     expect(html).not.toContain('Checking workspace access')
-    expect(html).toContain('Add a piece')
+    expect(html).toContain('Add a dancer')
     expect(html).not.toContain('Check my board')
     expect(html).toContain('Add a show')
     expect(source).toContain('styles.railLaunchAction')
@@ -723,7 +723,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Year')
     expect(html).toContain('Aurora Diamond Ring')
     expect(html).toContain('2 available')
-    expect(html).toContain('Add to board')
+    expect(html).toContain('Add dancer')
     expect(html).toContain('Already listed')
   })
 
@@ -738,7 +738,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Pick what you are trying to do')
     expect(html).toContain('Workflow Playbook')
     expect(html).toContain('Start here: Learn your Sparkle Suite workspace')
-    expect(html).toContain('Add jewelry to your Dance Floor')
+    expect(html).toContain('Add a dancer to your Dance Floor')
     expect(html).toContain('Goal')
     expect(html).toContain('Use this when')
     expect(html).toContain('Before you start')
@@ -1943,7 +1943,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('src="https://cdn.example.com/sapphire-halo.jpg"')
     expect(html).toContain('Open image preview for Sapphire Halo')
     expect(html).toContain('type="button"')
-    expect(html).toContain('aria-label="Filtered active board pieces"')
+    expect(html).toContain('aria-label="Filtered active dancers"')
     expect(html).toContain('alt="Sapphire Halo"')
     expect(html).toContain('Sapphire Halo')
     expect(html).toContain('RG100')
@@ -1978,20 +1978,20 @@ describe('DashboardPlaceholder', () => {
       'Dance Floor',
       "Today's trade work",
       'Quick add',
-      'Browse board',
+      'Browse dancers',
     ])
     expect(html).toContain('Jewelry Type')
     expect(html).toContain('Collection')
     expect(html).toContain(
       'Everything is caught up. New requests, trade follow-up, and fulfillment work will land here.',
     )
-    expect(html).toContain('Know the item number? Add it in one step.')
+    expect(html).toContain('Know the item number? Add a dancer in one step.')
     expect(html).toContain(
       'Start with search. Open filters only when you need a tighter match.',
     )
     expect(html).toContain('More filters')
     expect(html).toContain(
-      'Search by item number, design, or collection to pull up a live piece fast.',
+      'Search by item number, design, or collection to pull up a live dancer fast.',
     )
     expect(html).not.toContain('Default landing section')
     expect(html).not.toContain('Request inbox')
@@ -2042,7 +2042,7 @@ describe('DashboardPlaceholder', () => {
     )
     expect(html).toContain('Revealed item number: ER00001')
     expect(html).toContain(
-      'Finish catalog details after the show to put this reveal back on the board.',
+      'Finish catalog details after the show to put this reveal back on the Dance Floor.',
     )
   })
 
@@ -2080,13 +2080,13 @@ describe('DashboardPlaceholder', () => {
       'reject',
     )
     expect(dashboardSource).toContain(
-      'Trade approved. Added the revealed piece back to your board.',
+      'Trade approved. Added the revealed dancer back to your Dance Floor.',
     )
     expect(dashboardSource).toContain(
       'I saved the item number to this swap; finish the catalog details after the show.',
     )
     expect(dashboardSource).toContain(
-      'Trade approved. Add the revealed piece later with Nic-Nac when you are ready.',
+      'Trade approved. Add the revealed dancer later with Nic-Nac when you are ready.',
     )
   })
 

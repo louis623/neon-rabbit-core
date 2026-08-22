@@ -4,6 +4,14 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 22, 2026 - Dance Floor terminology audit
+
+- Audited and tightened the first Dance Floor release after Louis requested a copy check. Replaced the remaining trade-inventory copy with the approved vocabulary: **Dance Floor** for the surface, **dancer(s)** for jewelry made available there, and **trade** for the exchange. This included public customer pages, the rep workspace, Help & Resources, Nic-Nac prompts, tool guidance, success/error states, search/filter labels, and accessibility labels.
+- Preserved technical compatibility: internal table/API/route/field identifiers still use legacy `trade-board` and `listing` names but no longer appear as product language.
+- Focused regression coverage passed: 8 suites / 213 tests. The production build compiled successfully. Authenticated reviewer smoke remains blocked by the known runtime issue; no Louis or customer account was used.
+
+---
+
 ## August 22, 2026 - Dance Floor terminology and first training release
 
 - Replaced the active product term **Trade Board** with **Dance Floor** across rep/customer workspace copy, public customer-site templates, SEO/social collateral, onboarding language, and public/legal copy. The new vocabulary is intentional: the surface is the Dance Floor; each rep-listed, trade-eligible jewelry piece is a **dancer**; and a trade remains the exchange process.

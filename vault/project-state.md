@@ -1,5 +1,15 @@
 # Project State
 
+## August 22, 2026 Session - Dance Floor terminology audit
+
+- **The Dance Floor vocabulary is now internally consistent in active copy:** the audit removed remaining customer and rep-facing uses of “board,” “listing,” and “piece” where they described trade inventory. The customer site, Help & Resources, Nic-Nac workspace, and Nic-Nac guidance now use **Dance Floor** for the surface and **dancer(s)** for trade-eligible jewelry. A **trade** remains the exchange process.
+- **Compatibility remains deliberate:** database/API/route identifiers such as `trade-board`, `listingId`, and `trade_listings` remain technical-only, preserving existing data and URLs.
+- **Verification:** eight focused customer-template, Help & Resources, Nic-Nac, and public-site suites passed (213 tests); production build compiled successfully. The authenticated reviewer path was not used because of the known browser/reviewer-runtime limitation, and no Louis or customer account was used.
+
+**Last updated:** August 22, 2026
+
+---
+
 ## August 22, 2026 Session - Dance Floor terminology release
 
 - **Trade Board is now Dance Floor throughout active Sparkle Suite language:** rep/customer UI, customer-site templates, SEO/social collateral, onboarding copy, Nic-Nac prompts and guardrails, and Help & Resources all use **Dance Floor**. Jewelry offered there are **dancers**. A trade remains the exchange/process. Internal database tables, API routes, stable feature IDs, and existing URLs intentionally retain their legacy technical names for compatibility.

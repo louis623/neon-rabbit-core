@@ -114,11 +114,11 @@ export interface AmethystTradeTweakDefaults {
 export const defaultAmethystTradeTemplateData: AmethystTradeTemplateData = {
   repName: 'Sasha',
   businessName: 'Sparkle by Sasha',
-  tradeHeroTitle: 'Trade for the piece you wanted to love.',
+  tradeHeroTitle: 'Find the dancer you wanted to love.',
   tradeHeroSub:
-    'This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.',
+    'The Dance Floor is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.',
   tickerTopText:
-    'Dance Floor open now | Item-for-item only | Same collection + same jewelry type | Birthday pieces can trade across months',
+    'Dance Floor open now | Item-for-item only | Same collection + same jewelry type | Birthday dancers can trade across months',
   shopUrl: 'https://bombparty.com',
   footerTagline:
     'Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle.',
@@ -127,22 +127,22 @@ export const defaultAmethystTradeTemplateData: AmethystTradeTemplateData = {
   tradeRules: [
     'Item-for-item only.',
     'No pay-the-difference requests.',
-    'No trade credit for lower-priced pieces.',
+    'No trade credit for lower-priced dancers.',
     'Trades must stay within the same collection and the same jewelry type.',
   ],
   faqAnswers: {
     howTradeWorks:
-      "When you do not love the item number just revealed for you, you can request a piece from the board. The rep has both pieces during the live show and, if approved, swaps your just revealed piece for the board piece one-for-one.",
+      "When you do not love the item number just revealed for you, you can request a dancer from the Dance Floor. The rep has both dancers during the live show and, if approved, swaps your just-revealed dancer for the requested dancer one-for-one.",
     cashDifference:
-      'No. Customers cannot add money to trade into a more expensive piece on this board.',
+      'No. Customers cannot add money to trade into a more expensive dancer from the Dance Floor.',
     tradeCredit:
-      'No. If the board piece has a lower Bomb Party MSRP, there is still no credit or payout attached to the trade.',
+      'No. If the requested dancer has a lower Bomb Party MSRP, there is still no credit or payout attached to the trade.',
     matchingRules:
       'Trades need to stay within the same collection and the same jewelry type. OG trades for OG, Birthday trades for Birthday, and earrings trade for earrings, necklaces for necklaces, pendants for pendants, bracelets for bracelets, and stacks for stacks.',
     msrp:
       'Bomb Party MSRP is shown as a reference detail only. It is not the basis for deciding whether a trade is allowed or even.',
     rarePieces:
-      'Diamonds and unicorns are still allowed on the board, but they are expected to be rare edge-case listings rather than the default inventory mix.',
+      'Diamond and unicorn dancers are allowed on the Dance Floor, but they are expected to be rare edge cases rather than the default inventory mix.',
     responseTime:
       'Most reps review trade requests after the live show ends and follow up directly with the customer.',
   },
@@ -168,7 +168,7 @@ export const defaultAmethystTradeTemplateData: AmethystTradeTemplateData = {
   footerColumn: {
     title: 'Trade Notes',
     links: [
-      { label: 'Birthday pieces can trade across months', href: '#faq' },
+      { label: 'Birthday dancers can trade across months', href: '#faq' },
       { label: 'Diamonds and unicorns are rare', href: '#faq' },
       { label: 'All trades are rep reviewed', href: '#faq' },
     ],

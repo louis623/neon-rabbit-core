@@ -128,8 +128,8 @@ const cleanTemplateData = {
     repName: 'Clean Rep',
     businessName: 'Clean Smoke Sparkle',
     tradeHeroTitle: 'Dance Floor coming soon.',
-    tradeHeroSub: 'Listings will appear after this rep adds trade pieces.',
-    tickerTopText: 'Dance Floor listings will appear here after pieces are added.',
+    tradeHeroSub: 'Dancers will appear after this rep adds them to the Dance Floor.',
+    tickerTopText: 'Dancers will appear here after the rep adds them to the Dance Floor.',
     shopUrl: 'https://shop.example/clean',
     footerTagline: 'Clean Smoke Sparkle updates.',
     legalDisclaimer:
@@ -137,7 +137,7 @@ const cleanTemplateData = {
     tradeRules: [
       'Item-for-item only.',
       'No pay-the-difference requests.',
-      'No trade credit for lower-priced pieces.',
+      'No trade credit for lower-priced dancers.',
       'Trades are reviewed by the rep.',
     ],
     faqAnswers: {

@@ -4395,7 +4395,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           error:
             error instanceof Error
               ? error.message
-              : 'Unable to load more listings right now.',
+              : 'Unable to load more dancers right now.',
           helperMessage: null,
         })
       } finally {
@@ -4607,7 +4607,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         | null
 
       if (!response.ok) {
-        throw new Error(payload?.error || 'Unable to add that listing right now.')
+        throw new Error(payload?.error || 'Unable to add that dancer right now.')
       }
 
       setQuickAddItemNumber('')
@@ -4623,7 +4623,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         error:
           error instanceof Error
             ? error.message
-            : 'Unable to add that listing right now.',
+            : 'Unable to add that dancer right now.',
         helperMessage: null,
       })
     }
@@ -4650,7 +4650,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         | { error?: string }
         | null
       if (!response.ok) {
-        throw new Error(payload?.error || 'Unable to remove that listing right now.')
+        throw new Error(payload?.error || 'Unable to remove that dancer right now.')
       }
 
       await refreshTradeWorkspace()
@@ -4665,7 +4665,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         error:
           error instanceof Error
             ? error.message
-            : 'Unable to remove that listing right now.',
+            : 'Unable to remove that dancer right now.',
         helperMessage: null,
       })
     }
@@ -4719,7 +4719,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         replacementStatus === 'added_to_board'
           ? 'Trade approved. Added the revealed dancer back to your Dance Floor.'
           : replacementStatus === 'needs_ring_size'
-            ? 'Trade approved. I saved the item number to this swap; add the ring size after the show to put it on the board.'
+            ? 'Trade approved. I saved the item number to this swap; add the ring size after the show to add the dancer to the Dance Floor.'
             : replacementStatus === 'needs_catalog_details'
               ? 'Trade approved. I saved the item number to this swap; finish the catalog details after the show.'
               : skippedRevealedItemNumber
@@ -4897,14 +4897,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         | { error?: string }
         | null
       if (!response.ok) {
-        throw new Error(payload?.error || 'Unable to add that piece right now.')
+        throw new Error(payload?.error || 'Unable to add that dancer right now.')
       }
 
       await Promise.all([refreshTradeWorkspace(), loadJewelryLibrary(libraryFilters)])
       setTradeBoardActionState({
         pendingKey: null,
         error: null,
-        helperMessage: `${itemNumber} added to your board.`,
+        helperMessage: `${itemNumber} added to your Dance Floor.`,
       })
     } catch (error) {
       setTradeBoardActionState({
@@ -4912,7 +4912,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         error:
           error instanceof Error
             ? error.message
-            : 'Unable to add that piece right now.',
+            : 'Unable to add that dancer right now.',
         helperMessage: null,
       })
     }
@@ -6527,7 +6527,7 @@ function ConceptHomeWorkspace({
           <div className={styles.recentConversationList}>
             <button type="button" onClick={() => onLaunchAction('check_board')}>
               <span>N</span>
-              Added 2 new pieces to my board
+              Added 2 new dancers to my Dance Floor
               <small>9:30 AM</small>
             </button>
             <button type="button" onClick={onOpenCalendar}>
@@ -7211,7 +7211,7 @@ function JewelryLibraryResultCard({
   const label = deriveJewelryLibraryLabel(result)
   const metadata = [
     result.activeListingsCount < 1
-      ? 'No current listings'
+      ? 'No current dancers'
       : result.activeListingsCount === 1
         ? '1 available'
         : `${result.activeListingsCount} available`,
@@ -7272,7 +7272,7 @@ function JewelryLibraryResultCard({
             ? 'Adding...'
             : result.isOnMyBoard
               ? 'Already listed'
-              : 'Add to board'}
+              : 'Add dancer'}
         </button>
       </div>
     </article>
@@ -7993,7 +7993,7 @@ function SiteAnalyticsCard({ state }: { state: AnalyticsState }) {
       ) : null}
       <div className={styles.metricGrid}>
         <div className={styles.metricBlock}>
-          <span className={styles.metricLabel}>Active listings</span>
+              <span className={styles.metricLabel}>Active dancers</span>
           <span className={styles.metricValue}>
             {state.analytics.operationalSnapshot.activeListings}
           </span>

@@ -23,9 +23,9 @@ const DEFAULTS = window.TRADE_TWEAK_DEFAULTS || {
   showLegal: true,
   showFooter: true,
   showNicNac: true,
-  tickerTopText: "Dance Floor open now | Item-for-item only | Same collection + same jewelry type | Birthday pieces can trade across months",
-  tradeHeroTitle: "Trade for the piece you wanted to love.",
-  tradeHeroSub: "This board is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.",
+  tickerTopText: "Dance Floor open now | Item-for-item only | Same collection + same jewelry type | Birthday dancers can trade across months",
+  tradeHeroTitle: "Find the dancer you wanted to love.",
+  tradeHeroSub: "The Dance Floor is for item-for-item swaps only. Requests must stay within the same collection and the same jewelry type.",
   primaryColor: "#5C0EFF",
   accentColor: "#FF1AC2",
   bgTone: "lavender",
@@ -394,10 +394,10 @@ function buildSamples(count) {
       msrp: msrpBase + ((i * 7) % 18),
       size: type === "Ring" ? ["6", "7", "8", "9"][i % 4] : null,
       note: tier === "diamond"
-        ? "Rare diamond listing - still item-for-item only."
+        ? "Rare Diamond dancer - still item-for-item only."
         : tier === "unicorn"
-          ? "Rare unicorn listing."
-          : "Standard trade-board listing.",
+          ? "Rare Unicorn dancer."
+          : "Dance Floor dancer.",
       glyph: PIECE_NAMES[i % PIECE_NAMES.length].charAt(0),
       photoUrl: null,
     });
@@ -410,7 +410,7 @@ function normalizeBootstrapPiece(piece, index) {
 
   const safeName = typeof piece.name === "string" && piece.name.trim()
     ? piece.name.trim()
-    : `Trade Listing ${index + 1}`;
+    : `Dancer ${index + 1}`;
   const safeType = typeof piece.type === "string" && piece.type.trim()
     ? piece.type.trim()
     : "Jewelry";
@@ -713,7 +713,7 @@ function Header({ businessName }) {
 const ANNOUNCEMENT_TICKER_SPEED_PPS = 46;
 const TRADE_TICKER_SPEED_PPS = 55.2;
 const EMPTY_TRADE_TICKER_ITEM = {
-  name: "Dance Floor listings will appear here after pieces are added.",
+  name: "Dancers will appear here after the rep adds them to the Dance Floor.",
   type: "",
   collection: "",
   isEmpty: true,
@@ -1030,9 +1030,9 @@ function Filters({
     <div className={`tp-filters style-${style}`}>
       <div className="tp-filters-topline">
         <div>
-          <div className="tp-mobile-filter-cue">Search or filter the board</div>
+          <div className="tp-mobile-filter-cue">Search or filter the Dance Floor</div>
           <div className="tp-filter-results">
-            <strong>{listings.length}</strong> available pieces
+            <strong>{listings.length}</strong> available dancers
           </div>
           <div className="tp-board-showing">
             Showing {Math.min(visibleCount, resultCount)} of {resultCount} matches
@@ -1059,22 +1059,22 @@ function Filters({
 
       <div className="tp-board-search-row">
         <label className="tp-board-search">
-          <span>Search board</span>
+          <span>Search Dance Floor</span>
           <input
             type="search"
             value={boardSearch}
             onChange={(event) => setBoardSearch(event.target.value)}
-            placeholder="Search by piece, collection, size"
+            placeholder="Search by dancer, collection, size"
           />
         </label>
         <label className="tp-board-sort">
-          <span>Sort board</span>
+          <span>Sort dancers</span>
           <select value={sortMode} onChange={(event) => setSortMode(event.target.value)}>
             <option value="newest">Newest added</option>
             <option value="collection">Collection</option>
             <option value="type">Jewelry type</option>
             <option value="rarity">Rare first</option>
-            <option value="name">Piece name</option>
+            <option value="name">Dancer name</option>
             <option value="msrp-low">MSRP low to high</option>
             <option value="msrp-high">MSRP high to low</option>
           </select>
@@ -1326,7 +1326,7 @@ function ExpandedCard({ piece, onClose, onWantThis, repName }) {
             <div>{piece.note}</div>
           </div>
           <div className="tp-card-expand-rep slot" data-slot="brand separation">
-            Offered by <strong>{repName}</strong>, an Independent Bomb Party Representative. No money difference and no credit are part of this board.
+            Offered by <strong>{repName}</strong>, an Independent Bomb Party Representative. No money difference and no credit are part of this Dance Floor trade.
           </div>
           <button className="tp-card-expand-cta" onClick={() => onWantThis(piece)}>
             Request this trade
@@ -1387,7 +1387,7 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
           {piece.collection} - {piece.type}{piece.size ? ` - Size ${piece.size}` : ""}
         </div>
         <p className="tp-sheet-helper">
-          Briefly describe the piece you just revealed for <strong>{repName}</strong>. Include the collection and jewelry type if you know them.
+          Briefly describe the dancer you just revealed for <strong>{repName}</strong>. Include the collection and jewelry type if you know them.
         </p>
         <form
           className="tp-sheet-form"
@@ -1449,7 +1449,7 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
               <div>
                 <strong>{screenshot ? screenshot.name : "Add a screenshot"}</strong>
                 <span>
-                  A screenshot helps the rep confirm the piece quickly. It expires after 48 hours.
+                  A screenshot helps the rep confirm the dancer quickly. It expires after 48 hours.
                 </span>
               </div>
             </div>
@@ -1479,11 +1479,11 @@ function EmptyState({ repName }) {
       <div className="tp-empty-glyph">?</div>
       <h3 className="tp-empty-title">Dance Floor is empty right now.</h3>
       <p className="tp-empty-sub">
-        <strong>{repName}</strong> adds listings after live reveals. Check back after the next show for fresh one-for-one trade options.
+          <strong>{repName}</strong> adds dancers after live reveals. Check back after the next show for fresh one-for-one trade options.
       </p>
       <div className="tp-empty-next">
         <span className="live-dot" />
-        Listings will appear after this rep adds trade pieces.
+        Dancers will appear after this rep adds them to the Dance Floor.
       </div>
     </div>
   );
@@ -1493,9 +1493,9 @@ function NoMatchesState({ onClear }) {
   return (
     <div className="tp-empty">
       <div className="tp-empty-glyph">?</div>
-      <h3 className="tp-empty-title">No listings match these filters.</h3>
+          <h3 className="tp-empty-title">No dancers match these filters.</h3>
       <p className="tp-empty-sub">
-        Try a different collection, jewelry type, rarity tag, or material mix to widen the board again.
+        Try a different collection, jewelry type, rarity tag, or material mix to widen the Dance Floor again.
       </p>
       <button type="button" className="tp-empty-reset" onClick={onClear}>
         Clear filters
@@ -1510,7 +1510,7 @@ function Footer({ businessName }) {
       <div className="hp-footer-inner">
         <div>
           <div className="hp-footer-brand slot" data-slot="business name">{businessName}</div>
-          <p className="hp-footer-tag">{CONTENT.footerTagline || "Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle."}</p>
+          <p className="hp-footer-tag">{CONTENT.footerTagline || "Live jewelry reveals every Tuesday at 8pm CST. Real jewelry, real sparkle."}</p>
           <div className="hp-footer-socials">
             {FOOTER_SOCIALS.map((social) => (
               <a
@@ -1575,7 +1575,7 @@ function App() {
   useEffect(() => {
     applyTargetedMetadata(
       `${t.businessName} - Dance Floor`,
-      `Browse available trade pieces from ${t.businessName}.`,
+      `Browse available dancers from ${t.businessName}'s Dance Floor.`,
     );
   }, [t.businessName]);
 
@@ -1841,7 +1841,7 @@ function App() {
                       </div>
                       <div className="tp-board-pagination">
                         <div className="tp-board-showing">
-                          Showing {visibleTradeBoardPieces.length} of {filtered.length} pieces
+                          Showing {visibleTradeBoardPieces.length} of {filtered.length} dancers
                         </div>
                         {hasMoreTradeBoardPieces && (
                           <button
@@ -1921,7 +1921,7 @@ function App() {
             ]}
           />
           <TweakSlider
-            label="Number of listings"
+          label="Number of dancers"
             value={t.cardCount}
             onChange={(value) => setTweak("cardCount", value)}
             min={6}

@@ -42,10 +42,10 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Keep current-show memory factual and operational. Do not claim that you sent reminders, updated a live feed, or took provider action unless another real tool result says so.`,
 
   trade_board: `Trade-board tools:
-- For current board questions, answer only from the latest list_my_trade_board result.
+- For current Dance Floor questions, answer only from the latest list_my_trade_board result.
 - remove_listing requires the approval dialog.
 - recovery window.
-- When the rep starts "Add a piece to Dance Floor", offer three ways to start: type the item number; upload a clear item-info tag or label photo; say they do not have an item number.
+- When the rep starts "Add a dancer to the Dance Floor", offer three ways to start: type the item number; upload a clear item-info tag or label photo; say they do not have an item number.
 - Order does not matter. Use photos and facts in whatever order the rep provides them.
 - Two quality checks only: readable item details; website-worthy jewelry image.
 - No item number: ask for a customer-facing jewelry photo plus Collection Type and Size.
@@ -54,7 +54,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - If missing, ask for whichever single input is actually missing or unusable.
 - Accept clear rep-provided collection. Birthday collection names must include the year: "July Birthday 2026". Do not require packaging proof after the rep gives the collection.
 - Treat messy item numbers, design names, "add this one", corrections, and script/tool refs as add-flow turns.
-- Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is centered, close, and clear.
+- Boxed display photos for earrings, rings, necklaces, and similar dancers are acceptable when the jewelry is centered, close, and clear.
 - Rejecting or demanding a retake is a last resort.
 - Do not critique a label/details photo as if it is a bad jewelry photo.
 - If the only uploaded image is a label/details or back-of-card photo, say you still need the first customer-facing jewelry photo.
@@ -65,27 +65,27 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Use recent add-flow photos, not just the latest message. If the rep confirms a prior jewelry-front photo, call add_listing with that photo context instead of asking for a reupload.
 - If the rep insists a clear boxed display photo is final, proceed instead of arguing.
 - If add_listing is active and the rep provides a missing field, call add_listing or ask one field; do not say add_listing is unavailable.
-- A rep can own multiple physical pieces with the same item number.
+- A rep can own multiple physical dancers with the same item number.
 - Item numbers can have plating variants; different plating is a separate variant, not wrong-material correction.
 - If search_jewelry_database says isOnMyBoard:true during an add flow, ask: "That item number is already on your Dance Floor. Are we adding a second physical piece of that same design?"
 - Quantity comes from the latest rep message.
 - mode:'batch'
 - NEEDS_FULL_INFO/create_design.
 - Never send the rep to backend/Louis/manual creation when add_listing is active.
-- Never claim a piece is added until add_listing returns success.`,
+- Never claim a dancer is added until add_listing returns success.`,
 
   trade_requests: `Trade-request tools:
-- get_trade_requests lists incoming requests. Use it when the rep asks about offers, pending requests, or who wants a piece.
-- approve_trade_swap requires the approval dialog and is the primary path for normal live-show swaps. The customer requested a board piece because they did not want the item number just revealed for them. The customer never has the just-revealed piece in their possession, never photographs it, and never ships a separate item. The rep has both pieces during the live show. Ask exactly: "Which item number was just revealed for the customer?" If the revealed item is a ring and the rep knows the size, include revealedRingSize. If the rep is too busy to capture the revealed item number now, approve the trade without live-show revealed item capture by using approve_trade, then tell them to add the revealed piece later with Nic-Nac. Do not use LiveQ matching for this; LiveQ does not know item numbers.
+- get_trade_requests lists incoming requests. Use it when the rep asks about offers, pending requests, or who wants a dancer.
+- approve_trade_swap requires the approval dialog and is the primary path for normal live-show swaps. The customer requested a dancer because they did not want the item number just revealed for them. The customer never has the just-revealed dancer in their possession, never photographs it, and never ships a separate item. The rep has both dancers during the live show. Ask exactly: "Which item number was just revealed for the customer?" If the revealed item is a ring and the rep knows the size, include revealedRingSize. If the rep is too busy to capture the revealed item number now, approve the trade without live-show revealed item capture by using approve_trade, then tell them to add the revealed dancer to the Dance Floor later with Nic-Nac. Do not use LiveQ matching for this; LiveQ does not know item numbers.
 - approve_trade requires the approval dialog and is irreversible for v1. Use it when approving without the live-show revealed item capture, including the busy-show skip path. Identify the request first.
 - reject_trade is reversible and does not need an approval dialog. Identify the request first.
-- get_trade_swap_cleanup lists approved swaps whose just-revealed item number still needs catalog details or ring size before it can return to the board.
+- get_trade_swap_cleanup lists approved swaps whose just-revealed item number still needs catalog details or ring size before its dancer can return to the Dance Floor.
 - get_trade_history is for completed or rejected trade history, not pending decisions.`,
 
   fulfillment: `Fulfillment tools:
 - get_fulfillment_queue lists active post-approval trade fulfillment items.
 - update_fulfillment_status moves approved to shipped to completed. Do not claim vendor automation or shipping automation; only record the status the rep gives you.
-- If a trade is completed, ask whether the rep wants to add the received piece to the board.`,
+- If a trade is completed, ask whether the rep wants to add the received dancer to the Dance Floor.`,
 
   catalog: `Catalog tools:
 - search_jewelry_database searches the shared jewelry catalog by item number, name, material, stone, or keyword.
@@ -97,7 +97,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Collection year is practical organization, not rarity. Birthday collection names must include the year; if the rep gives "April 2026 Birthday", save collectionName as "April Birthday 2026" and collectionYear as 2026.
 - Tags are practical discovery helpers: material, stone, color, motif, and style. Good tags include rose gold, rhodium, sterling, opal, amethyst, sapphire, pink, blue, heart, butterfly, floral, simple, statement, stackable, vintage, glam.
 - Do not use rarity or hype tags like rare, unicorn, diamond, valuable, high demand, hard to find, or grail. If unsure, skip the tag. Keep tags short, lowercase, and no more than 8.
-- Catalog data is shared reference data. Do not imply the rep owns a piece just because it exists in the catalog.`,
+- Catalog data is shared reference data. Do not imply the rep owns a dancer just because it exists in the catalog.`,
 
   calendar: `Calendar tools:
 - prepare_calendar_work is read-only. Use it first for ambiguous calendar/reminder work: scheduling, recurring-series changes, one-night skips, bounded pauses, discount/collection updates, and show reminder settings. Follow its recommended path before write tools run.

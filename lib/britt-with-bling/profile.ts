@@ -434,7 +434,7 @@ export function applyBrittWithBlingTrade(
     businessName: BRITT_WITH_BLING_PROFILE.businessName,
     tradeHeroTitle: 'Britt with Bling Dance Floor',
     tradeHeroSub:
-      'When Brittany adds available pieces, you can request a rep-reviewed item-for-item swap here.',
+      'When Brittany adds available dancers, you can request a rep-reviewed item-for-item swap here.',
     footerTagline:
       'Faith, fizz, VIP reveals, and rep-reviewed trades with Britt with Bling.',
     footerLinks: {

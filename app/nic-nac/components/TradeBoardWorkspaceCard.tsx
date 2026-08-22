@@ -279,8 +279,8 @@ export function TradeBoardWorkspaceCard({
             </button>
             <div className={surfaceStyles.walletSettingsTitle}>Approve trade</div>
             <p className={surfaceStyles.helperNote}>
-              {swapApprovalDraft.customerName} gets the board piece. Add it now if you
-              have it, or approve the trade and add the revealed piece later with
+              {swapApprovalDraft.customerName} gets the requested dancer. Add it now if you
+              have it, or approve the trade and add the revealed dancer later with
               Nic-Nac.
             </p>
             <label className={surfaceStyles.searchField}>
@@ -540,7 +540,7 @@ export function TradeBoardWorkspaceCard({
                             Math.max(0, carousel.startIndex - inventoryCarouselPageSize),
                           )
                         }
-                        aria-label="Previous board inventory pieces"
+                        aria-label="Previous Dance Floor dancers"
                       >
                         Previous
                       </button>
@@ -553,14 +553,14 @@ export function TradeBoardWorkspaceCard({
                             carousel.startIndex + inventoryCarouselPageSize,
                           )
                         }
-                        aria-label="Next board inventory pieces"
+                        aria-label="Next Dance Floor dancers"
                       >
                         Next
                       </button>
                     </div>
                   </div>
                   {isInventoryBrowseLoading ? (
-                    <div className={surfaceStyles.helperNote}>Loading board pieces...</div>
+                    <div className={surfaceStyles.helperNote}>Loading Dance Floor dancers...</div>
                   ) : null}
                   <div className={styles.boardInventoryCarouselGrid}>
                     {carousel.visibleItems.map((listing) => {
@@ -620,16 +620,16 @@ export function TradeBoardWorkspaceCard({
               ) : (
                 <div className={surfaceStyles.emptyState}>
                   {isInventoryBrowseLoading
-                    ? 'Loading board pieces...'
-                    : 'No live pieces match that search. Reset filters or try another keyword.'}
+                    ? 'Loading Dance Floor dancers...'
+                    : 'No live dancers match that search. Reset filters or try another keyword.'}
                 </div>
               )
             ) : (
               <div
                 className={styles.browseHint}
-                aria-label="Search the board or open filters to find a live piece."
+                aria-label="Search the Dance Floor or open filters to find a live dancer."
               >
-                Search by item number, design, or collection to pull up a live piece fast.
+                Search by item number, design, or collection to pull up a live dancer fast.
               </div>
             )}
             {previewListing ? (() => {

@@ -177,7 +177,7 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(trade.businessName).toBe('Britt with Bling')
     expect(trade.repName).toBe('Brittany')
     expect(trade.tradeHeroTitle).toBe('Britt with Bling Dance Floor')
-    expect(trade.tradeHeroSub).toContain('When Brittany adds available pieces')
+    expect(trade.tradeHeroSub).toContain('When Brittany adds available dancers')
     expect(trade.tradeHeroSub).not.toContain('standard Sparkle Suite')
     expect(trade.tradeRules).toContain('Item-for-item only.')
     expect(trade.footerLinks.home).toBe('/amethyst/Homepage.html')
@@ -267,7 +267,7 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(data.homepage.footerLinks.privacy).not.toBe('#')
     expect(data.homepage.footerLinks.terms).not.toBe('#')
     expect(data.homepage.footerLinks.accessibility).not.toBe('#')
-    expect(data.trade.tradeHeroSub).toContain('When Brittany adds available pieces')
+    expect(data.trade.tradeHeroSub).toContain('When Brittany adds available dancers')
     expect(data.join.footerLinks.joinTeam).toBe('/brittwithbling/join')
     expect(data.join.teamMembers).toHaveLength(2)
     expect(data.join.teamMembers[0]).toMatchObject({

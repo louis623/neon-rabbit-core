@@ -73,7 +73,7 @@ export const AMETHYST_PUBLIC_PAGES: Record<
     path: '/amethyst/Trade.html',
     title: "Jane's Sparkle Party - Dance Floor",
     description:
-      "Browse Jane's Sparkle Party dance floor listings and request fair jewelry trades from live reveal customers.",
+      "Browse Jane's Sparkle Party Dance Floor dancers and request fair jewelry trades from live reveal customers.",
   },
   join: {
     path: '/amethyst/Join.html',
