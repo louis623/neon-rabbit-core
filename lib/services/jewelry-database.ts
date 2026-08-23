@@ -82,6 +82,13 @@ export function normalizeJewelryMaterialKey(material: string | null | undefined)
   return normalized || null
 }
 
+export function normalizeJewelryMainStoneKey(
+  mainStone: string | null | undefined,
+): string | null {
+  const normalized = mainStone?.trim().replace(/\s+/g, ' ').toLowerCase()
+  return normalized || null
+}
+
 function escapeIlikePattern(value: string): string {
   return value.replace(/[%_\\]/g, (match) => `\\${match}`)
 }
@@ -382,7 +389,7 @@ function mapResolvedDesign(row: ResolveDesignRow): Extract<ResolveItemNumberResu
 export async function resolveItemNumber(
   supabase: SupabaseClient,
   itemNumber: string,
-  options: { material?: string | null } = {},
+  options: { material?: string | null; mainStone?: string | null } = {},
 ): Promise<ResolveItemNumberResult> {
   const normalizedItemNumber = normalizeItemNumber(itemNumber)
   if (!normalizedItemNumber) throw errors.MISSING_ITEM_INPUT()
@@ -399,16 +406,32 @@ export async function resolveItemNumber(
   if (rows.length === 0) return { found: false, itemNumber: normalizedItemNumber }
 
   const requestedMaterialKey = normalizeJewelryMaterialKey(options.material)
-  if (requestedMaterialKey) {
-    const materialMatch = rows.find(
-      (row) => normalizeJewelryMaterialKey(row.material) === requestedMaterialKey,
+  const requestedMainStoneKey = normalizeJewelryMainStoneKey(options.mainStone)
+  if (requestedMaterialKey || requestedMainStoneKey) {
+    const variantMatches = rows.filter(
+      (row) =>
+        (!requestedMaterialKey ||
+          normalizeJewelryMaterialKey(row.material) === requestedMaterialKey) &&
+        (!requestedMainStoneKey ||
+          normalizeJewelryMainStoneKey(row.main_stone) === requestedMainStoneKey),
     )
-    if (materialMatch) return mapResolvedDesign(materialMatch)
+    if (variantMatches.length === 1) return mapResolvedDesign(variantMatches[0])
+    if (variantMatches.length > 1) {
+      return {
+        found: false,
+        itemNumber: normalizedItemNumber,
+        ambiguous: true,
+        requestedMaterial: options.material?.trim() || null,
+        requestedMainStone: options.mainStone?.trim() || null,
+        variantCandidates: variantMatches.map(mapResolveVariantCandidate),
+      }
+    }
 
     return {
       found: false,
       itemNumber: normalizedItemNumber,
       requestedMaterial: options.material?.trim() || null,
+      requestedMainStone: options.mainStone?.trim() || null,
       variantCandidates: rows.map(mapResolveVariantCandidate),
     }
   }

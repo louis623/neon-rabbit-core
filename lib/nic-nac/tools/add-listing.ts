@@ -94,6 +94,13 @@ const inputSchema = z.object({
 
 type ToolInput = z.infer<typeof inputSchema>
 
+function catalogVariantLookup(input: { material?: string; mainStone?: string }) {
+  return {
+    ...(input.material !== undefined ? { material: input.material } : {}),
+    ...(input.mainStone !== undefined ? { mainStone: input.mainStone } : {}),
+  }
+}
+
 function explainServiceError(err: unknown): never {
   if (err instanceof ServiceError) {
     throw new NicNacToolError({
@@ -368,13 +375,16 @@ async function repAlreadyHasActiveListingForItem(input: {
   repId: string
   itemNumber: string
   material?: string
+  mainStone?: string
   designId?: string
 }) {
   let designId = input.designId
   if (!designId) {
-    const resolved = await resolveItemNumber(input.admin, input.itemNumber, {
-      material: input.material,
-    })
+    const resolved = await resolveItemNumber(
+      input.admin,
+      input.itemNumber,
+      catalogVariantLookup(input),
+    )
     if (!resolved?.found) return false
     designId = resolved.design.id
   }
@@ -398,6 +408,7 @@ async function requireDuplicatePhysicalPieceConfirmationIfNeeded(input: {
   conversationId: string
   itemNumber: string
   material?: string
+  mainStone?: string
   designId?: string
   activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
 }) {
@@ -406,6 +417,7 @@ async function requireDuplicatePhysicalPieceConfirmationIfNeeded(input: {
     repId: input.repId,
     itemNumber: input.itemNumber,
     material: input.material,
+    mainStone: input.mainStone,
     designId: input.designId,
   })
   if (!alreadyListed) return
@@ -958,9 +970,11 @@ async function runSingle(
         readiness.missing.every((field) => field === 'jewelryFrontPhoto')
       ) {
         try {
-          resolvedCatalogDesign = await resolveItemNumber(admin, itemNumber, {
-            material: input.material,
-          })
+          resolvedCatalogDesign = await resolveItemNumber(
+            admin,
+            itemNumber,
+            catalogVariantLookup(input),
+          )
         } catch (err) {
           explainServiceError(err)
         }
@@ -1026,9 +1040,7 @@ async function runSingle(
     try {
       const existingDesign =
         resolvedCatalogDesign ??
-        (await resolveItemNumber(admin, itemNumber, {
-          material: input.material,
-        }))
+        (await resolveItemNumber(admin, itemNumber, catalogVariantLookup(input)))
       if (existingDesign.found) {
         await requireDuplicatePhysicalPieceConfirmationIfNeeded({
           admin,
@@ -1037,6 +1049,7 @@ async function runSingle(
           conversationId: ctx.conversationId,
           itemNumber,
           material: input.material,
+          mainStone: input.mainStone,
           designId: existingDesign.design.id,
           activeTradeBoardWorkflow: activeWorkflow,
         })
@@ -1059,6 +1072,7 @@ async function runSingle(
         const existingResult = await addListing(admin, ctx.repId, {
           itemNumber,
           material: input.material,
+          mainStone: input.mainStone,
           collectionName,
           ringSize: input.ringSize,
           repNotes: input.repNotes,
@@ -1423,9 +1437,11 @@ async function runSingle(
   if (!designName) {
     if (!resolvedCatalogDesign) {
       try {
-        resolvedCatalogDesign = await resolveItemNumber(admin, itemNumber, {
-          material: input.material,
-        })
+        resolvedCatalogDesign = await resolveItemNumber(
+          admin,
+          itemNumber,
+          catalogVariantLookup(input),
+        )
       } catch (err) {
         explainServiceError(err)
       }
@@ -1437,6 +1453,7 @@ async function runSingle(
       conversationId: ctx.conversationId,
       itemNumber,
       material: input.material,
+      mainStone: input.mainStone,
       designId: resolvedCatalogDesign?.found
         ? resolvedCatalogDesign.design.id
         : undefined,
@@ -1471,6 +1488,7 @@ async function runSingle(
     result = await addListing(admin, ctx.repId, {
       itemNumber,
       material: input.material,
+      mainStone: input.mainStone,
       collectionName: input.collectionName,
       ringSize: input.ringSize,
       repNotes: input.repNotes,

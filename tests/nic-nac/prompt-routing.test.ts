@@ -70,18 +70,18 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('recovery window')
     expect(prompt).toContain('If add_listing is active and the rep provides a missing field')
     expect(prompt).toContain('do not say add_listing is unavailable')
-    expect(prompt).toContain('A rep can own multiple physical pieces with the same item number')
+    expect(prompt).toContain('A rep can own multiple physical dancers with the same item number')
     expect(prompt).toContain('If search_jewelry_database says isOnMyBoard:true during an add flow')
     expect(prompt).toContain(
       'Are we adding a second physical piece of that same design?',
     )
     expect(prompt).toContain('Quantity comes from the latest rep message')
-    expect(prompt).toContain('For current board questions, answer only from the latest list_my_trade_board result')
+    expect(prompt).toContain('For current Dance Floor questions, answer only from the latest list_my_trade_board result')
     expect(prompt).toContain("mode:'batch'")
     expect(prompt).toContain('NEEDS_FULL_INFO')
     expect(prompt).toContain('create_design')
     expect(prompt).toContain(
-      'When the rep starts "Add a piece to Dance Floor", offer three ways to start',
+      'When the rep starts "Add a dancer to the Dance Floor", offer three ways to start',
     )
     expect(prompt).toContain('type the item number')
     expect(prompt).toContain('upload a clear item-info tag or label photo')
@@ -104,7 +104,7 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('Birthday collection names must include the year')
     expect(prompt).toContain('July Birthday 2026')
     expect(prompt).toContain(
-      'Boxed display photos for earrings, rings, necklaces, and similar pieces are acceptable when the jewelry is centered, close, and clear',
+      'Boxed display photos for earrings, rings, necklaces, and similar dancers are acceptable when the jewelry is centered, close, and clear',
     )
     expect(prompt).toContain(
       'Rejecting or demanding a retake is a last resort',
@@ -154,7 +154,7 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain(
       'Never send the rep to backend/Louis/manual creation when add_listing is active',
     )
-    expect(prompt).toContain('Never claim a piece is added until add_listing returns success')
+    expect(prompt).toContain('Never claim a dancer is added until add_listing returns success')
     expect(prompt).not.toContain('add_show')
     expect(prompt).not.toContain('send_sms_notification')
     expect(prompt.length).toBeLessThan(9_800)

@@ -5,6 +5,8 @@ const getMyBoardMock = vi.fn()
 const createAdminClientMock = vi.fn()
 
 vi.mock('@/lib/services/jewelry-database', () => ({
+  normalizeJewelryMainStoneKey: (value: string | null | undefined) =>
+    value?.trim().replace(/\s+/g, ' ').toLowerCase() || null,
   normalizeJewelryMaterialKey: (value: string | null | undefined) =>
     value?.trim().replace(/\s+/g, ' ').toLowerCase() || null,
   searchJewelryDatabase: (...args: unknown[]) => searchJewelryDatabaseMock(...args),
@@ -127,6 +129,49 @@ describe('prepare_trade_board_work', () => {
     })
   })
 
+  it('asks for stone color when the plating matches more than one catalog variant', async () => {
+    searchJewelryDatabaseMock.mockResolvedValueOnce([
+      {
+        designId: 'design-rose-quartz',
+        itemNumber: 'ER59000',
+        designName: 'Baguette Braid Sparkle',
+        material: 'Rhodium Plating',
+        mainStone: 'Rose Quartz Cubic Zirconia',
+        typePrefix: 'ER',
+        collectionName: 'July Birthday 2026',
+        collectionYear: 2026,
+        canonicalPhotoUrl: 'https://cdn.example.com/er59000-rose-quartz.png',
+        isOnMyBoard: true,
+        activeListingsCount: 1,
+      },
+      {
+        designId: 'design-ruby',
+        itemNumber: 'ER59000',
+        designName: 'Baguette Braid Sparkle',
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+        typePrefix: 'ER',
+        collectionName: 'July Birthday 2026',
+        collectionYear: 2026,
+        canonicalPhotoUrl: 'https://cdn.example.com/er59000-ruby.png',
+        isOnMyBoard: false,
+        activeListingsCount: 0,
+      },
+    ])
+
+    const result = await makeTool().execute({
+      action: 'add_piece',
+      itemNumber: 'ER59000',
+      material: 'Rhodium Plating',
+    })
+
+    expect(result).toMatchObject({
+      catalogStatus: 'variant_ambiguous',
+      allowedPath: 'ask_for_variant_material',
+      nextQuestion: 'Which main stone or color is this one?',
+    })
+  })
+
   it('asks for plating when an item number resolves to multiple catalog variants', async () => {
     searchJewelryDatabaseMock.mockResolvedValueOnce([
       {
@@ -229,7 +274,7 @@ describe('prepare_trade_board_work', () => {
       ],
       nextTool: 'add_listing',
     })
-    expect(result.guidance).toContain('different plating is a new catalog variant')
+    expect(result.guidance).toContain('A different variant is a new catalog design')
     expect(result.guidance).not.toContain('catalog correction')
   })
 

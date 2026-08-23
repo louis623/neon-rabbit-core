@@ -316,6 +316,52 @@ describe('resolveItemNumber', () => {
     })
   })
 
+  it('uses main stone as part of the variant key when item number and plating match', async () => {
+    const { client } = makeResolveSupabase([
+      {
+        id: 'design-rose-quartz',
+        item_number: 'ER59000',
+        design_name: 'Baguette Braid Sparkle',
+        material: 'Rhodium Plating',
+        main_stone: 'Rose Quartz Cubic Zirconia',
+        bp_msrp: 126,
+        canonical_photo_url: 'https://cdn.example.com/er59000-rose-quartz.png',
+        type_prefix: 'ER',
+        collection_id: 'collection-1',
+        search_tags: [],
+        collection: { name: 'July Birthday 2026', collection_year: 2026 },
+      },
+      {
+        id: 'design-ruby',
+        item_number: 'ER59000',
+        design_name: 'Baguette Braid Sparkle',
+        material: 'Rhodium Plating',
+        main_stone: 'Lab-Created Ruby',
+        bp_msrp: 126,
+        canonical_photo_url: 'https://cdn.example.com/er59000-ruby.png',
+        type_prefix: 'ER',
+        collection_id: 'collection-1',
+        search_tags: [],
+        collection: { name: 'July Birthday 2026', collection_year: 2026 },
+      },
+    ])
+
+    const result = await resolveItemNumber(client, 'ER59000', {
+      material: 'rhodium plating',
+      mainStone: 'lab-created ruby',
+    })
+
+    expect(result).toMatchObject({
+      found: true,
+      design: {
+        id: 'design-ruby',
+        itemNumber: 'ER59000',
+        mainStone: 'Lab-Created Ruby',
+        canonicalPhotoUrl: 'https://cdn.example.com/er59000-ruby.png',
+      },
+    })
+  })
+
   it('returns an ambiguous variant result when plating is missing for a multi-plating item number', async () => {
     const { client } = makeResolveSupabase([
       {

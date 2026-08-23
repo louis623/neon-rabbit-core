@@ -55,6 +55,7 @@ type SparkleFinderIntakeDeps = {
   resolveItemNumber?: (
     supabase: SupabaseClient,
     itemNumber: string,
+    options?: { material?: string | null; mainStone?: string | null },
   ) => Promise<ResolveItemNumberResult>
   createDesign?: (
     supabase: SupabaseClient,
@@ -108,7 +109,10 @@ export async function publishSparkleFinderJewelryIntake(
   }
 
   const resolveItemNumber = deps.resolveItemNumber ?? resolveSuiteItemNumber
-  const existing = await resolveItemNumber(deps.supabase, itemNumber)
+  const existing = await resolveItemNumber(deps.supabase, itemNumber, {
+    ...(catalogDraft.material ? { material: catalogDraft.material } : {}),
+    ...(catalogDraft.mainStone ? { mainStone: catalogDraft.mainStone } : {}),
+  })
 
   if (existing.found) {
     return {

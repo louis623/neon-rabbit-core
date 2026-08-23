@@ -112,6 +112,7 @@ export interface AddListingInput {
   collectionName?: string
   collectionYear?: number
   material?: string
+  mainStone?: string
   ringSize?: string
   repNotes?: string
   tradePreferences?: string
@@ -1235,6 +1236,7 @@ export type ResolveItemNumberResult =
       itemNumber: string
       ambiguous?: boolean
       requestedMaterial?: string | null
+      requestedMainStone?: string | null
       variantCandidates?: Array<{
         designId: string
         itemNumber: string

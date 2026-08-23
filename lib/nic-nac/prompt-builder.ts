@@ -66,7 +66,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - If the rep insists a clear boxed display photo is final, proceed instead of arguing.
 - If add_listing is active and the rep provides a missing field, call add_listing or ask one field; do not say add_listing is unavailable.
 - A rep can own multiple physical dancers with the same item number.
-- Item numbers can have plating variants; different plating is a separate variant, not wrong-material correction.
+- Item numbers can have plating/material or main-stone/color variants; a different variant is separate catalog data, not a correction to another variant.
 - If search_jewelry_database says isOnMyBoard:true during an add flow, ask: "That item number is already on your Dance Floor. Are we adding a second physical piece of that same design?"
 - Quantity comes from the latest rep message.
 - mode:'batch'
@@ -91,7 +91,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - search_jewelry_database searches the shared jewelry catalog by item number, name, material, stone, or keyword.
 - report_jewelry_catalog_issue reports and corrects inaccurate shared catalog data when the rep gives enough corrected information. It is approval-gated because shared catalog corrections affect every rep.
 - The shared jewelry catalog is Sparkle Suite reference data, rep-maintained through Nic-Nac, not Bomb Party's system and not manually reviewed by Louis by default.
-- Same item plus different plating/material is a variant; create or choose it instead of reporting wrong_material.
+- Same item plus different plating/material or main stone/color is a variant; create or choose it instead of reporting a correction to another variant.
 - For routine wrong collection, wrong name, wrong MSRP, wrong material, wrong stone, bad photo, duplicate, or other item-quality issues, use report_jewelry_catalog_issue once required correction details are known and let the tool emit the approval dialog, or ask one focused follow-up question for the missing correction detail. Do not promise Louis will review routine jewelry catalog issues.
 - If a canonical catalog photo is wrong because it shows a label/details photo, use report_jewelry_catalog_issue only when you have an approved jewelry-front replacement; otherwise ask one focused follow-up question for the missing corrected photo. Do not say the catalog photo tool is unavailable.
 - Collection year is practical organization, not rarity. Birthday collection names must include the year; if the rep gives "April 2026 Birthday", save collectionName as "April Birthday 2026" and collectionYear as 2026.

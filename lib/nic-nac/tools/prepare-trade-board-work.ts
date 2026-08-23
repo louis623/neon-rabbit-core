@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import {
+  normalizeJewelryMainStoneKey,
   normalizeJewelryMaterialKey,
   searchJewelryDatabase,
 } from '@/lib/services/jewelry-database'
@@ -28,6 +29,7 @@ const inputSchema = z.object({
   jewelryType: z.enum(['RG', 'NK', 'ER', 'ST', 'BR']).optional(),
   collectionFamily: z.string().optional(),
   material: z.string().optional(),
+  mainStone: z.string().optional(),
   ringSize: z.string().optional(),
 })
 
@@ -57,15 +59,26 @@ function resolveCatalogMatch(
 ) {
   const normalizedItem = input.itemNumber?.trim().toUpperCase()
   const materialKey = normalizeJewelryMaterialKey(input.material)
+  const mainStoneKey = normalizeJewelryMainStoneKey(input.mainStone)
   if (normalizedItem) {
     const exactMatches = results.filter(
       (result) => result.itemNumber.toUpperCase() === normalizedItem,
     )
-    if (materialKey && exactMatches.length > 0) {
-      const materialMatch = exactMatches.find(
-        (result) => normalizeJewelryMaterialKey(result.material) === materialKey,
+    if ((materialKey || mainStoneKey) && exactMatches.length > 0) {
+      const variantMatches = exactMatches.filter(
+        (result) =>
+          (!materialKey || normalizeJewelryMaterialKey(result.material) === materialKey) &&
+          (!mainStoneKey || normalizeJewelryMainStoneKey(result.mainStone) === mainStoneKey),
       )
-      if (materialMatch) return { kind: 'match' as const, match: materialMatch }
+      if (variantMatches.length === 1) {
+        return { kind: 'match' as const, match: variantMatches[0] }
+      }
+      if (variantMatches.length > 1) {
+        return {
+          kind: 'variant_ambiguous' as const,
+          candidates: variantMatches.map(variantCandidate),
+        }
+      }
       return {
         kind: 'variant_not_found' as const,
         candidates: exactMatches.map(variantCandidate),
@@ -209,15 +222,31 @@ export function makePrepareTradeBoardWorkTool(ctx: {
       const catalogMatch = resolveCatalogMatch(results, input)
 
       if (catalogMatch.kind === 'variant_ambiguous') {
+        const candidateMaterials = new Set(
+          catalogMatch.candidates.map((candidate) =>
+            normalizeJewelryMaterialKey(candidate.material),
+          ),
+        )
+        const candidateMainStones = new Set(
+          catalogMatch.candidates.map((candidate) =>
+            normalizeJewelryMainStoneKey(candidate.mainStone),
+          ),
+        )
+        const nextQuestion =
+          !normalizeJewelryMaterialKey(input.material) && candidateMaterials.size > 1
+            ? 'Which plating or material is this one?'
+            : !normalizeJewelryMainStoneKey(input.mainStone) && candidateMainStones.size > 1
+              ? 'Which main stone or color is this one?'
+              : 'Which catalog variant is this one?'
         return {
           action: input.action,
           catalogStatus: 'variant_ambiguous',
           allowedPath: 'ask_for_variant_material',
           candidates: catalogMatch.candidates,
-          nextQuestion: 'Which plating or material is this one?',
+          nextQuestion,
           catalogDeletionAllowed: false,
           guidance:
-            'This item number has multiple catalog variants. Ask for the plating/material and then use the matching variant; do not treat a different plating as a catalog correction.',
+            'This item number has multiple catalog variants. Ask only for the missing plating/material or main stone/color, then use the matching variant; do not treat a different variant as a catalog correction.',
         }
       }
 
@@ -236,7 +265,7 @@ export function makePrepareTradeBoardWorkTool(ctx: {
           nextTool: 'add_listing',
           catalogDeletionAllowed: false,
           guidance:
-            'This item number exists, but the provided plating/material is not one of the current catalog variants. A different plating is a new catalog variant, not a correction to the existing variant. Collect the new variant facts and customer-facing jewelry photo, then call add_listing with the material.',
+            'This item number exists, but the provided plating/material or main stone/color is not one of the current catalog variants. A different variant is a new catalog design, not a correction to the existing variant. Collect the new variant facts and customer-facing jewelry photo, then call add_listing with the material and main stone.',
         }
       }
 

@@ -755,7 +755,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
     expect(resolveItemNumberMock).toHaveBeenCalledWith(
       expect.anything(),
       'NK12032',
-      { material: 'Hematite Plating' },
+      { material: 'Hematite Plating', mainStone: 'Lab-Created Ruby' },
     )
     expect(createDesignMock).toHaveBeenCalledWith(
       expect.anything(),

@@ -633,7 +633,8 @@ export async function addListing(
   if (!input.itemNumber) throw errors.MISSING_ITEM_INPUT()
 
   const resolved = await resolveItemNumber(supabase, input.itemNumber, {
-    material: input.material,
+    ...(input.material !== undefined ? { material: input.material } : {}),
+    ...(input.mainStone !== undefined ? { mainStone: input.mainStone } : {}),
   })
   if (!resolved.found) {
     if (resolved.ambiguous) throw errors.NEEDS_MATERIAL_VARIANT(resolved.itemNumber)
