@@ -67,4 +67,36 @@ describe('workspace resource library UI', () => {
     )
     expect(html).toContain('No matching resources yet.')
   })
+
+  it('uses YouTube art and omits an empty summary', () => {
+    const html = renderToStaticMarkup(
+      createElement(WorkspaceResourceLibraryView, {
+        resources: [
+          {
+            id: 'video-2',
+            resourceKey: 'quick-tour',
+            resourceType: 'video',
+            title: 'Quick tour',
+            summary: '',
+            body: '',
+            category: 'General',
+            tags: [],
+            thumbnailUrl: null,
+            videoProvider: 'youtube',
+            videoUrl: 'https://youtu.be/abc123',
+            actionUrl: null,
+            status: 'published',
+            version: 1,
+            changeSummary: '',
+            isFeatured: false,
+            authorLabel: 'Sparkle Suite',
+            publishedAt: null,
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('https://i.ytimg.com/vi/abc123/hqdefault.jpg')
+    expect(html).not.toContain('<p></p>')
+  })
 })

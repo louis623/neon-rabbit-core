@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 
 export const WORKSPACE_RESOURCE_TYPES = ['help', 'faq', 'blog', 'video'] as const
@@ -50,42 +51,51 @@ const safeUrlSchema = z
     }
   }, 'Use a secure https link or a Sparkle Suite path.')
 
+const optionalSafeUrlSchema = z
+  .union([safeUrlSchema, z.literal('')])
+  .optional()
+  .nullable()
+  .transform((value) => value || null)
+
+const optionalResourceKeySchema = z
+  .string()
+  .trim()
+  .max(120)
+  .refine(
+    (value) => !value || /^[a-z0-9][a-z0-9-]*$/.test(value),
+    'Use lowercase letters, numbers, and hyphens only.',
+  )
+  .optional()
+  .default('')
+
 const publishResourceSchema = z
   .object({
-    resourceKey: z.string().trim().min(2).max(120).regex(/^[a-z0-9][a-z0-9-]*$/),
-    resourceType: z.enum(WORKSPACE_RESOURCE_TYPES),
-    title: z.string().trim().min(2).max(160),
-    summary: z.string().trim().min(2).max(500),
+    resourceKey: optionalResourceKeySchema,
+    resourceType: z.enum(WORKSPACE_RESOURCE_TYPES).default('blog'),
+    title: z.string().trim().max(160).default(''),
+    summary: z.string().trim().max(500).default(''),
     body: z.string().trim().max(30_000).default(''),
-    category: z.string().trim().min(2).max(80).default('General'),
+    category: z.string().trim().max(80).default('General'),
     tags: z.array(z.string().trim().min(1).max(40)).max(12).default([]),
-    thumbnailUrl: safeUrlSchema.optional().nullable(),
+    thumbnailUrl: optionalSafeUrlSchema,
     videoProvider: z.enum(['youtube', 'vimeo', 'loom', 'other']).optional().nullable(),
-    videoUrl: safeUrlSchema.optional().nullable(),
-    actionUrl: safeUrlSchema.optional().nullable(),
-    changeSummary: z.string().trim().min(2).max(500),
+    videoUrl: optionalSafeUrlSchema,
+    actionUrl: optionalSafeUrlSchema,
+    changeSummary: z.string().trim().max(500).default(''),
     isFeatured: z.boolean().default(false),
     authorLabel: z.string().trim().min(2).max(80).default('Sparkle Suite'),
     actorKind: z.enum(['owner', 'agent', 'automation']).default('owner'),
     actor: z.string().trim().min(2).max(120),
     announce: z.boolean().default(true),
   })
-  .superRefine((value, context) => {
-    if (value.resourceType === 'video' && !value.videoUrl) {
-      context.addIssue({
-        code: 'custom',
-        path: ['videoUrl'],
-        message: 'A video resource needs a secure video URL.',
-      })
-    }
-    if (value.resourceType !== 'video' && !value.body && !value.actionUrl) {
-      context.addIssue({
-        code: 'custom',
-        path: ['body'],
-        message: 'A written resource needs content or a secure action URL.',
-      })
-    }
-  })
+
+function fallbackTitle(type: WorkspaceResourceType) {
+  return type === 'video' ? 'Untitled video' : 'Untitled blog'
+}
+
+function fallbackResourceKey(type: WorkspaceResourceType) {
+  return `${type}-${randomUUID().slice(0, 8)}`
+}
 
 export type PublishWorkspaceResourceInput = z.input<typeof publishResourceSchema>
 
@@ -172,7 +182,12 @@ export async function publishWorkspaceResource(args: {
   publishAnnouncement?: ResourceAnnouncementPublisher
   now?: Date
 }) {
-  const input = publishResourceSchema.parse(args.input)
+  const parsedInput = publishResourceSchema.parse(args.input)
+  const input = {
+    ...parsedInput,
+    resourceKey: parsedInput.resourceKey || fallbackResourceKey(parsedInput.resourceType),
+    title: parsedInput.title || fallbackTitle(parsedInput.resourceType),
+  }
   const now = (args.now ?? new Date()).toISOString()
   const { data: existing, error: existingError } = await args.supabase
     .from('workspace_resources')

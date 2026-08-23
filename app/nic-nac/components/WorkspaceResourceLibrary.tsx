@@ -22,6 +22,31 @@ function resourceTypeLabel(type: WorkspaceResource['resourceType']) {
   return 'Blog'
 }
 
+function youtubeThumbnailUrl(videoUrl: string | null) {
+  if (!videoUrl) return null
+
+  try {
+    const url = new URL(videoUrl)
+    const host = url.hostname.replace(/^www\./, '').toLowerCase()
+    let videoId: string | null = null
+
+    if (host === 'youtu.be') {
+      videoId = url.pathname.split('/').filter(Boolean)[0] ?? null
+    } else if (host.endsWith('youtube.com')) {
+      videoId =
+        url.searchParams.get('v') ||
+        url.pathname.match(/^\/(?:embed|shorts|live)\/([^/?#]+)/)?.[1] ||
+        null
+    }
+
+    return videoId && /^[A-Za-z0-9_-]{6,}$/.test(videoId)
+      ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+      : null
+  } catch {
+    return null
+  }
+}
+
 export function WorkspaceResourceLibraryView({
   resources,
   loading = false,
@@ -91,6 +116,9 @@ export function WorkspaceResourceLibraryView({
       <div className={styles.grid}>
         {visibleResources.map((resource) => {
           const href = resource.videoUrl || resource.actionUrl
+          const thumbnailUrl =
+            resource.thumbnailUrl ||
+            (resource.videoProvider === 'youtube' ? youtubeThumbnailUrl(resource.videoUrl) : null)
           const generatedDetailHref = `/nic-nac?section=resources&resource=${resource.resourceKey}`
           const hasArticleLink = Boolean(
             resource.actionUrl && resource.actionUrl !== generatedDetailHref,
@@ -98,9 +126,9 @@ export function WorkspaceResourceLibraryView({
           return (
             <article className={styles.card} key={resource.id}>
               <div className={styles.art}>
-                {resource.thumbnailUrl ? (
+                {thumbnailUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={resource.thumbnailUrl} alt="" />
+                  <img src={thumbnailUrl} alt="" />
                 ) : resource.resourceType === 'video' ? (
                   <PlayCircle aria-hidden="true" />
                 ) : (
@@ -115,7 +143,7 @@ export function WorkspaceResourceLibraryView({
                   {resource.version === 1 ? <span>New</span> : null}
                 </div>
                 <h3>{resource.title}</h3>
-                <p>{resource.summary}</p>
+                {resource.summary ? <p>{resource.summary}</p> : null}
                 <div className={styles.cardFooter}>
                   <small>{resource.authorLabel}</small>
                   {resource.resourceType === 'video' && href ? (

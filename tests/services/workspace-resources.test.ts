@@ -3,6 +3,7 @@ import { publishWorkspaceResource } from '@/lib/services/workspace-resources'
 
 function makeSupabase(existing: { id: string; version: number } | null = null) {
   const revisionUpdates: unknown[] = []
+  const resourceWrites: unknown[] = []
   const resourceRow = {
     id: existing?.id ?? 'resource-1',
     resource_key: 'first-video',
@@ -33,18 +34,24 @@ function makeSupabase(existing: { id: string; version: number } | null = null) {
               maybeSingle: vi.fn(async () => ({ data: existing, error: null })),
             })),
           })),
-          insert: vi.fn(() => ({
+          insert: vi.fn((values: unknown) => {
+            resourceWrites.push(values)
+            return {
             select: vi.fn(() => ({
               single: vi.fn(async () => ({ data: resourceRow, error: null })),
             })),
-          })),
-          update: vi.fn(() => ({
+            }
+          }),
+          update: vi.fn((values: unknown) => {
+            resourceWrites.push(values)
+            return {
             eq: vi.fn(() => ({
               select: vi.fn(() => ({
                 single: vi.fn(async () => ({ data: resourceRow, error: null })),
               })),
             })),
-          })),
+            }
+          }),
         }
       }
 
@@ -64,7 +71,7 @@ function makeSupabase(existing: { id: string; version: number } | null = null) {
     }),
   }
 
-  return { client, revisionUpdates }
+  return { client, revisionUpdates, resourceWrites }
 }
 
 describe('workspace resources', () => {
@@ -132,6 +139,27 @@ describe('workspace resources', () => {
 
     expect(result.announcement).toBeNull()
     expect(publishAnnouncement).not.toHaveBeenCalled()
+  })
+
+  it('publishes a sparse resource with generated identity details', async () => {
+    const { client, resourceWrites } = makeSupabase()
+
+    await publishWorkspaceResource({
+      supabase: client as never,
+      input: { actor: 'Louis' },
+    })
+
+    expect(resourceWrites).toContainEqual(
+      expect.objectContaining({
+        resource_type: 'blog',
+        title: 'Untitled blog',
+        summary: '',
+        body: '',
+        change_summary: '',
+        category: 'General',
+      }),
+    )
+    expect((resourceWrites[0] as { resource_key: string }).resource_key).toMatch(/^blog-/)
   })
 
   it('rejects unsafe links before writing anything', async () => {

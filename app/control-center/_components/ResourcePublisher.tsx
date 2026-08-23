@@ -31,11 +31,7 @@ export function ResourcePublisher({ initialResources }: { initialResources: Reso
   const [title, setTitle] = useState('')
   const [summary, setSummary] = useState('')
   const [body, setBody] = useState('')
-  const [category, setCategory] = useState('Business Growth')
-  const [changeSummary, setChangeSummary] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
-  const [thumbnailUrl, setThumbnailUrl] = useState('')
-  const [featured, setFeatured] = useState(false)
 
   async function refresh() {
     const response = await fetch('/api/control-center/resources', { credentials: 'include' })
@@ -61,13 +57,13 @@ export function ResourcePublisher({ initialResources }: { initialResources: Reso
           resourceType: type,
           title,
           summary,
-          body,
-          category,
-          changeSummary,
+          body: type === 'blog' ? body : '',
+          category: 'General',
+          changeSummary: '',
           videoProvider: type === 'video' ? 'youtube' : null,
-          videoUrl: type === 'video' ? videoUrl : null,
-          thumbnailUrl: thumbnailUrl || null,
-          isFeatured: featured,
+          videoUrl: type === 'video' ? videoUrl || null : null,
+          thumbnailUrl: null,
+          isFeatured: false,
           announce: true,
         }),
       })
@@ -77,11 +73,8 @@ export function ResourcePublisher({ initialResources }: { initialResources: Reso
       setTitle('')
       setSummary('')
       setBody('')
-      setChangeSummary('')
       setVideoUrl('')
-      setThumbnailUrl('')
-      setFeatured(false)
-      setMessage('Resource published and its Message Center announcement was created.')
+      setMessage('Published to the Resource Library and notified reps in Message Center.')
     } catch (submitError) {
       setError(
         submitError instanceof Error ? submitError.message : 'Unable to publish resource.',
@@ -99,7 +92,7 @@ export function ResourcePublisher({ initialResources }: { initialResources: Reso
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-700">Control Center</p>
               <h1 className="mt-1 text-2xl font-semibold">Resource Publisher</h1>
-              <p className="mt-2 text-sm text-slate-600">Publish blogs, videos, FAQs, or rep help. Publishing automatically creates a receive-only rep announcement.</p>
+              <p className="mt-2 text-sm text-slate-600">Share a blog or a YouTube video with reps. Publishing automatically creates a receive-only rep announcement.</p>
             </div>
             <Link className="text-sm font-semibold text-violet-700" href="/control-center">Back to Control Center</Link>
           </div>
@@ -110,23 +103,15 @@ export function ResourcePublisher({ initialResources }: { initialResources: Reso
               <select className="rounded-lg border border-slate-300 px-3 py-2" value={type} onChange={(event) => setType(event.target.value as ResourceRow['resourceType'])}>
                 <option value="blog">Blog</option>
                 <option value="video">Video</option>
-                <option value="faq">FAQ</option>
-                <option value="help">Rep help</option>
               </select>
             </label>
-            <label className="grid gap-1 text-sm font-medium">Title<input required className="rounded-lg border border-slate-300 px-3 py-2" value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-            <label className="grid gap-1 text-sm font-medium">Short summary<textarea required className="min-h-20 rounded-lg border border-slate-300 px-3 py-2" value={summary} onChange={(event) => setSummary(event.target.value)} /></label>
-            <label className="grid gap-1 text-sm font-medium">Content<textarea required={type !== 'video'} className="min-h-44 rounded-lg border border-slate-300 px-3 py-2" value={body} onChange={(event) => setBody(event.target.value)} /></label>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-1 text-sm font-medium">Category<input required className="rounded-lg border border-slate-300 px-3 py-2" value={category} onChange={(event) => setCategory(event.target.value)} /></label>
-              <label className="grid gap-1 text-sm font-medium">Thumbnail URL<input type="url" className="rounded-lg border border-slate-300 px-3 py-2" value={thumbnailUrl} onChange={(event) => setThumbnailUrl(event.target.value)} /></label>
-            </div>
-            {type === 'video' ? <label className="grid gap-1 text-sm font-medium">Video URL<input required type="url" className="rounded-lg border border-slate-300 px-3 py-2" value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} /></label> : null}
-            <label className="grid gap-1 text-sm font-medium">What changed?<textarea required className="min-h-20 rounded-lg border border-slate-300 px-3 py-2" value={changeSummary} onChange={(event) => setChangeSummary(event.target.value)} /></label>
-            <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={featured} onChange={(event) => setFeatured(event.target.checked)} />Feature this resource</label>
+            <label className="grid gap-1 text-sm font-medium">Title <span className="font-normal text-slate-500">(optional)</span><input className="rounded-lg border border-slate-300 px-3 py-2" value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+            <label className="grid gap-1 text-sm font-medium">Short summary <span className="font-normal text-slate-500">(optional)</span><textarea className="min-h-20 rounded-lg border border-slate-300 px-3 py-2" value={summary} onChange={(event) => setSummary(event.target.value)} /></label>
+            {type === 'blog' ? <label className="grid gap-1 text-sm font-medium">Blog content <span className="font-normal text-slate-500">(optional)</span><textarea className="min-h-44 rounded-lg border border-slate-300 px-3 py-2" value={body} onChange={(event) => setBody(event.target.value)} /></label> : null}
+            {type === 'video' ? <label className="grid gap-1 text-sm font-medium">YouTube URL <span className="font-normal text-slate-500">(optional)</span><input type="url" className="rounded-lg border border-slate-300 px-3 py-2" value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} /></label> : null}
             {error ? <p className="rounded-lg bg-rose-50 p-3 text-sm text-rose-800" role="alert">{error}</p> : null}
             {message ? <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800" role="status">{message}</p> : null}
-            <button disabled={pending} className="rounded-lg bg-violet-700 px-4 py-3 font-semibold text-white disabled:opacity-60" type="submit">{pending ? 'Publishing…' : 'Publish resource and announcement'}</button>
+            <button disabled={pending} className="rounded-lg bg-violet-700 px-4 py-3 font-semibold text-white disabled:opacity-60" type="submit">{pending ? 'Publishing…' : 'Publish and notify reps'}</button>
           </form>
         </section>
 

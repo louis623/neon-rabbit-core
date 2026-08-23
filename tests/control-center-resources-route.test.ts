@@ -80,15 +80,25 @@ describe('Control Center resources route', () => {
     })
   })
 
-  it('rejects invalid resource payloads before service mutation', async () => {
+  it('accepts a sparse resource payload and lets the service supply defaults', async () => {
+    publishResource.mockResolvedValue({ resource: { id: 'resource-1' }, announcement: null })
     const response = await POST(
       new Request('http://localhost/api/control-center/resources', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ resourceType: 'video', title: '' }),
+        body: JSON.stringify({}),
       }),
     )
-    expect(response.status).toBe(400)
-    expect(publishResource).not.toHaveBeenCalled()
+    expect(response.status).toBe(201)
+    expect(publishResource).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          resourceType: 'blog',
+          title: '',
+          summary: '',
+          changeSummary: '',
+        }),
+      }),
+    )
   })
 })
