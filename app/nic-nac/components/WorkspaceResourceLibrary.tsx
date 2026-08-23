@@ -1,18 +1,16 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { BookOpen, ExternalLink, PlayCircle, Search, Sparkles } from 'lucide-react'
+import { BookOpen, ExternalLink, PlayCircle, Search } from 'lucide-react'
 import type { WorkspaceResource } from '@/lib/services/workspace-resources'
 import styles from './WorkspaceResourceLibrary.module.css'
 
-type ResourceFilter = 'all' | 'blog' | 'video' | 'help' | 'faq'
+type ResourceFilter = 'all' | 'blog' | 'video'
 
 const RESOURCE_FILTERS: Array<readonly [ResourceFilter, string]> = [
   ['all', 'All resources'],
   ['blog', 'Blogs'],
   ['video', 'Videos'],
-  ['help', 'Help updates'],
-  ['faq', 'FAQs'],
 ]
 
 function resourceTypeLabel(type: WorkspaceResource['resourceType']) {
@@ -71,15 +69,7 @@ export function WorkspaceResourceLibraryView({
   }, [filter, resources, searchQuery])
 
   return (
-    <section className={styles.library} aria-labelledby="resource-library-title">
-      <header className={styles.header}>
-        <div>
-          <div className={styles.eyebrow}>Workspace Tools</div>
-          <h2 id="resource-library-title">Resource Library</h2>
-          <p>Practical Sparkle Suite blogs and videos, all in one place.</p>
-        </div>
-        <Sparkles aria-hidden="true" />
-      </header>
+    <section className={styles.library} aria-label="Blogs and videos">
 
       <div className={styles.toolbar}>
         <div className={styles.filters} aria-label="Resource type">
@@ -101,7 +91,7 @@ export function WorkspaceResourceLibraryView({
           <input
             type="search"
             value={searchQuery}
-            placeholder="Search blogs and videos"
+            placeholder="Search videos and blogs"
             onChange={(event) => setSearchQuery(event.target.value)}
           />
         </label>
@@ -117,8 +107,9 @@ export function WorkspaceResourceLibraryView({
         {visibleResources.map((resource) => {
           const href = resource.videoUrl || resource.actionUrl
           const thumbnailUrl =
-            resource.thumbnailUrl ||
-            (resource.videoProvider === 'youtube' ? youtubeThumbnailUrl(resource.videoUrl) : null)
+            resource.videoProvider === 'youtube'
+              ? youtubeThumbnailUrl(resource.videoUrl) || resource.thumbnailUrl
+              : resource.thumbnailUrl
           const generatedDetailHref = `/nic-nac?section=resources&resource=${resource.resourceKey}`
           const hasArticleLink = Boolean(
             resource.actionUrl && resource.actionUrl !== generatedDetailHref,

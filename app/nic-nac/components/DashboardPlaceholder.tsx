@@ -62,7 +62,6 @@ import {
   ExternalLink,
   Gem,
   Globe2,
-  HelpCircle,
   Images,
   LogOut,
   Mail,
@@ -183,7 +182,7 @@ const SECONDARY_WORKSPACE_SECTIONS = [
   },
   {
     key: 'resources',
-    label: 'Blog & Video Resources',
+    label: 'Resources & Help',
     shortLabel: 'Resources',
     icon: BookOpen,
   },
@@ -198,12 +197,6 @@ const SECONDARY_WORKSPACE_SECTIONS = [
     label: 'Recipes',
     shortLabel: 'Recipes',
     icon: Sparkles,
-  },
-  {
-    key: 'help-resources',
-    label: 'Help & Resources',
-    shortLabel: 'Help',
-    icon: HelpCircle,
   },
   {
     key: 'account',
@@ -310,11 +303,14 @@ function mergeTradeBoardResults(
 type WorkspaceSectionKey =
   | (typeof WORKSPACE_SECTIONS)[number]['key']
   | (typeof SECONDARY_WORKSPACE_SECTIONS)[number]['key']
+  | 'help-resources'
 
 const WORKSPACE_SECTION_KEYS = new Set<string>(
-  [...WORKSPACE_SECTIONS, ...SECONDARY_WORKSPACE_SECTIONS].map(
-    (section) => section.key,
-  ),
+  [
+    ...WORKSPACE_SECTIONS,
+    ...SECONDARY_WORKSPACE_SECTIONS,
+    { key: 'help-resources' },
+  ].map((section) => section.key),
 )
 
 const BLING_KITCHEN_RECIPE_REP_IDS = new Set([
@@ -422,9 +418,11 @@ export function getWorkspaceBackDestination(
 ): { section: WorkspaceSectionKey; label: string } | null {
   if (section === 'home') return null
 
-  const isToolSection = SECONDARY_WORKSPACE_SECTIONS.some(
-    (workspaceSection) => workspaceSection.key === section,
-  )
+  const isToolSection =
+    section === 'help-resources' ||
+    SECONDARY_WORKSPACE_SECTIONS.some(
+      (workspaceSection) => workspaceSection.key === section,
+    )
 
   return isToolSection
     ? { section: 'more', label: 'Tools' }
@@ -5861,14 +5859,25 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       )
     }
 
-    if (canRenderWorkspaceSections && activeSection === 'resources') {
+    if (
+      activeSection === 'resources' ||
+      activeSection === 'help-resources'
+    ) {
       return (
         <div className={styles.workspaceSectionStack}>
-          {reviewWorkspaceMode ? (
-            <WorkspaceResourceLibraryView resources={REVIEW_RESOURCE_FIXTURES} />
-          ) : (
-            <WorkspaceResourceLibrary />
-          )}
+          <HelpResourcesCard
+            key={activeSection}
+            state={resourcesState}
+            hasPaidWorkspace={hasPaidWorkspace}
+            initialTab={activeSection === 'help-resources' ? 'help' : 'learn'}
+            learningContent={
+              canRenderWorkspaceSections
+                ? reviewWorkspaceMode
+                  ? <WorkspaceResourceLibraryView resources={REVIEW_RESOURCE_FIXTURES} />
+                  : <WorkspaceResourceLibrary />
+                : undefined
+            }
+          />
         </div>
       )
     }
@@ -5994,17 +6003,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             onRemove={handleRemoveRecipe}
             onUploadImage={handleRecipeImageUpload}
             onBuildDraft={handleBuildRecipeDraft}
-          />
-        </div>
-      )
-    }
-
-    if (activeSection === 'help-resources') {
-      return (
-        <div className={styles.workspaceSectionStack}>
-          <HelpResourcesCard
-            state={resourcesState}
-            hasPaidWorkspace={hasPaidWorkspace}
           />
         </div>
       )
@@ -7654,9 +7652,13 @@ function getWorkflowResourcesByGroup(resources: HelpResource[] | undefined) {
 export function HelpResourcesCard({
   state,
   hasPaidWorkspace: _hasPaidWorkspace,
+  initialTab = 'help',
+  learningContent,
 }: {
   state: ResourcesState
   hasPaidWorkspace: boolean
+  initialTab?: 'learn' | 'help'
+  learningContent?: ReactNode
 }) {
   const [reportForm, setReportForm] = useState<HelpSupportReportForm>(
     DEFAULT_SUPPORT_REPORT_FORM,
@@ -7667,6 +7669,10 @@ export function HelpResourcesCard({
     message: string | null
   }>({ pending: false, error: null, message: null })
   const supportReportDetailsRef = useRef<HTMLTextAreaElement | null>(null)
+  const [activeResourceTab, setActiveResourceTab] = useState<'learn' | 'help'>(
+    learningContent && initialTab === 'learn' ? 'learn' : 'help',
+  )
+  const hasLearningContent = Boolean(learningContent)
   const workflowGroups = getWorkflowResourcesByGroup(state.resources)
   const featureReferences = getResourcesByType(state.resources, 'feature_reference')
     .filter((resource) => resource.group === 'Feature Index')
@@ -7779,13 +7785,51 @@ export function HelpResourcesCard({
     <div className={styles.workspacePanel}>
       <div className={styles.workspaceSectionHeader}>
         <div>
-          <div className={styles.cardTitle}>Help & Resources</div>
+          <div className={styles.cardTitle}>
+            {hasLearningContent ? 'Resources' : 'Help & Resources'}
+          </div>
           <div className={styles.cardSubtitle}>
-            Pick what you are trying to do. Nic-Nac can walk you through the steps when you want help.
+            {hasLearningContent
+              ? 'Watch a quick how-to, read a blog, or open a step-by-step guide.'
+              : 'Pick what you are trying to do. Nic-Nac can walk you through the steps when you want help.'}
           </div>
         </div>
       </div>
-      {
+      {hasLearningContent ? (
+        <div className={styles.resourceHubTabs} role="tablist" aria-label="Resources">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeResourceTab === 'learn'}
+            className={
+              activeResourceTab === 'learn'
+                ? styles.resourceHubTabActive
+                : styles.resourceHubTab
+            }
+            onClick={() => setActiveResourceTab('learn')}
+          >
+            Learn
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeResourceTab === 'help'}
+            className={
+              activeResourceTab === 'help'
+                ? styles.resourceHubTabActive
+                : styles.resourceHubTab
+            }
+            onClick={() => setActiveResourceTab('help')}
+          >
+            Help
+          </button>
+        </div>
+      ) : null}
+      {hasLearningContent && activeResourceTab === 'learn' ? (
+        <div role="tabpanel" aria-label="Learn resources">
+          {learningContent}
+        </div>
+      ) : (
         <>
           {state.status === 'ready' && state.resources ? (
             <div className={styles.playbookStack}>
@@ -7946,7 +7990,7 @@ export function HelpResourcesCard({
             </div>
           )}
         </>
-      }
+      )}
     </div>
   )
 }

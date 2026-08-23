@@ -1599,6 +1599,42 @@
   align-items: start;
 }
 
+.resourceHubTabs {
+  display: inline-flex;
+  width: fit-content;
+  gap: 4px;
+  border: 1px solid rgba(122, 74, 180, 0.18);
+  border-radius: 999px;
+  padding: 4px;
+  background: rgba(248, 241, 252, 0.82);
+}
+
+.resourceHubTab,
+.resourceHubTabActive {
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: transparent;
+  color: var(--nic-nac-text-secondary);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.resourceHubTabActive {
+  background: #fff;
+  color: #6f4387;
+  box-shadow: 0 2px 7px rgba(64, 41, 36, 0.1);
+}
+
+.resourceHubTab:focus-visible,
+.resourceHubTabActive:focus-visible {
+  outline: 3px solid rgba(226, 25, 143, 0.25);
+  outline-offset: 2px;
+}
+
 .sectionHeadingRow {
   display: flex;
   justify-content: space-between;

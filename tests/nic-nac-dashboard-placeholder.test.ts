@@ -753,6 +753,25 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Classic Sparkle')
   })
 
+  it('places learning resources and help behind one accessible tab switcher', () => {
+    const html = renderToStaticMarkup(
+      createElement(HelpResourcesCard, {
+        state: { status: 'ready', resources: getHelpResources() },
+        hasPaidWorkspace: true,
+        initialTab: 'learn',
+        learningContent: createElement('div', null, 'Video tiles'),
+      }),
+    )
+
+    expect(html).toContain('>Resources<')
+    expect(html).toContain('Watch a quick how-to')
+    expect(html).toContain('role="tablist"')
+    expect(html).toContain('>Learn<')
+    expect(html).toContain('>Help<')
+    expect(html).toContain('Video tiles')
+    expect(html).not.toContain('Workflow Playbook')
+  })
+
   it('keeps Help & Resources scannable with collapsed section disclosures', () => {
     const html = renderToStaticMarkup(
       createElement(HelpResourcesCard, {
@@ -1418,7 +1437,7 @@ describe('DashboardPlaceholder', () => {
     expect(source).toContain('body: JSON.stringify({ deliveryId, ...patch })')
   })
 
-  it('shows Blog & Video Resources as an available Workspace Tool', () => {
+  it('shows one combined Resources & Help workspace tool', () => {
     const toolsHtml = renderToStaticMarkup(
       createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
         reviewWorkspaceMode: true,
@@ -1430,10 +1449,25 @@ describe('DashboardPlaceholder', () => {
       'utf8',
     )
 
-    expect(toolsHtml).toContain('Blog &amp; Video Resources')
+    expect(toolsHtml).toContain('Resources &amp; Help')
     expect(source).toContain("key: 'resources'")
     expect(source).toContain("activeSection === 'resources'")
+    expect(source).toContain("activeSection === 'help-resources'")
     expect(source).toContain('<WorkspaceResourceLibrary />')
+  })
+
+  it('opens the combined resource hub on Learn for the Resources deep link', () => {
+    const html = renderToStaticMarkup(
+      createElement<DashboardPlaceholderProps>(DashboardPlaceholder, {
+        reviewWorkspaceMode: true,
+        initialSectionOverride: 'resources',
+      }),
+    )
+
+    expect(html).toContain('>Resources<')
+    expect(html).toContain('>Learn<')
+    expect(html).toContain('>Help<')
+    expect(html).toContain('aria-selected="true"')
   })
 
   it('filters inbox categories and accepts only safe message actions', () => {
@@ -3078,29 +3112,18 @@ describe('DashboardPlaceholder', () => {
   })
 
   it('keeps customer site looks in Site Settings instead of Help & Resources', () => {
-    const previousWindow = globalThis.window
-    Object.defineProperty(globalThis, 'window', {
-      configurable: true,
-      value: { location: { search: '?section=help-resources' } },
-    })
+    const html = renderToStaticMarkup(
+      createElement(DashboardPlaceholder, { initialSectionOverride: 'help-resources' }),
+    )
 
-    try {
-      const html = renderToStaticMarkup(createElement(DashboardPlaceholder))
-
-      expect(html).toContain('Help &amp; Resources')
-      expect(html).not.toContain('Choose your look')
-      expect(html).not.toContain('Customer Site Looks')
-      expect(html).not.toContain('Full skin gallery')
-      expect(html).not.toContain('Classic Sparkle')
-      expect(html).not.toContain('Guided first-start')
-      expect(html).not.toContain('after checkout')
-      expect(html).not.toContain('Ready after checkout')
-    } finally {
-      Object.defineProperty(globalThis, 'window', {
-        configurable: true,
-        value: previousWindow,
-      })
-    }
+    expect(html).toContain('Help &amp; Resources')
+    expect(html).not.toContain('Choose your look')
+    expect(html).not.toContain('Customer Site Looks')
+    expect(html).not.toContain('Full skin gallery')
+    expect(html).not.toContain('Classic Sparkle')
+    expect(html).not.toContain('Guided first-start')
+    expect(html).not.toContain('after checkout')
+    expect(html).not.toContain('Ready after checkout')
   })
 
   it('renders local test buyer checkout pricing when the billing summary is in test mode', () => {

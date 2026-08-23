@@ -52,7 +52,7 @@ describe('workspace resource library UI', () => {
       }),
     )
 
-    expect(html).toContain('Resource Library')
+    expect(html).toContain('aria-label="Blogs and videos"')
     expect(html).toContain('Blog')
     expect(html).toContain('Videos')
     expect(html).toContain('Plan a strong month')
