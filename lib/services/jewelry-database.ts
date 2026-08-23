@@ -37,6 +37,13 @@ import {
 
 const VALID_TYPE_PREFIXES = new Set<JewelryType>(['RG', 'NK', 'ER', 'ST', 'BR'])
 
+// Older BP necklace item numbers use the RBP prefix (for example, RBP5902).
+// Keep the original item number intact, but store the current type so catalog
+// filters and JewelryType-backed database fields continue to work normally.
+const LEGACY_ITEM_NUMBER_TYPE_PREFIXES: Readonly<Record<string, JewelryType>> = {
+  RBP: 'NK',
+}
+
 function hasPipelineSourceState(photoPipeline: PhotoPipelineStatePatch | undefined) {
   return !!(
     photoPipeline?.originalPath &&
@@ -56,6 +63,18 @@ function isApprovedCanonicalPhotoUrl(designId: string, photoUrl: string): boolea
 
 export function normalizeItemNumber(itemNumber: string): string {
   return itemNumber.trim().toUpperCase()
+}
+
+export function resolveJewelryTypeFromItemNumber(itemNumber: string): JewelryType | null {
+  const normalizedItemNumber = normalizeItemNumber(itemNumber)
+  const standardPrefix = normalizedItemNumber.slice(0, 2) as JewelryType
+  if (VALID_TYPE_PREFIXES.has(standardPrefix)) return standardPrefix
+
+  return (
+    Object.entries(LEGACY_ITEM_NUMBER_TYPE_PREFIXES).find(([legacyPrefix]) =>
+      normalizedItemNumber.startsWith(legacyPrefix),
+    )?.[1] ?? null
+  )
 }
 
 export function normalizeJewelryMaterialKey(material: string | null | undefined): string | null {
@@ -594,11 +613,12 @@ export async function createDesign(
     )
   }
 
-  const typePrefix = normalizedItemNumber.slice(0, 2) as JewelryType
-  if (!VALID_TYPE_PREFIXES.has(typePrefix)) {
+  const typePrefix = resolveJewelryTypeFromItemNumber(normalizedItemNumber)
+  if (!typePrefix) {
+    const submittedPrefix = normalizedItemNumber.match(/^[A-Z]+/)?.[0] ?? normalizedItemNumber
     throw errors.INVALID_INPUT(
-      `unknown type prefix "${typePrefix}"`,
-      `Item numbers should start with RG, NK, ER, ST, or BR — got "${typePrefix}".`,
+      `unknown item-number prefix "${submittedPrefix}"`,
+      `I couldn't identify the jewelry type for "${normalizedItemNumber}". Check the item number or add it without an item number.`,
     )
   }
 

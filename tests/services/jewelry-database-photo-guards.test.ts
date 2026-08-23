@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   createDesign,
+  resolveJewelryTypeFromItemNumber,
   updateCanonicalPhoto,
 } from '@/lib/services/jewelry-database'
 
@@ -54,6 +55,30 @@ function makeUpdateCanonicalSupabase() {
   }
 }
 
+function makeLegacyDesignSupabase() {
+  const single = vi.fn().mockResolvedValue({
+    data: {
+      id: 'design-rbp5902',
+      item_number: 'RBP5902',
+      type_prefix: 'NK',
+    },
+    error: null,
+  })
+  const insert = vi.fn().mockReturnValue({
+    select: vi.fn().mockReturnValue({ single }),
+  })
+
+  return {
+    supabase: {
+      from: vi.fn((table: string) => {
+        if (table === 'jewelry_designs') return { insert }
+        throw new Error(`unexpected table ${table}`)
+      }),
+    },
+    insert,
+  }
+}
+
 describe('jewelry-database photo pipeline guards', () => {
   beforeEach(() => {
     vi.useRealTimers()
@@ -97,6 +122,41 @@ describe('jewelry-database photo pipeline guards', () => {
       itemNumber: 'RG100',
       typePrefix: 'RG',
     })
+  })
+
+  it('maps legacy RBP item numbers to the necklace catalog type without changing the item number', async () => {
+    expect(resolveJewelryTypeFromItemNumber('RBP5902')).toBe('NK')
+    expect(resolveJewelryTypeFromItemNumber(' rbp5902 ')).toBe('NK')
+    expect(resolveJewelryTypeFromItemNumber('RB5902')).toBeNull()
+
+    const { supabase, insert } = makeLegacyDesignSupabase()
+    await expect(
+      createDesign(supabase as never, {
+        itemNumber: 'RBP5902',
+        designName: 'One More Chapter',
+        piecePhotoUrl:
+          'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/RBP5902-source.png',
+        photoPipeline: {
+          originalPath: 'rep-1/RBP5902-original.png',
+          originalUrl:
+            'https://example.supabase.co/storage/v1/object/sign/jewelry-photo-staging/rep-1/RBP5902-original.png',
+          status: 'ready',
+          preflightScore: 0.94,
+          preflightIssues: [],
+        },
+      }),
+    ).resolves.toMatchObject({
+      designId: 'design-rbp5902',
+      itemNumber: 'RBP5902',
+      typePrefix: 'NK',
+    })
+
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        item_number: 'RBP5902',
+        type_prefix: 'NK',
+      }),
+    )
   })
 
   it('blocks canonical promotion when the photo URL is not an approved pipeline asset', async () => {
