@@ -45,6 +45,16 @@ function makeTradeListing(
 }
 
 describe('Amethyst trade page template wiring', () => {
+  it('does not cap the full customer Dance Floor inventory', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'lib/amethyst/trade-board-listings.ts'),
+      'utf8',
+    )
+
+    expect(source).toContain('const limit = options.limit')
+    expect(source).not.toContain('options.limit ?? 18')
+  })
+
   it('keeps desktop Dance Floor controls sticky while mobile controls scroll with the page', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'public/amethyst/trade.css'),

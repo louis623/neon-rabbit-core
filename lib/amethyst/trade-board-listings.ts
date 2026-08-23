@@ -171,7 +171,10 @@ interface LoadAmethystTradeBoardPreviewListingsOptions {
 export async function loadAmethystTradeBoardPreviewListings(
   options: LoadAmethystTradeBoardPreviewListingsOptions = {},
 ): Promise<AmethystTradeBoardListing[]> {
-  const limit = options.limit ?? 18
+  // The full customer Dance Floor must include every available dancer. Callers
+  // that intentionally render a compact preview (such as the homepage) pass
+  // their own limit.
+  const limit = options.limit
   const targeted = Boolean(options.targeted || options.repId || options.publicSiteSlug)
   const repId = options.repId?.trim() ?? null
   const publicSiteSlug = options.publicSiteSlug?.trim().toLowerCase() ?? null
