@@ -4,6 +4,47 @@ Initial pull date: 2026-05-28
 
 > Historical terminology note (2026-08-22): early Open Brain excerpts below preserve the words used in the source research. Active customer and rep vocabulary now uses `Dance Floor` for the feature and `dancers` for its inventory. Those archival excerpts are not approved product copy.
 
+## 2026-08-22 Sparkle Finder Launch-Quality Addendum
+
+Sparkle Finder moved from a feature-complete collection concept to a launch-quality, phone-first customer product. The work preserved the existing Finder account, collection, Nic-Nac, Reps, Library, and Sparkle Suite integration capabilities while improving the customer-facing collection and social experience. It did not introduce buying, selling, customer-to-customer trading, checkout, or marketplace behavior.
+
+Completed product work:
+
+- The Collection experience now supports a durable Hero Piece, personal photos and reveal stories, Showcase Collections, public/private Showcase controls, clear owned/Wishlist/rarity filters, and a bounded lazy-loading mosaic.
+- Public Showcases, individual piece spotlights, and Showcase Collection pages are shareable and have route-specific canonical/social metadata. Followed Showcases gives collectors a bounded, privacy-aware discovery feed.
+- Owner controls, success/error feedback, empty states, and mobile layouts were polished so a Silver customer can manage a Showcase comfortably from a phone.
+- Customer-facing and Nic-Nac vocabulary now uses `Dance Floor` and `dancers`. Legacy board/listing terms stay only in compatibility routes, fields, APIs, tools, and database identifiers.
+- The production customer domain is `https://yoursparklefinder.com`. The stable Vercel production alias permanently redirects to the matching path and query on the custom domain; preview deployments stay available for private verification.
+
+Key decisions:
+
+- Keep Sparkle Finder a collection, discovery, and rep-finding product. Public social features are deliberately one-way and safety-bounded; no marketplace strategy has been reopened.
+- Public Showcases must fail closed. A page is reachable only when the profile, Showcase, piece, collection, and viewer relationship are all public and permitted. Private notes, account email, acquisition details, and other owner-only fields never appear in public selects or serialized responses.
+- `Rarest Reveal` means a rare piece the collector owns. Rare Wishlist or ISO pieces should be presented as pieces the collector is hunting, not as owned reveals.
+- The Hero Piece is chosen durably from owned items and can drive social/share presentation even if it falls outside the first visible collection page.
+- Use bounded, stable reads: exact route lookups, keyset pagination, capped pieces/collections/comments, batched dependent reads, per-request caching, and database-backed exact totals. This keeps a growing Showcase surface responsive without loosening privacy.
+- Supabase compromised-password protection is a required baseline setting. Intentional owner-scoped or bounded `SECURITY DEFINER` RPCs remain documented and should be re-audited whenever they change.
+
+Verification record:
+
+- Applied additive migrations `20260822210000_sparkle_finder_showcase_public_read_hardening.sql`, `20260822220000_sparkle_finder_owned_rarest_reveals.sql`, and `20260822230000_sparkle_finder_bounded_showcase_reads.sql`; remote migration history is current.
+- Completed the five independently deployed hardening releases in commits `2bf00cc`, `61ddb23`, `1b2643b`, `d522c19`, and `383cbf7`; canonical-domain protection shipped in `885e26d`.
+- Final verification passed lint, production build, `52` Vitest files / `640` tests, `19` required browser smoke checks with `2` expected optional skips, mobile/desktop visual review, live route/domain checks, and a recent Vercel error-log check with no runtime errors.
+
+Key lessons:
+
+- A public collection page needs the same privacy rigor as an account page. RLS alone is insufficient when a service-role read path exists; keep service reads allowlisted and independently fail closed.
+- Verify both directions of a social block, and verify comment author as well as viewer and owner. A block rule that protects only the main page can still leak interaction data through a child surface.
+- Exact public totals and the true Hero Piece should not be inferred from a bounded grid. Keep summary data and first-page rendering intentionally separate.
+- Treat the approved mobile app preview as the acceptance reference. A responsive desktop expansion should add room, not restore a different wide-dashboard information architecture.
+- Smoke tests, visual checks, migration parity, and live domain checks catch different classes of regressions; launch confidence comes from using all of them.
+- Do not create or mutate arbitrary production customer data just to make a test pass. Use Louis's designated demo account/data for authenticated production exercises.
+
+Remaining evidence work:
+
+- When designated demo data is available, complete the signed-in production pass: Google OAuth return, Hero Piece save, Showcase publish/unpublish, story/photo and Showcase Collection saves, follow/comment/block behavior, and a real public share preview.
+- The August 22 read-only audit found no production collection rows, so a positive live public Showcase metadata/share check remains intentionally deferred rather than fabricated.
+
 ## High-Signal Retrieved Thoughts
 
 ### Two-Sided Ecosystem Vision
