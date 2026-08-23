@@ -1039,7 +1039,6 @@ describe('DashboardPlaceholder', () => {
         onCreateDraftChange: () => {},
         onCreateParticipant: () => {},
         onCopyInvite: () => {},
-        onEmailInvite: () => {},
         onArchiveParticipant: () => {},
         onReplyDraftChange: () => {},
         onSendReply: () => {},
@@ -1049,8 +1048,9 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Create onboarding link')
     expect(html).toContain('Rep name')
     expect(html).toContain('Optional email')
+    expect(html).toContain('New Rep Progress')
     expect(html).toContain('Copy link')
-    expect(html).toContain('Email with my email app')
+    expect(html).not.toContain('Email with my email app')
     expect(html).toContain('Lindsey')
     expect(html).toContain('3 of 8')
     expect(html).toContain('Needs help')

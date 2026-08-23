@@ -5432,31 +5432,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  function handleEmailTeamOnboardingInvite(participant: TeamOnboardingParticipant) {
-    if (!participant.accessUrl) {
-      setTeamManagementActionState({
-        pendingKey: null,
-        error: 'Create a fresh onboarding link first.',
-        helperMessage: null,
-      })
-      return
-    }
-
-    const subject = encodeURIComponent('Your Britt with Bling New Rep Onboarding link')
-    const body = encodeURIComponent(
-      `Hi ${participant.displayName},\n\nHere is your New Rep Onboarding link:\n${participant.accessUrl}\n\nKeep this handy while you are on the team.`,
-    )
-    const recipient = participant.contactEmail
-      ? encodeURIComponent(participant.contactEmail)
-      : ''
-    window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`
-    setTeamManagementActionState({
-      pendingKey: null,
-      error: null,
-      helperMessage: 'Opening your email app with the onboarding link.',
-    })
-  }
-
   async function handleArchiveTeamOnboardingParticipant(participantId: string) {
     setTeamManagementActionState({
       pendingKey: `archive:${participantId}`,
@@ -5830,7 +5805,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             onCreateDraftChange={handleTeamCreateDraftChange}
             onCreateParticipant={handleCreateTeamOnboardingParticipant}
             onCopyInvite={handleCopyTeamOnboardingInvite}
-            onEmailInvite={handleEmailTeamOnboardingInvite}
             onArchiveParticipant={handleArchiveTeamOnboardingParticipant}
             onPublicTeamDraftChange={handlePublicTeamDraftChange}
             onSavePublicTeamMember={handleSavePublicTeamMember}
@@ -9853,7 +9827,6 @@ export function TeamManagementCard({
   onCreateDraftChange,
   onCreateParticipant,
   onCopyInvite,
-  onEmailInvite,
   onArchiveParticipant,
   onPublicTeamDraftChange,
   onSavePublicTeamMember,
@@ -9873,7 +9846,6 @@ export function TeamManagementCard({
   onCreateDraftChange?: (patch: Partial<TeamManagementCreateDraft>) => void
   onCreateParticipant?: () => void
   onCopyInvite?: (accessUrl?: string) => void
-  onEmailInvite?: (participant: TeamOnboardingParticipant) => void
   onArchiveParticipant?: (participantId: string) => void
   onPublicTeamDraftChange?: (patch: Partial<JoinTeamRosterDraft>) => void
   onSavePublicTeamMember?: () => void
@@ -10047,7 +10019,7 @@ export function TeamManagementCard({
         />
 
         <section className={styles.teamManagementPanel}>
-          <div className={styles.walletSettingsTitle}>Rep progress</div>
+          <div className={styles.walletSettingsTitle}>New Rep Progress</div>
           {isLoading ? (
             <div className={styles.emptyState}>Loading Team Management...</div>
           ) : activeParticipants.length === 0 ? (
@@ -10082,13 +10054,6 @@ export function TeamManagementCard({
                     onClick={() => onCopyInvite?.(participant.accessUrl)}
                   >
                     Copy link
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.helperButton}
-                    onClick={() => onEmailInvite?.(participant)}
-                  >
-                    Email with my email app
                   </button>
                   <button
                     type="button"
