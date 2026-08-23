@@ -1,5 +1,18 @@
 # Project State
 
+## August 22-23, 2026 Session - mobile browsing, Resource Publisher, and unified resources
+
+- **Mobile and foldable workspace polish:** Nic-Nac's narrow workspace action collision now uses a compact Clear Conversation control, while the medium-width layout keeps the dashboard cards readable in two columns. Commit `c521047` was released as `dpl_CFo4jt64iMBpfV9S4izHHbhuAacq`.
+- **Customer Dance Floor browsing now gives phone and tablet screens back to the dancers:** desktop keeps its sticky customer chrome, but at `<=900px` the customer header, announcement/live-queue stack, drawer, and filters return to normal document flow and scroll away. This specifically addresses the Z Fold/tablet viewport where the sticky chrome had hidden the available dancers. Commit `1e67f39e` was released as `dpl_7daiDeLdFw6Pk9FfYvjQ4nG93mGF`.
+- **The Resource Publisher is deliberately lightweight:** an operator chooses only **Blog** or **Video**. Title, short summary, written content, and YouTube URL are optional; storage generates a safe fallback title/key when necessary. Category, thumbnail, featured, and “what changed” controls are gone. Empty optional fields do not render in the workspace, and a supplied YouTube URL uses YouTube's own derived thumbnail. Migration `20260822093000_ss_workspace_resources_allow_optional_video_url.sql` permits a sparse video record. Commit `cb65f99772636003e22b799ca374332a2f379651` was released as `dpl_8KpwfJ2kP6EzsmfoLW89sMfSjrrE`.
+- **Workspace learning and help are now one place:** **Tools > Resources & Help** opens a tabbed hub. **Learn** contains compact 16:9 Blog/Video tiles; **Help** contains the established guides and support workflow. The legacy `help-resources` deep link remains compatible and opens Help. Commit `df794a07e4afff8efa91833ee18bfac6180ad1d1` is the current application baseline, manually released as `dpl_Bvu5ZRsjU8JQ1tSXGyArDB5engbm`; both `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to it.
+- **Control Center and rep Workspace are distinct surfaces:** the operator Control Center is `/control-center` (with its own login/session), not a rep/customer `/nic-nac` Workspace. Do not use a visible rep workspace as evidence that the Control Center was opened.
+- **Verification boundary retained:** focused Resource Publisher tests (12), workspace UI tests (114), production builds, domain-alias checks, and unauthenticated public mobile inspection passed. Authenticated synthetic visual acceptance remains blocked by the reviewer/browser-runtime issue; do not use Louis's or a real customer's account as a substitute.
+
+**Last updated:** August 23, 2026
+
+---
+
 ## August 22, 2026 Session closeout - catalog, Dance Floor, training, Nic-Nac, and sign-in
 
 - **Two jewelry catalog records were corrected at the canonical collection level:** `NK12032`, **Glowing Up Glam**, is a **January 2026** Birthday Collection item rather than July 2026. `ER97948`, **The Curve That Waited**, is a **November 2025** Birthday Collection item rather than April 2026. These are catalog month/year corrections, not customer-birthday changes.

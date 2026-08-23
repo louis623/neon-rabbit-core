@@ -1,5 +1,25 @@
 # Decision Log
 
+## August 22-23, 2026 - responsive customer browsing and one resource hub
+
+**Keep sticky customer chrome on desktop, but let it scroll away on phones and tablets.**
+
+The public Dance Floor's desktop header and controls remain sticky. At `<=900px`, the customer header, announcement/live-queue stack, drawer, and filters must participate in normal document flow. The mobile goal is to reveal dancers promptly, including on foldables and tablets; it is not to compress several persistent bars into a smaller viewport.
+
+**Resource publishing is a Blog-or-YouTube choice, not a metadata workflow.**
+
+The Control Center Resource Publisher presents only Blog/Video plus optional title, summary, content, or YouTube URL. Storage may create safe fallback identity fields where the schema requires them, but empty author fields must not produce empty rep-facing sections. Uploaded thumbnails, categories, featured state, and “what changed” are intentionally omitted. A supplied YouTube URL uses the provider-derived thumbnail; an omitted URL is permitted but naturally has no watch link or provider image.
+
+**Help and learning share one Workspace destination.**
+
+The single Tools destination is **Resources & Help**. Its Learn tab holds compact Blog/Video tiles, and its Help tab holds operational guides and support. Keep legacy `help-resources` links functional by mapping them to Help; do not recreate two competing top-level resource areas.
+
+**Treat Control Center and Workspace as separate authenticated products.**
+
+`/control-center` is the operator surface and `/nic-nac` is the rep/customer Workspace. Opening or inspecting one cannot establish that the other is open or authenticated. Browser acceptance must use the synthetic reviewer path when it is available; no Louis or customer account workaround is authorized.
+
+---
+
 ## August 22, 2026 - Dance Floor language and training are one product contract
 
 **Use Dance Floor for the surface, dancer for the jewelry, and trade for the exchange.**

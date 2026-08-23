@@ -4,6 +4,19 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 22-23, 2026 - responsive browsing and unified workspace resources
+
+- Used Louis's Samsung Z Fold 6 outside-screen and unfolded-screen evidence to correct a Nic-Nac mobile action collision. The desktop layout remains unchanged; narrow view uses a compact Clear Conversation control and the medium viewport uses a more useful two-column home arrangement. Released in `c521047` / `dpl_CFo4jt64iMBpfV9S4izHHbhuAacq`.
+- Diagnosed the public Dance Floor browsing complaint as sticky customer chrome, not the dancer cards themselves. On phone/tablet widths (`<=900px`) the public header, ticker/live-queue stack, customer drawer, and filters now scroll out of view; desktop sticky behavior remains intentional. Local and public 412px inspection showed the chrome and filters moving above the viewport while dancer cards became reachable. Released in `1e67f39e` / `dpl_7daiDeLdFw6Pk9FfYvjQ4nG93mGF`.
+- Corrected an operator-navigation mistake: `/nic-nac` is a rep/customer Workspace, while the actual Sparkle Suite Control Center is `/control-center` and can require its separate operator login. Browser work was read-only; no message, account, or other external change was made.
+- Simplified Control Center Resource Publisher to the actual operator choice: Blog or Video. All remaining authored fields are optional. Internal fallbacks preserve required storage identity without forcing operators to enter a title; blank short summary, blog content, and change description stay absent from rep-facing rendering. Video URLs remain safely validated when given, and YouTube videos derive their ordinary provider thumbnail instead of asking for an uploaded thumbnail. Applied migration `20260822093000_ss_workspace_resources_allow_optional_video_url.sql`; released in `cb65f99772636003e22b799ca374332a2f379651` / `dpl_8KpwfJ2kP6EzsmfoLW89sMfSjrrE`.
+- Merged the duplicate rep-facing resource areas into **Tools > Resources & Help**. The **Learn** tab presents compact 16:9 Blog/Video cards; the **Help** tab retains the written workflows and support help. Existing `help-resources` deep links still work and open Help. Released in `df794a07e4afff8efa91833ee18bfac6180ad1d1` / `dpl_Bvu5ZRsjU8JQ1tSXGyArDB5engbm`, which both production domains resolve to.
+- Focused publisher coverage (12 tests), workspace coverage (114 tests), and local production builds passed. Public mobile behavior was checked without authentication. Reviewer-token/browser runtime constraints still prevent authenticated synthetic visual acceptance; Louis's personal account and real customer accounts were deliberately not used.
+
+**Lessons retained:** a sticky desktop information hierarchy is not automatically usable on a phone or foldable; use viewport-specific flow rather than shrinking a permanently pinned stack. Operator-facing publishing should request only information that affects the published resource. Separate routes/sessions must be named and verified precisely: a loaded Workspace is not a loaded Control Center. When the reviewer path is unavailable, leave authenticated acceptance open rather than borrowing a real account.
+
+---
+
 ## August 22, 2026 - Complete session closeout
 
 - Corrected two Birthday Collection associations in the jewelry catalog from Louis's item-level evidence: necklace `NK12032`, **Glowing Up Glam**, now belongs to **January 2026** rather than July 2026; earrings `ER97948`, **The Curve That Waited**, now belong to **November 2025** rather than April 2026. Treated both as canonical catalog identity fixes rather than cosmetic card-copy edits.
