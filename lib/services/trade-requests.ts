@@ -569,7 +569,13 @@ export async function approveTrade(
   if (error) throw error
 
   const payload = data as
-    | { request_id: string; fulfillment_id: string; listing_id: string; customer_name: string }
+    | {
+        request_id: string
+        fulfillment_id: string
+        listing_id: string
+        customer_name: string
+        quantity_available?: number
+      }
     | null
   if (!payload) throw errors.LISTING_NOT_FOUND(`request ${requestId}`)
   return {
@@ -577,6 +583,7 @@ export async function approveTrade(
     fulfillmentId: payload.fulfillment_id,
     listingId: payload.listing_id,
     customerName: payload.customer_name,
+    quantityAvailable: payload.quantity_available ?? 0,
   }
 }
 

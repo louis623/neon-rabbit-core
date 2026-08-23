@@ -305,9 +305,9 @@ function textIsAffirmative(text: string) {
 
 function textAsksDuplicatePhysicalPieceQuestion(text: string) {
   return (
-    /\balready\s+on\s+your\s+Trade\s+Board\b/i.test(text) &&
-    /\b(?:another|second|additional|extra)\s+physical\s+piece\b/i.test(text) &&
-    /\b(?:same|that\s+same)\s+design\b/i.test(text)
+    /\balready\s+on\s+your\s+(?:Dance\s+Floor|Trade\s+Board)\b/i.test(text) &&
+    /\b(?:another|second|additional|extra)\s+(?:identical\s+)?physical\s+piece\b/i.test(text) &&
+    (/(?:\b(?:same|that\s+same)\s+design\b)/i.test(text) || /\bidentical\b/i.test(text))
   )
 }
 
@@ -1108,6 +1108,7 @@ async function runSingle(
             itemNumber: existingResult.itemNumber,
             repId: ctx.repId,
             status: existingResult.status,
+            quantityAvailable: existingResult.quantityAvailable,
           },
           conversationId: ctx.conversationId,
           runId: ctx.runId,
@@ -1120,6 +1121,8 @@ async function runSingle(
           designName: existingResult.designName,
           status: existingResult.status,
           usesCanonicalPhoto: existingResult.usesCanonicalPhoto,
+          quantityAvailable: existingResult.quantityAvailable,
+          groupedWithExisting: existingResult.groupedWithExisting,
           createdNewDesign: false,
         }
       }
@@ -1559,6 +1562,7 @@ async function runSingle(
       itemNumber: result.itemNumber,
       repId: ctx.repId,
       status: result.status,
+      quantityAvailable: result.quantityAvailable,
     },
     conversationId: ctx.conversationId,
     runId: ctx.runId,
@@ -1572,6 +1576,8 @@ async function runSingle(
     designName: result.designName,
     status: result.status,
     usesCanonicalPhoto: result.usesCanonicalPhoto,
+    quantityAvailable: result.quantityAvailable,
+    groupedWithExisting: result.groupedWithExisting,
     createdNewDesign,
   }
 }
@@ -1806,7 +1812,7 @@ export function makeAddListingTool(ctx: {
       "Label, box, and back-of-card photos can provide details; the saved listing/canonical image must show the jewelry clearly. Boxed display photos for earrings, rings, necklaces, and similar pieces count as jewelry-front photos when the jewelry is centered, close, and clear, even with Bomb Party packaging visible. Do not treat label/details photos as bad jewelry photos; a label/details photo is only a label/details photo, and visible jewelry in that label/details photo does not satisfy the jewelry photo requirement. If the only uploaded image is a label/details or back-of-card photo, ask for the first customer-facing jewelry photo. Do not ask for unboxed, no-packaging, or plain-background retakes. Do not ask for retakes without the box/card or on a plain surface. If multiple chat photos are present and the rep identifies the front photo by order, pass listingPhotoIndex or piecePhotoIndex as a 1-based recent add-flow photo number. Ask for another photo only when you cannot tell which attached image is the jewelry-front photo, and do not ask for a reupload when the rep has already confirmed a prior jewelry-front photo. " +
       "If the item isn't in the Sparkle Suite jewelry database, the tool returns needsAction:'create_design'. Use vision to extract designName and readable metadata, and use clear rep-provided fields. Birthday collection names must include the year. For Birthday boxes like 'Birthday Collection March 2026', use collectionName:'March Birthday 2026' and collectionYear:2026 when clear. The handler uploads the photo from chat automatically. " +
       "If the item exists but has no collection assigned, the tool returns needsAction:'provide_collection' (NEEDS_COLLECTION). Ask the rep for the exact collection name, then retry with collectionName. Do not guess it from vision. " +
-      "If an item number is already on the rep's board, treat that as physical inventory, not a catalog duplicate: confirm whether this is a second physical piece of that same design, then add another listing after confirmation. " +
+      "If an item number is already on the rep's board, treat that as physical inventory, not a catalog duplicate: confirm whether this is an identical additional physical piece. After confirmation, add it to the same dancer and report the updated quantity available; a different material, main stone/color, size, photo, note, or trade preference remains a separate dancer. " +
       "Batch mode sorts results into ready adds plus pending needCollection and needFullInfo buckets.",
     inputSchema,
     execute: async (input) => {

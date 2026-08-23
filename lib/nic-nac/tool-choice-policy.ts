@@ -181,8 +181,8 @@ function textIsAffirmative(text: string): boolean {
 function textAsksDuplicatePhysicalPieceQuestion(text: string): boolean {
   return (
     /\balready\s+on\s+your\s+(?:Dance\s+Floor|Trade\s+Board)\b/i.test(text) &&
-    /\b(?:another|second|additional|extra)\s+physical\s+piece\b/i.test(text) &&
-    /\b(?:same|that\s+same)\s+design\b/i.test(text)
+    /\b(?:another|second|additional|extra)\s+(?:identical\s+)?physical\s+piece\b/i.test(text) &&
+    (/(?:\b(?:same|that\s+same)\s+design\b)/i.test(text) || /\bidentical\b/i.test(text))
   )
 }
 

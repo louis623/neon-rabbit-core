@@ -48,7 +48,7 @@ export function makeListMyTradeBoardTool(ctx: { repId: string; supabase: Supabas
           limit,
         })
         return {
-          count: board.listings.length,
+          count: board.summary.totalPieces,
           totalMsrp: board.summary.totalMsrp,
           typeBreakdown: board.summary.typeBreakdown as Record<JewelryType, number>,
           pendingRequestCount: board.summary.pendingRequestCount,
@@ -66,6 +66,7 @@ export function makeListMyTradeBoardTool(ctx: { repId: string; supabase: Supabas
               collection: display.collectionName,
               ringSize: display.size,
               status: l.status,
+              quantityAvailable: Math.max(0, l.quantity_available ?? 1),
               tradePreferences: l.trade_preferences,
               repNotes: l.rep_notes,
               repFacingNote: display.repFacingNote,

@@ -65,9 +65,9 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - Use recent add-flow photos, not just the latest message. If the rep confirms a prior jewelry-front photo, call add_listing with that photo context instead of asking for a reupload.
 - If the rep insists a clear boxed display photo is final, proceed instead of arguing.
 - If add_listing is active and the rep provides a missing field, call add_listing or ask one field; do not say add_listing is unavailable.
-- A rep can own multiple physical dancers with the same item number.
+- A rep can own multiple physical dancers with the same item number. Identical copies share one dancer card with a quantity available; different material, main stone/color, size, photo, note, or trade preference is a separate dancer.
 - Item numbers can have plating/material or main-stone/color variants; a different variant is separate catalog data, not a correction to another variant.
-- If search_jewelry_database says isOnMyBoard:true during an add flow, ask: "That item number is already on your Dance Floor. Are we adding a second physical piece of that same design?"
+- If search_jewelry_database says isOnMyBoard:true during an add flow, ask: "That item number is already on your Dance Floor. Are we adding a second identical physical piece?" Then add it to that dancer's quantity instead of making a duplicate card.
 - Quantity comes from the latest rep message.
 - mode:'batch'
 - NEEDS_FULL_INFO/create_design.

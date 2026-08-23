@@ -23,6 +23,7 @@ export interface AmethystTradeBoardListing {
   tier: AmethystTradeBoardTier
   photoUrl: string | null
   photoSource: 'listing' | 'canonical' | 'missing'
+  quantityAvailable?: number
 }
 
 const TYPE_LABELS = TRADE_LISTING_TYPE_LABELS
@@ -45,6 +46,7 @@ export const defaultAmethystTradeBoardListings: AmethystTradeBoardListing[] = [
     tier: 'diamond',
     photoUrl: null,
     photoSource: 'missing',
+    quantityAvailable: 1,
   },
   {
     id: 'trade-velvet-necklace',
@@ -60,6 +62,7 @@ export const defaultAmethystTradeBoardListings: AmethystTradeBoardListing[] = [
     tier: 'everyday',
     photoUrl: null,
     photoSource: 'missing',
+    quantityAvailable: 1,
   },
   {
     id: 'trade-petal-earrings',
@@ -75,6 +78,7 @@ export const defaultAmethystTradeBoardListings: AmethystTradeBoardListing[] = [
     tier: 'everyday',
     photoUrl: null,
     photoSource: 'missing',
+    quantityAvailable: 1,
   },
   {
     id: 'trade-aurora-stack',
@@ -90,6 +94,7 @@ export const defaultAmethystTradeBoardListings: AmethystTradeBoardListing[] = [
     tier: 'unicorn',
     photoUrl: null,
     photoSource: 'missing',
+    quantityAvailable: 1,
   },
 ]
 
@@ -152,6 +157,7 @@ export function mapTradeListingToAmethystTradeBoardListing(
     tier: inferTradeBoardTier(listing),
     photoUrl: display.photoUrl,
     photoSource: getTradeBoardPhotoSource(listing),
+    quantityAvailable: Math.max(0, listing.quantity_available ?? 1),
   }
 }
 

@@ -324,7 +324,7 @@ export function makePrepareTradeBoardWorkTool(ctx: {
           requiredBeforeAction.includes('ringSize')
             ? 'What ring size is this physical piece?'
             : match.isOnMyBoard
-              ? 'That item number is already on your Dance Floor. Are we adding a second physical piece of that same design?'
+              ? 'That item number is already on your Dance Floor. Are we adding a second identical physical piece?'
               : null,
         nextTool: 'add_listing',
         catalogDeletionAllowed: false,

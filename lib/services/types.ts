@@ -36,6 +36,8 @@ export interface TradeListingDesign {
 export interface TradeListingWithDesign {
   id: string
   rep_id: string
+  /** Physical copies represented by this single visible Dance Floor dancer. */
+  quantity_available?: number
   listing_source?: ListingSource
   status: ListingStatus
   rep_notes: string | null
@@ -126,6 +128,8 @@ export interface AddListingResult {
   designName: string
   status: ListingStatus
   usesCanonicalPhoto: boolean
+  quantityAvailable: number
+  groupedWithExisting: boolean
 }
 
 export interface BatchListingItem {
@@ -1067,6 +1071,7 @@ export interface ApproveTradeResult {
   fulfillmentId: string
   listingId: string
   customerName: string
+  quantityAvailable: number
 }
 
 export interface RejectTradeResult {

@@ -601,6 +601,9 @@ export function TradeBoardWorkspaceCard({
                             <div className={styles.timelineItem}>
                               {formatTradeMoney(display.bpMsrp)}
                             </div>
+                            <div className={styles.tradePieceQuantity}>
+                              {Math.max(0, listing.quantity_available ?? 1)} available
+                            </div>
                           </div>
                           <button
                             type="button"

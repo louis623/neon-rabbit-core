@@ -29,6 +29,19 @@ function makeBatchSupabase(
     canonicalPhotoUrl?: string | null
   } = {},
 ) {
+  let availableQuantity = options.existingListings?.length ? 1 : 0
+  const rpc = vi.fn().mockImplementation(async () => {
+    availableQuantity += 1
+    return {
+      data: {
+        listing_id: 'listing-1',
+        status: 'available',
+        quantity_available: availableQuantity,
+        grouped_with_existing: availableQuantity > 1,
+      },
+      error: null,
+    }
+  })
   const designLookup = vi.fn().mockResolvedValue({
     data: [
       {
@@ -100,7 +113,7 @@ function makeBatchSupabase(
   })
 
   return {
-    client: { from } as never,
+    client: { from, rpc } as never,
     spies: {
       from,
       insert,
@@ -114,6 +127,7 @@ function makeBatchSupabase(
       timesListedLookup,
       designUpdate,
       designUpdateEq,
+      rpc,
     },
   }
 }
@@ -125,6 +139,15 @@ function makeAddListingWithCollectionSupabase(
     collection?: { id: string; name: string; collection_year: number | null }
   } = {},
 ) {
+  const rpc = vi.fn().mockResolvedValue({
+    data: {
+      listing_id: 'listing-1',
+      status: 'available',
+      quantity_available: options.existingListing ? 2 : 1,
+      grouped_with_existing: Boolean(options.existingListing),
+    },
+    error: null,
+  })
   const resolveLimit = vi.fn().mockResolvedValue({
     data: [
       {
@@ -234,12 +257,13 @@ function makeAddListingWithCollectionSupabase(
   })
 
   return {
-    client: { from } as never,
+    client: { from, rpc } as never,
     spies: {
       collectionEq,
       patchUpdate,
       patchIs,
       insert,
+      rpc,
     },
   }
 }
@@ -412,7 +436,7 @@ describe('addListingBatch', () => {
     analyzeServerImageQualityMock.mockReset()
   })
 
-  it('adds repeated item numbers inside the same batch as separate listings', async () => {
+  it('groups repeated identical item numbers inside the same batch into one dancer quantity', async () => {
     const { client, spies } = makeBatchSupabase()
 
     const result = await addListingBatch(client, 'rep-1', {
@@ -423,24 +447,17 @@ describe('addListingBatch', () => {
       ],
     })
 
-    expect(spies.insert).toHaveBeenCalledTimes(1)
-    expect(spies.insert.mock.calls[0][0]).toHaveLength(2)
-    expect(spies.insert.mock.calls[0][0][0]).toMatchObject({
-      rep_id: 'rep-1',
-      design_id: 'design-1',
-    })
-    expect(spies.insert.mock.calls[0][0][1]).toMatchObject({
-      rep_id: 'rep-1',
-      design_id: 'design-1',
-    })
-    expect(result.added).toHaveLength(2)
+    expect(spies.rpc).toHaveBeenCalledTimes(2)
+    expect(result.added).toHaveLength(1)
     expect(result.added[0]).toMatchObject({
       itemNumber: 'RG31452',
       designName: 'Celeste Ring',
+      quantityAvailable: 2,
+      groupedWithExisting: true,
     })
   })
 
-  it('adds another available listing even when the rep already has that design available', async () => {
+  it('increments a matching available dancer instead of adding another card', async () => {
     const { client, spies } = makeBatchSupabase({
       existingListings: [{ design_id: 'design-1' }],
     })
@@ -450,9 +467,10 @@ describe('addListingBatch', () => {
       items: [{ itemNumber: 'RG31452' }],
     })
 
-    expect(spies.insert).toHaveBeenCalledTimes(1)
-    expect(spies.insert.mock.calls[0][0]).toHaveLength(1)
-    expect(result.added).toHaveLength(1)
+    expect(spies.rpc).toHaveBeenCalledTimes(1)
+    expect(result.added).toMatchObject([
+      { listingId: 'listing-1', quantityAvailable: 2, groupedWithExisting: true },
+    ])
   })
 
   it('trusts batch canonical fallback without reclassifying the catalog photo', async () => {
@@ -466,7 +484,7 @@ describe('addListingBatch', () => {
     })
 
     expect(analyzeServerImageQualityMock).not.toHaveBeenCalled()
-    expect(spies.insert).toHaveBeenCalledTimes(1)
+    expect(spies.rpc).toHaveBeenCalledTimes(1)
     expect(result.added).toHaveLength(1)
   })
 })
@@ -489,11 +507,10 @@ describe('addListing', () => {
       }),
     )
     expect(spies.patchIs).toHaveBeenCalledWith('collection_id', null)
-    expect(spies.insert.mock.calls[0][0]).toMatchObject({
-      rep_id: 'rep-1',
-      design_id: 'design-1',
-      status: 'available',
-    })
+    expect(spies.rpc).toHaveBeenCalledWith(
+      'rpc_add_or_increment_catalog_listing',
+      expect.objectContaining({ p_rep_id: 'rep-1', p_design_id: 'design-1' }),
+    )
     expect(result).toMatchObject({
       listingId: 'listing-1',
       designId: 'design-1',
@@ -512,11 +529,10 @@ describe('addListing', () => {
       ringSize: '8',
     })
 
-    expect(spies.insert.mock.calls[0][0]).toMatchObject({
-      rep_id: 'rep-1',
-      design_id: 'design-1',
-      ring_size: '8',
-    })
+    expect(spies.rpc).toHaveBeenCalledWith(
+      'rpc_add_or_increment_catalog_listing',
+      expect.objectContaining({ p_ring_size: '8' }),
+    )
   })
 
   it('uses the Birthday collection year when patching a missing design collection', async () => {
@@ -546,7 +562,7 @@ describe('addListing', () => {
     )
   })
 
-  it('adds another available listing when the rep already has the same design on the board', async () => {
+  it('returns the grouped dancer when the rep already has the same design on the board', async () => {
     const { client, spies } = makeAddListingWithCollectionSupabase({
       existingListing: { id: 'listing-existing' },
     })
@@ -557,8 +573,12 @@ describe('addListing', () => {
       collectionName: 'Lustre',
     })
 
-    expect(spies.insert).toHaveBeenCalledTimes(1)
-    expect(result.listingId).toBe('listing-1')
+    expect(spies.rpc).toHaveBeenCalledTimes(1)
+    expect(result).toMatchObject({
+      listingId: 'listing-1',
+      quantityAvailable: 2,
+      groupedWithExisting: true,
+    })
   })
 
   it('trusts canonical fallback without reclassifying the catalog photo', async () => {
@@ -573,7 +593,7 @@ describe('addListing', () => {
     })
 
     expect(analyzeServerImageQualityMock).not.toHaveBeenCalled()
-    expect(spies.insert).toHaveBeenCalledTimes(1)
+    expect(spies.rpc).toHaveBeenCalledTimes(1)
     expect(result).toMatchObject({
       listingId: 'listing-1',
       usesCanonicalPhoto: true,

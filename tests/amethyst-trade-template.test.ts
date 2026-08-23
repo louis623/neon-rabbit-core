@@ -188,6 +188,7 @@ describe('Amethyst trade page template wiring', () => {
       tier: 'diamond',
       photoUrl: 'https://cdn.example.com/listing-photo.jpg',
       photoSource: 'listing',
+      quantityAvailable: 1,
     })
     expect(mapped.note).toContain('Item-for-item only')
   })
@@ -198,6 +199,14 @@ describe('Amethyst trade page template wiring', () => {
     )
 
     expect(mapped.size).toBe('8')
+  })
+
+  it('maps grouped physical copies as a visible available quantity', () => {
+    expect(
+      mapTradeListingToAmethystTradeBoardListing(
+        makeTradeListing({ quantity_available: 2 }),
+      ).quantityAvailable,
+    ).toBe(2)
   })
 
   it('maps non-item-number trade listings as ordinary customer-facing cards', () => {
@@ -287,7 +296,7 @@ describe('Amethyst trade page template wiring', () => {
     )
 
     expect(html).toContain(
-      '<meta name="description" content="Browse Sparkle by Sasha dance floor listings and request fair jewelry trades from live reveal customers." />',
+      '<meta name="description" content="Browse Sparkle by Sasha\'s Dance Floor dancers and request fair jewelry trades from live reveal customers." />',
     )
     expect(html).toContain(
       '<link rel="canonical" href="https://www.yoursparklesuite.com/amethyst/Trade.html" />',

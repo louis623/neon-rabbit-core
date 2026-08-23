@@ -73,7 +73,7 @@ describe('Nic-Nac routed system prompt', () => {
     expect(prompt).toContain('A rep can own multiple physical dancers with the same item number')
     expect(prompt).toContain('If search_jewelry_database says isOnMyBoard:true during an add flow')
     expect(prompt).toContain(
-      'Are we adding a second physical piece of that same design?',
+      'Are we adding a second identical physical piece?',
     )
     expect(prompt).toContain('Quantity comes from the latest rep message')
     expect(prompt).toContain('For current Dance Floor questions, answer only from the latest list_my_trade_board result')

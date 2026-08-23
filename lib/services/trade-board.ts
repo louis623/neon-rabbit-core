@@ -83,7 +83,7 @@ const DESIGN_SELECT =
   'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, collection:collections(id, name)'
 
 const LISTING_SELECT = `
-  id, rep_id, status, rep_notes, trade_preferences, ring_size, listing_photo_url,
+  id, rep_id, quantity_available, status, rep_notes, trade_preferences, ring_size, listing_photo_url,
   uses_canonical_photo, listing_source, manual_type_prefix, manual_collection_family,
   manual_collection_name, manual_size, manual_photo_url,
   listed_at, removal_reason, deleted_at, created_at, updated_at,
@@ -268,15 +268,22 @@ export async function getMyBoard(
   const sortedListings = sortBoardListings(filteredByType, sortBy, sortOrder)
   const pagedListings = pageBoardListings(sortedListings, filters)
 
-  const totalPieces = pagedListings.length
+  const totalPieces = pagedListings.reduce(
+    (sum, listing) => sum + Math.max(0, listing.quantity_available ?? 1),
+    0,
+  )
   const totalMsrp = pagedListings.reduce(
-    (sum, l) => sum + Number(getTradeListingDisplayFields(l).bpMsrp ?? 0),
+    (sum, l) =>
+      sum +
+      Number(getTradeListingDisplayFields(l).bpMsrp ?? 0) *
+        Math.max(0, l.quantity_available ?? 1),
     0
   )
   const typeBreakdown: Record<JewelryType, number> = { RG: 0, NK: 0, ER: 0, ST: 0, BR: 0 }
   for (const l of pagedListings) {
     const typePrefix = getTradeListingDisplayFields(l).typePrefix
-    typeBreakdown[typePrefix] = (typeBreakdown[typePrefix] ?? 0) + 1
+    typeBreakdown[typePrefix] =
+      (typeBreakdown[typePrefix] ?? 0) + Math.max(0, l.quantity_available ?? 1)
   }
 
   // TODO(SS-spec-alignment): SS Service Spec wants this count across ALL of
@@ -317,6 +324,55 @@ function requireListingText(
     throw errors.INVALID_INPUT(`${fieldName} required`)
   }
   return normalized
+}
+
+type CatalogListingQuantityResult = {
+  listingId: string
+  status: ListingStatus
+  quantityAvailable: number
+  groupedWithExisting: boolean
+}
+
+async function addOrIncrementCatalogListing(
+  supabase: SupabaseClient,
+  args: {
+    repId: string
+    designId: string
+    repNotes?: string | null
+    tradePreferences?: string | null
+    ringSize?: string | null
+    listingPhotoUrl?: string | null
+    usesCanonicalPhoto: boolean
+  },
+): Promise<CatalogListingQuantityResult> {
+  const { data, error } = await supabase.rpc(
+    'rpc_add_or_increment_catalog_listing',
+    {
+      p_rep_id: args.repId,
+      p_design_id: args.designId,
+      p_rep_notes: normalizeOptionalListingText(args.repNotes) ?? null,
+      p_trade_preferences: normalizeOptionalListingText(args.tradePreferences) ?? null,
+      p_ring_size: normalizeOptionalListingText(args.ringSize) ?? null,
+      p_listing_photo_url: args.listingPhotoUrl ?? null,
+      p_uses_canonical_photo: args.usesCanonicalPhoto,
+    },
+  )
+  if (error) throw error
+  const listing = data as
+    | {
+        listing_id: string
+        status: ListingStatus
+        quantity_available: number
+        grouped_with_existing: boolean
+      }
+    | null
+  if (!listing) throw errors.LISTING_NOT_FOUND(args.designId)
+  return {
+    listingId: listing.listing_id,
+    status: listing.status,
+    quantityAvailable: listing.quantity_available,
+    groupedWithExisting: listing.grouped_with_existing,
+  }
 }
 
 export async function removeListing(
@@ -661,23 +717,15 @@ export async function addListing(
   }
 
   const usesCanonicalPhoto = !input.listingPhotoUrl
-  const { data: inserted, error: insErr } = await supabase
-    .from('trade_listings')
-    .insert({
-      rep_id: repId,
-      design_id: resolved.design.id,
-      listing_source: 'catalog',
-      status: 'available',
-      rep_notes: input.repNotes ?? null,
-      trade_preferences: input.tradePreferences ?? null,
-      ring_size: normalizeOptionalListingText(input.ringSize) ?? null,
-      listing_photo_url: input.listingPhotoUrl ?? null,
-      uses_canonical_photo: usesCanonicalPhoto,
-      listed_at: new Date().toISOString(),
-    })
-    .select('id, status')
-    .single()
-  if (insErr) throw insErr
+  const listing = await addOrIncrementCatalogListing(supabase, {
+    repId,
+    designId: resolved.design.id,
+    repNotes: input.repNotes,
+    tradePreferences: input.tradePreferences,
+    ringSize: input.ringSize,
+    listingPhotoUrl: input.listingPhotoUrl,
+    usesCanonicalPhoto,
+  })
 
   // Increment times_listed via fetch-then-update (counter, not load-bearing).
   const { data: designRow } = await supabase
@@ -696,12 +744,14 @@ export async function addListing(
   }
 
   return {
-    listingId: inserted.id as string,
+    listingId: listing.listingId,
     designId: resolved.design.id,
     itemNumber: resolved.design.itemNumber,
     designName: resolved.design.designName,
-    status: inserted.status as ListingStatus,
+    status: listing.status,
     usesCanonicalPhoto,
+    quantityAvailable: listing.quantityAvailable,
+    groupedWithExisting: listing.groupedWithExisting,
   }
 }
 
@@ -791,31 +841,34 @@ export async function addListingBatch(
     return { added: [], pending: { needCollection, needFullInfo } }
   }
 
-  const toInsert = ready
-
   const nowIso = new Date().toISOString()
-  const insertRows = toInsert.map((r) => ({
-    rep_id: repId,
-    design_id: r.designId,
-    listing_source: 'catalog' as const,
-    status: 'available' as const,
-    rep_notes: r.item.repNotes ?? null,
-    trade_preferences: r.item.tradePreferences ?? null,
-    ring_size: normalizeOptionalListingText(r.item.ringSize) ?? null,
-    listing_photo_url: r.item.listingPhotoUrl ?? null,
-    uses_canonical_photo: !r.item.listingPhotoUrl,
-    listed_at: nowIso,
-  }))
-
-  const { data: inserted, error: insErr } = await supabase
-    .from('trade_listings')
-    .insert(insertRows)
-    .select('id, design_id, status')
-  if (insErr) throw insErr
+  const addedByListingId = new Map<string, AddListingResult>()
+  for (const r of ready) {
+    const usesCanonicalPhoto = !r.item.listingPhotoUrl
+    const listing = await addOrIncrementCatalogListing(supabase, {
+      repId,
+      designId: r.designId,
+      repNotes: r.item.repNotes,
+      tradePreferences: r.item.tradePreferences,
+      ringSize: r.item.ringSize,
+      listingPhotoUrl: r.item.listingPhotoUrl,
+      usesCanonicalPhoto,
+    })
+    addedByListingId.set(listing.listingId, {
+      listingId: listing.listingId,
+      designId: r.designId,
+      itemNumber: r.item.itemNumber,
+      designName: r.designName,
+      status: listing.status,
+      usesCanonicalPhoto,
+      quantityAvailable: listing.quantityAvailable,
+      groupedWithExisting: listing.groupedWithExisting,
+    })
+  }
 
   // Bump times_listed by physical listing count per design.
   const listingCountsByDesign = new Map<string, number>()
-  for (const r of toInsert) {
+  for (const r of ready) {
     listingCountsByDesign.set(
       r.designId,
       (listingCountsByDesign.get(r.designId) ?? 0) + 1,
@@ -839,17 +892,7 @@ export async function addListingBatch(
     }
   }
 
-  const added: AddListingResult[] = (inserted ?? []).map((row, index) => {
-    const r = toInsert[index] ?? toInsert.find((x) => x.designId === row.design_id)!
-    return {
-      listingId: row.id as string,
-      designId: r.designId,
-      itemNumber: r.item.itemNumber,
-      designName: r.designName,
-      status: row.status as ListingStatus,
-      usesCanonicalPhoto: !r.item.listingPhotoUrl,
-    }
-  })
+  const added = [...addedByListingId.values()]
 
   return { added, pending: { needCollection, needFullInfo } }
 }

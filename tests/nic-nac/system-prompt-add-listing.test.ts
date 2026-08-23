@@ -118,18 +118,18 @@ describe('Nic-Nac system prompt — add listing flow', () => {
     )
   })
 
-  it('treats duplicate item numbers as separate physical listings', () => {
+  it('groups identical physical copies while keeping catalog variants separate', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'A rep can own multiple physical dancers with the same item number',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'create one dancer for each physical item',
+      'Truly identical copies share one dancer card and show its quantity available',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'If search_jewelry_database says isOnMyBoard:true during an add flow',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'Are we adding a second physical dancer of that same design?',
+      'Are we adding a second identical physical piece?',
     )
   })
 })

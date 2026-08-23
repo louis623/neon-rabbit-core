@@ -1006,6 +1006,10 @@ function Filters({
   secondaryOpen,
   setSecondaryOpen,
 }) {
+  const availableDancerCount = listings.reduce(
+    (total, listing) => total + Math.max(0, Number(listing.quantityAvailable ?? 1)),
+    0,
+  );
   const options = useMemo(() => deriveTradeBoardFilterOptions(listings), [listings]);
   const visibleCollections = useMemo(
     () => filterCollectionOptions(options.collections, collectionSearch),
@@ -1032,7 +1036,7 @@ function Filters({
         <div>
           <div className="tp-mobile-filter-cue">Search or filter the Dance Floor</div>
           <div className="tp-filter-results">
-            <strong>{listings.length}</strong> available dancers
+            <strong>{availableDancerCount}</strong> available dancers
           </div>
           <div className="tp-board-showing">
             Showing {Math.min(visibleCount, resultCount)} of {resultCount} matches
@@ -1260,6 +1264,7 @@ function TradeCard({ piece, onTap, repName, tierVisible }) {
           <span>{piece.type}{piece.size ? ` - Size ${piece.size}` : ""}</span>
           <span className="tp-card-msrp">Bomb Party MSRP <strong>{piece.msrp === null ? "TBD" : `$${piece.msrp}`}</strong></span>
         </div>
+        <div className="tp-card-quantity">{Math.max(0, Number(piece.quantityAvailable ?? 1))} available</div>
         <div className="tp-card-material">{piece.material}</div>
         <div className="tp-card-rep slot" data-slot="brand separation">
           Offered by <strong>{repName}</strong>, an Independent Bomb Party Representative.
@@ -1319,6 +1324,10 @@ function ExpandedCard({ piece, onClose, onWantThis, repName }) {
             <div>
               <dt>Bomb Party MSRP</dt>
               <dd>{piece.msrp === null ? "TBD" : `$${piece.msrp}`} (reference only)</dd>
+            </div>
+            <div>
+              <dt>Available</dt>
+              <dd>{Math.max(0, Number(piece.quantityAvailable ?? 1))}</dd>
             </div>
           </dl>
           <div className="tp-card-expand-box slot" data-slot="reveal box photo">
