@@ -126,6 +126,7 @@ function buildReviewSiteSettings(
     heroImageUrl: '',
     heroAnimationType: 'sparkle_rise',
     teamName: getStringAnswer(accountBasics, 'teamName'),
+    memberTeamName: '',
     showJoinPage: true,
     customerSiteTemplate: 'amethyst',
     appearancePreset: 'sparkle_suite_morganite',
