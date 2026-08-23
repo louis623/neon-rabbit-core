@@ -522,6 +522,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
     repName,
     businessName,
     teamName: firstText(settings.teamName, defaultAmethystHomepageTemplateData.teamName),
+    memberTeamName: settings.memberTeamName?.trim() || undefined,
     tagline,
     heroHeadline: firstText(heroHeadlineOverride, defaultAmethystHomepageTemplateData.heroHeadline),
     heroHeadlineOverride,

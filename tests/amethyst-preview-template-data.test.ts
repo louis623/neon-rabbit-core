@@ -32,6 +32,7 @@ const demoSettings: SiteSettingsDashboardResult = {
   heroImageUrl: '',
   heroAnimationType: 'sparkle_rise',
   teamName: 'Sparkle Demo Circle',
+  memberTeamName: 'North Star Team',
   showJoinPage: true,
   customerSiteTemplate: 'amethyst',
   appearancePreset: 'sparkle_suite_morganite',
@@ -129,6 +130,7 @@ describe('Amethyst preview template data', () => {
     expect(data.repName).toBe('Launch')
     expect(data.businessName).toBe('Sparkle Suite Demo Boutique')
     expect(data.teamName).toBe('Sparkle Demo Circle')
+    expect(data.memberTeamName).toBe('North Star Team')
     expect(data.tagline).toBe(
       'Sparkle picks, dance floor favorites, and show-night fizz.',
     )

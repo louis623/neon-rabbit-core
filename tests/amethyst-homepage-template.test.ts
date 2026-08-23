@@ -922,6 +922,10 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('Only for birthday promotions and gift ideas. It will not be used for anything else.')
     expect(jsx).toContain('Choose SMS, email, or both')
     expect(jsx).toContain('/amethyst/Unsubscribe.html')
+    expect(jsx).toContain('hp-signup-status')
+    expect(jsx).toContain('role={submitState.status === "error" ? "alert" : "status"}')
+    expect(jsx).toContain('Saving...')
+    expect(jsx).toContain('Proud member of team {CONTENT.memberTeamName}')
   })
 
   it('keeps signup submission state scoped to the signup form so the homepage can fresh-load', () => {

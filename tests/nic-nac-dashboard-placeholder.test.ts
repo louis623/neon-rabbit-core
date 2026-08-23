@@ -21,6 +21,7 @@ import {
   ShowCalendarCard,
   TeamManagementCard,
   WalletSummaryCard,
+  WorkspaceAppHeader,
   WorkspaceAccessNotice,
   buildJoinTeamRosterSavePayload,
   getJoinTeamRosterDraft,
@@ -109,6 +110,11 @@ const READY_STATE = {
       name: 'Jamie Lane',
       phone: '+15555550101',
       email: 'jamie@example.com',
+      birthday: '10-12',
+      favoriteGemOrStone: 'Opal',
+      favoriteMaterial: 'Silver',
+      favoriteCut: 'Oval',
+      favoriteCollection: 'Simply Stunning',
       smsConsent: true,
       emailConsent: true,
       marketingConsent: true,
@@ -125,6 +131,11 @@ const READY_STATE = {
       name: 'Morgan Lee',
       phone: '+15555550102',
       email: null,
+      birthday: '03-04',
+      favoriteGemOrStone: 'Turquoise',
+      favoriteMaterial: 'Gold',
+      favoriteCut: 'Round',
+      favoriteCollection: 'Glamour',
       smsConsent: true,
       emailConsent: false,
       marketingConsent: false,
@@ -492,6 +503,26 @@ const TRADE_BOARD_READY_STATE = {
 }
 
 describe('DashboardPlaceholder', () => {
+  it('keeps only the membership team in the workspace header', () => {
+    const html = renderToStaticMarkup(
+      createElement(WorkspaceAppHeader, {
+        repName: 'Sasha',
+        showName: 'Sparkle by Sasha',
+        memberTeamName: 'North Star Team',
+        publicSiteUrl: null,
+        publicSiteDisplay: 'Not set',
+        unreadMessageCount: 0,
+        onOpenPublicSite: () => {},
+        onOpenMessages: () => {},
+        onGoHome: () => {},
+      }),
+    )
+
+    expect(html).toContain('Team I belong to')
+    expect(html).toContain('North Star Team')
+    expect(html).not.toContain('Team I manage')
+  })
+
   it('keeps help resources out of old first-run checklist framing', () => {
     const helpText = getHelpResources()
       .flatMap((resource) => [
@@ -2246,7 +2277,7 @@ describe('DashboardPlaceholder', () => {
     ])
   })
 
-  it('sorts the roster by newest, oldest, and name', () => {
+  it('sorts the roster by dates, names, and saved customer preferences', () => {
     expect(
       sortRosterCustomers(READY_STATE.customers, 'newest').map((customer) => customer.id),
     ).toEqual(['aud-1', 'aud-2', 'aud-3'])
@@ -2256,6 +2287,12 @@ describe('DashboardPlaceholder', () => {
     expect(
       sortRosterCustomers(READY_STATE.customers, 'name_asc').map((customer) => customer.id),
     ).toEqual(['aud-1', 'aud-2', 'aud-3'])
+    expect(
+      sortRosterCustomers(READY_STATE.customers, 'birthday_asc').map((customer) => customer.id),
+    ).toEqual(['aud-2', 'aud-1', 'aud-3'])
+    expect(
+      sortRosterCustomers(READY_STATE.customers, 'favorite_material').map((customer) => customer.id),
+    ).toEqual(['aud-2', 'aud-1', 'aud-3'])
   })
 
   it('renders a useful customer roster with statuses and contact details', () => {
@@ -2280,6 +2317,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Search customers')
     expect(html).toContain('Sort roster')
     expect(html).toContain('Newest first')
+    expect(html).toContain('Birthday (month and day)')
+    expect(html).toContain('Favorite collection A-Z')
     expect(html).toContain('Copy visible SMS')
     expect(html).toContain('Copy visible emails')
     expect(html).toContain('Jamie Lane')
@@ -2298,6 +2337,10 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Fresh consent must come from the customer.')
     expect(html).toContain('SMS status')
     expect(html).toContain('Email status')
+    expect(html).toContain('Favorite gem or stone')
+    expect(html).toContain('Opal')
+    expect(html).toContain('Favorite material')
+    expect(html).toContain('Silver')
     expect(html).toContain('SMS opted in')
     expect(html).toContain('Opted out')
     expect(html).toContain('Consent captured 2026-05-04')
@@ -2370,7 +2413,6 @@ describe('DashboardPlaceholder', () => {
     expect(getCustomerTimeline(READY_STATE.customers[1])).toEqual([
       'Consent captured 2026-05-04',
       'STOP received 2026-05-05',
-      'Joined 2026-05-04',
     ])
   })
 

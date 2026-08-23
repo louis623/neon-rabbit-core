@@ -479,7 +479,15 @@ export type RosterFilter =
   | 'email_reachable'
   | 'opted_out'
 
-export type RosterSort = 'newest' | 'oldest' | 'name_asc'
+export type RosterSort =
+  | 'newest'
+  | 'oldest'
+  | 'name_asc'
+  | 'birthday_asc'
+  | 'favorite_collection'
+  | 'favorite_gem_or_stone'
+  | 'favorite_material'
+  | 'favorite_cut'
 
 type AudienceState = {
   status: 'loading' | 'ready' | 'error'
@@ -1321,6 +1329,11 @@ const SORT_OPTIONS: Array<{ value: RosterSort; label: string }> = [
   { value: 'newest', label: 'Newest first' },
   { value: 'oldest', label: 'Oldest first' },
   { value: 'name_asc', label: 'Name A-Z' },
+  { value: 'birthday_asc', label: 'Birthday (month and day)' },
+  { value: 'favorite_collection', label: 'Favorite collection A-Z' },
+  { value: 'favorite_gem_or_stone', label: 'Favorite gem or stone A-Z' },
+  { value: 'favorite_material', label: 'Favorite material A-Z' },
+  { value: 'favorite_cut', label: 'Favorite cut A-Z' },
 ]
 
 const HELP_RESOURCE_GROUP_ORDER = [
@@ -1548,6 +1561,29 @@ export function sortRosterCustomers(
 
   if (sortOrder === 'name_asc') {
     next.sort((a, b) => a.name.localeCompare(b.name))
+    return next
+  }
+
+  const profileFieldBySort: Partial<Record<RosterSort, keyof CustomerAudienceMember>> = {
+    birthday_asc: 'birthday',
+    favorite_collection: 'favoriteCollection',
+    favorite_gem_or_stone: 'favoriteGemOrStone',
+    favorite_material: 'favoriteMaterial',
+    favorite_cut: 'favoriteCut',
+  }
+  const profileField = profileFieldBySort[sortOrder]
+
+  if (profileField) {
+    next.sort((a, b) => {
+      const aValue = String(a[profileField] ?? '').trim()
+      const bValue = String(b[profileField] ?? '').trim()
+
+      if (!aValue && !bValue) return a.name.localeCompare(b.name)
+      if (!aValue) return 1
+      if (!bValue) return -1
+      const comparison = aValue.localeCompare(bValue)
+      return comparison || a.name.localeCompare(b.name)
+    })
     return next
   }
 
@@ -2522,8 +2558,17 @@ export function getCustomerTimeline(customer: CustomerAudienceMember) {
     entries.push(`Email opted out ${formatRosterDate(customer.emailOptedOutAt)}`)
   }
 
-  entries.push(`Joined ${formatRosterDate(customer.createdAt)}`)
   return entries
+}
+
+function getCustomerProfileDetails(customer: CustomerAudienceMember) {
+  return [
+    { label: 'Birthday', value: customer.birthday },
+    { label: 'Favorite collection', value: customer.favoriteCollection },
+    { label: 'Favorite gem or stone', value: customer.favoriteGemOrStone },
+    { label: 'Favorite material', value: customer.favoriteMaterial },
+    { label: 'Favorite cut', value: customer.favoriteCut },
+  ].filter((detail): detail is { label: string; value: string } => Boolean(detail.value?.trim()))
 }
 
 function getCustomerBadges(customer: CustomerAudienceMember) {
@@ -5698,7 +5743,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     <WorkspaceAppHeader
       repName={headerRepName}
       showName={headerShowName}
-      managedTeamName={managedTeamName}
       memberTeamName={memberTeamName}
       publicSiteUrl={customerSparkleSiteUrl}
       publicSiteDisplay={customerSparkleSiteDisplay}
@@ -6218,7 +6262,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 export function WorkspaceAppHeader({
   repName,
   showName,
-  managedTeamName,
   memberTeamName,
   publicSiteUrl,
   publicSiteDisplay,
@@ -6232,7 +6275,6 @@ export function WorkspaceAppHeader({
 }: {
   repName: string
   showName: string
-  managedTeamName?: string
   memberTeamName?: string
   publicSiteUrl: string | null
   publicSiteDisplay: string
@@ -6336,12 +6378,6 @@ export function WorkspaceAppHeader({
               (repName === 'Rep info loading' ? 'Loading' : 'Not set')}
           </strong>
         </div>
-        {managedTeamName ? (
-          <div className={styles.appHeaderReference}>
-            <span className={styles.appHeaderReferenceLabel}>Team I manage</span>
-            <strong className={styles.appHeaderQueueCode}>{managedTeamName}</strong>
-          </div>
-        ) : null}
         {memberTeamName ? (
           <div className={styles.appHeaderReference}>
             <span className={styles.appHeaderReferenceLabel}>Team I belong to</span>
@@ -10056,8 +10092,8 @@ export function TeamManagementCard({
         <section className={styles.teamManagementPanel}>
           <div className={styles.walletSettingsTitle}>Team I manage</div>
           <div className={styles.helperNote}>
-            This is your team&apos;s name on the Workspace header, Join Team page,
-            and New Rep Onboarding links. It does not change the team you belong to.
+            This is your team&apos;s name on the Join Team page and New Rep Onboarding
+            links. It does not change the team you belong to.
           </div>
           <label className={styles.searchField}>
             <span className={styles.searchLabel}>Managed team name</span>
@@ -11717,6 +11753,7 @@ export function CustomerRosterCard({
           filteredCustomers.map((customer) => {
             const statuses = getCustomerChannelStatuses(customer)
             const timelineEntries = getCustomerTimeline(customer)
+            const profileDetails = getCustomerProfileDetails(customer)
             const duplicateSummary = getCustomerDuplicateSummary(
               customer,
               duplicateSourceCustomers,
@@ -11761,6 +11798,19 @@ export function CustomerRosterCard({
                   <span className={styles.statusDetailValue}>{statuses.email}</span>
                 </div>
               </div>
+              {profileDetails.length ? (
+                <dl
+                  className={styles.customerProfileDetails}
+                  aria-label={`Details for ${customer.name}`}
+                >
+                  {profileDetails.map((detail) => (
+                    <div key={`${customer.id}-${detail.label}`} className={styles.customerProfileDetail}>
+                      <dt>{detail.label}</dt>
+                      <dd>{detail.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : null}
               <div className={styles.actionRow}>
                 <button
                   type="button"

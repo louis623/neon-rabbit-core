@@ -87,6 +87,8 @@ export interface AmethystHomepageTemplateData {
   repName: string
   businessName: string
   teamName: string
+  /** The upline or other team this rep belongs to, shown in the public footer. */
+  memberTeamName?: string
   tagline: string
   heroEyebrow: string
   heroHeadline: string

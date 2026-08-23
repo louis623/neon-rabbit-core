@@ -1657,6 +1657,15 @@ function Signup({ repName, businessName }) {
             <div className="hp-signup-eyebrow">Stay in the loop</div>
             <h2 className="hp-signup-title">{signupTitle}</h2>
             <p className="hp-signup-sub">{signupSub}</p>
+            {submitState.message ? (
+              <p
+                className={`hp-signup-status ${submitState.status}`}
+                role={submitState.status === "error" ? "alert" : "status"}
+                aria-live="polite"
+              >
+                {submitState.message}
+              </p>
+            ) : null}
           </div>
           <form className="hp-signup-form" onSubmit={handleSubmit}>
             <div className="hp-signup-row">
@@ -1728,8 +1737,8 @@ function Signup({ repName, businessName }) {
               </div>
             </div>
             <div className="hp-signup-actions">
-              <button type="submit" className="hp-signup-submit">
-                Sign me up
+              <button type="submit" className="hp-signup-submit" disabled={submitState.status === "submitting"}>
+                {submitState.status === "submitting" ? "Saving..." : "Sign me up"}
                 <span className="hp-signup-submit-arrow" aria-hidden="true">→</span>
               </button>
               <p className="hp-signup-consent slot" data-slot="consent — pending legal">
@@ -1766,6 +1775,9 @@ function Footer({ businessName }) {
           <p className="hp-footer-tag">
             {CONTENT.footerTagline || "Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle."}
           </p>
+          {CONTENT.memberTeamName ? (
+            <p className="hp-footer-team">Proud member of team {CONTENT.memberTeamName}</p>
+          ) : null}
           <div className="hp-footer-socials">
             {footerSocials.map((social) => (
               <a
