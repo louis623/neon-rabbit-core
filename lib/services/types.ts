@@ -573,7 +573,7 @@ export interface SiteSettingsDashboardResult {
   /** The team this rep manages. This remains the public Join Team identity. */
   teamName: string
   /** The upline or other team this rep belongs to, if any. */
-  memberTeamName: string
+  memberTeamName?: string
   showJoinPage: boolean
   customerSiteTemplate: CustomerSiteTemplate
   appearancePreset: SiteAppearancePreset

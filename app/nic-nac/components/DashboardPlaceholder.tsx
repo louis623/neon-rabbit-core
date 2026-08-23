@@ -863,7 +863,7 @@ export type JoinTeamRosterDraft = {
   instagram: string
   website: string
   youtube: string
-  whatnot: string
+  whatnot?: string
   isVisible: boolean
 }
 
@@ -3931,11 +3931,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         throw new Error(payload?.error || 'Unable to save the team name.')
       }
 
-      setSiteSettingsState({ status: 'ready', settings: payload.settings })
+      const savedSettings = payload.settings
+      setSiteSettingsState({ status: 'ready', settings: savedSettings })
       setSiteSettingsDraft((current) =>
         current
-          ? { ...current, teamName: payload.settings?.teamName ?? '' }
-          : getSiteSettingsDraft(payload.settings),
+          ? { ...current, teamName: savedSettings.teamName }
+          : getSiteSettingsDraft(savedSettings),
       )
       setTeamManagementActionState({
         pendingKey: null,
