@@ -712,6 +712,7 @@ function mapJoinTeamRosterToTemplateMembers(
       instagram: member.links.instagram,
       website: member.links.website,
       youtube: member.links.youtube,
+      whatnot: member.links.whatnot,
     },
   }))
 }

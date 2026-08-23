@@ -863,6 +863,7 @@ export type JoinTeamRosterDraft = {
   instagram: string
   website: string
   youtube: string
+  whatnot: string
   isVisible: boolean
 }
 
@@ -1040,6 +1041,7 @@ const EMPTY_JOIN_TEAM_ROSTER_DRAFT: JoinTeamRosterDraft = {
   instagram: '',
   website: '',
   youtube: '',
+  whatnot: '',
   isVisible: true,
 }
 
@@ -1069,6 +1071,7 @@ export function getJoinTeamRosterDraft(
     instagram: member.links.instagram ?? '',
     website: member.links.website ?? '',
     youtube: member.links.youtube ?? '',
+    whatnot: member.links.whatnot ?? '',
     isVisible: member.isVisible,
   }
 }
@@ -1092,6 +1095,9 @@ export function buildJoinTeamRosterSavePayload(
       : {}),
     ...(cleanOptionalText(draft.youtube)
       ? { youtube: cleanOptionalText(draft.youtube) }
+      : {}),
+    ...(cleanOptionalText(draft.whatnot)
+      ? { whatnot: cleanOptionalText(draft.whatnot) }
       : {}),
   }
 
@@ -3899,6 +3905,53 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
+  async function handleSaveManagedTeamName() {
+    const teamName = siteSettingsDraft?.teamName ?? siteSettingsState.settings?.teamName ?? ''
+
+    setTeamManagementActionState({
+      pendingKey: 'team-name',
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const response = await fetch('/api/nic-nac/site-settings', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        // Save only this identity field. Other unsaved Site Settings edits must
+        // not be published incidentally from Team Management.
+        body: JSON.stringify({ teamName }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string; settings?: SiteSettingsDashboardResult }
+        | null
+
+      if (!response.ok || !payload?.settings) {
+        throw new Error(payload?.error || 'Unable to save the team name.')
+      }
+
+      setSiteSettingsState({ status: 'ready', settings: payload.settings })
+      setSiteSettingsDraft((current) =>
+        current
+          ? { ...current, teamName: payload.settings?.teamName ?? '' }
+          : getSiteSettingsDraft(payload.settings),
+      )
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: 'Managed team name saved.',
+      })
+      refreshLiveSitePreviewAfterSiteSettingsSave()
+    } catch (error) {
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: error instanceof Error ? error.message : 'Unable to save the team name.',
+        helperMessage: null,
+      })
+    }
+  }
+
   async function saveSiteSettingsDraft(draftToSave: SiteSettingsDraft) {
     const requestId = siteSettingsSaveRequestRef.current + 1
     siteSettingsSaveRequestRef.current = requestId
@@ -5588,6 +5641,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     headerRepName,
     siteSettingsState.status === 'loading' && repProfileState.status === 'loading',
   )
+  const managedTeamName =
+    siteSettingsDraft?.teamName ?? siteSettingsState.settings?.teamName ?? ''
+  const memberTeamName =
+    siteSettingsDraft?.memberTeamName ?? siteSettingsState.settings?.memberTeamName ?? ''
   const workspaceSkinPreset = getWorkspaceSkinPreset(
     siteSettingsState.settings,
     siteSettingsDraft,
@@ -5640,6 +5697,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     <WorkspaceAppHeader
       repName={headerRepName}
       showName={headerShowName}
+      managedTeamName={managedTeamName}
+      memberTeamName={memberTeamName}
       publicSiteUrl={customerSparkleSiteUrl}
       publicSiteDisplay={customerSparkleSiteDisplay}
       liveQueueSyncCode={currentLiveQueueSyncCode}
@@ -5801,8 +5860,11 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             createDraft={teamCreateDraft}
             publicTeamDraft={publicTeamDraft}
             replyDraft={teamReplyDraft}
+            teamName={managedTeamName}
             joinTeamPreviewHref={customerJoinTeamHref}
             onCreateDraftChange={handleTeamCreateDraftChange}
+            onTeamNameChange={(teamName) => handleSiteSettingsDraftChange({ teamName })}
+            onSaveTeamName={handleSaveManagedTeamName}
             onCreateParticipant={handleCreateTeamOnboardingParticipant}
             onCopyInvite={handleCopyTeamOnboardingInvite}
             onArchiveParticipant={handleArchiveTeamOnboardingParticipant}
@@ -6155,6 +6217,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 export function WorkspaceAppHeader({
   repName,
   showName,
+  managedTeamName,
+  memberTeamName,
   publicSiteUrl,
   publicSiteDisplay,
   liveQueueSyncCode,
@@ -6167,6 +6231,8 @@ export function WorkspaceAppHeader({
 }: {
   repName: string
   showName: string
+  managedTeamName?: string
+  memberTeamName?: string
   publicSiteUrl: string | null
   publicSiteDisplay: string
   liveQueueSyncCode?: string | null
@@ -6269,6 +6335,18 @@ export function WorkspaceAppHeader({
               (repName === 'Rep info loading' ? 'Loading' : 'Not set')}
           </strong>
         </div>
+        {managedTeamName ? (
+          <div className={styles.appHeaderReference}>
+            <span className={styles.appHeaderReferenceLabel}>Team I manage</span>
+            <strong className={styles.appHeaderQueueCode}>{managedTeamName}</strong>
+          </div>
+        ) : null}
+        {memberTeamName ? (
+          <div className={styles.appHeaderReference}>
+            <span className={styles.appHeaderReferenceLabel}>Team I belong to</span>
+            <strong className={styles.appHeaderQueueCode}>{memberTeamName}</strong>
+          </div>
+        ) : null}
       </div>
       <div className={styles.appHeaderActions}>
         <button
@@ -8390,12 +8468,22 @@ export function SiteSettingsCard({
             </span>
           </label>
           <label className={styles.searchField}>
-            <span className={styles.searchLabel}>Team name</span>
+            <span className={styles.searchLabel}>Team I manage</span>
             <input
               className={styles.searchInput}
               value={draft.teamName}
               onChange={(event) =>
                 onDraftChange?.({ teamName: event.target.value })
+              }
+            />
+          </label>
+          <label className={styles.searchField}>
+            <span className={styles.searchLabel}>Team I belong to</span>
+            <input
+              className={styles.searchInput}
+              value={draft.memberTeamName}
+              onChange={(event) =>
+                onDraftChange?.({ memberTeamName: event.target.value })
               }
             />
           </label>
@@ -9823,8 +9911,11 @@ export function TeamManagementCard({
   createDraft = { displayName: '', contactEmail: '' },
   publicTeamDraft = getJoinTeamRosterDraft(),
   replyDraft = '',
+  teamName = '',
   joinTeamPreviewHref = '/amethyst/Join.html',
   onCreateDraftChange,
+  onTeamNameChange,
+  onSaveTeamName,
   onCreateParticipant,
   onCopyInvite,
   onArchiveParticipant,
@@ -9842,8 +9933,11 @@ export function TeamManagementCard({
   createDraft?: TeamManagementCreateDraft
   publicTeamDraft?: JoinTeamRosterDraft
   replyDraft?: string
+  teamName?: string
   joinTeamPreviewHref?: string
   onCreateDraftChange?: (patch: Partial<TeamManagementCreateDraft>) => void
+  onTeamNameChange?: (value: string) => void
+  onSaveTeamName?: () => void
   onCreateParticipant?: () => void
   onCopyInvite?: (accessUrl?: string) => void
   onArchiveParticipant?: (participantId: string) => void
@@ -9946,7 +10040,7 @@ export function TeamManagementCard({
           </div>
         </div>
         <span className={styles.rosterTag}>
-          {state.access?.status === 'manual_beta' ? 'Brittany beta' : 'Enabled'}
+          {state.access?.status === 'manual_beta' ? 'Beta access' : 'Enabled'}
         </span>
       </div>
 
@@ -9958,6 +10052,30 @@ export function TeamManagementCard({
       ) : null}
 
       <div className={styles.teamManagementGrid}>
+        <section className={styles.teamManagementPanel}>
+          <div className={styles.walletSettingsTitle}>Team I manage</div>
+          <div className={styles.helperNote}>
+            This is your team&apos;s name on the Workspace header, Join Team page,
+            and New Rep Onboarding links. It does not change the team you belong to.
+          </div>
+          <label className={styles.searchField}>
+            <span className={styles.searchLabel}>Managed team name</span>
+            <input
+              className={`${styles.searchInput} ph-no-capture`}
+              placeholder="Your team name"
+              value={teamName}
+              onChange={(event) => onTeamNameChange?.(event.target.value)}
+            />
+          </label>
+          <button
+            type="button"
+            className={styles.actionButton}
+            disabled={actionState?.pendingKey === 'team-name' || isLoading}
+            onClick={onSaveTeamName}
+          >
+            {actionState?.pendingKey === 'team-name' ? 'Saving team name...' : 'Save team name'}
+          </button>
+        </section>
         <section className={styles.teamManagementPanel}>
           <div className={styles.walletSettingsTitle}>Create onboarding link</div>
           <div className={styles.helperNote}>
@@ -10024,8 +10142,8 @@ export function TeamManagementCard({
             <div className={styles.emptyState}>Loading Team Management...</div>
           ) : activeParticipants.length === 0 ? (
             <div className={styles.emptyState}>
-              No onboarding links yet. Create one when Brittany is ready to
-              invite the next rep.
+              No onboarding links yet. Create one when you&apos;re ready to invite
+              the next rep.
             </div>
           ) : (
             activeParticipants.map((participant) => (
@@ -10081,8 +10199,8 @@ export function TeamManagementCard({
           {selectedParticipant ? (
             <>
               <div className={styles.teamMessagePreview}>
-                Questions from {selectedParticipant.displayName}&apos;s Start
-                Strong site appear in this thread. Replies are saved back to
+                Questions from {selectedParticipant.displayName}&apos;s New Rep
+                Onboarding site appear in this thread. Replies are saved back to
                 the onboarding site.
               </div>
               <label className={styles.searchField}>
@@ -10259,6 +10377,15 @@ function PublicTeamRosterPanel({
                 }
               />
             </label>
+            <label className={styles.searchField}>
+              <span className={styles.searchLabel}>Whatnot</span>
+              <input
+                className={`${styles.searchInput} ph-no-capture`}
+                placeholder="https://www.whatnot.com/user/show"
+                value={draft.whatnot}
+                onChange={(event) => onDraftChange?.({ whatnot: event.target.value })}
+              />
+            </label>
           </div>
 
           <label className={styles.teamVisibilityToggle}>
@@ -10316,6 +10443,7 @@ function PublicTeamRosterPanel({
                     {member.links.instagram ? <span>Instagram</span> : null}
                     {member.links.website ? <span>Website</span> : null}
                     {member.links.youtube ? <span>YouTube</span> : null}
+                    {member.links.whatnot ? <span>Whatnot</span> : null}
                     {Object.values(member.links).every((value) => !value) ? (
                       <span>No links yet</span>
                     ) : null}

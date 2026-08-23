@@ -711,6 +711,7 @@ function SocialIcon({ kind }) {
     );
   }
   if (kind === "yt") return <span title="YouTube">YT</span>;
+  if (kind === "wn") return <span title="Whatnot">WN</span>;
   return null;
 }
 
@@ -748,6 +749,7 @@ function TeamCard({ member, isLeader }) {
           <TeamSocial href={member.socialLinks?.instagram} label="Instagram" kind="ig" />
           <TeamSocial href={member.socialLinks?.website} label="Website" kind="web" />
           <TeamSocial href={member.socialLinks?.youtube} label="YouTube" kind="yt" />
+          <TeamSocial href={member.socialLinks?.whatnot} label="Whatnot" kind="wn" />
         </div>
       </div>
     </article>

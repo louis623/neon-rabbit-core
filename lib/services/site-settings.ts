@@ -22,6 +22,7 @@ type SiteSettingsRow = {
   hero_image_url: string | null
   hero_animation_type: string | null
   team_name: string | null
+  member_team_name: string | null
   show_join_page: boolean | null
   customer_site_template: string | null
   appearance_preset: string | null
@@ -40,7 +41,7 @@ type RepProfileRow = {
 }
 
 const SITE_SETTINGS_SELECT =
-  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_headline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, about_heading, about_subheading, about_narrative, homepage_media_slots'
+  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_headline, hero_image_url, hero_animation_type, team_name, member_team_name, show_join_page, customer_site_template, appearance_preset, about_heading, about_subheading, about_narrative, homepage_media_slots'
 const REP_PROFILE_SELECT =
   'display_name, business_name, email, phone, social_handles'
 
@@ -266,6 +267,7 @@ function buildDashboardResult(args: {
       args.siteSettings?.hero_animation_type,
     ),
     teamName: normalizeText(args.siteSettings?.team_name),
+    memberTeamName: normalizeText(args.siteSettings?.member_team_name),
     showJoinPage: args.siteSettings?.show_join_page ?? true,
     customerSiteTemplate: normalizeCustomerSiteTemplate(
       args.siteSettings?.customer_site_template,
@@ -381,6 +383,9 @@ export async function updateSiteSettingsDashboard(
   }
   if (input.teamName !== undefined) {
     siteSettingsPatch.team_name = normalizeNullableText(input.teamName)
+  }
+  if (input.memberTeamName !== undefined) {
+    siteSettingsPatch.member_team_name = normalizeNullableText(input.memberTeamName)
   }
   if (input.showJoinPage !== undefined) {
     siteSettingsPatch.show_join_page = input.showJoinPage

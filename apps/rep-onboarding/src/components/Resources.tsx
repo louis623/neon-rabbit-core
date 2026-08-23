@@ -5,7 +5,7 @@ const FAVORITES_KEY = 'bwb-resource-favorites-v1';
 const resourceCategories = ['All', 'Start Here', 'BPU', 'Money', 'Supplies', 'Shipping', 'Loyalty', 'Sparkle Suite'] as const;
 type ResourceFilter = typeof resourceCategories[number];
 
-export function Resources() {
+export function Resources({ teamLeadName }: { teamLeadName: string }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<ResourceFilter>('All');
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
@@ -16,6 +16,7 @@ export function Resources() {
       return [];
     }
   });
+  const teamCopy = (value: string) => value.replaceAll('Brittany', teamLeadName);
 
   function getDisclosureLabel(resourceDetails: NonNullable<typeof resources[number]['details']>) {
     const hasVideo = resourceDetails.some((detail) => typeof detail !== 'string' && detail.kind === 'video');
@@ -62,7 +63,7 @@ export function Resources() {
       <div className="section-heading">
         <span className="eyebrow">Resource binder</span>
         <h2>Helpful links</h2>
-        <p>Official Bomb Party links stay separate from Brittany's team notes.</p>
+        <p>Official Bomb Party links stay separate from {teamLeadName}&apos;s team notes.</p>
       </div>
 
       <div className="binder-toolbar">
@@ -107,8 +108,8 @@ export function Resources() {
                 {isFavorite ? '★' : '☆'}
               </button>
             </div>
-            <h3>{resource.title}</h3>
-            <p>{resource.description}</p>
+            <h3>{teamCopy(resource.title)}</h3>
+            <p>{teamCopy(resource.description)}</p>
             {resource.details && (
               <details className="resource-disclosure">
                 <summary>{getDisclosureLabel(resource.details)}</summary>
@@ -121,13 +122,13 @@ export function Resources() {
                         <video controls preload="metadata" src={detail.url}>
                           <a href={detail.url}>Open video</a>
                         </video>
-                        <a href={detail.url} target="_blank" rel="noreferrer">{detail.label}</a>
-                        {detail.note && <span>{detail.note}</span>}
+                        <a href={detail.url} target="_blank" rel="noreferrer">{teamCopy(detail.label)}</a>
+                        {detail.note && <span>{teamCopy(detail.note)}</span>}
                       </li>
                     ) : (
                       <li key={detail.url}>
-                        <a href={detail.url} target="_blank" rel="noreferrer">{detail.label}</a>
-                        {detail.note && <span>{detail.note}</span>}
+                        <a href={detail.url} target="_blank" rel="noreferrer">{teamCopy(detail.label)}</a>
+                        {detail.note && <span>{teamCopy(detail.note)}</span>}
                       </li>
                     )
                   ))}

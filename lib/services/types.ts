@@ -570,7 +570,10 @@ export interface SiteSettingsDashboardResult {
   heroHeadline?: string
   heroImageUrl: string
   heroAnimationType: HeroAnimationType
+  /** The team this rep manages. This remains the public Join Team identity. */
   teamName: string
+  /** The upline or other team this rep belongs to, if any. */
+  memberTeamName: string
   showJoinPage: boolean
   customerSiteTemplate: CustomerSiteTemplate
   appearancePreset: SiteAppearancePreset
@@ -595,6 +598,7 @@ export interface UpdateSiteSettingsDashboardInput {
   heroImageUrl?: string
   heroAnimationType?: HeroAnimationType
   teamName?: string
+  memberTeamName?: string
   showJoinPage?: boolean
   customerSiteTemplate?: string
   appearancePreset?: SiteAppearancePreset | string
@@ -791,6 +795,7 @@ export interface JoinTeamMemberLinks {
   instagram?: string
   website?: string
   youtube?: string
+  whatnot?: string
 }
 
 export interface JoinTeamMember {

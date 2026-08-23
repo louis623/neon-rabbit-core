@@ -33,6 +33,7 @@ export interface AmethystJoinTeamMember {
     instagram?: string
     website?: string
     youtube?: string
+    whatnot?: string
   }
 }
 

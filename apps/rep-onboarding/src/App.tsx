@@ -13,6 +13,7 @@ import {
   submitRemoteQuestion,
 } from './integration/team-onboarding-client';
 import { createInitialState, loadState, makeQuestion, resetState, saveState } from './state';
+import type { RemoteOnboardingTeam } from './integration/team-onboarding-contract';
 import type { AppState, RepQuestion, StepStatus } from './types';
 
 type RemoteLoadState = 'local' | 'loading' | 'loaded' | 'error';
@@ -36,7 +37,7 @@ export default function App() {
   const [remoteLoadState, setRemoteLoadState] = useState<RemoteLoadState>('local');
   const [remoteQuestionStatus, setRemoteQuestionStatus] = useState<string | null>(null);
   const [participantName, setParticipantName] = useState<string | null>(null);
-  const [teamLabel, setTeamLabel] = useState('Britt with Bling');
+  const [team, setTeam] = useState<RemoteOnboardingTeam | null>(null);
   const [apiBaseUrl] = useState(() => getSparkleSuiteApiBaseUrl());
   const [inviteToken] = useState(() => getConfiguredInviteToken());
   const selectedStep = useMemo(
@@ -61,7 +62,7 @@ export default function App() {
       .then((remoteState) => {
         if (!isActive) return;
         setParticipantName(remoteState.participant.displayName);
-        setTeamLabel(remoteState.team.businessName || remoteState.team.teamName || 'Britt with Bling');
+        setTeam(remoteState.team);
         setAppState((current) => ({
           ...current,
           stepStatuses: {
@@ -92,6 +93,13 @@ export default function App() {
       isActive = false;
     };
   }, [apiBaseUrl, inviteToken]);
+
+  const teamLabel = team?.teamName || team?.businessName || 'Your team';
+  const teamLeadName = team?.displayName || 'your team lead';
+
+  useEffect(() => {
+    document.title = `${teamLabel} New Rep Onboarding`;
+  }, [teamLabel]);
 
   function selectStep(stepId: string) {
     setAppState((current) => ({ ...current, selectedStepId: stepId }));
@@ -174,7 +182,7 @@ export default function App() {
         <a className="brand-home-link" href="#top">{teamLabel}</a>
         <nav aria-label="Main navigation">
           <a href="#resources" onClick={handleSectionNav}>Resources</a>
-          <a href="#questions" onClick={handleSectionNav}>Ask Brittany</a>
+          <a href="#questions" onClick={handleSectionNav}>Ask {teamLeadName}</a>
         </nav>
         <NicNac
           selectedStepId={appState.selectedStepId}
@@ -182,6 +190,7 @@ export default function App() {
           closeSignal={nicNacCloseSignal}
           onPromptHandled={() => setNicNacPrompt(null)}
           onEscalate={addNicNacQuestion}
+          teamLeadName={teamLeadName}
         />
         {!inviteToken && (
           <button className="reset-button" type="button" onClick={startOver}>Reset local progress</button>
@@ -191,7 +200,7 @@ export default function App() {
       <div className="main-grid" id="home">
         {participantName && (
           <div className="participant-banner">
-            Start Strong for {participantName}
+            New Rep Onboarding for {participantName}
           </div>
         )}
         <Dashboard
@@ -199,6 +208,7 @@ export default function App() {
           selectedStepId={appState.selectedStepId}
           stepStatuses={appState.stepStatuses}
           questionCount={appState.questions.length}
+          teamLeadName={teamLeadName}
           onSelectStep={selectStep}
           onNeedHelp={() => addQuestion(appState.selectedStepId, `I need help with: ${selectedStep.title}`)}
         />
@@ -208,16 +218,21 @@ export default function App() {
           onMarkDone={markDone}
           onNeedHelp={addQuestion}
           onAskNicNac={setNicNacPrompt}
+          teamLeadName={teamLeadName}
         />
       </div>
 
-      <Resources />
-      <Questions questions={appState.questions} remoteQuestionStatus={remoteQuestionStatus} />
+      <Resources teamLeadName={teamLeadName} />
+      <Questions
+        questions={appState.questions}
+        remoteQuestionStatus={remoteQuestionStatus}
+        teamLeadName={teamLeadName}
+      />
 
       <footer className="site-footer">
         <span>Continue the shine:</span>
         <nav aria-label="Partner links">
-          <a href="https://brittwithbling.com/" target="_blank" rel="noreferrer">Britt with Bling</a>
+          <span>{teamLabel}</span>
           <a href="https://www.yoursparklesuite.com/prelaunch" target="_blank" rel="noreferrer">Sparkle Suite coming soon</a>
           <a href="https://neonrabbit.net/" target="_blank" rel="noreferrer">Powered by Neon Rabbit</a>
         </nav>

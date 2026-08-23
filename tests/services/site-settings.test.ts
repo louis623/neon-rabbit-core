@@ -167,6 +167,7 @@ describe('site settings service', () => {
       heroImageUrl: '',
       heroAnimationType: 'sparkle_rise',
       teamName: '',
+      memberTeamName: '',
       showJoinPage: true,
       customerSiteTemplate: 'amethyst',
       appearancePreset: 'sparkle_suite_morganite',

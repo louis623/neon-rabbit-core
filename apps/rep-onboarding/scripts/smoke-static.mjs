@@ -19,10 +19,10 @@ const requiredFiles = [
 ];
 
 const requiredPhrases = [
-  { file: "src/App.tsx", phrase: "Britt with Bling" },
+  { file: "src/App.tsx", phrase: "New Rep Onboarding" },
   { file: "src/App.tsx", phrase: "getConfiguredInviteToken" },
   { file: "src/integration/team-onboarding-client.ts", phrase: "/api/team-onboarding/access/" },
-  { file: "src/data.ts", phrase: "Questions for Brittany" },
+  { file: "src/App.tsx", phrase: "teamLeadName" },
   { file: "src/data.ts", phrase: "Sparkle Suite" },
   {
     file: "src/components/Questions.tsx",

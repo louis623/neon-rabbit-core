@@ -1013,7 +1013,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('SMS')
   })
 
-  it('renders Brittany beta Team Management as a two-step invite and tracking workspace', () => {
+  it('renders beta Team Management as a managed-team invite and tracking workspace', () => {
     const html = renderToStaticMarkup(
       createElement(TeamManagementCard, {
         state: {
@@ -1035,6 +1035,7 @@ describe('DashboardPlaceholder', () => {
           ],
         },
         createDraft: { displayName: 'New Rep', contactEmail: '' },
+        teamName: 'Moonstone Squad',
         replyDraft: 'You are doing great.',
         onCreateDraftChange: () => {},
         onCreateParticipant: () => {},
@@ -1046,6 +1047,8 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(html).toContain('Create onboarding link')
+    expect(html).toContain('Team I manage')
+    expect(html).toContain('Moonstone Squad')
     expect(html).toContain('Rep name')
     expect(html).toContain('Optional email')
     expect(html).toContain('New Rep Progress')
@@ -1239,6 +1242,7 @@ describe('DashboardPlaceholder', () => {
       instagram: '',
       website: '',
       youtube: '',
+      whatnot: '',
       isVisible: true,
     })
   })
@@ -1262,6 +1266,7 @@ describe('DashboardPlaceholder', () => {
         instagram: '',
         website: '',
         youtube: '',
+        whatnot: 'https://www.whatnot.com/user/milehighfizz',
         isVisible: false,
       }),
     ).toEqual({
@@ -1278,6 +1283,7 @@ describe('DashboardPlaceholder', () => {
       sortOrder: 3,
       links: {
         tiktok: 'https://www.tiktok.com/@milehighfizz',
+        whatnot: 'https://www.whatnot.com/user/milehighfizz',
       },
       isVisible: false,
     })

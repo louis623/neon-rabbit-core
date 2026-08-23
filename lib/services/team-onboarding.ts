@@ -643,8 +643,11 @@ export async function getTeamOnboardingParticipantByToken(
     team: {
       ownerRepId: participant.owner_rep_id,
       displayName: normalizeText(rep.display_name) || 'Your team lead',
-      businessName: normalizeText(rep.business_name) || 'Britt With Bling',
-      teamName: normalizeText(siteSettings.team_name) || 'Diamond Peak Society',
+      businessName: normalizeText(rep.business_name) || 'Your team',
+      teamName:
+        normalizeText(siteSettings.team_name) ||
+        normalizeText(rep.business_name) ||
+        'Your team',
     },
     progress: ((progressResult.data ?? []) as ProgressRow[]).map(mapProgressRow),
     messages: ((messagesResult.data ?? []) as MessageRow[]).map(mapMessageRow),

@@ -13,6 +13,7 @@ type NicNacProps = {
   closeSignal: number;
   onPromptHandled: () => void;
   onEscalate: (question: RepQuestion) => void;
+  teamLeadName: string;
 };
 
 const quickQuestions = [
@@ -26,13 +27,13 @@ const quickQuestions = [
   'Hard Bomb Party truths',
 ];
 
-export function NicNac({ selectedStepId, prompt, closeSignal, onPromptHandled, onEscalate }: NicNacProps) {
+export function NicNac({ selectedStepId, prompt, closeSignal, onPromptHandled, onEscalate, teamLeadName }: NicNacProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'nic-nac',
-      text: 'Hi, I can help with Brittany\'s getting-started path, getting into BPU, PayQuicker, setup, shipping, loyalty basics, and knowing when to ask Brittany.',
+      text: 'Hi, I can help with your getting-started path, getting into BPU, PayQuicker, setup, shipping, loyalty basics, and knowing when to ask your team lead.',
     },
   ]);
 
@@ -41,7 +42,7 @@ export function NicNac({ selectedStepId, prompt, closeSignal, onPromptHandled, o
     const selectedStep = steps.find((step) => step.id === selectedStepId);
     const answer = nicNacAnswers.find((item) => item.triggers.some((trigger) => normalized.includes(trigger)));
     const fallback = {
-      response: 'I want you to get the right answer on that one. I saved it as a question for Brittany.',
+      response: `I want you to get the right answer on that one. I saved it as a question for ${teamLeadName}.`,
       resourceIds: [],
       shouldEscalate: true,
     };
@@ -52,9 +53,10 @@ export function NicNac({ selectedStepId, prompt, closeSignal, onPromptHandled, o
       .map((resource) => resource?.title)
       .join(', ');
     const stepContext = selectedStep ? ` You are currently on: ${selectedStep.shortTitle}.` : '';
-    const responseText = linkedResources
+    const responseText = (linkedResources
       ? `${result.response} Resource: ${linkedResources}.${stepContext}`
-      : `${result.response}${stepContext}`;
+      : `${result.response}${stepContext}`)
+      .replaceAll('Brittany', teamLeadName);
 
     setMessages((current) => [
       ...current,
@@ -72,7 +74,7 @@ export function NicNac({ selectedStepId, prompt, closeSignal, onPromptHandled, o
         createdAt: new Date().toLocaleString(),
       });
     }
-  }, [onEscalate, selectedStepId]);
+  }, [onEscalate, selectedStepId, teamLeadName]);
 
   useEffect(() => {
     if (!prompt) return;

@@ -7,6 +7,7 @@ type DashboardProps = {
   selectedStepId: string;
   stepStatuses: Record<string, StepStatus>;
   questionCount: number;
+  teamLeadName: string;
   onSelectStep: (stepId: string) => void;
   onNeedHelp: () => void;
 };
@@ -16,6 +17,7 @@ export function Dashboard({
   selectedStepId,
   stepStatuses,
   questionCount,
+  teamLeadName,
   onSelectStep,
   onNeedHelp,
 }: DashboardProps) {
@@ -26,7 +28,7 @@ export function Dashboard({
     <section className="dashboard" aria-label="Onboarding dashboard">
       <div className="hero-card">
         <div>
-          <p className="plain-label">Brittany's new rep path</p>
+          <p className="plain-label">Your new rep path</p>
           <h1>{participantName ? `Welcome, ${participantName}` : 'Welcome'}</h1>
           <p>You're getting ready for your first Bomb Party shows.</p>
           <p>Start here. One step at a time.</p>
@@ -46,7 +48,7 @@ export function Dashboard({
             <div style={{ width: `${progress.percent}%` }} />
           </div>
           <p>Next: {nextStep.title}</p>
-          <p>{questionCount} question{questionCount === 1 ? '' : 's'} saved for Brittany</p>
+          <p>{questionCount} question{questionCount === 1 ? '' : 's'} saved for {teamLeadName}</p>
         </div>
       </div>
 
@@ -84,7 +86,7 @@ export function Dashboard({
             >
               <span className={`path-number ${complete ? 'complete' : ''}`}>{complete ? 'OK' : index + 1}</span>
               <span className="path-copy">
-                <strong>{group}</strong>
+                <strong>{group.replaceAll('Brittany', teamLeadName)}</strong>
                 <small>{doneCount} of {groupSteps.length} done</small>
               </span>
               {helpCount > 0 && <span className="status-pill help">Help</span>}
