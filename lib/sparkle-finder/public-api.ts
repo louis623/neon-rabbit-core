@@ -3,6 +3,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { PAID_WORKSPACE_STATUSES } from '@/lib/nic-nac/subscription-access'
 import { buildPublicSiteUrl, validatePublicSiteSlug } from '@/lib/public-site/show-link'
 import type { JewelryType } from '@/lib/services/types'
+import {
+  buildFinderAvailabilityPage,
+  decodeFinderAvailabilityCursor,
+  FinderAvailabilityConfigurationError,
+  type FinderAvailabilityPageInfo,
+} from '@/lib/sparkle-finder/availability-v2'
 
 type FinderCollectionRelation =
   | { name: string | null; collection_year: number | null }
@@ -60,6 +66,7 @@ type FinderListingRow = {
   uses_canonical_photo: boolean | null
   listed_at: string | null
   status: string
+  quantity_available?: number
   design: FinderDesignRow | FinderDesignRow[] | null
   rep: FinderRepRow
 }
@@ -100,7 +107,12 @@ export interface SparkleFinderCatalogItem {
   bpMsrp: number | null
   canonicalPhotoUrl: string | null
   searchTags: string[]
+  /** Legacy eligible listing-row count retained during the Finder rollout. */
   availableListingCount: number
+  /** Pending-adjusted listing opportunities for this item in this response context. */
+  availableLeadCount: number
+  /** Pending-adjusted physical dancer quantity for this item in this response context. */
+  availableDancerCount: number
 }
 
 export interface SparkleFinderCatalogFacetOption {
@@ -134,6 +146,7 @@ export interface SparkleFinderPublicShow {
 
 export interface SparkleFinderAvailabilityMatch {
   listingId: string
+  quantityAvailable: number
   listedAt: string | null
   photoUrl: string | null
   photoSource: 'listing' | 'canonical' | 'missing'
@@ -143,9 +156,12 @@ export interface SparkleFinderAvailabilityMatch {
 }
 
 export interface SparkleFinderAvailabilityResult {
+  schemaVersion: 2
   requestedItem: SparkleFinderCatalogItem | null
   exactMatches: SparkleFinderAvailabilityMatch[]
   similarMatches: SparkleFinderAvailabilityMatch[]
+  exactPageInfo: FinderAvailabilityPageInfo
+  similarPageInfo: FinderAvailabilityPageInfo
 }
 
 export interface SparkleFinderLiveShow {
@@ -202,7 +218,36 @@ export interface SparkleFinderCatalogDetailOptions {
 export interface SparkleFinderAvailabilityOptions {
   designId: string
   limit?: number
+  exactCursor?: string
+  similarCursor?: string
   supabase?: SupabaseClient
+}
+
+export type FinderAvailabilityRpcRow = {
+  bucket: 'exact' | 'similar'
+  listing_id: string | null
+  rep_id: string | null
+  design_id: string | null
+  net_quantity: number | null
+  listed_at: string | null
+  listing_photo_url: string | null
+  uses_canonical_photo: boolean | null
+  item_number: string | null
+  design_name: string | null
+  material: string | null
+  main_stone: string | null
+  bp_msrp: number | null
+  canonical_photo_url: string | null
+  type_prefix: JewelryType | null
+  search_tags: string[] | null
+  collection_name: string | null
+  collection_year: number | null
+  rep_display_name: string | null
+  rep_business_name: string | null
+  rep_public_site_slug: string | null
+  rep_status: string | null
+  total_lead_count: number | string
+  total_dancer_count: number | string
 }
 
 export interface SparkleFinderLiveShowsOptions {
@@ -218,12 +263,6 @@ export interface SparkleFinderDirectoryOptions {
 
 const FINDER_CATALOG_SELECT =
   'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, created_at, collection:collections(name, collection_year)'
-
-const FINDER_LISTING_SELECT = `
-  id, rep_id, design_id, listing_photo_url, uses_canonical_photo, listed_at, status,
-  design:jewelry_designs(${FINDER_CATALOG_SELECT}),
-  rep:reps(id, display_name, business_name, profile_photo_url, custom_domain, public_site_slug, status)
-`
 
 const FINDER_LIVE_SHOW_SELECT =
   'id, rep_id, event_time, title, status, duration_minutes, rep:reps(id, display_name, business_name, profile_photo_url, custom_domain, public_site_slug, status)'
@@ -270,6 +309,8 @@ export function parseSparkleFinderLimit(
 export function mapSparkleFinderDesignRow(
   row: FinderDesignRow,
   availableListingCount = 0,
+  availableLeadCount = 0,
+  availableDancerCount = 0,
 ): SparkleFinderCatalogItem {
   const collection = readSingle(row.collection)
 
@@ -286,6 +327,8 @@ export function mapSparkleFinderDesignRow(
     canonicalPhotoUrl: row.canonical_photo_url,
     searchTags: Array.isArray(row.search_tags) ? row.search_tags : [],
     availableListingCount,
+    availableLeadCount,
+    availableDancerCount,
   }
 }
 
@@ -382,63 +425,141 @@ export async function getSparkleFinderCatalogItem(
 export async function getSparkleFinderAvailability(
   options: SparkleFinderAvailabilityOptions,
 ): Promise<SparkleFinderAvailabilityResult> {
-  if (!options.designId.trim() || !isFinderSupabaseConfigured(options.supabase)) {
-    return { requestedItem: null, exactMatches: [], similarMatches: [] }
+  if (!options.designId.trim()) {
+    return emptySparkleFinderAvailabilityResult(null)
   }
+  if (!isFinderSupabaseConfigured(options.supabase)) {
+    throw new FinderAvailabilityConfigurationError()
+  }
+
+  const exactPosition = options.exactCursor
+    ? decodeFinderAvailabilityCursor({
+        cursor: options.exactCursor,
+        designId: options.designId,
+        bucket: 'exact',
+      })
+    : null
+  const similarPosition = options.similarCursor
+    ? decodeFinderAvailabilityCursor({
+        cursor: options.similarCursor,
+        designId: options.designId,
+        bucket: 'similar',
+      })
+    : null
 
   const supabase = options.supabase ?? createAdminClient()
   const requestedItem = await getSparkleFinderCatalogItem({
     designId: options.designId,
     supabase,
   })
-  if (!requestedItem) return { requestedItem: null, exactMatches: [], similarMatches: [] }
+  if (!requestedItem) return emptySparkleFinderAvailabilityResult(null)
 
   const eligibleRepIds = await loadPublicFinderEligibleRepIds(supabase)
   if (eligibleRepIds.length === 0) {
-    return { requestedItem, exactMatches: [], similarMatches: [] }
+    return emptySparkleFinderAvailabilityResult(requestedItem)
   }
-  const qualifiedRepIds = await loadRepIdsWithFinderShows(supabase, eligibleRepIds)
-  if (qualifiedRepIds.size === 0) {
-    return { requestedItem, exactMatches: [], similarMatches: [] }
+  const availabilityRepIds = await loadFinderAvailabilityEligibleRepIds(
+    supabase,
+    eligibleRepIds,
+  )
+  if (availabilityRepIds.length === 0) {
+    return emptySparkleFinderAvailabilityResult(requestedItem)
+  }
+  const nextShows = await loadNextShowsByRepId(supabase, availabilityRepIds)
+  if (nextShows.size === 0) {
+    return emptySparkleFinderAvailabilityResult(requestedItem)
   }
 
   const limit = Math.min(
     Math.max(options.limit ?? DEFAULT_FINDER_AVAILABILITY_LIMIT, 1),
     MAX_FINDER_AVAILABILITY_LIMIT,
   )
-  const qualifiedRepIdList = Array.from(qualifiedRepIds)
-  const exactRows = await loadAvailableListingRows(supabase, qualifiedRepIdList, {
-    designId: options.designId,
-    limit,
-  })
-  const similarRows = await loadAvailableListingRows(supabase, qualifiedRepIdList, {
-    excludeDesignId: options.designId,
-    collectionName: requestedItem.collectionName,
-    jewelryType: requestedItem.jewelryType,
-    limit,
-  })
-  const repIds = Array.from(
-    new Set([...exactRows, ...similarRows].map((listing) => listing.rep_id)),
+  const { data, error } = await supabase.rpc(
+    'list_sparkle_finder_availability_v2',
+    {
+      p_design_id: options.designId,
+      p_eligible_rep_ids: Array.from(nextShows.keys()),
+      p_limit: limit + 1,
+      p_exact_after_listed_at: exactPosition?.listedAt ?? null,
+      p_exact_after_listing_id: exactPosition?.listingId ?? null,
+      p_similar_after_listed_at: similarPosition?.listedAt ?? null,
+      p_similar_after_listing_id: similarPosition?.listingId ?? null,
+    },
   )
-  const nextShows = await loadNextShowsByRepId(supabase, repIds)
-  const exactLeadRows = filterListingsWithNextShows(exactRows, nextShows)
-  const similarLeadRows = filterListingsWithNextShows(similarRows, nextShows)
+  if (error) throw error
+
+  const rows = parseFinderAvailabilityRpcRows(data, {
+    requestedItem,
+    eligibleRepIds: new Set(nextShows.keys()),
+    exactAfter: exactPosition,
+    similarAfter: similarPosition,
+  })
+  const exactRpcRows = rows.filter((row) => row.bucket === 'exact')
+  const similarRpcRows = rows.filter((row) => row.bucket === 'similar')
+  const exactMatches = mapFinderAvailabilityRpcRows(exactRpcRows, nextShows)
+  const similarMatches = mapFinderAvailabilityRpcRows(similarRpcRows, nextShows)
+  const exactTotals = readFinderAvailabilityTotals(exactRpcRows)
+  const similarTotals = readFinderAvailabilityTotals(similarRpcRows)
+  const exactPage = buildFinderAvailabilityPage({
+    bucket: 'exact',
+    designId: options.designId,
+    rows: exactMatches,
+    limit,
+    ...exactTotals,
+  })
+  const similarPage = buildFinderAvailabilityPage({
+    bucket: 'similar',
+    designId: options.designId,
+    rows: similarMatches,
+    limit,
+    ...similarTotals,
+  })
 
   return {
-    requestedItem,
-    exactMatches: exactLeadRows.map((listing) =>
-      mapSparkleFinderAvailabilityListingRow(
-        listing,
-        nextShows.get(listing.rep_id)!,
-      ),
+    schemaVersion: 2,
+    requestedItem: applyFinderAvailabilityTotalsToItem(
+      requestedItem,
+      exactPage.pageInfo,
     ),
-    similarMatches: similarLeadRows.map((listing) =>
-      mapSparkleFinderAvailabilityListingRow(
-        listing,
-        nextShows.get(listing.rep_id)!,
-      ),
-    ),
+    exactMatches: exactPage.matches,
+    similarMatches: similarPage.matches,
+    exactPageInfo: exactPage.pageInfo,
+    similarPageInfo: similarPage.pageInfo,
   }
+}
+
+export function applyFinderAvailabilityTotalsToItem(
+  item: SparkleFinderCatalogItem,
+  totals: Pick<FinderAvailabilityPageInfo, 'totalLeadCount' | 'totalDancerCount'>,
+): SparkleFinderCatalogItem {
+  return {
+    ...item,
+    availableLeadCount: totals.totalLeadCount,
+    availableDancerCount: totals.totalDancerCount,
+  }
+}
+
+async function loadFinderAvailabilityEligibleRepIds(
+  supabase: SupabaseClient,
+  repIds: string[],
+) {
+  const { data, error } = await supabase
+    .from('reps')
+    .select(
+      'id, display_name, business_name, profile_photo_url, custom_domain, public_site_slug, status, finder_directory_visible',
+    )
+    .in('id', repIds)
+  if (error) throw error
+  return filterFinderAvailabilityEligibleRepRows(
+    (data ?? []) as FinderRepSingle[],
+  ).map((rep) => rep.id)
+}
+
+export function filterFinderAvailabilityEligibleRepRows(rows: FinderRepSingle[]) {
+  return rows.filter(
+    (rep) =>
+      isFinderPublicRepStatus(rep.status) && hasFinderResolvablePublicSite(rep),
+  )
 }
 
 export async function listSparkleFinderLiveShows(
@@ -756,59 +877,6 @@ export async function loadPublicFinderEligibleRepIds(supabase: SupabaseClient) {
   return Array.from(paidRepIds)
 }
 
-async function loadAvailableListingRows(
-  supabase: SupabaseClient,
-  eligibleRepIds: string[],
-  options: {
-    designId?: string
-    excludeDesignId?: string
-    collectionName?: string | null
-    jewelryType?: FinderJewelryType
-    limit: number
-  },
-) {
-  let query = supabase
-    .from('trade_listings')
-    .select(FINDER_LISTING_SELECT)
-    .eq('status', 'available')
-    .eq('listing_source', 'catalog')
-    .in('rep_id', eligibleRepIds)
-    .order('listed_at', { ascending: false, nullsFirst: false })
-    .limit(options.limit)
-
-  if (options.designId) {
-    query = query.eq('design_id', options.designId)
-  } else if (options.excludeDesignId) {
-    query = query.neq('design_id', options.excludeDesignId)
-  }
-
-  const { data, error } = await query
-  if (error) throw error
-
-  const rows = ((data ?? []) as unknown as FinderListingRow[]).filter((row) => {
-    const design = readSingle(row.design)
-    const rep = readSingle(row.rep)
-    if (
-      !design ||
-      !rep ||
-      rep.status === 'suspended' ||
-      rep.status === 'churned' ||
-      !hasFinderResolvablePublicSite(rep)
-    ) {
-      return false
-    }
-    if (!options.collectionName && !options.jewelryType) return true
-
-    const item = mapSparkleFinderDesignRow(design)
-    return (
-      item.collectionName === options.collectionName &&
-      item.jewelryType === options.jewelryType
-    )
-  })
-
-  return rows.slice(0, options.limit)
-}
-
 async function loadNextShowsByRepId(supabase: SupabaseClient, repIds: string[]) {
   const shows = new Map<string, SparkleFinderPublicShow>()
   if (repIds.length === 0) return shows
@@ -1073,25 +1141,279 @@ export function filterListingsWithNextShows<T extends { rep_id: string }>(
   return rows.filter((row) => nextShows.has(row.rep_id))
 }
 
+function emptySparkleFinderAvailabilityResult(
+  requestedItem: SparkleFinderCatalogItem | null,
+): SparkleFinderAvailabilityResult {
+  const emptyPageInfo: FinderAvailabilityPageInfo = {
+    totalLeadCount: 0,
+    totalDancerCount: 0,
+    hasMore: false,
+    nextCursor: null,
+  }
+  return {
+    schemaVersion: 2,
+    requestedItem,
+    exactMatches: [],
+    similarMatches: [],
+    exactPageInfo: { ...emptyPageInfo },
+    similarPageInfo: { ...emptyPageInfo },
+  }
+}
+
+export function mapFinderAvailabilityRpcRows(
+  rows: FinderAvailabilityRpcRow[],
+  nextShows: Map<string, SparkleFinderPublicShow>,
+) {
+  return rows.flatMap((row) => {
+    if (!row.listing_id) return []
+    const quantityAvailable = Number(row.net_quantity)
+    if (!Number.isInteger(quantityAvailable) || quantityAvailable < 1) return []
+    if (
+      !row.rep_id ||
+      !row.design_id ||
+      !row.item_number ||
+      !row.design_name ||
+      !row.type_prefix
+    ) {
+      return []
+    }
+    const nextShow = nextShows.get(row.rep_id)
+    if (!nextShow) return []
+
+    const listing: FinderListingRow = {
+      id: row.listing_id,
+      rep_id: row.rep_id,
+      design_id: row.design_id,
+      listing_photo_url: row.listing_photo_url,
+      uses_canonical_photo: row.uses_canonical_photo,
+      listed_at: row.listed_at,
+      status: 'available',
+      quantity_available: quantityAvailable,
+      design: {
+        id: row.design_id,
+        item_number: row.item_number,
+        design_name: row.design_name,
+        material: row.material,
+        main_stone: row.main_stone,
+        bp_msrp: row.bp_msrp,
+        canonical_photo_url: row.canonical_photo_url,
+        type_prefix: row.type_prefix,
+        search_tags: row.search_tags,
+        collection: row.collection_name
+          ? {
+              name: row.collection_name,
+              collection_year: row.collection_year,
+            }
+          : null,
+      },
+      rep: {
+        id: row.rep_id,
+        display_name: row.rep_display_name,
+        business_name: row.rep_business_name,
+        profile_photo_url: null,
+        custom_domain: null,
+        public_site_slug: row.rep_public_site_slug,
+        status: row.rep_status,
+      },
+    }
+    if (!isFinderPublicRepStatus(row.rep_status)) return []
+    const rep = readSingle(listing.rep)
+    if (!rep || !hasFinderResolvablePublicSite(rep)) return []
+
+    return [
+      mapSparkleFinderAvailabilityListingRow(
+        listing,
+        nextShow,
+        quantityAvailable,
+      ),
+    ]
+  })
+}
+
+export function parseFinderAvailabilityRpcRows(
+  value: unknown,
+  context: {
+    requestedItem: SparkleFinderCatalogItem
+    eligibleRepIds: Set<string>
+    exactAfter?: { listedAt: string | null; listingId: string } | null
+    similarAfter?: { listedAt: string | null; listingId: string } | null
+  },
+): FinderAvailabilityRpcRow[] {
+  if (!Array.isArray(value) || value.length < 2) {
+    throw new Error('Finder availability RPC returned an invalid result.')
+  }
+  const rows = value as FinderAvailabilityRpcRow[]
+  const listingIds = new Set<string>()
+  const bucketTotals = new Map<string, { leads: number; dancers: number }>()
+  const bucketRows = new Map<'exact' | 'similar', FinderAvailabilityRpcRow[]>([
+    ['exact', []],
+    ['similar', []],
+  ])
+
+  for (const rawRow of rows) {
+    if (!rawRow || typeof rawRow !== 'object') {
+      throw new Error('Finder availability RPC returned an invalid row.')
+    }
+    const row = rawRow as FinderAvailabilityRpcRow
+    if (row.bucket !== 'exact' && row.bucket !== 'similar') {
+      throw new Error('Finder availability RPC returned an invalid bucket.')
+    }
+    const leads = Number(row.total_lead_count)
+    const dancers = Number(row.total_dancer_count)
+    if (
+      !Number.isSafeInteger(leads) ||
+      leads < 0 ||
+      !Number.isSafeInteger(dancers) ||
+      dancers < 0
+    ) {
+      throw new Error('Finder availability RPC returned invalid totals.')
+    }
+    const priorTotals = bucketTotals.get(row.bucket)
+    if (priorTotals && (priorTotals.leads !== leads || priorTotals.dancers !== dancers)) {
+      throw new Error('Finder availability RPC returned inconsistent totals.')
+    }
+    bucketTotals.set(row.bucket, { leads, dancers })
+    bucketRows.get(row.bucket)!.push(row)
+
+    if (row.listing_id === null) continue
+    if (
+      typeof row.listing_id !== 'string' ||
+      !row.listing_id.trim() ||
+      listingIds.has(row.listing_id) ||
+      typeof row.rep_id !== 'string' ||
+      !context.eligibleRepIds.has(row.rep_id) ||
+      typeof row.design_id !== 'string' ||
+      !row.design_id.trim() ||
+      !Number.isSafeInteger(Number(row.net_quantity)) ||
+      Number(row.net_quantity) < 1 ||
+      (row.listed_at !== null &&
+        (typeof row.listed_at !== 'string' || !Number.isFinite(Date.parse(row.listed_at)))) ||
+      typeof row.item_number !== 'string' ||
+      !row.item_number.trim() ||
+      typeof row.design_name !== 'string' ||
+      !row.design_name.trim() ||
+      (row.collection_name !== null && typeof row.collection_name !== 'string') ||
+      typeof row.type_prefix !== 'string' ||
+      !Object.hasOwn(TYPE_MAP, row.type_prefix) ||
+      typeof row.rep_public_site_slug !== 'string' ||
+      !getFinderValidatedPublicSiteSlug(row.rep_public_site_slug) ||
+      typeof row.rep_status !== 'string' ||
+      !isFinderPublicRepStatus(row.rep_status)
+    ) {
+      throw new Error('Finder availability RPC returned an invalid listing row.')
+    }
+    if (row.bucket === 'exact' && row.design_id !== context.requestedItem.designId) {
+      throw new Error('Finder availability RPC returned a mismatched exact design.')
+    }
+    if (
+      row.bucket === 'similar' &&
+      (row.design_id === context.requestedItem.designId ||
+        TYPE_MAP[row.type_prefix as JewelryType] !== context.requestedItem.jewelryType ||
+        (row.collection_name?.trim() || null) !== context.requestedItem.collectionName)
+    ) {
+      throw new Error('Finder availability RPC returned a mismatched similar design.')
+    }
+    listingIds.add(row.listing_id)
+  }
+
+  for (const bucket of ['exact', 'similar'] as const) {
+    const candidates = bucketRows.get(bucket)!
+    if (candidates.length === 0 || !bucketTotals.has(bucket)) {
+      throw new Error('Finder availability RPC omitted a required bucket.')
+    }
+    const realRows = candidates.filter((row) => row.listing_id !== null)
+    const placeholders = candidates.length - realRows.length
+    if ((realRows.length > 0 && placeholders > 0) || placeholders > 1) {
+      throw new Error('Finder availability RPC returned an invalid bucket placeholder.')
+    }
+    const totals = bucketTotals.get(bucket)!
+    const currentDancers = realRows.reduce(
+      (sum, row) => sum + Number(row.net_quantity),
+      0,
+    )
+    if (totals.leads < realRows.length || totals.dancers < currentDancers) {
+      throw new Error('Finder availability RPC totals are smaller than its page.')
+    }
+    assertFinderAvailabilityOrder(
+      realRows,
+      bucket === 'exact' ? context.exactAfter : context.similarAfter,
+    )
+  }
+
+  return rows
+}
+
+function assertFinderAvailabilityOrder(
+  rows: FinderAvailabilityRpcRow[],
+  after?: { listedAt: string | null; listingId: string } | null,
+) {
+  let previous = after
+    ? { listedAt: after.listedAt, listingId: after.listingId }
+    : null
+  for (const row of rows) {
+    const current = { listedAt: row.listed_at, listingId: row.listing_id! }
+    if (previous && !isFinderAvailabilityPositionAfter(current, previous)) {
+      throw new Error('Finder availability RPC ordering is invalid or repeated.')
+    }
+    previous = current
+  }
+}
+
+function isFinderAvailabilityPositionAfter(
+  current: { listedAt: string | null; listingId: string },
+  previous: { listedAt: string | null; listingId: string },
+) {
+  if (previous.listedAt === null) {
+    return current.listedAt === null && current.listingId < previous.listingId
+  }
+  if (current.listedAt === null) return true
+  const currentTime = Date.parse(current.listedAt)
+  const previousTime = Date.parse(previous.listedAt)
+  return currentTime < previousTime ||
+    (currentTime === previousTime && current.listingId < previous.listingId)
+}
+
+function readFinderAvailabilityTotals(rows: FinderAvailabilityRpcRow[]) {
+  const source = rows[0]
+  if (!source) return { totalLeadCount: 0, totalDancerCount: 0 }
+  const totalLeadCount = Number(source.total_lead_count)
+  const totalDancerCount = Number(source.total_dancer_count)
+  if (
+    !Number.isSafeInteger(totalLeadCount) ||
+    totalLeadCount < 0 ||
+    !Number.isSafeInteger(totalDancerCount) ||
+    totalDancerCount < 0
+  ) {
+    throw new Error('Finder availability RPC returned invalid totals.')
+  }
+  return { totalLeadCount, totalDancerCount }
+}
+
 export function mapSparkleFinderAvailabilityListingRow(
   row: FinderListingRow,
   nextShow: SparkleFinderPublicShow,
+  quantityAvailable = row.quantity_available ?? 1,
 ): SparkleFinderAvailabilityMatch {
   const design = readSingle(row.design)
   const rep = readSingle(row.rep)
   if (!design || !rep?.id) {
     throw new Error('Finder availability listing is missing required relations.')
   }
-  const item = mapSparkleFinderDesignRow(design)
-  const photoUrl = row.listing_photo_url || item.canonicalPhotoUrl
+  // A match is one listing opportunity, while its dancer count is the exact
+  // pending-adjusted quantity that can still be reserved from that listing.
+  const item = mapSparkleFinderDesignRow(design, 0, 1, quantityAvailable)
+  const canonicalPhotoUrl =
+    row.uses_canonical_photo !== false ? item.canonicalPhotoUrl : null
+  const photoUrl = row.listing_photo_url || canonicalPhotoUrl
 
   return {
     listingId: row.id,
+    quantityAvailable,
     listedAt: row.listed_at,
     photoUrl,
     photoSource: row.listing_photo_url
       ? 'listing'
-      : item.canonicalPhotoUrl && row.uses_canonical_photo !== false
+      : canonicalPhotoUrl
         ? 'canonical'
         : 'missing',
     item,

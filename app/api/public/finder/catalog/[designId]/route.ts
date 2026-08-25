@@ -21,7 +21,7 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   return Response.json(
-    { item },
+    { item: { ...item, description: null } },
     {
       headers: noStoreHeaders(),
     },

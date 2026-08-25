@@ -1,19 +1,60 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  applyFinderAvailabilityTotalsToItem,
   countListingsByDesignForQualifiedReps,
   deriveSparkleFinderCatalogFacets,
   filterListingsWithNextShows,
+  filterFinderAvailabilityEligibleRepRows,
   mapFinderShowRowsToNextShows,
   mapSparkleFinderLiveShowRows,
   mapSparkleFinderAvailabilityListingRow,
+  mapFinderAvailabilityRpcRows,
   mapSparkleFinderDesignRow,
   loadPublicFinderEligibleRepIds,
   listSparkleFinderPublicReps,
   mapSparkleFinderDirectoryRows,
   parseSparkleFinderLimit,
+  parseFinderAvailabilityRpcRows,
 } from '@/lib/sparkle-finder/public-api'
 
 describe('Sparkle Finder public API contract helpers', () => {
+  it('preserves availability rep eligibility without applying directory visibility', () => {
+    const eligible = filterFinderAvailabilityEligibleRepRows([
+      {
+        id: 'rep-hidden-directory',
+        display_name: 'Hidden Directory Rep',
+        business_name: 'Valid Studio',
+        profile_photo_url: null,
+        custom_domain: null,
+        public_site_slug: 'validstudio',
+        status: 'active',
+        finder_directory_visible: false,
+      },
+      {
+        id: 'rep-suspended',
+        display_name: 'Suspended',
+        business_name: 'Suspended Studio',
+        profile_photo_url: null,
+        custom_domain: null,
+        public_site_slug: 'suspendedstudio',
+        status: 'suspended',
+        finder_directory_visible: true,
+      },
+      {
+        id: 'rep-invalid-slug',
+        display_name: 'Invalid Slug',
+        business_name: 'Invalid Slug',
+        profile_photo_url: null,
+        custom_domain: null,
+        public_site_slug: 'invalid-studio',
+        status: 'active',
+        finder_directory_visible: true,
+      },
+    ])
+
+    expect(eligible.map((rep) => rep.id)).toEqual(['rep-hidden-directory'])
+  })
+
   it('includes paid and unexpired trial reps without launch-build bypasses', async () => {
     const subscriptionIn = vi.fn().mockResolvedValue({
       data: [{ rep_id: 'rep-paid' }],
@@ -80,6 +121,35 @@ describe('Sparkle Finder public API contract helpers', () => {
       canonicalPhotoUrl: 'https://cdn.example.test/rg100.png',
       searchTags: ['ring', 'rose gold', 'opal'],
       availableListingCount: 3,
+      availableLeadCount: 0,
+      availableDancerCount: 0,
+    })
+  })
+
+  it('adds exact pending-adjusted lead and dancer totals without changing the legacy count', () => {
+    const item = applyFinderAvailabilityTotalsToItem(
+      mapSparkleFinderDesignRow(
+        {
+          id: 'design-1',
+          item_number: 'RG100',
+          design_name: 'Aurora Ring',
+          material: null,
+          main_stone: null,
+          bp_msrp: null,
+          canonical_photo_url: null,
+          type_prefix: 'RG',
+          search_tags: [],
+          collection: null,
+        },
+        7,
+      ),
+      { totalLeadCount: 3, totalDancerCount: 5 },
+    )
+
+    expect(item).toMatchObject({
+      availableListingCount: 7,
+      availableLeadCount: 3,
+      availableDancerCount: 5,
     })
   })
 
@@ -196,6 +266,7 @@ describe('Sparkle Finder public API contract helpers', () => {
 
     expect(match).toMatchObject({
       listingId: 'listing-1',
+      quantityAvailable: 1,
       photoUrl: 'https://cdn.example.test/listing.png',
       photoSource: 'listing',
       rep: {
@@ -217,6 +288,197 @@ describe('Sparkle Finder public API contract helpers', () => {
     expect(JSON.stringify(match)).not.toContain('tradeBoardPath')
     expect(JSON.stringify(match)).not.toContain('customerSitePath')
     expect(JSON.stringify(match)).not.toContain('/amethyst?c=')
+  })
+
+  it('does not attach a canonical photo when a listing explicitly opts out', () => {
+    const match = mapSparkleFinderAvailabilityListingRow(
+      {
+        id: 'listing-1',
+        rep_id: 'rep-1',
+        design_id: 'design-1',
+        listing_photo_url: null,
+        uses_canonical_photo: false,
+        listed_at: null,
+        status: 'available',
+        design: {
+          id: 'design-1',
+          item_number: 'RG100',
+          design_name: 'Aurora Ring',
+          material: 'Rose gold',
+          main_stone: 'Pink opal',
+          bp_msrp: 39.95,
+          canonical_photo_url: 'https://cdn.example.test/canonical.png',
+          type_prefix: 'RG',
+          search_tags: [],
+          collection: null,
+        },
+        rep: {
+          id: 'rep-1',
+          display_name: 'Gracie Smoke',
+          business_name: 'Gracie Studio',
+          profile_photo_url: null,
+          custom_domain: null,
+          public_site_slug: 'graciestudio',
+          status: 'active',
+        },
+      },
+      {
+        showId: 'show-1',
+        repId: 'rep-1',
+        startsAt: '2026-08-26T00:00:00.000Z',
+        title: null,
+        status: 'scheduled',
+      },
+    )
+
+    expect(match).toMatchObject({ photoUrl: null, photoSource: 'missing' })
+  })
+
+  it('maps only positive pending-adjusted RPC quantities without exposing requests', () => {
+    const nextShow = {
+      showId: 'show-1',
+      repId: 'rep-1',
+      startsAt: '2026-08-26T00:00:00.000Z',
+      title: 'Reveal',
+      status: 'scheduled' as const,
+    }
+    const base = {
+      bucket: 'exact' as const,
+      listing_id: 'listing-1',
+      rep_id: 'rep-1',
+      design_id: 'design-1',
+      net_quantity: 1,
+      listed_at: '2026-08-25T15:00:00.000Z',
+      listing_photo_url: 'https://cdn.example.test/listing.png',
+      uses_canonical_photo: false,
+      item_number: 'RG100',
+      design_name: 'Aurora Ring',
+      material: 'Rose gold',
+      main_stone: 'Pink opal',
+      bp_msrp: 39.95,
+      canonical_photo_url: 'https://cdn.example.test/canonical.png',
+      type_prefix: 'RG' as const,
+      search_tags: ['ring'],
+      collection_name: 'April Birthday',
+      collection_year: 2026,
+      rep_display_name: 'Gracie Smoke',
+      rep_business_name: 'Gracie Test Studio',
+      rep_public_site_slug: 'gracieteststudio',
+      rep_status: 'active',
+      total_lead_count: 1,
+      total_dancer_count: 1,
+    }
+
+    const matches = mapFinderAvailabilityRpcRows(
+      [
+        base,
+        {
+          ...base,
+          listing_id: 'fully-reserved',
+          net_quantity: 0,
+        },
+      ],
+      new Map([['rep-1', nextShow]]),
+    )
+
+    expect(matches).toHaveLength(1)
+    expect(matches[0]).toMatchObject({
+      listingId: 'listing-1',
+      quantityAvailable: 1,
+      item: { designId: 'design-1', mainStone: 'Pink opal' },
+      photoUrl: 'https://cdn.example.test/listing.png',
+      photoSource: 'listing',
+    })
+    expect(matches[0]?.item).toMatchObject({
+      availableListingCount: 0,
+      availableLeadCount: 1,
+      availableDancerCount: 1,
+    })
+    expect(JSON.stringify(matches)).not.toMatch(
+      /customerName|customerDescription|pendingCount|requestId/i,
+    )
+  })
+
+  it('strictly validates availability bucket identity, totals, and exact design semantics', () => {
+    const requestedItem = {
+      designId: 'design-1',
+      itemNumber: 'RG100',
+      designName: 'Aurora Ring',
+      collectionName: 'April Birthday',
+      collectionYear: 2026,
+      jewelryType: 'ring' as const,
+      material: null,
+      mainStone: null,
+      bpMsrp: null,
+      canonicalPhotoUrl: null,
+      searchTags: [],
+      availableListingCount: 0,
+      availableLeadCount: 0,
+      availableDancerCount: 0,
+    }
+    const exact = {
+      bucket: 'exact' as const,
+      listing_id: 'listing-2',
+      rep_id: 'rep-1',
+      design_id: 'design-1',
+      net_quantity: 2,
+      listed_at: '2026-08-25T12:00:00.000Z',
+      listing_photo_url: null,
+      uses_canonical_photo: true,
+      item_number: 'RG100',
+      design_name: 'Aurora Ring',
+      material: null,
+      main_stone: null,
+      bp_msrp: null,
+      canonical_photo_url: null,
+      type_prefix: 'RG' as const,
+      search_tags: [],
+      collection_name: 'April Birthday',
+      collection_year: 2026,
+      rep_display_name: 'Jamie',
+      rep_business_name: 'Jamie Sparkles',
+      rep_public_site_slug: 'jamiesparkles',
+      rep_status: 'active',
+      total_lead_count: 1,
+      total_dancer_count: 2,
+    }
+    const emptySimilar = {
+      ...exact,
+      bucket: 'similar' as const,
+      listing_id: null,
+      rep_id: null,
+      design_id: null,
+      net_quantity: null,
+      total_lead_count: 0,
+      total_dancer_count: 0,
+    }
+    const context = {
+      requestedItem,
+      eligibleRepIds: new Set(['rep-1']),
+    }
+
+    expect(parseFinderAvailabilityRpcRows([exact, emptySimilar], context)).toHaveLength(2)
+    expect(() =>
+      parseFinderAvailabilityRpcRows(
+        [{ ...exact, design_id: 'design-wrong' }, emptySimilar],
+        context,
+      ),
+    ).toThrow(/mismatched exact design/i)
+    expect(() =>
+      parseFinderAvailabilityRpcRows(
+        [exact, { ...exact, listing_id: 'listing-1' }, emptySimilar],
+        context,
+      ),
+    ).toThrow(/inconsistent totals|smaller than its page/i)
+    expect(() =>
+      parseFinderAvailabilityRpcRows([exact, emptySimilar], {
+        ...context,
+        exactAfter: {
+          listedAt: exact.listed_at,
+          listingId: exact.listing_id,
+        },
+      }),
+    ).toThrow(/ordering is invalid or repeated/i)
   })
 
   it('excludes available listings when the rep has no live or future show', () => {

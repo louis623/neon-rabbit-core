@@ -597,6 +597,7 @@ async function submitTradeRequestRequest(payload) {
         form.append("listingId", payload.listingId);
         form.append("customerName", payload.customerName);
         form.append("customerDescription", payload.customerDescription);
+        form.append("submissionId", payload.submissionId);
         form.append("revealScreenshot", payload.revealScreenshot);
         return {
           method: "POST",
@@ -612,6 +613,7 @@ async function submitTradeRequestRequest(payload) {
           listingId: payload.listingId,
           customerName: payload.customerName,
           customerDescription: payload.customerDescription,
+          submissionId: payload.submissionId,
         }),
       };
 
@@ -1352,12 +1354,14 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
   const [offering, setOffering] = useState("");
   const [screenshot, setScreenshot] = useState(null);
   const [screenshotError, setScreenshotError] = useState("");
+  const [submissionId, setSubmissionId] = useState(() => crypto.randomUUID());
 
   useEffect(() => {
     setName("");
     setOffering("");
     setScreenshot(null);
     setScreenshotError("");
+    setSubmissionId(crypto.randomUUID());
   }, [piece?.id, success]);
 
   const trimmedName = name.trim();
@@ -1407,6 +1411,7 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
               listingId: piece.id,
               customerName: trimmedName,
               customerDescription: trimmedOffering,
+              submissionId,
               revealScreenshot: screenshot,
             });
           }}
@@ -1418,6 +1423,7 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
               placeholder="As shown on your reveal"
               value={name}
               onChange={(event) => setName(event.target.value)}
+              maxLength={100}
               required
             />
           </div>
@@ -1427,6 +1433,7 @@ function RequestSheet({ piece, onClose, onSubmit, success, pending, error, repNa
               placeholder="Example: July Birthday 2026 necklace"
               value={offering}
               onChange={(event) => setOffering(event.target.value)}
+              maxLength={1000}
               required
             />
           </div>

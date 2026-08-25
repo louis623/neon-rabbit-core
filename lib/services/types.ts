@@ -346,6 +346,7 @@ export interface SubmitTradeRequestInput {
   listingId: string
   customerName: string
   customerDescription: string
+  submissionId?: string
   clickwrapAcknowledged?: boolean
   expectedRepId?: string
 }
@@ -353,6 +354,7 @@ export interface SubmitTradeRequestInput {
 export interface SubmitTradeRequestResult {
   requestId: string
   listingId: string
+  mutationReplayed?: boolean
 }
 
 export interface TradeRequestRevealScreenshot {

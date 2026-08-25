@@ -9,6 +9,7 @@ import {
 } from '@/lib/amethyst/trade-template-data'
 import {
   mapTradeListingToAmethystTradeBoardListing,
+  parseAmethystPublicNetRows,
   type AmethystTradeBoardListing,
 } from '@/lib/amethyst/trade-board-listings'
 import type { TradeListingWithDesign } from '@/lib/services/types'
@@ -217,6 +218,48 @@ describe('Amethyst trade page template wiring', () => {
         makeTradeListing({ quantity_available: 2 }),
       ).quantityAvailable,
     ).toBe(2)
+  })
+
+  it('maps only the pending-adjusted quantity onto the public Dance Floor', () => {
+    expect(
+      mapTradeListingToAmethystTradeBoardListing(
+        makeTradeListing({ quantity_available: 2 }),
+        1,
+      ).quantityAvailable,
+    ).toBe(1)
+  })
+
+  it('fails closed on malformed or duplicate atomic customer quantity rows', () => {
+    expect(
+      parseAmethystPublicNetRows([
+        { listing_id: 'listing-2', net_quantity: 2 },
+        { listing_id: 'listing-1', net_quantity: 1 },
+      ]),
+    ).toEqual([
+      { listingId: 'listing-2', netQuantity: 2 },
+      { listingId: 'listing-1', netQuantity: 1 },
+    ])
+    expect(() =>
+      parseAmethystPublicNetRows([
+        { listing_id: 'listing-1', net_quantity: 1 },
+        { listing_id: 'listing-1', net_quantity: 1 },
+      ]),
+    ).toThrow(/invalid/i)
+    expect(() =>
+      parseAmethystPublicNetRows([{ listing_id: 'listing-1', net_quantity: 0 }]),
+    ).toThrow(/invalid/i)
+  })
+
+  it('sends one stable browser UUID with JSON and multipart trade-request retries', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/trade.jsx'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('useState(() => crypto.randomUUID())')
+    expect(jsx).toContain('form.append("submissionId", payload.submissionId)')
+    expect(jsx).toContain('submissionId: payload.submissionId')
+    expect(jsx).toContain('submissionId,')
   })
 
   it('maps non-item-number trade listings as ordinary customer-facing cards', () => {

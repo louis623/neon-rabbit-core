@@ -1,99 +1,44 @@
 import {
-  DEFAULT_FINDER_CATALOG_LIMIT,
-  MAX_FINDER_CATALOG_LIMIT,
-  type FinderCatalogLabel,
-  type FinderJewelryType,
-  listSparkleFinderCatalogItems,
-  parseSparkleFinderLimit,
-} from '@/lib/sparkle-finder/public-api'
+  CatalogV2ConfigurationError,
+  CatalogV2RequestError,
+  listSparkleFinderCatalogPageV2,
+  parseFinderCatalogRequest,
+} from '@/lib/sparkle-finder/catalog-v2'
+import { checkFinderCatalogRateLimit } from '@/lib/sparkle-finder/catalog-route-guard'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
-  const url = new URL(request.url)
-  const collectionYear = parseCollectionYear(url.searchParams.get('year'))
-  if (collectionYear === null) {
+  const rateLimit = checkFinderCatalogRateLimit(request)
+  if (!rateLimit.allowed) {
     return Response.json(
-      { error: 'year must be a four-digit collection year.' },
-      { status: 400, headers: noStoreHeaders() },
+      { error: 'Catalog request rate limit exceeded.' },
+      {
+        status: 429,
+        headers: { ...noStoreHeaders(), 'retry-after': String(rateLimit.retryAfterSeconds) },
+      },
     )
   }
-
-  const limit = parseSparkleFinderLimit(
-    url.searchParams.get('limit'),
-    DEFAULT_FINDER_CATALOG_LIMIT,
-    MAX_FINDER_CATALOG_LIMIT,
-  )
-  if (limit === null) {
-    return Response.json(
-      { error: 'limit must be a positive whole number.' },
-      { status: 400, headers: noStoreHeaders() },
-    )
-  }
-
-  const items = await listSparkleFinderCatalogItems({
-    query: url.searchParams.get('query') ?? undefined,
-    jewelryType: parseJewelryType(url.searchParams.get('type')),
-    collection: parseTextFilter(url.searchParams.get('collection')),
-    material: parseTextFilter(url.searchParams.get('material')),
-    mainStone: parseTextFilter(url.searchParams.get('stone')),
-    label: parseCatalogLabel(url.searchParams.get('label')),
-    collectionYear: collectionYear ?? undefined,
-    limit,
-  })
-
-  return Response.json(
-    { items },
-    {
+  try {
+    const options = parseFinderCatalogRequest(new URL(request.url))
+    return Response.json(await listSparkleFinderCatalogPageV2(options), {
       headers: noStoreHeaders(),
-    },
-  )
+    })
+  } catch (error) {
+    if (error instanceof CatalogV2RequestError || error instanceof CatalogV2ConfigurationError) {
+      return Response.json(
+        { error: error.message },
+        { status: error.status, headers: noStoreHeaders() },
+      )
+    }
+    throw error
+  }
 }
 
 function noStoreHeaders() {
   return {
     'cache-control': 'no-store',
+    'x-content-type-options': 'nosniff',
   }
-}
-
-const finderJewelryTypes = new Set<FinderJewelryType>([
-  'ring',
-  'necklace',
-  'earrings',
-  'stack',
-  'bracelet',
-])
-
-const finderCatalogLabels = new Set<FinderCatalogLabel>([
-  'diamond',
-  'unicorn',
-  'standard',
-])
-
-function parseTextFilter(value: string | null) {
-  const trimmed = value?.trim()
-  return trimmed && trimmed !== 'all' ? trimmed : undefined
-}
-
-function parseJewelryType(value: string | null): FinderJewelryType | undefined {
-  const trimmed = parseTextFilter(value)
-  return finderJewelryTypes.has(trimmed as FinderJewelryType)
-    ? (trimmed as FinderJewelryType)
-    : undefined
-}
-
-function parseCatalogLabel(value: string | null): FinderCatalogLabel | undefined {
-  const trimmed = parseTextFilter(value)
-  return finderCatalogLabels.has(trimmed as FinderCatalogLabel)
-    ? (trimmed as FinderCatalogLabel)
-    : undefined
-}
-
-function parseCollectionYear(value: string | null) {
-  const trimmed = parseTextFilter(value)
-  if (!trimmed) return undefined
-  if (!/^\d{4}$/.test(trimmed)) return null
-  const year = Number.parseInt(trimmed, 10)
-  return year >= 2020 && year <= 2040 ? year : null
 }

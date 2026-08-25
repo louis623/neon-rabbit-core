@@ -16,6 +16,8 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 
 vi.mock('@/lib/services/trade-requests', () => ({
+  TRADE_REQUEST_CUSTOMER_NAME_MAX_LENGTH: 100,
+  TRADE_REQUEST_DESCRIPTION_MAX_LENGTH: 1000,
   submitTradeRequest: (...args: unknown[]) => submitTradeRequestMock(...args),
   attachTradeRequestRevealScreenshot: (...args: unknown[]) =>
     attachTradeRequestRevealScreenshotMock(...args),
@@ -24,6 +26,7 @@ vi.mock('@/lib/services/trade-requests', () => ({
 }))
 
 vi.mock('@/lib/services/storage', () => ({
+  TRADE_REQUEST_SCREENSHOT_MAX_BYTES: 8 * 1024 * 1024,
   uploadTradeRequestRevealScreenshot: (...args: unknown[]) =>
     uploadTradeRequestRevealScreenshotMock(...args),
   removeTradeRequestRevealScreenshots: (...args: unknown[]) =>
@@ -40,7 +43,10 @@ vi.mock('@/lib/amethyst/preview-rep', () => ({
     resolveAmethystPreviewRepMock(...args),
 }))
 
-import { POST } from '@/app/api/amethyst/trade-requests/route'
+import {
+  POST,
+  resetTradeRequestRateLimitsForTests,
+} from '@/app/api/amethyst/trade-requests/route'
 
 describe('POST /api/amethyst/trade-requests', () => {
   beforeEach(() => {
@@ -52,6 +58,7 @@ describe('POST /api/amethyst/trade-requests', () => {
     resolveAmethystPreviewRepMock.mockReset()
     uploadTradeRequestRevealScreenshotMock.mockReset()
     removeTradeRequestRevealScreenshotsMock.mockReset()
+    resetTradeRequestRateLimitsForTests()
   })
 
   it('submits the request through the trade-request service and returns 201', async () => {
@@ -426,5 +433,72 @@ describe('POST /api/amethyst/trade-requests', () => {
     await expect(response.json()).resolves.toEqual({
       error: 'Invalid request payload.',
     })
+  })
+
+  it('requires a supported content type and rejects streamed oversized JSON', async () => {
+    const unsupported = await POST(
+      new Request('http://localhost/api/amethyst/trade-requests', {
+        method: 'POST',
+        headers: { 'content-type': 'text/plain' },
+        body: '{}',
+      }),
+    )
+    expect(unsupported.status).toBe(415)
+
+    const oversizedRequest = new Request('http://localhost/api/amethyst/trade-requests', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ padding: 'x'.repeat(17_000) }),
+    })
+    expect(oversizedRequest.headers.get('content-length')).toBeNull()
+    const oversized = await POST(oversizedRequest)
+    expect(oversized.status).toBe(413)
+    expect(submitTradeRequestMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects oversized customer text before creating an admin client', async () => {
+    const response = await POST(
+      new Request('http://localhost/api/amethyst/trade-requests', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          listingId: 'listing-1',
+          customerName: 'x'.repeat(101),
+          customerDescription: 'Birthday ring',
+        }),
+      }),
+    )
+    expect(response.status).toBe(400)
+    expect(createAdminClientMock).not.toHaveBeenCalled()
+    expect(submitTradeRequestMock).not.toHaveBeenCalled()
+  })
+
+  it('throttles repeated requests per client and listing', async () => {
+    submitTradeRequestMock.mockResolvedValue({
+      requestId: 'request-1',
+      listingId: 'listing-1',
+    })
+    getTradeRequestNotificationSummaryMock.mockResolvedValue(null)
+    const makeRequest = () =>
+      new Request('http://localhost/api/amethyst/trade-requests', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-forwarded-for': '203.0.113.9',
+        },
+        body: JSON.stringify({
+          listingId: 'listing-1',
+          customerName: 'Jamie',
+          customerDescription: 'Birthday ring',
+        }),
+      })
+
+    for (let index = 0; index < 5; index += 1) {
+      expect((await POST(makeRequest())).status).toBe(201)
+    }
+    const response = await POST(makeRequest())
+    expect(response.status).toBe(429)
+    expect(response.headers.get('retry-after')).toBe('60')
+    expect(submitTradeRequestMock).toHaveBeenCalledTimes(5)
   })
 })

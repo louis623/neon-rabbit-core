@@ -131,6 +131,7 @@ function inferTradeBoardTier(listing: TradeListingWithDesign): AmethystTradeBoar
 
 export function mapTradeListingToAmethystTradeBoardListing(
   listing: TradeListingWithDesign,
+  pendingReservationCount = 0,
 ): AmethystTradeBoardListing {
   const display = getTradeListingDisplayFields(listing)
   const displayName = display.designName.trim()
@@ -157,7 +158,10 @@ export function mapTradeListingToAmethystTradeBoardListing(
     tier: inferTradeBoardTier(listing),
     photoUrl: display.photoUrl,
     photoSource: getTradeBoardPhotoSource(listing),
-    quantityAvailable: Math.max(0, listing.quantity_available ?? 1),
+    quantityAvailable: Math.max(
+      0,
+      (listing.quantity_available ?? 1) - Math.max(0, pendingReservationCount),
+    ),
   }
 }
 
@@ -199,19 +203,67 @@ export async function loadAmethystTradeBoardPreviewListings(
       return targeted ? [] : defaultAmethystTradeBoardListings
     }
 
+    const { data: netData, error: netError } = await admin.rpc(
+      'list_amethyst_public_trade_board_net_v2',
+      {
+        p_rep_id: rep.id,
+        p_limit: limit ?? null,
+      },
+    )
+    if (netError) throw netError
+    const netRows = parseAmethystPublicNetRows(netData)
+    if (netRows.length === 0) {
+      return targeted ? [] : defaultAmethystTradeBoardListings
+    }
+
     const board = await getMyBoard(admin, rep.id as string, {
       statusFilter: 'available',
       sortBy: 'listed_at',
       sortOrder: 'desc',
-      limit,
     })
 
     if (!board.listings.length) {
       return targeted ? [] : defaultAmethystTradeBoardListings
     }
 
-    return board.listings.map(mapTradeListingToAmethystTradeBoardListing)
+    const listingById = new Map(board.listings.map((listing) => [listing.id, listing]))
+    return netRows.flatMap((row) => {
+      const listing = listingById.get(row.listingId)
+      if (!listing) return []
+      return [
+        {
+          ...mapTradeListingToAmethystTradeBoardListing(listing),
+          quantityAvailable: row.netQuantity,
+        },
+      ]
+    })
   } catch {
     return targeted ? [] : defaultAmethystTradeBoardListings
   }
+}
+
+export function parseAmethystPublicNetRows(value: unknown) {
+  if (!Array.isArray(value)) {
+    throw new Error('Customer Dance Floor quantity query returned an invalid result.')
+  }
+  const seen = new Set<string>()
+  return value.map((entry) => {
+    if (!entry || typeof entry !== 'object') {
+      throw new Error('Customer Dance Floor quantity row is invalid.')
+    }
+    const row = entry as Record<string, unknown>
+    const listingId = typeof row.listing_id === 'string' ? row.listing_id.trim() : ''
+    const netQuantity = Number(row.net_quantity)
+    if (
+      !listingId ||
+      listingId.length > 100 ||
+      seen.has(listingId) ||
+      !Number.isSafeInteger(netQuantity) ||
+      netQuantity < 1
+    ) {
+      throw new Error('Customer Dance Floor quantity row is invalid.')
+    }
+    seen.add(listingId)
+    return { listingId, netQuantity }
+  })
 }

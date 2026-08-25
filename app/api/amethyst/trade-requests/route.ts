@@ -7,9 +7,12 @@ import {
   attachTradeRequestRevealScreenshot,
   getTradeRequestNotificationSummary,
   submitTradeRequest,
+  TRADE_REQUEST_CUSTOMER_NAME_MAX_LENGTH,
+  TRADE_REQUEST_DESCRIPTION_MAX_LENGTH,
 } from '@/lib/services/trade-requests'
 import {
   removeTradeRequestRevealScreenshots,
+  TRADE_REQUEST_SCREENSHOT_MAX_BYTES,
   uploadTradeRequestRevealScreenshot,
 } from '@/lib/services/storage'
 import { notifyRepOfTradeRequest } from '@/lib/nic-nac/trade-request-notifications'
@@ -28,7 +31,27 @@ type TradeRequestPayload = {
   listingId: string
   customerName: string
   customerDescription: string
+  submissionId?: string
   revealScreenshot: File | null
+}
+
+const JSON_BODY_MAX_BYTES = 16 * 1024
+const MULTIPART_OVERHEAD_MAX_BYTES = 64 * 1024
+const MULTIPART_BODY_MAX_BYTES =
+  TRADE_REQUEST_SCREENSHOT_MAX_BYTES + MULTIPART_OVERHEAD_MAX_BYTES
+const TRADE_REQUEST_RATE_LIMIT = 5
+const TRADE_REQUEST_RATE_WINDOW_MS = 60_000
+const TRADE_REQUEST_RATE_MAX_BUCKETS = 10_000
+const tradeRequestRateBuckets = new Map<string, { count: number; resetAt: number }>()
+
+class TradeRequestPayloadError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message)
+    this.name = 'TradeRequestPayloadError'
+  }
 }
 
 function readString(value: unknown) {
@@ -37,26 +60,130 @@ function readString(value: unknown) {
 
 async function readPayload(request: Request): Promise<TradeRequestPayload> {
   const contentType = request.headers.get('content-type')?.toLowerCase() ?? ''
-  if (contentType.includes('multipart/form-data')) {
-    const form = await request.formData()
+  const isMultipart = contentType.startsWith('multipart/form-data;')
+  const isJson = contentType.split(';', 1)[0]?.trim() === 'application/json'
+  if (!isMultipart && !isJson) {
+    throw new TradeRequestPayloadError(
+      'Trade requests must use application/json or multipart/form-data.',
+      415,
+    )
+  }
+  const maxBytes = isMultipart ? MULTIPART_BODY_MAX_BYTES : JSON_BODY_MAX_BYTES
+  const bytes = await readBoundedRequestBytes(request, maxBytes)
+
+  if (isMultipart) {
+    const formRequest = new Request(request.url, {
+      method: 'POST',
+      headers: { 'content-type': request.headers.get('content-type')! },
+      body: bytes,
+    })
+    const form = await formRequest.formData()
     const screenshot = form.get('revealScreenshot')
     return {
       listingId: readString(form.get('listingId')),
       customerName: readString(form.get('customerName')),
       customerDescription: readString(form.get('customerDescription')),
+      submissionId: readString(form.get('submissionId')) || undefined,
       revealScreenshot: screenshot instanceof File && screenshot.size > 0
         ? screenshot
         : null,
     }
   }
 
-  const body = await request.json()
+  let body: Record<string, unknown>
+  try {
+    body = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) as Record<string, unknown>
+  } catch {
+    throw new TradeRequestPayloadError('Invalid request payload.', 400)
+  }
   return {
     listingId: readString(body?.listingId),
     customerName: readString(body?.customerName),
     customerDescription: readString(body?.customerDescription),
+    submissionId: readString(body?.submissionId) || undefined,
     revealScreenshot: null,
   }
+}
+
+async function readBoundedRequestBytes(request: Request, maxBytes: number) {
+  const contentLength = Number(request.headers.get('content-length') ?? 0)
+  if (Number.isFinite(contentLength) && contentLength > maxBytes) {
+    throw new TradeRequestPayloadError('Trade request payload is too large.', 413)
+  }
+  const reader = request.body?.getReader()
+  if (!reader) return new Uint8Array()
+  const chunks: Uint8Array[] = []
+  let totalBytes = 0
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      totalBytes += value.byteLength
+      if (totalBytes > maxBytes) {
+        await reader.cancel()
+        throw new TradeRequestPayloadError('Trade request payload is too large.', 413)
+      }
+      chunks.push(value)
+    }
+  } finally {
+    reader.releaseLock()
+  }
+  const body = new Uint8Array(totalBytes)
+  let offset = 0
+  for (const chunk of chunks) {
+    body.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  return body
+}
+
+function validatePayloadBounds(payload: TradeRequestPayload) {
+  if (payload.listingId.trim().length > 100) {
+    throw new TradeRequestPayloadError('listingId is too long.', 400)
+  }
+  if (payload.customerName.trim().length > TRADE_REQUEST_CUSTOMER_NAME_MAX_LENGTH) {
+    throw new TradeRequestPayloadError(
+      `Your name must be ${TRADE_REQUEST_CUSTOMER_NAME_MAX_LENGTH} characters or fewer.`,
+      400,
+    )
+  }
+  if (
+    payload.customerDescription.trim().length >
+    TRADE_REQUEST_DESCRIPTION_MAX_LENGTH
+  ) {
+    throw new TradeRequestPayloadError(
+      `Your description must be ${TRADE_REQUEST_DESCRIPTION_MAX_LENGTH} characters or fewer.`,
+      400,
+    )
+  }
+}
+
+function allowTradeRequest(request: Request, listingId: string) {
+  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+  const address = (forwarded || request.headers.get('x-real-ip')?.trim() || 'unknown').slice(0, 128)
+  const key = `${address}:${listingId.trim().slice(0, 100)}`
+  const now = Date.now()
+  const bucket = tradeRequestRateBuckets.get(key)
+  if (!bucket || bucket.resetAt <= now) {
+    if (tradeRequestRateBuckets.size >= TRADE_REQUEST_RATE_MAX_BUCKETS) {
+      const oldestKey = tradeRequestRateBuckets.keys().next().value as string | undefined
+      if (oldestKey) tradeRequestRateBuckets.delete(oldestKey)
+    }
+    tradeRequestRateBuckets.set(key, {
+      count: 1,
+      resetAt: now + TRADE_REQUEST_RATE_WINDOW_MS,
+    })
+    return { allowed: true, retryAfter: 0 }
+  }
+  bucket.count += 1
+  return {
+    allowed: bucket.count <= TRADE_REQUEST_RATE_LIMIT,
+    retryAfter: Math.max(1, Math.ceil((bucket.resetAt - now) / 1000)),
+  }
+}
+
+export function resetTradeRequestRateLimitsForTests() {
+  tradeRequestRateBuckets.clear()
 }
 
 async function resolveScreenshotRepId(
@@ -75,6 +202,14 @@ async function resolveScreenshotRepId(
 export async function POST(request: Request) {
   try {
     const payload = await readPayload(request)
+    validatePayloadBounds(payload)
+    const throttle = allowTradeRequest(request, payload.listingId)
+    if (!throttle.allowed) {
+      return NextResponse.json(
+        { error: 'Too many trade requests for this dancer. Please try again shortly.' },
+        { status: 429, headers: { 'retry-after': String(throttle.retryAfter) } },
+      )
+    }
     const admin = createAdminClient()
     const target = resolveAmethystRequestTarget(request)
     const targetRep = target.targeted
@@ -97,6 +232,7 @@ export async function POST(request: Request) {
       listingId: payload.listingId,
       customerName: payload.customerName,
       customerDescription: payload.customerDescription,
+      submissionId: payload.submissionId,
       expectedRepId: targetRep?.id,
     })
 
@@ -144,19 +280,21 @@ export async function POST(request: Request) {
       }
     }
 
-    try {
-      const summary = await getTradeRequestNotificationSummary(
-        admin,
-        result.requestId,
-      )
-      if (summary) {
-        await notifyRepOfTradeRequest(admin, summary)
+    if (!result.mutationReplayed) {
+      try {
+        const summary = await getTradeRequestNotificationSummary(
+          admin,
+          result.requestId,
+        )
+        if (summary) {
+          await notifyRepOfTradeRequest(admin, summary)
+        }
+      } catch (notificationError) {
+        console.error(
+          '[amethyst/trade-requests] Notification error:',
+          notificationError,
+        )
       }
-    } catch (notificationError) {
-      console.error(
-        '[amethyst/trade-requests] Notification error:',
-        notificationError,
-      )
     }
 
     return NextResponse.json(
@@ -164,8 +302,8 @@ export async function POST(request: Request) {
       { status: 201 },
     )
   } catch (error) {
-    if (error instanceof SyntaxError) {
-      return NextResponse.json({ error: 'Invalid request payload.' }, { status: 400 })
+    if (error instanceof TradeRequestPayloadError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
     }
     if (error instanceof ServiceError) {
       return NextResponse.json(

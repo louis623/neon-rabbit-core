@@ -6,6 +6,8 @@ const getSparkleFinderCatalogItemMock = vi.fn()
 const getSparkleFinderAvailabilityMock = vi.fn()
 const listSparkleFinderLiveShowsMock = vi.fn()
 const listSparkleFinderPublicRepsMock = vi.fn()
+const listSparkleFinderCatalogPageV2Mock = vi.fn()
+const listSparkleFinderCatalogFacetsV2Mock = vi.fn()
 
 vi.mock('@/lib/sparkle-finder/public-api', async () => {
   const actual = await vi.importActual<typeof import('@/lib/sparkle-finder/public-api')>(
@@ -29,12 +31,29 @@ vi.mock('@/lib/sparkle-finder/public-api', async () => {
   }
 })
 
+vi.mock('@/lib/sparkle-finder/catalog-v2', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/sparkle-finder/catalog-v2')>(
+    '@/lib/sparkle-finder/catalog-v2',
+  )
+  return {
+    ...actual,
+    listSparkleFinderCatalogPageV2: (...args: unknown[]) =>
+      listSparkleFinderCatalogPageV2Mock(...args),
+    listSparkleFinderCatalogFacetsV2: (...args: unknown[]) =>
+      listSparkleFinderCatalogFacetsV2Mock(...args),
+  }
+})
+
 import { GET as getFinderAvailability } from '@/app/api/public/finder/availability/route'
 import { GET as getFinderCatalog } from '@/app/api/public/finder/catalog/route'
 import { GET as getFinderCatalogFacets } from '@/app/api/public/finder/catalog/facets/route'
 import { GET as getFinderCatalogDetail } from '@/app/api/public/finder/catalog/[designId]/route'
 import { GET as getFinderLiveShows } from '@/app/api/public/finder/live-shows/route'
 import { GET as getFinderReps } from '@/app/api/public/finder/reps/route'
+import {
+  FinderAvailabilityConfigurationError,
+  FinderAvailabilityCursorError,
+} from '@/lib/sparkle-finder/availability-v2'
 
 describe('Sparkle Finder public routes', () => {
   beforeEach(() => {
@@ -44,29 +63,13 @@ describe('Sparkle Finder public routes', () => {
     getSparkleFinderAvailabilityMock.mockReset()
     listSparkleFinderLiveShowsMock.mockReset()
     listSparkleFinderPublicRepsMock.mockReset()
+    listSparkleFinderCatalogPageV2Mock.mockReset()
+    listSparkleFinderCatalogFacetsV2Mock.mockReset()
   })
 
   it('returns public catalog search results without caching', async () => {
-    listSparkleFinderCatalogItemsMock.mockResolvedValueOnce([
-      {
-        designId: 'design-1',
-        itemNumber: 'RG100',
-        designName: 'Aurora Ring',
-        collectionYear: 2026,
-        searchTags: ['ring'],
-      },
-    ])
-
-    const response = await getFinderCatalog(
-      new Request('http://localhost/api/public/finder/catalog?query=aurora&limit=10'),
-    )
-
-    expect(listSparkleFinderCatalogItemsMock).toHaveBeenCalledWith({
-      query: 'aurora',
-      limit: 10,
-    })
-    expect(response.headers.get('cache-control')).toBe('no-store')
-    await expect(response.json()).resolves.toEqual({
+    listSparkleFinderCatalogPageV2Mock.mockResolvedValueOnce({
+      schemaVersion: 2,
       items: [
         {
           designId: 'design-1',
@@ -76,11 +79,40 @@ describe('Sparkle Finder public routes', () => {
           searchTags: ['ring'],
         },
       ],
+      pageInfo: { totalCount: 1, hasMore: false, nextCursor: null },
+    })
+
+    const response = await getFinderCatalog(
+      new Request('http://localhost/api/public/finder/catalog?query=aurora&limit=10'),
+    )
+
+    expect(listSparkleFinderCatalogPageV2Mock).toHaveBeenCalledWith({
+      filters: { query: 'aurora' },
+      limit: 10,
+      position: null,
+    })
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    await expect(response.json()).resolves.toEqual({
+      schemaVersion: 2,
+      items: [
+        {
+          designId: 'design-1',
+          itemNumber: 'RG100',
+          designName: 'Aurora Ring',
+          collectionYear: 2026,
+          searchTags: ['ring'],
+        },
+      ],
+      pageInfo: { totalCount: 1, hasMore: false, nextCursor: null },
     })
   })
 
   it('passes public catalog browse filters into the shared catalog service', async () => {
-    listSparkleFinderCatalogItemsMock.mockResolvedValueOnce([])
+    listSparkleFinderCatalogPageV2Mock.mockResolvedValueOnce({
+      schemaVersion: 2,
+      items: [],
+      pageInfo: { totalCount: 0, hasMore: false, nextCursor: null },
+    })
 
     const response = await getFinderCatalog(
       new Request(
@@ -89,15 +121,18 @@ describe('Sparkle Finder public routes', () => {
     )
 
     expect(response.status).toBe(200)
-    expect(listSparkleFinderCatalogItemsMock).toHaveBeenCalledWith({
-      query: 'opal',
-      jewelryType: 'ring',
-      collection: 'Midnight Garden',
-      material: 'Rose gold',
-      mainStone: 'Pink opal',
-      label: 'diamond',
-      collectionYear: 2026,
+    expect(listSparkleFinderCatalogPageV2Mock).toHaveBeenCalledWith({
+      filters: {
+        query: 'opal',
+        jewelryType: 'ring',
+        collection: 'Midnight Garden',
+        material: 'Rose gold',
+        mainStone: 'Pink opal',
+        label: 'diamond',
+        collectionYear: 2026,
+      },
       limit: 12,
+      position: null,
     })
   })
 
@@ -107,7 +142,7 @@ describe('Sparkle Finder public routes', () => {
     )
 
     expect(response.status).toBe(400)
-    expect(listSparkleFinderCatalogItemsMock).not.toHaveBeenCalled()
+    expect(listSparkleFinderCatalogPageV2Mock).not.toHaveBeenCalled()
     await expect(response.json()).resolves.toEqual({
       error: 'year must be a four-digit collection year.',
     })
@@ -119,20 +154,23 @@ describe('Sparkle Finder public routes', () => {
     )
 
     expect(response.status).toBe(400)
-    expect(listSparkleFinderCatalogItemsMock).not.toHaveBeenCalled()
+    expect(listSparkleFinderCatalogPageV2Mock).not.toHaveBeenCalled()
     await expect(response.json()).resolves.toEqual({
       error: 'limit must be a positive whole number.',
     })
   })
 
   it('returns dynamic public catalog facets without caching', async () => {
-    listSparkleFinderCatalogFacetsMock.mockResolvedValueOnce({
-      collections: [{ value: 'Midnight Garden', count: 2 }],
-      materials: [{ value: 'Rose gold', count: 2 }],
-      stones: [{ value: 'Pearl', count: 1 }],
-      types: [{ value: 'ring', count: 2 }],
-      labels: [{ value: 'diamond', count: 1 }],
-      years: [{ value: '2026', count: 2 }],
+    listSparkleFinderCatalogFacetsV2Mock.mockResolvedValueOnce({
+      schemaVersion: 2,
+      facets: {
+        collections: [{ value: 'Midnight Garden', count: 2 }],
+        materials: [{ value: 'Rose gold', count: 2 }],
+        stones: [{ value: 'Pearl', count: 1 }],
+        types: [{ value: 'ring', count: 2 }],
+        labels: [{ value: 'diamond', count: 1 }],
+        years: [{ value: '2026', count: 2 }],
+      },
     })
 
     const response = await getFinderCatalogFacets(
@@ -141,17 +179,20 @@ describe('Sparkle Finder public routes', () => {
       ),
     )
 
-    expect(listSparkleFinderCatalogFacetsMock).toHaveBeenCalledWith({
-      query: 'opal',
-      jewelryType: 'ring',
-      collection: 'Midnight Garden',
-      material: 'Rose gold',
-      mainStone: 'Pearl',
-      label: 'diamond',
-      collectionYear: 2026,
+    expect(listSparkleFinderCatalogFacetsV2Mock).toHaveBeenCalledWith({
+      filters: {
+        query: 'opal',
+        jewelryType: 'ring',
+        collection: 'Midnight Garden',
+        material: 'Rose gold',
+        mainStone: 'Pearl',
+        label: 'diamond',
+        collectionYear: 2026,
+      },
     })
     expect(response.headers.get('cache-control')).toBe('no-store')
     await expect(response.json()).resolves.toEqual({
+      schemaVersion: 2,
       facets: {
         collections: [{ value: 'Midnight Garden', count: 2 }],
         materials: [{ value: 'Rose gold', count: 2 }],
@@ -169,7 +210,7 @@ describe('Sparkle Finder public routes', () => {
     )
 
     expect(response.status).toBe(400)
-    expect(listSparkleFinderCatalogFacetsMock).not.toHaveBeenCalled()
+    expect(listSparkleFinderCatalogFacetsV2Mock).not.toHaveBeenCalled()
     await expect(response.json()).resolves.toEqual({
       error: 'year must be a four-digit collection year.',
     })
@@ -196,6 +237,7 @@ describe('Sparkle Finder public routes', () => {
         designId: 'design-1',
         itemNumber: 'RG100',
         designName: 'Aurora Ring',
+        description: null,
       },
     })
   })
@@ -244,9 +286,22 @@ describe('Sparkle Finder public routes', () => {
       },
     }
     getSparkleFinderAvailabilityMock.mockResolvedValueOnce({
+      schemaVersion: 2,
       requestedItem: { designId: 'design-1', itemNumber: 'RG100' },
       exactMatches: [availability],
       similarMatches: [{ ...availability, listingId: 'listing-2' }],
+      exactPageInfo: {
+        totalLeadCount: 1,
+        totalDancerCount: 2,
+        hasMore: false,
+        nextCursor: null,
+      },
+      similarPageInfo: {
+        totalLeadCount: 1,
+        totalDancerCount: 1,
+        hasMore: false,
+        nextCursor: null,
+      },
     })
 
     const response = await getFinderAvailability(
@@ -262,13 +317,107 @@ describe('Sparkle Finder public routes', () => {
     expect(response.headers.get('cache-control')).toBe('no-store')
     const body = await response.json()
     expect(body).toEqual({
+      schemaVersion: 2,
       requestedItem: { designId: 'design-1', itemNumber: 'RG100' },
       exactMatches: [availability],
       similarMatches: [{ ...availability, listingId: 'listing-2' }],
+      exactPageInfo: {
+        totalLeadCount: 1,
+        totalDancerCount: 2,
+        hasMore: false,
+        nextCursor: null,
+      },
+      similarPageInfo: {
+        totalLeadCount: 1,
+        totalDancerCount: 1,
+        hasMore: false,
+        nextCursor: null,
+      },
     })
     expect(JSON.stringify(body)).not.toContain('businessName')
     expect(JSON.stringify(body)).not.toContain('tradeBoardPath')
     expect(JSON.stringify(body)).not.toContain('customerSitePath')
+  })
+
+  it('passes independent availability cursors through to the service', async () => {
+    getSparkleFinderAvailabilityMock.mockResolvedValueOnce({
+      schemaVersion: 2,
+      requestedItem: { designId: 'design-1' },
+      exactMatches: [],
+      similarMatches: [],
+      exactPageInfo: {
+        totalLeadCount: 0,
+        totalDancerCount: 0,
+        hasMore: false,
+        nextCursor: null,
+      },
+      similarPageInfo: {
+        totalLeadCount: 0,
+        totalDancerCount: 0,
+        hasMore: false,
+        nextCursor: null,
+      },
+    })
+
+    const response = await getFinderAvailability(
+      new Request(
+        'http://localhost/api/public/finder/availability?designId=design-1&limit=8&exactCursor=exact-token&similarCursor=similar-token',
+      ),
+    )
+
+    expect(response.status).toBe(200)
+    expect(getSparkleFinderAvailabilityMock).toHaveBeenCalledWith({
+      designId: 'design-1',
+      limit: 8,
+      exactCursor: 'exact-token',
+      similarCursor: 'similar-token',
+    })
+  })
+
+  it('rejects oversized availability cursors before querying', async () => {
+    const response = await getFinderAvailability(
+      new Request(
+        `http://localhost/api/public/finder/availability?designId=design-1&exactCursor=${'a'.repeat(1025)}`,
+      ),
+    )
+
+    expect(response.status).toBe(400)
+    expect(getSparkleFinderAvailabilityMock).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toEqual({
+      error: 'availability cursor must be 1024 characters or fewer.',
+    })
+  })
+
+  it('returns a bounded client error for an invalid signed availability cursor', async () => {
+    getSparkleFinderAvailabilityMock.mockRejectedValueOnce(
+      new FinderAvailabilityCursorError(),
+    )
+
+    const response = await getFinderAvailability(
+      new Request(
+        'http://localhost/api/public/finder/availability?designId=design-1&exactCursor=tampered',
+      ),
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'availability cursor is invalid or does not match this request.',
+    })
+  })
+
+  it('returns 503 rather than 404 when availability storage is unavailable', async () => {
+    getSparkleFinderAvailabilityMock.mockRejectedValueOnce(
+      new FinderAvailabilityConfigurationError(),
+    )
+
+    const response = await getFinderAvailability(
+      new Request('http://localhost/api/public/finder/availability?designId=design-1'),
+    )
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Availability storage is unavailable.',
+    })
   })
 
   it('returns public live shows without requiring item availability', async () => {

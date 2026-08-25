@@ -1,9 +1,9 @@
 // Trade Requests service — submit/get/approve/reject + history.
 //
 // Client requirements:
-//   submitTradeRequest — service client. Customer is unauthenticated;
-//                        rpc_submit_trade_request is SECURITY DEFINER but we
-//                        still need a client that can reach it.
+//   submitTradeRequest — service client. Customer is unauthenticated, but the
+//                        public route owns submission and calls the locked,
+//                        service-role-only SECURITY DEFINER RPC.
 //   getTradeRequests   — auth client. RLS gives `requests_rep_read` for the
 //                        rep's own listings.
 //   approveTrade       — service client. RPC is SECURITY DEFINER; service
@@ -34,6 +34,10 @@ import {
 } from './types'
 import { ServiceError, errors } from './errors'
 import { getTradeListingDisplayFields } from './trade-listing-display'
+
+export const TRADE_REQUEST_CUSTOMER_NAME_MAX_LENGTH = 100
+export const TRADE_REQUEST_DESCRIPTION_MAX_LENGTH = 1000
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function mapRevealScreenshot(row: {
   reveal_screenshot_path?: string | null
@@ -72,6 +76,18 @@ function rpcError(err: PostgrestError | null): ServiceError | null {
   if (msg.includes('REQUEST_ALREADY_EXISTS')) return errors.REQUEST_ALREADY_EXISTS()
   if (msg.includes('REQUEST_NOT_FOUND')) return errors.LISTING_NOT_FOUND('request')
   if (msg.includes('REQUEST_NOT_PENDING')) return errors.REQUEST_NOT_PENDING()
+  if (msg.includes('IDEMPOTENCY_CONFLICT')) {
+    return errors.INVALID_INPUT(
+      'trade request submission identity conflict',
+      'This trade request changed while it was being retried. Please refresh and submit it again.',
+    )
+  }
+  if (msg.includes('INVALID_TRADE_REQUEST')) {
+    return errors.INVALID_INPUT(
+      'invalid trade request payload',
+      'Please check the trade request details and try again.',
+    )
+  }
   // Partial unique index collision surfaces as 23505.
   if (err.code === '23505') return errors.REQUEST_ALREADY_EXISTS()
   return null
@@ -91,6 +107,27 @@ export async function submitTradeRequest(
       'I need a short description from the customer to submit that.',
     )
   }
+  const customerName = input.customerName.trim()
+  const customerDescription = input.customerDescription.trim()
+  if (customerName.length > TRADE_REQUEST_CUSTOMER_NAME_MAX_LENGTH) {
+    throw errors.INVALID_INPUT(
+      'customerName too long',
+      `Your name must be ${TRADE_REQUEST_CUSTOMER_NAME_MAX_LENGTH} characters or fewer.`,
+    )
+  }
+  if (customerDescription.length > TRADE_REQUEST_DESCRIPTION_MAX_LENGTH) {
+    throw errors.INVALID_INPUT(
+      'customerDescription too long',
+      `Your description must be ${TRADE_REQUEST_DESCRIPTION_MAX_LENGTH} characters or fewer.`,
+    )
+  }
+  const submissionId = input.submissionId?.trim().toLowerCase()
+  if (submissionId && !UUID_PATTERN.test(submissionId)) {
+    throw errors.INVALID_INPUT(
+      'submissionId must be a UUID',
+      'Please refresh the trade request form and try again.',
+    )
+  }
 
   if (input.expectedRepId?.trim()) {
     const { data: listing, error: listingError } = await supabase
@@ -107,18 +144,30 @@ export async function submitTradeRequest(
     }
   }
 
-  const { data, error } = await supabase.rpc('rpc_submit_trade_request', {
+  const { data, error } = await supabase.rpc(
+    submissionId ? 'rpc_submit_trade_request_v2' : 'rpc_submit_trade_request',
+    {
     p_listing_id: input.listingId,
-    p_customer_name: input.customerName,
-    p_customer_description: input.customerDescription,
-  })
+      p_customer_name: customerName,
+      p_customer_description: customerDescription,
+      ...(submissionId ? { p_submission_id: submissionId } : {}),
+    },
+  )
   const mapped = rpcError(error)
   if (mapped) throw mapped
   if (error) throw error
 
-  const payload = data as { request_id: string; listing_id: string } | null
+  const payload = data as {
+    request_id: string
+    listing_id: string
+    mutation_replayed?: boolean
+  } | null
   if (!payload?.request_id) throw errors.LISTING_NOT_FOUND(input.listingId)
-  return { requestId: payload.request_id, listingId: payload.listing_id }
+  return {
+    requestId: payload.request_id,
+    listingId: payload.listing_id,
+    ...(payload.mutation_replayed ? { mutationReplayed: true } : {}),
+  }
 }
 
 export async function attachTradeRequestRevealScreenshot(

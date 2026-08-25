@@ -81,6 +81,63 @@ describe('submitTradeRequest', () => {
     })
   })
 
+  it('uses the replay-safe v2 RPC when the customer supplies a submission UUID', async () => {
+    rpc.mockResolvedValueOnce({
+      data: {
+        request_id: 'request-1',
+        listing_id: 'listing-1',
+        mutation_replayed: true,
+      },
+      error: null,
+    })
+    const submissionId = '00000000-0000-4000-8000-000000000001'
+
+    await expect(
+      submitTradeRequest(supabase as never, {
+        listingId: 'listing-1',
+        customerName: '  Jamie  ',
+        customerDescription: '  Birthday ring, size 8  ',
+        submissionId,
+      }),
+    ).resolves.toEqual({
+      requestId: 'request-1',
+      listingId: 'listing-1',
+      mutationReplayed: true,
+    })
+    expect(rpc).toHaveBeenCalledWith('rpc_submit_trade_request_v2', {
+      p_listing_id: 'listing-1',
+      p_customer_name: 'Jamie',
+      p_customer_description: 'Birthday ring, size 8',
+      p_submission_id: submissionId,
+    })
+  })
+
+  it('rejects oversized customer text and invalid submission identities before RPC', async () => {
+    await expect(
+      submitTradeRequest(supabase as never, {
+        listingId: 'listing-1',
+        customerName: 'x'.repeat(101),
+        customerDescription: 'Birthday ring',
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT' })
+    await expect(
+      submitTradeRequest(supabase as never, {
+        listingId: 'listing-1',
+        customerName: 'Jamie',
+        customerDescription: 'x'.repeat(1001),
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT' })
+    await expect(
+      submitTradeRequest(supabase as never, {
+        listingId: 'listing-1',
+        customerName: 'Jamie',
+        customerDescription: 'Birthday ring',
+        submissionId: 'not-a-uuid',
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT' })
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
   it('rejects expected-rep mismatches before submitting the request rpc', async () => {
     maybeSingle.mockResolvedValueOnce({
       data: { id: 'listing-1', rep_id: 'rep-other' },
