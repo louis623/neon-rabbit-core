@@ -99,7 +99,7 @@ export function FinderNicNacWorkspace({
     <section
       className="overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[rgba(238,44,155,0.22)] bg-[linear-gradient(135deg,#fffefd_0%,#fff4f8_52%,#fff8ef_100%)] shadow-[var(--sparkle-shadow-sm)]"
       data-smoke="finder-nic-nac-curator"
-      id="showcase-studio"
+      id="nic-nac-curator"
     >
       <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:p-6">
         <div className="min-w-0">

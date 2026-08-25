@@ -1066,6 +1066,11 @@ describe("Sparkle Finder Nic-Nac tools", () => {
       nextAction: "report_existing_status",
       latestSubmission: {
         status: "submitted",
+        submissionId: "studio-submission-123",
+        suiteCatalogDesignId: null,
+        variantCandidates: [],
+        selectedDesign: null,
+        failureCategory: null,
         itemNumber: "RG1234",
         designName: "Starlight Ring",
         jewelryType: "ring",

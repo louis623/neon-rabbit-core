@@ -129,7 +129,17 @@ test.describe("Sparkle Finder homepage smoke", () => {
       await expect(missingPieceLink).toHaveAttribute("href", "/silver#showcase-studio");
       await missingPieceLink.click();
       await expect(page).toHaveURL(`${baseUrl}/silver#showcase-studio`);
-      await expect(page.locator("#showcase-studio")).toBeVisible();
+      const studioPanel = page.locator('[data-smoke="showcase-studio-intake"]');
+      await expect(studioPanel).toBeVisible();
+      await expect(studioPanel.getByLabel("Original label photo")).toBeVisible();
+      await expect(studioPanel.getByLabel("Jewelry photo")).toBeVisible();
+      await expect(studioPanel.getByLabel("Item number")).toBeVisible();
+      await expect(studioPanel.getByText("Photos are resized without a square crop before they leave your browser.")).toBeVisible();
+      const studioSubmissionId = studioPanel.locator('input[name="finderSubmissionId"]');
+      await expect(studioSubmissionId).toHaveValue(/^[0-9a-f-]{36}$/i);
+      const retainedSubmissionId = await studioSubmissionId.inputValue();
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(page.locator('[data-smoke="showcase-studio-intake"] input[name="finderSubmissionId"]')).toHaveValue(retainedSubmissionId);
       await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
       const vaultTiles = page.locator('[data-smoke="bling-vault-tile"]');
@@ -237,6 +247,11 @@ test.describe("Sparkle Finder homepage smoke", () => {
 
     await page.goto(`${baseUrl}/silver`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Sparkle Mama's Sparkle Showcase")).toBeVisible();
+    const studioPanel = page.locator('[data-smoke="showcase-studio-intake"]');
+    await expect(studioPanel).toBeVisible();
+    await expect(studioPanel.getByLabel("Main stone")).toBeVisible();
+    await expect(studioPanel.getByLabel("Material")).toBeVisible();
+    await expect(studioPanel.getByRole("button", { name: "Send to Showcase Studio" })).toBeVisible();
     await expect(page.getByText("Local fixture mode")).toBeVisible();
   });
 

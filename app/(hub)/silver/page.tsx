@@ -7,10 +7,14 @@ import type { ManagedCollectionItem } from "@/components/silver/CollectionManage
 import { ProfileSummaryPanel } from "@/components/silver/ProfileSummaryPanel";
 import { SimpleSilverShowcase } from "@/components/silver/SimpleSilverShowcase";
 import { ShowcaseOwnerPanel, type ShowcaseOwnerData } from "@/components/showcase/ShowcaseOwnerPanel";
+import { ShowcaseStudioIntakePanel } from "@/components/showcase/ShowcaseStudioIntakePanel";
 import {
+  confirmShowcaseStudioVariantAction,
+  retryShowcaseStudioRequestAction,
   saveSilverCollectionItemAction,
   saveSilverProfileAction,
   saveShowcasePieceAction,
+  submitShowcaseStudioRequestAction,
 } from "@/app/(hub)/silver/actions";
 import {
   assignShowcasePieceAction,
@@ -46,6 +50,14 @@ import type { SparkleFinderAccountState } from "@/lib/sparkle-finder/auth";
 import type { FavoriteRepCard } from "@/lib/sparkle-finder/social-types";
 import type { CollectionItem, JewelryItem, SilverProfile } from "@/lib/sparkle-finder/types";
 import type { ShowcaseCollection } from "@/lib/sparkle-finder/showcase-types";
+import {
+  readShowcaseStudioIntakeStatusForUser,
+  type SupabaseShowcaseStudioReadClient,
+} from "@/lib/sparkle-finder/showcase-studio-state";
+import {
+  initialShowcaseStudioPanelActionState,
+  type ShowcaseStudioPanelActionState,
+} from "@/lib/sparkle-finder/showcase-studio-workflow-types";
 
 type SilverPageAccountState = SparkleFinderAccountState & {
   silverProfile?: SilverProfile;
@@ -67,11 +79,12 @@ export default async function SilverPage() {
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
   const shouldLoadPersistedState = accountState.status === "authenticated" && accountState.isLocalPreview !== true;
-  const [catalogResult, persistedCollectionResult, persistedFavoriteRepCards, persistedShowcaseOwnerData] = await Promise.all([
+  const [catalogResult, persistedCollectionResult, persistedFavoriteRepCards, persistedShowcaseOwnerData, persistedStudioState] = await Promise.all([
     getSilverCatalogItems(),
     shouldLoadPersistedState ? getPersistedCollectionItems(accountState.customer.id) : Promise.resolve(undefined),
     shouldLoadPersistedState ? getPersistedFavoriteRepCards(accountState) : Promise.resolve(undefined),
     shouldLoadPersistedState ? getPersistedShowcaseOwnerData(accountState.customer.id) : Promise.resolve(undefined),
+    shouldLoadPersistedState ? getPersistedShowcaseStudioPanelState(accountState.customer.id) : Promise.resolve(undefined),
   ]);
 
   return renderSilverPageContent(
@@ -82,6 +95,7 @@ export default async function SilverPage() {
     persistedShowcaseOwnerData,
     persistedCollectionResult?.status === "error" ? persistedCollectionResult.message : undefined,
     catalogResult.message,
+    persistedStudioState,
   );
 }
 
@@ -93,6 +107,7 @@ export function renderSilverPageContent(
   persistedShowcaseOwnerData?: ShowcaseOwnerData,
   collectionHydrationIssue?: string,
   catalogIssue?: string,
+  studioInitialState: ShowcaseStudioPanelActionState = initialShowcaseStudioPanelActionState,
 ) {
   const entitlements = getSparkleFinderAccountEntitlements(accountState);
   const isLocalPreview = accountState.isLocalPreview === true;
@@ -196,6 +211,17 @@ export function renderSilverPageContent(
           profile={profile}
         />
       </div>
+
+      <ShowcaseStudioIntakePanel
+        accountId={customer.id}
+        canSubmit={entitlements.canUseSilverProfileActions}
+        confirmAction={isLocalPreview ? undefined : confirmShowcaseStudioVariantAction}
+        initialState={studioInitialState}
+        isLocalPreview={isLocalPreview}
+        key={customer.id}
+        retryAction={isLocalPreview ? undefined : retryShowcaseStudioRequestAction}
+        submitAction={isLocalPreview ? undefined : submitShowcaseStudioRequestAction}
+      />
 
       <FavoriteRepsPanel cards={favoriteRepCards} isSilver={entitlements.canUseNicNacFindRequests} />
 
@@ -433,6 +459,64 @@ async function loadOrderedOwnerCollectionRows(
 
 function normalizeExactDesignId(designId: string): string {
   return designId.trim();
+}
+
+async function getPersistedShowcaseStudioPanelState(userId: string): Promise<ShowcaseStudioPanelActionState> {
+  try {
+    const supabase = await createClient();
+    const status = await readShowcaseStudioIntakeStatusForUser(
+      supabase as unknown as SupabaseShowcaseStudioReadClient,
+      userId,
+    );
+    const latest = status.latestSubmission;
+    if (status.status !== "connected" || !latest) return initialShowcaseStudioPanelActionState;
+
+    const mappedStatus = latest.status === "needs_confirmation"
+      ? "needs_confirmation"
+      : latest.status === "needs_jewelry_photo" || latest.status === "needs_label"
+        ? "needs_jewelry_photo"
+        : latest.status === "photo_rejected"
+          ? "photo_rejected"
+          : latest.status === "saved_pending_sync" || latest.status === "submitted"
+            ? "saved_pending_sync"
+            : latest.status === "accepted" || latest.status === "publish_queued" || latest.status === "published" || latest.status === "rejected"
+              ? latest.status
+              : latest.status === "uploading" || latest.status === "publish_failed"
+                ? "error"
+                : "idle";
+    const retryable = latest.status === "saved_pending_sync" || latest.status === "submitted";
+
+    return {
+      status: mappedStatus,
+      message: getShowcaseStudioCustomerMessage(latest.status),
+      submissionId: latest.submissionId || null,
+      retryable,
+      candidates: latest.variantCandidates,
+      selectedDesign: latest.selectedDesign,
+    };
+  } catch {
+    return initialShowcaseStudioPanelActionState;
+  }
+}
+
+function getShowcaseStudioCustomerMessage(
+  status: NonNullable<Awaited<ReturnType<typeof readShowcaseStudioIntakeStatusForUser>>["latestSubmission"]>["status"],
+): string {
+  if (status === "draft") return "Your Studio request is ready for both photos.";
+  if (status === "uploading") {
+    return "This photo save was interrupted. Start a fresh Studio request so your evidence stays protected.";
+  }
+  if (status === "submitted" || status === "saved_pending_sync") {
+    return "Your photos are saved safely. Retry the Sparkle Suite sync without uploading them again.";
+  }
+  if (status === "needs_confirmation") return "Nic-Nac found more than one exact variant. Choose the matching design below.";
+  if (status === "needs_label" || status === "needs_jewelry_photo") return "Showcase Studio needs clearer evidence before this request can continue.";
+  if (status === "photo_rejected") return "The photos need another try. Follow the coaching, then start a new Studio request.";
+  if (status === "accepted") return "Sparkle Suite confirmed the exact design for this Studio request.";
+  if (status === "publish_queued") return "This missing design is safely queued for Sparkle Suite review.";
+  if (status === "published") return "This exact design is published in the Sparkle Suite catalog.";
+  if (status === "rejected") return "This Studio request could not be matched safely. Start a new request with corrected details.";
+  return "This Studio request could not be completed and is not safe to retry. Start a new request if needed.";
 }
 
 async function getPersistedFavoriteRepCards(

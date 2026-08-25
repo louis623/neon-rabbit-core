@@ -21,6 +21,7 @@ import { FavoriteRepsPanel } from "../../components/favorites/FavoriteRepsPanel"
 import { JewelryImageFrame } from "../../components/library/JewelryImageFrame";
 import { PieceImage } from "../../components/showcase/RarestReveals";
 import { RepLeadPanel } from "../../components/showcase/RepLeadPanel";
+import { ShowcaseStudioIntakePanel } from "../../components/showcase/ShowcaseStudioIntakePanel";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import { JewelryCard } from "../../components/library/JewelryCard";
@@ -34,6 +35,7 @@ import * as catalogService from "../../lib/sparkle-finder/catalog-service";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { buildHomepageBlingVaultModel, type HomepageBlingVaultItem } from "../../lib/sparkle-finder/homepage-bling-vault";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
+import { initialShowcaseStudioPanelActionState } from "../../lib/sparkle-finder/showcase-studio-workflow-types";
 import {
   getLocalRepBoardHref,
   getLocalRepHref,
@@ -1928,6 +1930,79 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Silver Space");
     expect(markup).not.toContain("Catalog actions");
     expect(markup).not.toContain("Future catalog request path");
+  });
+
+  it("renders the active Studio form and exact ambiguity candidates without choosing one", () => {
+    const markup = renderToStaticMarkup(createElement(ShowcaseStudioIntakePanel, {
+      accountId: "customer-studio-test",
+      canSubmit: true,
+      initialState: {
+        ...initialShowcaseStudioPanelActionState,
+        status: "needs_confirmation",
+        message: "Choose the exact design.",
+        submissionId: "11111111-1111-4111-8111-111111111111",
+        candidates: [
+          {
+            designId: "design-rose-quartz",
+            itemNumber: "RBP5902",
+            designName: "Rose Quartz Starlight Ring",
+            material: "Rose gold",
+            mainStone: "Rose Quartz",
+            jewelryType: "ring",
+            collectionName: "Starlight",
+            collectionYear: 2026,
+            canonicalPhotoUrl: "https://cdn.example.test/rose-quartz.jpg",
+            description: "Soft pink center stone.",
+          },
+          {
+            designId: "design-ruby",
+            itemNumber: "RBP5902",
+            designName: "Ruby Starlight Ring",
+            material: "Rhodium",
+            mainStone: "Ruby",
+            jewelryType: "ring",
+            collectionName: "Starlight",
+            collectionYear: 2026,
+            canonicalPhotoUrl: "https://cdn.example.test/ruby.jpg",
+            description: "Deep red center stone.",
+          },
+        ],
+      },
+    }));
+
+    expect(markup).toContain('data-smoke="showcase-studio-intake"');
+    expect(markup).toContain('name="originalLabelPhoto"');
+    expect(markup).toContain('name="jewelryFrontPhoto"');
+    expect(markup).toContain('name="itemNumber"');
+    expect(markup).toContain('name="mainStone"');
+    expect(markup).toContain('name="material"');
+    expect(markup).toContain('name="customerNote"');
+    expect(markup).toContain("RBP5902");
+    expect(markup).toContain("Rose Quartz Starlight Ring");
+    expect(markup).toContain("Ruby Starlight Ring");
+    expect(markup).toContain('value="design-rose-quartz"');
+    expect(markup).toContain('value="design-ruby"');
+    expect(markup).not.toContain('type="radio" checked=""');
+    expect(markup).toContain('data-design-id="design-rose-quartz"');
+    expect(markup).toContain('data-design-id="design-ruby"');
+    expect(markup).toContain("Confirm exact design");
+  });
+
+  it("blocks a terminal Studio request from resubmitting until the customer starts fresh", () => {
+    const markup = renderToStaticMarkup(createElement(ShowcaseStudioIntakePanel, {
+      accountId: "customer-studio-test",
+      canSubmit: true,
+      submitAction: async (state) => state,
+      initialState: {
+        ...initialShowcaseStudioPanelActionState,
+        status: "error",
+        message: "This request is not safe to retry.",
+        submissionId: "11111111-1111-4111-8111-111111111111",
+      },
+    }));
+
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*>[^<]*(?:<[^>]+>)*Send to Showcase Studio/);
+    expect(markup).toContain("Start a fresh Studio request");
   });
 
   it("renders real Silver account profile details without local fixture page copy", () => {
