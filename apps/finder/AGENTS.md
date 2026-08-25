@@ -1,12 +1,14 @@
 # Sparkle Finder Active Workspace
 
-This repository is the active Sparkle Finder workspace.
+This directory is the active Sparkle Finder workspace inside the Sparkle Suite repository.
 
 Use this path for future Codex sessions:
 
-`C:\Users\louis\sparkle-finder-repo`
+`C:\Users\louis\sparkle-suite-repo\apps\finder`
 
-This repo contains both the Sparkle Finder implementation code and the former binder/Open Brain project files. Code, docs, vault memory, plans, handoffs, and repo-local skills should all live under this workspace root so normal repo work stays inside the Codex workspace sandbox.
+This directory contains both the Sparkle Finder implementation code and the former binder/Open Brain project files. Code, docs, vault memory, plans, handoffs, and Finder-local skills should all live under this app root.
+
+The former standalone repository at `C:\Users\louis\sparkle-finder-repo` is retained as a rollback copy. Do not use it for new work.
 
 Do not start Sparkle Finder implementation work from the old lightweight binder at `C:\Users\louis\sparkle-finder`.
 
@@ -25,7 +27,7 @@ Use repo-local skills from:
 
 ## Workspace Rules
 
-1. Build, test, commit, push, and deploy from `C:\Users\louis\sparkle-finder-repo`.
+1. Build, test, and run Finder deployment commands from `C:\Users\louis\sparkle-suite-repo\apps\finder`; commit and push from `C:\Users\louis\sparkle-suite-repo`.
 2. Treat `C:\Users\louis\sparkle-finder` as an archived redirect folder only.
 3. Keep durable project memory in `vault/` and durable plans, handoffs, decisions, and research in `docs/`.
 4. Do not copy temp files, screenshots, logs, build output, smoke artifacts, `.tmp`, or `outputs` into durable memory.

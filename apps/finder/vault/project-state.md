@@ -1,10 +1,10 @@
 # Sparkle Finder Project State
 
-Sparkle Finder's active implementation workspace is `C:\Users\louis\sparkle-finder-repo` on branch `codex-sparkle-finder-v1`.
+Sparkle Finder's active implementation workspace is `C:\Users\louis\sparkle-suite-repo\apps\finder` on the Suite repository's allowlisted `codex/nic-nac-trade-hardening` branch.
 
 The former lightweight binder at `C:\Users\louis\sparkle-finder` has been folded into this repo for durable docs, plans, handoffs, vault memory, and repo-local skills. This keeps Sparkle Finder code and Open Brain/binder memory under one workspace root and avoids recurring Codex sandbox permission prompts.
 
-Future Codex sessions should open this repo directly with Workspace write enabled.
+Future Codex sessions should open `C:\Users\louis\sparkle-suite-repo` with Workspace write enabled, then work on Finder from `apps\finder`.
 
 ## Current Live Target
 

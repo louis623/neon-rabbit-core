@@ -5,14 +5,20 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
-- [ ] **Prepare Sparkle Suite + Sparkle Finder merger due diligence — read-only
-  only** - next session should inspect both active repos, Open Brain, current
-  memory, deployment/database/auth boundaries, contract ownership, shared-code
-  candidates, Git-history options, and collision risks. Produce a readiness
-  brief and proposed phased plan, then wait for Louis. Do not implement, move
-  files, change configuration, commit, push, deploy, or mutate production until
-  Louis explicitly approves a later implementation phase. Restart prompt:
-  `docs/sparkle-suite/operations/2026-08-25-suite-finder-merge-discovery-prompt.md`.
+- [x] **Move Sparkle Finder into the Sparkle Suite repository without combining
+  the applications** - completed through history-preserving import commit
+  `8e12e6da`. Finder now lives at `apps\finder`; Suite remains at repo root, and
+  package/auth/database/deployment boundaries are unchanged. The old Finder repo
+  is retained as rollback, and production deployments were intentionally not
+  moved.
+
+- [ ] **Update Finder's Vercel source/root bookkeeping only when the next Finder
+  application release is approved** - the live Finder project still points to
+  the former standalone repo/root so this repository-only move cannot alter the
+  current known-good deployment. At the next approved Finder release, preserve
+  the current deployment as rollback, change only the project source/root to the
+  shared repo's `apps/finder`, deploy the exact verified tip, and smoke the live
+  customer domain. Do not combine Suite/Finder environments or databases.
 
 - [x] **Separate managed-team and membership-team identity** - completed in `7b4bb363` through `36d1e8fd`. Team Management edits the rep's own managed team for Join Team/New Rep Onboarding; the Workspace header and customer footer use only the team the rep belongs to. Whatnot is supported on public team cards, and generic onboarding no longer carries Brittany-specific defaults.
 

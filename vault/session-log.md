@@ -4,6 +4,33 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 25, 2026 - Sparkle Finder moved into the Suite repository
+
+- Completed read-only due diligence before making changes, including Git
+  history, build-boundary, deployment-provenance, rollback, and live HTTP
+  audits. Used three independent read-only agent reviews and a disposable local
+  rehearsal.
+- Imported exact Finder tip `8192b11f1535e8cbc0af2c4df352ea93c0e86233`
+  under `apps\finder` with complete history preserved as the second parent of
+  import commit `8e12e6da2495cfd28850eec1dec53a2b96b8f797`.
+- Added only repository-isolation guards: root TypeScript and ESLint exclude
+  Finder, Suite's Vercel upload ignores Finder, and Finder SQL migrations retain
+  their original LF checkout behavior on Windows. Updated active workspace
+  instructions and current memory paths.
+- No app source, package manifest, lockfile, Next/Vitest config, database,
+  authentication, domain, deployment, or production setting changed. The old
+  Finder repo remains an untouched rollback copy.
+- Verification from the combined layout: both production builds passed; Finder
+  lint passed; all 760 Finder tests passed; local browser smoke passed 20 with 2
+  expected skips; Nic-Nac fail-safe and strict live Suite contract checks
+  passed. Suite's build passed and its documented pre-existing test baselines
+  reproduced exactly.
+- Live production intentionally stayed on Suite deployment
+  `dpl_H4TuzixGEezkUFE2pnaVc5MVxzb5` and Finder deployment
+  `dpl_7EsNvmCudB2fcbCirNy5WFi7UW37`; no customer or reviewer account was used.
+
+---
+
 ## August 25, 2026 - Sparkle Finder compatibility upgrade
 
 - Audited the Finder prerequisite handoff and plan while preserving all existing

@@ -32,6 +32,19 @@ Supabase migrations, smoke tests, notes, memory, plans, handoffs, and skills.
 The old `C:\Users\louis\sparkle-suite` folder is retained only as a redirect
 and historical archive; do not depend on it for active instructions.
 
+## Contained Sparkle Finder Workspace
+
+Sparkle Finder is a separate application contained at:
+
+`C:\Users\louis\sparkle-suite-repo\apps\finder`
+
+For Finder work, read `apps\finder\AGENTS.md` and its four `vault\` memory
+files first. Run Finder package, build, test, Supabase, and Vercel commands from
+that nested directory, while Git commits and pushes are made from this repo
+root. Keep the two applications' packages, authentication, databases,
+deployments, and runtime configuration separate unless Louis explicitly
+approves a product-level integration change.
+
 ## Default Release Rule
 
 ## Task List Terminology

@@ -1,5 +1,22 @@
 # Sparkle Finder Session Log
 
+## 2026-08-25 - Repository Relocation Into Sparkle Suite
+
+- Sparkle Finder's exact Git tip `8192b11f1535e8cbc0af2c4df352ea93c0e86233`
+  was imported with complete history under
+  `C:\Users\louis\sparkle-suite-repo\apps\finder`. The Suite repository import
+  commit is `8e12e6da2495cfd28850eec1dec53a2b96b8f797`; its second parent is the exact
+  Finder tip and the imported tree hash is unchanged.
+- Finder remains a separate app with unchanged source, package/lock, Next,
+  Vitest, Supabase, auth, Vercel, and runtime boundaries. The old standalone
+  repo remains a rollback copy and is no longer the active workspace.
+- Verification from the new location passed lint, all 57 Vitest files/760
+  tests, production build, strict read-only Suite contract, Nic-Nac missing-model
+  guard, and local browser smoke with 20 required passes and 2 expected skips.
+- Production stayed on existing deployment
+  `dpl_7EsNvmCudB2fcbCirNy5WFi7UW37`; no deployment, alias, database, or account
+  change was made for this repository-only move.
+
 ## 2026-08-25 - Suite Compatibility Releases 1-3 Live
 
 - Sparkle Suite compatibility release `f3de6c15` deployed the frozen `schemaVersion: 2` catalog, batch hydration, quantity-aware availability, and Showcase Studio v2 contracts. Suite remains the canonical source for designs, exact variants, reps, shows, pending-adjusted dancer availability, and Studio resolution/continuation; Finder does not recreate or mutate those responsibilities.

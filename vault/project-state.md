@@ -1,5 +1,28 @@
 # Project State
 
+## August 25, 2026 Session - Sparkle Finder repository relocation
+
+- Sparkle Finder is now contained at `apps\finder` in the active Sparkle Suite
+  repository. Suite remains the root application; Finder retains its own
+  package lock, auth, Supabase project, Vercel project, and runtime config.
+- History-preserving import commit `8e12e6da2495cfd28850eec1dec53a2b96b8f797`
+  has Suite tip `0fc8ce1f104e6bc556835ce7b14c6b84d8831e69`
+  as parent one and exact Finder tip
+  `8192b11f1535e8cbc0af2c4df352ea93c0e86233` as parent two. Finder's imported
+  tree matches source tree `02eb6bf9b4c3e7403cf08f82d308ac6ffe2f64db`.
+- No application source, database, auth, deployment, domain, or production
+  setting changed. The former standalone Finder repo is retained as rollback.
+- Local verification from the combined layout passed both production builds,
+  Finder lint, 57 files/760 tests, strict live Suite contract, Nic-Nac guard,
+  and browser smoke (20 passed/2 expected skips). Suite retained its exact
+  documented baselines: build passes; its focused Finder gate has the same two
+  pre-existing live-status expectation failures; its normal test script is
+  225/226 with the same stale tool-registry expectation.
+
+**Last updated:** August 25, 2026
+
+---
+
 ## August 25, 2026 Session - Sparkle Finder compatibility release
 
 - Sparkle Suite remains canonical for jewelry identity, rep/show eligibility,
@@ -23,9 +46,8 @@
   `codex-sparkle-finder-v1` is clean and synced at `8192b11`; Releases 1–4 are
   closed, and deployment `dpl_GKS4RzyHxnpchfYsypE3q3UT67DR` is verified at
   `https://yoursparklefinder.com`.
-- Louis's next intended session is merger due diligence only. It must inspect
-  both repos read-only, prepare a readiness brief and proposed phased plan, and
-  wait. No consolidation work begins without a new explicit instruction.
+- Merger due diligence and the approved folder-only relocation are complete.
+  Future sessions start from this repo and use `apps\finder` for Finder work.
 - Restart prompt:
   `docs/sparkle-suite/operations/2026-08-25-suite-finder-merge-discovery-prompt.md`.
 

@@ -1,5 +1,11 @@
 # Sparkle Finder Decisions
 
+## 2026-08-25 - Finder Is Contained In The Suite Repository
+
+Decision: Sparkle Finder's active workspace is `C:\Users\louis\sparkle-suite-repo\apps\finder`. It remains an independent application with its own package lock, authentication, Supabase project, Vercel project, and runtime configuration. The former standalone repository is retained as a rollback copy and is not used for new work.
+
+Reason: Keeping both applications in one writable Git workspace lets Codex sessions work across related tasks without combining their application architecture or production systems.
+
 ## 2026-08-25 - Suite Owns Compatibility Truth; Finder Owns Safe Presentation
 
 Decision: Sparkle Suite is the canonical source for catalog designs and exact variants, reps, shows, pending-adjusted dancer availability, and Showcase Studio resolve/confirm/replay outcomes. Sparkle Finder consumes the public catalog and availability contracts read-only, uses the separate authenticated Studio POST contract only for idempotent resolve/confirm/replay continuation, keeps its separate customer auth boundary, and never recreates pending-quantity logic or exposes a Suite Dance Floor mutation path.

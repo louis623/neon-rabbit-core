@@ -10,7 +10,7 @@
 - Automatic Reps endpoint completed: Suite commit `7d373f44`, migration `20260821191500_ss_finder_rep_directory_visibility.sql`, and production deployment `dpl_AwjMxR9w5C3DmMvtMeuZBWn94Fym` now return Heather/BlingKitchen from `GET /api/public/finder/reps`; Finder's live contract checker passes with `REPS=1` and demos remain hidden.
 - Remaining release follow-up: run one read-only signed-in production visual check on `https://yoursparklefinder.com/reps` when an appropriate Finder demo/reviewer session is available. Run favorite add/remove persistence only with an explicitly designated smoke account because it mutates that account's saved reps. The standard local release smoke now validates the live Heather feed and rejects fixture fallback.
 
-- Future Codex sessions should be opened from `C:\Users\louis\sparkle-finder-repo` with Workspace write enabled.
+- Future Codex sessions should open `C:\Users\louis\sparkle-suite-repo` with Workspace write enabled, then run Finder-specific commands from `apps\finder`.
 - Keep new durable project memory in repo-local `vault/`.
 - Keep new implementation plans, handoffs, decisions, research, and deployment notes in repo-local `docs/`.
 - Add repo-local `.agents/skills` entries when Sparkle Finder-specific skills are created.

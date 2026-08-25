@@ -21,6 +21,7 @@ const eslintConfig = defineConfig([
     "public/amethyst/**",
     "supabase/functions/**",
     "spike/**",
+    "apps/finder/**",
   ]),
 ]);
 

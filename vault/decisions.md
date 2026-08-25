@@ -1,5 +1,23 @@
 # Decision Log
 
+## August 25, 2026 - One repository, two isolated applications
+
+**Sparkle Suite remains the root app and Sparkle Finder is contained at `apps\finder`.**
+
+The repository move does not create an npm workspace, shared package graph,
+shared auth system, shared database, shared deployment, or runtime import
+relationship. Each app continues to build and test from its own package root.
+Git commits and pushes happen from the shared Sparkle Suite repository root.
+
+**Production does not move merely because source files moved.**
+
+The relocation is repository-only. Existing known-good deployments, aliases,
+and Vercel settings remain untouched until a separately approved Finder release
+needs its source/root bookkeeping updated. The former standalone Finder repo is
+retained as a rollback copy.
+
+---
+
 ## August 23-25, 2026 - Team identity and dancer variant/quantity rules
 
 **The team a rep belongs to and the team a rep manages are separate facts.**
