@@ -1,8 +1,22 @@
-# Sparkle Suite Customer
+# Sparkle Finder
 
-Documentation-first research workspace for the future customer and collector side of Sparkle Suite.
+Sparkle Finder is the customer and collector application in the Sparkle Suite
+repository.
 
-This repo exists so research, source notes, planning questions, and eventual prototype work can move independently from the active Sparkle Suite launch repo while the current rep-side product stays focused.
+## Repository And Deployment
+
+- Active Git repository: `C:\Users\louis\sparkle-suite-repo`
+- Application root: `apps\finder`
+- Vercel project: `sparkle-finder-dev`
+- Vercel Root Directory: `apps/finder`
+- Production branch: `codex/nic-nac-trade-hardening`
+- Production domain: `https://yoursparklefinder.com`
+
+Run Finder build, test, and deployment commands from this directory. Commit and
+push from the shared repository root. Sparkle Finder remains independently
+deployed with its own authentication, Supabase project, environment variables,
+domains, and Vercel project. The retained standalone repository at
+`C:\Users\louis\sparkle-finder-repo` is rollback evidence only.
 
 ## Working Name
 
@@ -68,7 +82,9 @@ This repo is not for:
 
 ## Current Posture
 
-Research first. Design later. Build only after the customer-side scope, trust model, data ownership model, and transaction boundary are deliberately decided.
+Sparkle Finder is an active production application. Preserve its separate auth,
+data, and deployment boundaries while coordinating related work from the shared
+Sparkle Suite repository.
 
 ## Silver Billing Env
 

@@ -12,13 +12,11 @@ future work.
   is retained as rollback, and production deployments were intentionally not
   moved.
 
-- [ ] **Update Finder's Vercel source/root bookkeeping only when the next Finder
-  application release is approved** - the live Finder project still points to
-  the former standalone repo/root so this repository-only move cannot alter the
-  current known-good deployment. At the next approved Finder release, preserve
-  the current deployment as rollback, change only the project source/root to the
-  shared repo's `apps/finder`, deploy the exact verified tip, and smoke the live
-  customer domain. Do not combine Suite/Finder environments or databases.
+- [x] **Update Finder's Vercel source/root bookkeeping** - completed August 25
+  after Louis explicitly approved the release. The existing Finder project now
+  uses GitHub repo `louis623/sparkle-suite`, root `apps/finder`, and production
+  branch `codex/nic-nac-trade-hardening`. The prior deployment was preserved as
+  rollback; Suite/Finder environments and databases remain separate.
 
 - [x] **Separate managed-team and membership-team identity** - completed in `7b4bb363` through `36d1e8fd`. Team Management edits the rep's own managed team for Join Team/New Rep Onboarding; the Workspace header and customer footer use only the team the rep belongs to. Whatnot is supported on public team cards, and generic onboarding no longer carries Brittany-specific defaults.
 

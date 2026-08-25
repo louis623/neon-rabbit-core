@@ -9,12 +9,14 @@ shared auth system, shared database, shared deployment, or runtime import
 relationship. Each app continues to build and test from its own package root.
 Git commits and pushes happen from the shared Sparkle Suite repository root.
 
-**Production does not move merely because source files moved.**
+**Finder deploys from its nested application root without sharing production.**
 
-The relocation is repository-only. Existing known-good deployments, aliases,
-and Vercel settings remain untouched until a separately approved Finder release
-needs its source/root bookkeeping updated. The former standalone Finder repo is
-retained as a rollback copy.
+After explicit release approval, Vercel project `sparkle-finder-dev` was linked
+to `louis623/sparkle-suite` with Root Directory `apps/finder` and production
+branch `codex/nic-nac-trade-hardening`. This does not combine Vercel projects,
+domains, environment variables, authentication, databases, or runtime imports.
+The former standalone Finder repo and pre-relocation deployment remain rollback
+evidence.
 
 ---
 

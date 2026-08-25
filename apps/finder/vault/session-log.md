@@ -2,6 +2,12 @@
 
 ## 2026-08-25 - Repository Relocation Into Sparkle Suite
 
+- With Louis's explicit follow-up approval, Vercel project
+  `sparkle-finder-dev` was reconnected to `louis623/sparkle-suite`, its Root
+  Directory was set to `apps/finder`, and production branch tracking was set to
+  `codex/nic-nac-trade-hardening`. The former production deployment remains a
+  rollback point; Finder's auth, Supabase project, environment variables, and
+  domains remain separate from Suite.
 - Sparkle Finder's exact Git tip `8192b11f1535e8cbc0af2c4df352ea93c0e86233`
   was imported with complete history under
   `C:\Users\louis\sparkle-suite-repo\apps\finder`. The Suite repository import

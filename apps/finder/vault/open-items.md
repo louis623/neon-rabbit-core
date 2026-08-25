@@ -11,6 +11,10 @@
 - Remaining release follow-up: run one read-only signed-in production visual check on `https://yoursparklefinder.com/reps` when an appropriate Finder demo/reviewer session is available. Run favorite add/remove persistence only with an explicitly designated smoke account because it mutates that account's saved reps. The standard local release smoke now validates the live Heather feed and rejects fixture fallback.
 
 - Future Codex sessions should open `C:\Users\louis\sparkle-suite-repo` with Workspace write enabled, then run Finder-specific commands from `apps\finder`.
+- Finder Vercel source relocation is complete: project `sparkle-finder-dev`
+  uses repo `louis623/sparkle-suite`, Root Directory `apps/finder`, and
+  production branch `codex/nic-nac-trade-hardening`. Do not reconnect it to the
+  retained standalone rollback repository.
 - Keep new durable project memory in repo-local `vault/`.
 - Keep new implementation plans, handoffs, decisions, research, and deployment notes in repo-local `docs/`.
 - Add repo-local `.agents/skills` entries when Sparkle Finder-specific skills are created.

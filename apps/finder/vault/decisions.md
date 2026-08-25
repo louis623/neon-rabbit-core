@@ -6,6 +6,11 @@ Decision: Sparkle Finder's active workspace is `C:\Users\louis\sparkle-suite-rep
 
 Reason: Keeping both applications in one writable Git workspace lets Codex sessions work across related tasks without combining their application architecture or production systems.
 
+Vercel project `sparkle-finder-dev` therefore connects to GitHub repository
+`louis623/sparkle-suite`, uses Root Directory `apps/finder`, and tracks
+production branch `codex/nic-nac-trade-hardening`. This is a source-location
+decision only; Finder and Suite production resources stay separate.
+
 ## 2026-08-25 - Suite Owns Compatibility Truth; Finder Owns Safe Presentation
 
 Decision: Sparkle Suite is the canonical source for catalog designs and exact variants, reps, shows, pending-adjusted dancer availability, and Showcase Studio resolve/confirm/replay outcomes. Sparkle Finder consumes the public catalog and availability contracts read-only, uses the separate authenticated Studio POST contract only for idempotent resolve/confirm/replay continuation, keeps its separate customer auth boundary, and never recreates pending-quantity logic or exposes a Suite Dance Floor mutation path.

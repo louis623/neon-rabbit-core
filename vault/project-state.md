@@ -5,13 +5,18 @@
 - Sparkle Finder is now contained at `apps\finder` in the active Sparkle Suite
   repository. Suite remains the root application; Finder retains its own
   package lock, auth, Supabase project, Vercel project, and runtime config.
+- Finder Vercel project `sparkle-finder-dev` now tracks GitHub repository
+  `louis623/sparkle-suite`, Root Directory `apps/finder`, and production branch
+  `codex/nic-nac-trade-hardening`. This changes source bookkeeping only; Finder
+  keeps its existing domains, environment variables, auth, and database.
 - History-preserving import commit `8e12e6da2495cfd28850eec1dec53a2b96b8f797`
   has Suite tip `0fc8ce1f104e6bc556835ce7b14c6b84d8831e69`
   as parent one and exact Finder tip
   `8192b11f1535e8cbc0af2c4df352ea93c0e86233` as parent two. Finder's imported
   tree matches source tree `02eb6bf9b4c3e7403cf08f82d308ac6ffe2f64db`.
-- No application source, database, auth, deployment, domain, or production
-  setting changed. The former standalone Finder repo is retained as rollback.
+- No application source, database, auth, or domain setting changed. The former
+  standalone Finder repo and the pre-relocation deployment are retained as
+  rollback evidence.
 - Local verification from the combined layout passed both production builds,
   Finder lint, 57 files/760 tests, strict live Suite contract, Nic-Nac guard,
   and browser smoke (20 passed/2 expected skips). Suite retained its exact

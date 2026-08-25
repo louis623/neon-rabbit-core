@@ -9,6 +9,9 @@ Future Codex sessions should open `C:\Users\louis\sparkle-suite-repo` with Works
 ## Current Live Target
 
 - Primary customer and production domain: `https://yoursparklefinder.com`
+- Vercel project `sparkle-finder-dev` is connected to GitHub repository
+  `louis623/sparkle-suite` with Root Directory `apps/finder` and production
+  branch `codex/nic-nac-trade-hardening`.
 - The stable production Vercel alias `https://sparkle-finder-dev.vercel.app` permanently redirects to the matching path and query on the customer domain. Preview deployments remain available for private verification.
 - Production-style repo work should happen from this implementation repo, not the old binder.
 

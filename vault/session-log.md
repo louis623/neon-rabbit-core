@@ -6,6 +6,12 @@ Running log of significant work sessions. Most recent first.
 
 ## August 25, 2026 - Sparkle Finder moved into the Suite repository
 
+- After explicit follow-up approval, corrected only the Finder Vercel source
+  bookkeeping: project `sparkle-finder-dev` now connects to
+  `louis623/sparkle-suite`, uses Root Directory `apps/finder`, and tracks
+  production branch `codex/nic-nac-trade-hardening`. The previous production
+  deployment was preserved as rollback. Suite's Vercel project, aliases,
+  deployment, auth, database, and Heather's beta environment were untouched.
 - Completed read-only due diligence before making changes, including Git
   history, build-boundary, deployment-provenance, rollback, and live HTTP
   audits. Used three independent read-only agent reviews and a disposable local
