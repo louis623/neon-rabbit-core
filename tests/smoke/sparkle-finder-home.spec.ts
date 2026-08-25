@@ -133,7 +133,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
       await expect(studioPanel).toBeVisible();
       await expect(studioPanel.getByLabel("Original label photo")).toBeVisible();
       await expect(studioPanel.getByLabel("Jewelry photo")).toBeVisible();
-      await expect(studioPanel.getByLabel("Item number")).toBeVisible();
+      await expect(studioPanel.getByRole("textbox", { name: /^Item number\b/ })).toBeVisible();
       await expect(studioPanel.getByText("Photos are resized without a square crop before they leave your browser.")).toBeVisible();
       const studioSubmissionId = studioPanel.locator('input[name="finderSubmissionId"]');
       await expect(studioSubmissionId).toHaveValue(/^[0-9a-f-]{36}$/i);
