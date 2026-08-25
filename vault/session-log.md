@@ -25,6 +25,16 @@ Running log of significant work sessions. Most recent first.
 - No Louis/customer authenticated session was used and no production smoke data
   remains. The temporary clean release worktree and Vercel link token were
   removed after deployment.
+- Finder subsequently completed Releases 1–4. Its clean synced closeout tip is
+  `8192b11`, production deployment is
+  `dpl_GKS4RzyHxnpchfYsypE3q3UT67DR`, and its final gate passed lint, build, 57
+  test files/760 tests, strict Suite verification, browser smoke, Nic-Nac guard,
+  custom-domain 200, and runtime-error review.
+- Captured the cross-repo session close, status, decisions, lessons, release
+  pattern, and next active task directly in Open Brain. The next session is
+  intentionally read-only merger discovery; it must not implement the merge.
+- Created the copy/paste restart prompt at
+  `docs/sparkle-suite/operations/2026-08-25-suite-finder-merge-discovery-prompt.md`.
 
 ---
 

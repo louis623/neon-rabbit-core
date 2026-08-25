@@ -5,6 +5,15 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Prepare Sparkle Suite + Sparkle Finder merger due diligence — read-only
+  only** - next session should inspect both active repos, Open Brain, current
+  memory, deployment/database/auth boundaries, contract ownership, shared-code
+  candidates, Git-history options, and collision risks. Produce a readiness
+  brief and proposed phased plan, then wait for Louis. Do not implement, move
+  files, change configuration, commit, push, deploy, or mutate production until
+  Louis explicitly approves a later implementation phase. Restart prompt:
+  `docs/sparkle-suite/operations/2026-08-25-suite-finder-merge-discovery-prompt.md`.
+
 - [x] **Separate managed-team and membership-team identity** - completed in `7b4bb363` through `36d1e8fd`. Team Management edits the rep's own managed team for Join Team/New Rep Onboarding; the Workspace header and customer footer use only the team the rep belongs to. Whatnot is supported on public team cards, and generic onboarding no longer carries Brittany-specific defaults.
 
 - [x] **Repair customer profile visibility and signup confirmation** - completed in `36d1e8fd`. Customer List exposes and sorts birthday plus jewelry-preference fields, Joined appears once, and the public signup form gives accessible saving/success/error feedback.

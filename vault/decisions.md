@@ -1496,3 +1496,12 @@ Team Management has two related but separate workflows: Start Strong onboarding 
 - **Finder/Suite repo merging is deferred.** Complete and stabilize this
   compatibility release first; evaluate a monorepo only as a separate follow-up
   with shared contract packages and independent deploy boundaries.
+- **The immediate follow-up is due diligence, not implementation.** A new
+  session may inspect both repos and recommend a target structure, phased plan,
+  gates, and rollback strategy. It may not move code, combine packages, change
+  Git/Vercel/Supabase/auth boundaries, or start a merge until Louis reviews the
+  readiness brief and explicitly authorizes implementation.
+- **Repository consolidation does not imply runtime consolidation.** The audit
+  must begin from separate apps, databases/auth, secrets, domains, and release
+  lifecycles. Any proposal to combine one of those boundaries is a distinct
+  decision requiring explicit approval and evidence.

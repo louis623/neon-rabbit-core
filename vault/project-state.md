@@ -19,6 +19,15 @@
   contract layer.
 - Detailed release record:
   `docs/sparkle-suite/operations/2026-08-25-finder-compatibility-release.md`.
+- Finder completed its side after the Suite handoff. Finder branch
+  `codex-sparkle-finder-v1` is clean and synced at `8192b11`; Releases 1–4 are
+  closed, and deployment `dpl_GKS4RzyHxnpchfYsypE3q3UT67DR` is verified at
+  `https://yoursparklefinder.com`.
+- Louis's next intended session is merger due diligence only. It must inspect
+  both repos read-only, prepare a readiness brief and proposed phased plan, and
+  wait. No consolidation work begins without a new explicit instruction.
+- Restart prompt:
+  `docs/sparkle-suite/operations/2026-08-25-suite-finder-merge-discovery-prompt.md`.
 
 **Last updated:** August 25, 2026
 
