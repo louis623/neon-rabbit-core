@@ -1,0 +1,1443 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sparkle Finder Smoke Test Checklist</title>
+    <style>
+      :root {
+        --paper: #fffefd;
+        --warm: #fffaf8;
+        --blush: #fff3f0;
+        --plum: #6f123d;
+        --plum-deep: #431326;
+        --muted: #755365;
+        --rose: #df6f8d;
+        --coral: #ef8b73;
+        --border: #efc9c9;
+        --ok: #0f665d;
+        --ok-bg: #e5fbf6;
+        --bad: #9b1748;
+        --bad-bg: #fff0f5;
+        --shadow: 0 18px 55px rgba(111, 18, 61, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 12% 5%, rgba(239, 139, 115, 0.16), transparent 22rem),
+          linear-gradient(180deg, var(--paper), var(--warm) 46%, var(--blush));
+        color: var(--plum-deep);
+        font-family:
+          "DM Sans",
+          "Segoe UI",
+          system-ui,
+          sans-serif;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 21rem;
+        min-height: 100vh;
+      }
+
+      .main {
+        padding: 1.5rem clamp(1rem, 3vw, 2.5rem) 3rem;
+      }
+
+      .side {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow: auto;
+        border-left: 1px solid var(--border);
+        background: rgba(255, 254, 253, 0.9);
+        padding: 1.25rem;
+        backdrop-filter: blur(14px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 1.2rem;
+      }
+
+      .seal {
+        display: grid;
+        width: 3.5rem;
+        height: 3.5rem;
+        place-items: center;
+        border: 1px solid rgba(239, 139, 115, 0.58);
+        border-radius: 999px;
+        background: radial-gradient(circle, white 58%, #fde2dd 100%);
+        box-shadow:
+          inset 0 0 0 0.24rem rgba(255, 255, 255, 0.86),
+          inset 0 0 0 0.34rem rgba(239, 139, 115, 0.25);
+        color: var(--plum);
+        font-family: Georgia, serif;
+        font-size: 1.85rem;
+        line-height: 1;
+      }
+
+      .brand h1,
+      .hero h1,
+      .section-title {
+        font-family: Georgia, "Times New Roman", serif;
+        letter-spacing: 0;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 1.55rem;
+        line-height: 1;
+      }
+
+      .brand p {
+        margin: 0.2rem 0 0;
+        color: var(--coral);
+      }
+
+      .hero {
+        max-width: 67rem;
+        margin-bottom: 1rem;
+        padding: 1.35rem;
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        background: rgba(255, 254, 253, 0.78);
+        box-shadow: var(--shadow);
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3.4rem);
+        line-height: 1.05;
+      }
+
+      .hero p {
+        max-width: 54rem;
+        margin: 0.75rem 0 0;
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.65;
+      }
+
+      .hero-actions,
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+        margin-top: 1rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        min-height: 2.65rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        border: 1px solid var(--border);
+        border-radius: 0.55rem;
+        background: var(--paper);
+        color: var(--plum-deep);
+        cursor: pointer;
+        font-weight: 800;
+        padding: 0.65rem 1rem;
+        text-decoration: none;
+        transition:
+          transform 120ms ease,
+          box-shadow 120ms ease,
+          background 120ms ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(111, 18, 61, 0.11);
+      }
+
+      .btn.primary {
+        border-color: var(--plum);
+        background: var(--plum);
+        color: white;
+      }
+
+      .btn.danger {
+        border-color: #efb5c7;
+        background: var(--bad-bg);
+        color: var(--bad);
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin: 1rem 0 1.25rem;
+      }
+
+      .field {
+        display: grid;
+        gap: 0.35rem;
+      }
+
+      .field label {
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .field input,
+      .field textarea,
+      .field select {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: rgba(255, 254, 253, 0.88);
+        color: var(--plum-deep);
+        padding: 0.7rem 0.75rem;
+      }
+
+      .field textarea {
+        min-height: 7rem;
+        resize: vertical;
+      }
+
+      .quick-start {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin: 1rem 0 1.5rem;
+      }
+
+      .tip {
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        background: rgba(255, 254, 253, 0.72);
+        padding: 1rem;
+      }
+
+      .tip strong {
+        display: block;
+        margin-bottom: 0.35rem;
+      }
+
+      .tip span {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .section {
+        max-width: 67rem;
+        margin: 1rem 0;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin: 1.25rem 0 0.65rem;
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: 1.6rem;
+      }
+
+      .section-head p {
+        max-width: 33rem;
+        margin: 0.25rem 0 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .checklist {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .item {
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        background: rgba(255, 254, 253, 0.86);
+        box-shadow: 0 9px 24px rgba(111, 18, 61, 0.06);
+        overflow: hidden;
+      }
+
+      .item-main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .item h3 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+
+      .item .route {
+        display: inline-flex;
+        margin-top: 0.4rem;
+        color: var(--rose);
+        font-size: 0.86rem;
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      .steps {
+        margin: 0.7rem 0 0;
+        padding-left: 1.2rem;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .expected {
+        margin-top: 0.65rem;
+        border-left: 3px solid var(--coral);
+        color: var(--plum-deep);
+        padding-left: 0.7rem;
+        line-height: 1.5;
+      }
+
+      .item-actions {
+        display: grid;
+        min-width: 12.5rem;
+        align-content: start;
+        gap: 0.55rem;
+      }
+
+      .status-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.45rem;
+      }
+
+      .status-btn {
+        min-height: 2.45rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: white;
+        color: var(--muted);
+        cursor: pointer;
+        font-weight: 900;
+      }
+
+      .status-btn[data-active="true"][data-status="yes"] {
+        border-color: #a8d8d1;
+        background: var(--ok-bg);
+        color: var(--ok);
+      }
+
+      .status-btn[data-active="true"][data-status="no"] {
+        border-color: #efb5c7;
+        background: var(--bad-bg);
+        color: var(--bad);
+      }
+
+      .feedback-button {
+        min-height: 2.35rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: var(--blush);
+        color: var(--plum);
+        cursor: pointer;
+        font-weight: 800;
+      }
+
+      .note-preview {
+        display: none;
+        border-top: 1px solid var(--border);
+        background: var(--blush);
+        color: var(--muted);
+        padding: 0.75rem 1rem;
+        line-height: 1.5;
+      }
+
+      .note-preview[data-has-note="true"] {
+        display: block;
+      }
+
+      .side-card {
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        background: var(--paper);
+        padding: 1rem;
+        box-shadow: 0 10px 30px rgba(111, 18, 61, 0.08);
+      }
+
+      .progress-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin: 0.45rem 0;
+        color: var(--muted);
+      }
+
+      .progress-row strong {
+        color: var(--plum-deep);
+      }
+
+      .meter {
+        height: 0.7rem;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--blush);
+      }
+
+      .meter span {
+        display: block;
+        width: 0;
+        height: 100%;
+        background: linear-gradient(90deg, var(--rose), var(--plum));
+        transition: width 180ms ease;
+      }
+
+      .toc {
+        display: grid;
+        gap: 0.35rem;
+        margin: 1rem 0;
+      }
+
+      .toc a {
+        border: 1px solid transparent;
+        border-radius: 0.45rem;
+        color: var(--muted);
+        font-weight: 800;
+        padding: 0.45rem 0.55rem;
+        text-decoration: none;
+      }
+
+      .toc a:hover {
+        border-color: var(--border);
+        background: var(--blush);
+        color: var(--plum);
+      }
+
+      .export-box {
+        display: grid;
+        gap: 0.55rem;
+        margin-top: 0.8rem;
+      }
+
+      dialog {
+        width: min(42rem, calc(100vw - 2rem));
+        border: 1px solid var(--border);
+        border-radius: 0.85rem;
+        background: var(--paper);
+        color: var(--plum-deep);
+        box-shadow: 0 30px 100px rgba(67, 19, 38, 0.22);
+      }
+
+      dialog::backdrop {
+        background: rgba(67, 19, 38, 0.24);
+        backdrop-filter: blur(3px);
+      }
+
+      .dialog-head {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .dialog-head h2 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      .close-x {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: white;
+        color: var(--plum);
+        cursor: pointer;
+        font-weight: 900;
+        width: 2rem;
+        height: 2rem;
+      }
+
+      .toast {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 20;
+        display: none;
+        max-width: min(26rem, calc(100vw - 2rem));
+        border: 1px solid var(--border);
+        border-radius: 0.65rem;
+        background: var(--plum-deep);
+        color: white;
+        padding: 0.8rem 1rem;
+        box-shadow: var(--shadow);
+      }
+
+      .toast[data-visible="true"] {
+        display: block;
+      }
+
+      @media (max-width: 980px) {
+        .shell {
+          display: block;
+        }
+
+        .side {
+          position: static;
+          height: auto;
+          border-left: 0;
+          border-top: 1px solid var(--border);
+        }
+
+        .meta-grid,
+        .quick-start {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .item-main {
+          grid-template-columns: 1fr;
+        }
+
+        .item-actions {
+          min-width: 0;
+        }
+      }
+
+      @media print {
+        .side,
+        .hero-actions,
+        .feedback-button,
+        .toast,
+        dialog {
+          display: none !important;
+        }
+
+        body {
+          background: white;
+        }
+
+        .main {
+          padding: 0;
+        }
+
+        .item {
+          break-inside: avoid;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <main class="main">
+        <header class="brand" aria-label="Sparkle Finder smoke test">
+          <div class="seal" aria-hidden="true">SF</div>
+          <div>
+            <h1>Sparkle Finder</h1>
+            <p>Smoke test checklist</p>
+          </div>
+        </header>
+
+        <section class="hero">
+          <h1>Louis smoke test guide</h1>
+          <p>
+            Keep Sparkle Finder open in one tab and this checklist open in another. For each item, try the steps in
+            plain English, mark Yes if it works, or mark No if it does not. When you mark No, a feedback box opens so
+            you can describe exactly what happened.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" id="openApp" target="_blank" rel="noopener noreferrer">Open Sparkle Finder</a>
+            <button class="btn" type="button" id="copyReportTop">Copy report for Codex</button>
+            <button class="btn" type="button" id="printPage">Print or save PDF</button>
+          </div>
+        </section>
+
+        <section class="meta-grid" aria-label="Smoke test session details">
+          <div class="field">
+            <label for="testerName">Tester</label>
+            <input id="testerName" autocomplete="name" placeholder="Louis" />
+          </div>
+          <div class="field">
+            <label for="testDate">Date</label>
+            <input id="testDate" type="date" />
+          </div>
+          <div class="field">
+            <label for="deviceInfo">Device or browser</label>
+            <input id="deviceInfo" placeholder="Laptop Chrome, iPhone Safari, etc." />
+          </div>
+          <div class="field">
+            <label for="appBase">App URL</label>
+            <input id="appBase" placeholder="http://127.0.0.1:3000" />
+          </div>
+        </section>
+
+        <section class="quick-start" aria-label="How to use this checklist">
+          <div class="tip">
+            <strong>1. Open the route</strong>
+            <span>Use each Open button, or click through from the homepage if the item tells you to.</span>
+          </div>
+          <div class="tip">
+            <strong>2. Try the thing</strong>
+            <span>Click the button, use the browser Back button, resize if needed, and watch for weirdness.</span>
+          </div>
+          <div class="tip">
+            <strong>3. Mark Yes or No</strong>
+            <span>If it fails, write what you expected, what happened, and anything you noticed visually.</span>
+          </div>
+        </section>
+
+        <div id="sections"></div>
+      </main>
+
+      <aside class="side" aria-label="Smoke test progress and export tools">
+        <div class="side-card">
+          <h2 class="section-title" style="margin-top: 0">Progress</h2>
+          <div class="meter" aria-hidden="true"><span id="progressBar"></span></div>
+          <div class="progress-row"><span>Checked</span><strong id="checkedCount">0 / 0</strong></div>
+          <div class="progress-row"><span>Passed</span><strong id="passedCount">0</strong></div>
+          <div class="progress-row"><span>Needs fixes</span><strong id="failedCount">0</strong></div>
+          <div class="progress-row"><span>Not checked</span><strong id="openCount">0</strong></div>
+        </div>
+
+        <nav class="toc" id="toc" aria-label="Checklist sections"></nav>
+
+        <div class="side-card">
+          <h2 class="section-title" style="margin-top: 0">Export</h2>
+          <p style="color: var(--muted); line-height: 1.5">
+            When you finish, copy the report and send it back to Codex. Failed items and feedback are grouped at the
+            top so fixes are easy to find.
+          </p>
+          <div class="export-box">
+            <button class="btn primary" type="button" id="copyReport">Copy report for Codex</button>
+            <button class="btn" type="button" id="downloadMarkdown">Download Markdown</button>
+            <button class="btn" type="button" id="downloadJson">Download JSON</button>
+            <button class="btn danger" type="button" id="resetAll">Reset checklist</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <dialog id="feedbackDialog">
+      <form id="feedbackForm">
+        <div class="dialog-head">
+          <div>
+            <h2 id="dialogTitle">Feedback</h2>
+            <p id="dialogRoute" style="margin: 0.35rem 0 0; color: var(--muted)"></p>
+          </div>
+          <button class="close-x" type="button" data-close-feedback aria-label="Close feedback">x</button>
+        </div>
+        <div class="field">
+          <label for="severity">How serious is it?</label>
+          <select id="severity">
+            <option value="">Choose one</option>
+            <option value="blocker">Blocker - I cannot keep testing this path</option>
+            <option value="bug">Bug - it works wrong or breaks trust</option>
+            <option value="polish">Polish - it works, but feels off</option>
+            <option value="question">Question - I am unsure what should happen</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top: 0.8rem">
+          <label for="feedbackText">What happened?</label>
+          <textarea
+            id="feedbackText"
+            placeholder="Example: I clicked Browse Library from the homepage. It opened, but the card text was clipped on my laptop."
+          ></textarea>
+        </div>
+        <div class="field" style="margin-top: 0.8rem">
+          <label for="screenshotNote">Screenshot or extra note</label>
+          <input id="screenshotNote" placeholder="Optional: screenshot filename, route, or anything to remember" />
+        </div>
+        <div class="tools">
+          <button class="btn primary" type="submit" id="saveFeedback">Save feedback</button>
+          <button class="btn" type="button" data-close-feedback>Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      const STORAGE_KEY = "sparkleFinderLouisSmokeTest.v1";
+      const DEFAULT_APP_BASE =
+        window.location.protocol.startsWith("http") && window.location.origin
+          ? window.location.origin
+          : "http://127.0.0.1:3000";
+
+      const sections = [
+        {
+          id: "first-look",
+          title: "First look and homepage",
+          intro: "Start with the public homepage. This is the main visual gut-check.",
+          items: [
+            {
+              id: "home-loads",
+              route: "/",
+              title: "Homepage loads cleanly",
+              steps: [
+                "Open the homepage.",
+                "Wait a few seconds.",
+                "Look for the Sparkle Finder header, navigation, hero, agenda, discovery cards, Silver area, and Showcase Studio/photo setup paths.",
+              ],
+              expected: "The page loads without blank areas, error screens, or obvious broken layout.",
+            },
+            {
+              id: "hero-clean",
+              route: "/",
+              title: "Hero section feels clean",
+              steps: [
+                "Look at the hero at the top of the homepage.",
+                "Confirm the oversized SF seal is not in the hero.",
+                "Confirm there are no plus-shaped background marks.",
+              ],
+              expected: "The top brand logo stays in the header only, and the hero is clean and readable.",
+            },
+            {
+              id: "home-nav-readable",
+              route: "/",
+              title: "Header navigation is readable",
+              steps: [
+                "Scan Library, Live Shows, Dance Floor, Showcase, and Account/Guest.",
+                "On a narrow screen, use the horizontal nav if needed.",
+              ],
+              expected: "No nav label looks clipped, impossible to tap, or confusing.",
+            },
+            {
+              id: "home-scroll",
+              route: "/",
+              title: "Homepage scroll and spacing",
+              steps: [
+                "Scroll from top to bottom.",
+                "Watch for overlapping cards, text running into borders, or weird blank gaps.",
+              ],
+              expected: "Sections stack naturally: hero, agenda, discovery cards, Silver Collector Space, Nic-Nac, and Showcase Studio paths.",
+            },
+          ],
+        },
+        {
+          id: "homepage-buttons",
+          title: "Homepage buttons and cards",
+          intro: "These are the first things real customers will click.",
+          items: [
+            {
+              id: "cta-live-calendar",
+              route: "/",
+              title: "Explore Live Calendar button",
+              steps: [
+                "From the homepage, click Explore Live Calendar.",
+                "Confirm the Live Shows route opens.",
+                "Use the browser Back button to return home.",
+              ],
+              expected: "The route changes to /live-shows, then Back returns to the homepage.",
+            },
+            {
+              id: "cta-browse-library",
+              route: "/",
+              title: "Browse Library button",
+              steps: [
+                "From the homepage, click Browse Library.",
+                "Confirm the Master Jewelry Library route opens.",
+                "Use the browser Back button to return home.",
+              ],
+              expected: "The route changes to /library, and the browser Back button behaves normally.",
+            },
+            {
+              id: "discovery-cards",
+              route: "/",
+              title: "Four discovery cards",
+              steps: [
+                "Click Master Live Calendar, Dance Floor, Master Jewelry Library, and Photo Setup Guide.",
+                "Use Back after each card.",
+              ],
+              expected: "Every card opens the right local route and none of them feel dead.",
+            },
+            {
+              id: "agenda-actions",
+              route: "/",
+              title: "Today agenda actions",
+              steps: [
+                "Click Watch on the first agenda item.",
+                "Return home, then try one Set Reminder button.",
+                "Click View full calendar and See all live shows.",
+              ],
+              expected: "Agenda controls open local live-show pages or safe local paths. Nothing sends you to a placeholder domain.",
+            },
+            {
+              id: "silver-home",
+              route: "/",
+              title: "Collector Space preview",
+              steps: [
+                "Look at the collector profile, collection preview, and Nic-Nac.",
+                "Click View / Edit Profile or Open Silver preview.",
+                "Use Back to return home.",
+              ],
+              expected: "Silver preview paths open the Silver route or sign-in flow, and the browser Back button returns cleanly.",
+            },
+            {
+              id: "photo-setup-guide",
+              route: "/",
+              title: "Photo setup guidance path",
+              steps: [
+                "Find the Photo Setup Guide discovery card.",
+                "Open the photo setup route.",
+                "Confirm the light-box resource is presented as optional guidance.",
+              ],
+              expected: "The route opens /photo-setup and does not present paid-link or shop language.",
+            },
+          ],
+        },
+        {
+          id: "account-preview",
+          title: "Guest, Free, and Silver preview",
+          intro: "This makes sure you can smoke test without real production accounts.",
+          items: [
+            {
+              id: "sign-in-choices",
+              route: "/auth/sign-in",
+              title: "Sign-in page choices",
+              steps: [
+                "Open the sign-in page.",
+                "Look for Continue as Guest, Continue as Marlena, and Preview Sparkle Mama.",
+              ],
+              expected: "All three choices are visible and plain-English.",
+            },
+            {
+              id: "guest-reset",
+              route: "/auth/sign-in",
+              title: "Guest/public reset",
+              steps: [
+                "Click Continue as Guest.",
+                "Confirm you return to the public homepage.",
+                "Open /dashboard afterward.",
+              ],
+              expected: "Dashboard asks you to sign in instead of showing private hub tools.",
+            },
+            {
+              id: "free-preview",
+              route: "/auth/sign-in",
+              title: "Free preview account",
+              steps: [
+                "Click Continue as Marlena.",
+                "Confirm dashboard opens.",
+                "Open /silver.",
+              ],
+              expected: "Free preview can browse the hub, but Silver tools show an upgrade or sign-in prompt.",
+            },
+            {
+              id: "silver-preview",
+              route: "/auth/sign-in",
+              title: "Silver preview account",
+              steps: [
+                "Click Preview Sparkle Mama.",
+                "Open /silver.",
+                "Check profile, collection, and Silver actions.",
+              ],
+              expected: "Silver preview opens the Silver tools and does not show the Free gate.",
+            },
+          ],
+        },
+        {
+          id: "discovery-routes",
+          title: "Discovery routes",
+          intro: "Walk the main app pages like a customer hunting for jewelry.",
+          items: [
+            {
+              id: "live-shows-route",
+              route: "/live-shows",
+              title: "Master Live Calendar route",
+              steps: [
+                "Open Live Shows.",
+                "Scan each show card.",
+                "Click at least one show path if available.",
+              ],
+              expected: "Show times, rep names, and next-show context are readable and local.",
+            },
+            {
+              id: "rep-boards-route",
+              route: "/rep-boards",
+              title: "Dance Floor route",
+              steps: [
+                "Open Dance Floor.",
+                "Click View library record on a dancer.",
+                "Go back, then click Open Dance Floor.",
+              ],
+              expected: "Dancers are readable. Links use local routes and there are no direct collector trading actions.",
+            },
+            {
+              id: "library-route",
+              route: "/library",
+              title: "Master Jewelry Library route",
+              steps: [
+                "Open Library.",
+                "Scan the search/filter area and jewelry cards.",
+                "Click Rainbow Crown Ring or another jewelry card.",
+              ],
+              expected: "The library page is readable and item cards open detail pages.",
+            },
+            {
+              id: "item-detail-nic-nac",
+              route: "/library/jewel-rainbow-crown-ring",
+              title: "Jewelry detail and Nic-Nac",
+              steps: [
+                "Open the Rainbow Crown Ring detail page.",
+                "Look for known dancer leads.",
+                "Look for Nic-Nac, find this for me.",
+                "Click Open Dance Floor.",
+              ],
+              expected: "Nic-Nac is focused on matching leads, not open-ended chat, and rep paths stay local.",
+            },
+            {
+              id: "diamonds-route",
+              route: "/diamonds-unicorns",
+              title: "Diamonds & Unicorns Library",
+              steps: [
+                "Open Diamonds & Unicorns.",
+                "Scan the items and labels.",
+                "Open at least one item detail.",
+              ],
+              expected: "The page uses Bomb Party diamond/unicorn labels only and does not invent rankings.",
+            },
+            {
+              id: "photo-setup-route",
+              route: "/photo-setup",
+              title: "Photo setup route",
+              steps: [
+                "Open Photo Setup Guide.",
+                "Scan the label evidence and light-box instructions.",
+                "Confirm the external photo box link opens Amazon in a new tab.",
+              ],
+              expected: "The page feels like Showcase Studio guidance, not a storefront.",
+            },
+          ],
+        },
+        {
+          id: "mobile-and-back",
+          title: "Mobile, back button, and browser basics",
+          intro: "These catch the annoying stuff people notice immediately.",
+          items: [
+            {
+              id: "mobile-width",
+              route: "/",
+              title: "Mobile-size homepage",
+              steps: [
+                "Narrow the browser or open on a phone-sized viewport.",
+                "Scroll top to bottom.",
+                "Use the nav scroll if needed.",
+              ],
+              expected: "No text runs off the screen. Buttons are large enough to tap.",
+            },
+            {
+              id: "browser-back",
+              route: "/",
+              title: "Browser Back button sweep",
+              steps: [
+                "Click through at least five different routes from the homepage.",
+                "Use the browser Back button after each.",
+              ],
+              expected: "Back returns to where you expect and does not trap you on a broken page.",
+            },
+            {
+              id: "refresh-state",
+              route: "/dashboard",
+              title: "Refresh behavior",
+              steps: [
+                "Sign in as Free or Silver.",
+                "Refresh the dashboard route.",
+                "Then open the homepage.",
+              ],
+              expected: "The preview account state remains understandable after refresh.",
+            },
+          ],
+        },
+        {
+          id: "content-guardrails",
+          title: "Product guardrails",
+          intro: "These are the business boundaries that need to stay true.",
+          items: [
+            {
+              id: "no-direct-collector-trading",
+              route: "/rep-boards",
+              title: "No direct collector trading flow",
+              steps: [
+                "Scan the Dance Floor and item detail pages.",
+                "Look for anything that lets one collector trade directly with another collector.",
+              ],
+              expected: "The app points to rep-hosted discovery paths only.",
+            },
+            {
+              id: "no-commerce-flow",
+              route: "/photo-setup",
+              title: "No jewelry checkout flow",
+              steps: [
+                "Scan Photo Setup, Dance Floor, and Library.",
+                "Look for checkout, shipping, escrow, or payment steps tied to jewelry.",
+              ],
+              expected: "Photo setup is guidance only and the hub does not handle jewelry transactions.",
+            },
+            {
+              id: "no-social-feed",
+              route: "/dashboard",
+              title: "No public posting area",
+              steps: [
+                "Scan the dashboard, Dance Floors, and item detail pages.",
+                "Look for public comments, posting boxes, or feed-style discussion.",
+              ],
+              expected: "There is no public posting area.",
+            },
+            {
+              id: "nic-nac-bounded",
+              route: "/library/jewel-rainbow-crown-ring",
+              title: "Nic-Nac stays bounded",
+              steps: [
+                "Open a jewelry detail page as Silver.",
+                "Read the Nic-Nac area.",
+                "Look for broad chat prompts or anything that feels open-ended.",
+              ],
+              expected: "Nic-Nac is a find-this-for-me matching helper with rep, dancer, and next-show context.",
+            },
+            {
+              id: "brand-fit",
+              route: "/",
+              title: "Brand fit",
+              steps: [
+                "Scan the whole site.",
+                "Confirm there is no Amethyst branding anywhere.",
+                "Confirm nothing implies Sparkle Finder is an official Bomb Party partner.",
+                "Confirm Silver does not mention an annual plan.",
+                "Look for old-template visual language or anything else that feels off-brand.",
+              ],
+              expected:
+                "The site feels like Sparkle Finder by Sparkle Suite: warm, polished, practical, and clear about its boundaries.",
+            },
+          ],
+        },
+      ];
+
+      let state = loadState();
+      let activeItemId = null;
+
+      const sectionsEl = document.getElementById("sections");
+      const tocEl = document.getElementById("toc");
+      const dialog = document.getElementById("feedbackDialog");
+      const dialogTitle = document.getElementById("dialogTitle");
+      const dialogRoute = document.getElementById("dialogRoute");
+      const feedbackText = document.getElementById("feedbackText");
+      const screenshotNote = document.getElementById("screenshotNote");
+      const severity = document.getElementById("severity");
+      const toast = document.getElementById("toast");
+      const appBaseInput = document.getElementById("appBase");
+
+      init();
+
+      function init() {
+        const today = new Date().toISOString().slice(0, 10);
+        state.meta = state.meta || {};
+        if (!state.meta.testDate) state.meta.testDate = today;
+        if (!state.meta.appBase) state.meta.appBase = DEFAULT_APP_BASE;
+
+        bindMetaInput("testerName", "testerName");
+        bindMetaInput("testDate", "testDate");
+        bindMetaInput("deviceInfo", "deviceInfo");
+        bindMetaInput("appBase", "appBase");
+
+        render();
+        bindButtons();
+        updateOpenAppLinks();
+        updateProgress();
+      }
+
+      function render() {
+        tocEl.innerHTML = sections
+          .map((section) => `<a href="#${section.id}">${escapeHtml(section.title)}</a>`)
+          .join("");
+
+        sectionsEl.innerHTML = sections
+          .map(
+            (section) => `
+              <section class="section" id="${section.id}">
+                <div class="section-head">
+                  <div>
+                    <h2 class="section-title">${escapeHtml(section.title)}</h2>
+                    <p>${escapeHtml(section.intro)}</p>
+                  </div>
+                </div>
+                <div class="checklist">
+                  ${section.items.map(renderItem).join("")}
+                </div>
+              </section>
+            `,
+          )
+          .join("");
+      }
+
+      function renderItem(item) {
+        const itemState = state.items[item.id] || {};
+        const note = itemState.feedback || "";
+        const status = itemState.status || "";
+        const href = getRouteHref(item.route);
+
+        return `
+          <article class="item" data-item-id="${item.id}">
+            <div class="item-main">
+              <div>
+                <h3>${escapeHtml(item.title)}</h3>
+                <a class="route" href="${href}" target="_blank" rel="noopener noreferrer">Open ${escapeHtml(
+                  item.route,
+                )}</a>
+                <ol class="steps">
+                  ${item.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("")}
+                </ol>
+                <div class="expected"><strong>Passes if:</strong> ${escapeHtml(item.expected)}</div>
+              </div>
+              <div class="item-actions" aria-label="Result controls for ${escapeHtml(item.title)}">
+                <div class="status-group">
+                  <button class="status-btn" data-status="yes" data-active="${
+                    status === "yes"
+                  }" aria-pressed="${status === "yes"}" aria-label="Mark ${escapeHtml(
+                    item.title,
+                  )} as passed" type="button">Yes</button>
+                  <button class="status-btn" data-status="no" data-active="${
+                    status === "no"
+                  }" aria-pressed="${status === "no"}" aria-label="Mark ${escapeHtml(
+                    item.title,
+                  )} as needing fixes" type="button">No</button>
+                </div>
+                <button class="feedback-button" type="button" data-feedback-button>
+                  ${note ? "Edit feedback" : "Add feedback"}
+                </button>
+              </div>
+            </div>
+            <div class="note-preview" data-has-note="${note ? "true" : "false"}">
+              <strong>${escapeHtml(itemState.severity || "Feedback")}:</strong>
+              ${escapeHtml(note)}
+              ${itemState.screenshot ? `<br /><strong>Extra:</strong> ${escapeHtml(itemState.screenshot)}` : ""}
+            </div>
+          </article>
+        `;
+      }
+
+      function bindButtons() {
+        document.addEventListener("click", (event) => {
+          const statusButton = event.target.closest(".status-btn");
+          if (statusButton) {
+            const itemEl = statusButton.closest(".item");
+            setStatus(itemEl.dataset.itemId, statusButton.dataset.status);
+            return;
+          }
+
+          const feedbackButton = event.target.closest("[data-feedback-button]");
+          if (feedbackButton) {
+            const itemEl = feedbackButton.closest(".item");
+            openFeedback(itemEl.dataset.itemId);
+          }
+        });
+
+        document.getElementById("feedbackForm").addEventListener("submit", (event) => {
+          event.preventDefault();
+          saveFeedback();
+        });
+        document.querySelectorAll("[data-close-feedback]").forEach((button) => {
+          button.addEventListener("click", () => dialog.close());
+        });
+        document.getElementById("copyReport").addEventListener("click", copyReport);
+        document.getElementById("copyReportTop").addEventListener("click", copyReport);
+        document.getElementById("downloadMarkdown").addEventListener("click", downloadMarkdown);
+        document.getElementById("downloadJson").addEventListener("click", downloadJson);
+        document.getElementById("printPage").addEventListener("click", () => window.print());
+        document.getElementById("resetAll").addEventListener("click", resetAll);
+      }
+
+      function bindMetaInput(inputId, key) {
+        const input = document.getElementById(inputId);
+        input.value = state.meta[key] || "";
+        input.addEventListener("input", () => {
+          state.meta[key] = input.value;
+          saveState();
+          if (key === "appBase") updateOpenAppLinks();
+        });
+      }
+
+      function setStatus(itemId, status) {
+        state.items[itemId] = normalizeItemState(state.items[itemId]);
+        state.items[itemId].status = status;
+        saveState();
+        refreshItem(itemId);
+        updateProgress();
+
+        if (status === "no") {
+          openFeedback(itemId);
+        }
+      }
+
+      function openFeedback(itemId) {
+        activeItemId = itemId;
+        const item = findItem(itemId);
+        const itemState = state.items[itemId] || {};
+        dialogTitle.textContent = item.title;
+        dialogRoute.textContent = item.route;
+        feedbackText.value = itemState.feedback || "";
+        screenshotNote.value = itemState.screenshot || "";
+        severity.value = itemState.severity || "";
+        dialog.showModal();
+      }
+
+      function saveFeedback() {
+        if (!activeItemId) return;
+        state.items[activeItemId] = normalizeItemState(state.items[activeItemId]);
+        state.items[activeItemId].feedback = feedbackText.value.trim();
+        state.items[activeItemId].screenshot = screenshotNote.value.trim();
+        state.items[activeItemId].severity = severity.value;
+        saveState();
+        refreshItem(activeItemId);
+        updateProgress();
+        dialog.close();
+        showToast("Feedback saved.");
+      }
+
+      function refreshItem(itemId) {
+        const oldItem = document.querySelector(`[data-item-id="${CSS.escape(itemId)}"]`);
+        if (!oldItem) return;
+        const item = findItem(itemId);
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = renderItem(item);
+        oldItem.replaceWith(wrapper.firstElementChild);
+      }
+
+      function updateProgress() {
+        const flatItems = getAllItems();
+        const total = flatItems.length;
+        const passed = flatItems.filter((item) => state.items[item.id]?.status === "yes").length;
+        const failed = flatItems.filter((item) => state.items[item.id]?.status === "no").length;
+        const checked = passed + failed;
+        const open = total - checked;
+        const percent = total ? Math.round((checked / total) * 100) : 0;
+
+        document.getElementById("checkedCount").textContent = `${checked} / ${total}`;
+        document.getElementById("passedCount").textContent = passed;
+        document.getElementById("failedCount").textContent = failed;
+        document.getElementById("openCount").textContent = open;
+        document.getElementById("progressBar").style.width = `${percent}%`;
+      }
+
+      function updateOpenAppLinks() {
+        const appBase = getAppBase();
+        document.getElementById("openApp").href = appBase;
+        document.querySelectorAll(".route").forEach((link) => {
+          const itemEl = link.closest(".item");
+          if (!itemEl) return;
+          const item = findItem(itemEl.dataset.itemId);
+          link.href = getRouteHref(item.route);
+        });
+      }
+
+      function buildMarkdownReport() {
+        const flatItems = getAllItems();
+        const failed = flatItems.filter((item) => state.items[item.id]?.status === "no");
+        const withFeedback = flatItems.filter((item) => state.items[item.id]?.feedback);
+        const unchecked = flatItems.filter((item) => !state.items[item.id]?.status);
+        const passed = flatItems.filter((item) => state.items[item.id]?.status === "yes");
+
+        const lines = [
+          "# Sparkle Finder smoke test report",
+          "",
+          `Tester: ${state.meta.testerName || "Not provided"}`,
+          `Date: ${state.meta.testDate || "Not provided"}`,
+          `Device/browser: ${state.meta.deviceInfo || "Not provided"}`,
+          `App URL: ${state.meta.appBase || getAppBase()}`,
+          "",
+          "## Summary",
+          "",
+          `- Passed: ${passed.length}`,
+          `- Needs fixes: ${failed.length}`,
+          `- Not checked: ${unchecked.length}`,
+          "",
+        ];
+
+        if (failed.length) {
+          lines.push("## Needs fixes", "");
+          failed.forEach((item) => {
+            const itemState = state.items[item.id] || {};
+            lines.push(`### ${item.title}`);
+            lines.push(`Route: ${item.route}`);
+            lines.push(`Severity: ${itemState.severity || "Not set"}`);
+            lines.push(`Feedback: ${itemState.feedback || "No feedback provided"}`);
+            if (itemState.screenshot) lines.push(`Extra: ${itemState.screenshot}`);
+            lines.push("");
+          });
+        }
+
+        if (withFeedback.length) {
+          lines.push("## All feedback notes", "");
+          withFeedback.forEach((item) => {
+            const itemState = state.items[item.id] || {};
+            lines.push(`- ${item.title} (${state.items[item.id]?.status || "not checked"}): ${itemState.feedback}`);
+            if (itemState.screenshot) lines.push(`  Extra: ${itemState.screenshot}`);
+          });
+          lines.push("");
+        }
+
+        lines.push("## Full checklist", "");
+        sections.forEach((section) => {
+          lines.push(`### ${section.title}`);
+          section.items.forEach((item) => {
+            const status = state.items[item.id]?.status || "not checked";
+            lines.push(`- [${status === "yes" ? "x" : " "}] ${item.title}: ${status}`);
+          });
+          lines.push("");
+        });
+
+        return lines.join("\n");
+      }
+
+      async function copyReport() {
+        const report = buildMarkdownReport();
+        try {
+          await navigator.clipboard.writeText(report);
+          showToast("Report copied. Send it back to Codex when you are ready.");
+        } catch {
+          const area = document.createElement("textarea");
+          area.value = report;
+          document.body.appendChild(area);
+          area.select();
+          document.execCommand("copy");
+          area.remove();
+          showToast("Report copied.");
+        }
+      }
+
+      function downloadMarkdown() {
+        downloadFile("sparkle-finder-smoke-test-report.md", buildMarkdownReport(), "text/markdown");
+      }
+
+      function downloadJson() {
+        const payload = {
+          meta: state.meta,
+          summary: {
+            total: getAllItems().length,
+            passed: getAllItems().filter((item) => state.items[item.id]?.status === "yes").length,
+            failed: getAllItems().filter((item) => state.items[item.id]?.status === "no").length,
+          },
+          items: getAllItems().map((item) => ({
+            id: item.id,
+            title: item.title,
+            route: item.route,
+            status: state.items[item.id]?.status || "",
+            feedback: state.items[item.id]?.feedback || "",
+            severity: state.items[item.id]?.severity || "",
+            screenshot: state.items[item.id]?.screenshot || "",
+          })),
+        };
+
+        downloadFile("sparkle-finder-smoke-test-report.json", JSON.stringify(payload, null, 2), "application/json");
+      }
+
+      function downloadFile(filename, content, type) {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function resetAll() {
+        if (!confirm("Reset every Yes/No answer and all feedback?")) return;
+        localStorage.removeItem(STORAGE_KEY);
+        state = loadState();
+        const today = new Date().toISOString().slice(0, 10);
+        state.meta.testDate = today;
+        state.meta.appBase = DEFAULT_APP_BASE;
+        document.getElementById("testerName").value = "";
+        document.getElementById("testDate").value = today;
+        document.getElementById("deviceInfo").value = "";
+        document.getElementById("appBase").value = DEFAULT_APP_BASE;
+        saveState();
+        render();
+        updateProgress();
+        showToast("Checklist reset.");
+      }
+
+      function getAllItems() {
+        return sections.flatMap((section) => section.items);
+      }
+
+      function findItem(itemId) {
+        return getAllItems().find((item) => item.id === itemId);
+      }
+
+      function getAppBase() {
+        return (appBaseInput.value || DEFAULT_APP_BASE).replace(/\/+$/, "");
+      }
+
+      function getRouteHref(route) {
+        return `${getAppBase()}${route}`;
+      }
+
+      function loadState() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          const rawItems = parsed && typeof parsed.items === "object" && !Array.isArray(parsed.items) ? parsed.items : {};
+          const items = Object.fromEntries(
+            Object.entries(rawItems).map(([itemId, itemState]) => [itemId, normalizeItemState(itemState)]),
+          );
+
+          return {
+            meta: parsed && typeof parsed.meta === "object" && !Array.isArray(parsed.meta) ? parsed.meta : {},
+            items,
+          };
+        } catch {
+          return { meta: {}, items: {} };
+        }
+      }
+
+      function normalizeItemState(itemState) {
+        return itemState && typeof itemState === "object" && !Array.isArray(itemState) ? itemState : {};
+      }
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.dataset.visible = "true";
+        window.clearTimeout(showToast.timeout);
+        showToast.timeout = window.setTimeout(() => {
+          toast.dataset.visible = "false";
+        }, 2800);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+    </script>
+  </body>
+</html>

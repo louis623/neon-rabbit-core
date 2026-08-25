@@ -1,0 +1,44 @@
+{
+  "name": "sparkle-suite-customer",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests",
+    "check:suite-contract": "tsx scripts/check-sparkle-suite-finder-api.ts",
+    "check:suite-contract:strict": "tsx scripts/check-sparkle-suite-finder-api.ts --strict",
+    "smoke:sparkle-finder": "tsx scripts/smoke-sparkle-finder.ts",
+    "smoke:finder-nic-nac": "tsx scripts/smoke-finder-nic-nac.ts",
+    "smoke:finder-nic-nac:guard": "tsx scripts/smoke-finder-nic-nac.ts --expect-missing-model",
+    "smoke:finder-telemetry-runtime": "tsx scripts/smoke-finder-telemetry-runtime.ts",
+    "smoke:finder-linked-runtime": "tsx scripts/smoke-finder-linked-runtime.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^3.0.73",
+    "@ai-sdk/react": "^3.0.207",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.100.1",
+    "ai": "^6.0.205",
+    "lucide-react": "^0.468.0",
+    "next": "16.2.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "stripe": "^22.2.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "16.2.1",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.5"
+  }
+}
