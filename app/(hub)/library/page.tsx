@@ -2,9 +2,10 @@ import { JewelryCard } from "@/components/library/JewelryCard";
 import { LibrarySearch } from "@/components/library/LibrarySearch";
 import {
   getCatalogFacetOptions,
-  getCatalogJewelryItems,
+  getCatalogJewelryItemsPageResult,
   shouldUseCatalogFixtureFallback,
   type CatalogFacetOptions,
+  type CatalogPageReadResult,
 } from "@/lib/sparkle-finder/catalog-service";
 import { getJewelryItems } from "@/lib/sparkle-finder/service";
 import type { BombPartyLabel, JewelryItem, JewelryType } from "@/lib/sparkle-finder/types";
@@ -17,7 +18,7 @@ export type LibraryPageSearchParams = {
   material?: string | string[];
   stone?: string | string[];
   year?: string | string[];
-  limit?: string | string[];
+  cursor?: string | string[];
 };
 
 export type LibraryFilters = {
@@ -28,13 +29,12 @@ export type LibraryFilters = {
   material?: string;
   stone?: string;
   year?: string;
-  limit?: number;
+  cursor?: string;
 };
 
-const jewelryTypes: Array<JewelryType | "all"> = ["all", "ring", "earrings", "necklace", "bracelet", "stack", "other"];
+const jewelryTypes: Array<JewelryType | "all"> = ["all", "ring", "earrings", "necklace", "bracelet", "stack"];
 const labels: Array<BombPartyLabel | "all"> = ["all", "diamond", "unicorn", "standard"];
 const defaultLibraryLimit = 24;
-const maxLibraryLimit = 50;
 const emptyLibraryFilters: LibraryFilters = {
   q: "",
   type: "all",
@@ -43,7 +43,7 @@ const emptyLibraryFilters: LibraryFilters = {
   material: "",
   stone: "",
   year: "",
-  limit: defaultLibraryLimit,
+  cursor: "",
 };
 
 type LibraryPageProps = {
@@ -52,7 +52,7 @@ type LibraryPageProps = {
 
 export default async function LibraryPage({ searchParams }: LibraryPageProps = {}) {
   const filters = normalizeLibraryFilters(await searchParams);
-  const catalogOptions = {
+  const catalogFilters = {
     query: filters.q,
     type: filters.type,
     label: filters.label,
@@ -60,24 +60,38 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps = {
     material: filters.material ?? "",
     mainStone: filters.stone ?? "",
     collectionYear: normalizeCollectionYearFilter(filters.year),
-    limit: filters.limit,
     useFixtureFallback: shouldUseCatalogFixtureFallback(),
   };
-  const [items, facets] = await Promise.all([
-    getCatalogJewelryItems(catalogOptions),
-    getCatalogFacetOptions(catalogOptions),
+  const [pageResult, facets] = await Promise.all([
+    getCatalogJewelryItemsPageResult({
+      ...catalogFilters,
+      cursor: filters.cursor,
+      limit: defaultLibraryLimit,
+    }),
+    getCatalogFacetOptions(catalogFilters),
   ]);
+  const items = pageResult.status === "success" ? pageResult.items : [];
+  const facetsAvailable = items.length === 0 || hasCatalogFacetOptions(facets);
 
-  return renderLibraryPageContent(items, filters, mergeCatalogFacetOptions(facets, deriveFallbackCatalogFacetOptions(items)));
+  return renderLibraryPageContent(
+    items,
+    filters,
+    facets,
+    pageResult,
+    facetsAvailable,
+  );
 }
 
 export function renderLibraryPageContent(
   items: JewelryItem[] = getJewelryItems(),
   filters: LibraryFilters = emptyLibraryFilters,
   facets: CatalogFacetOptions = deriveFallbackCatalogFacetOptions(items),
+  pageResult?: CatalogPageReadResult,
+  facetsAvailable = true,
 ) {
-  const filteredItems = items.filter((item) => matchesLibraryFilters(item, filters));
-  const effectiveLimit = filters.limit ?? defaultLibraryLimit;
+  const filteredItems = pageResult?.status === "success"
+    ? items
+    : items.filter((item) => matchesLibraryFilters(item, filters));
   const hasActiveFilters =
     filters.q.trim().length > 0 ||
     filters.type !== "all" ||
@@ -97,7 +111,8 @@ export function renderLibraryPageContent(
           Search the Jewelry Library by piece, collection, type, material, stone, and Bomb Party label.
         </p>
       </div>
-      <LibrarySearch filters={filters} facets={facets} />
+      <LibrarySearch facets={facets} facetsAvailable={facetsAvailable} filters={filters} />
+      <LibraryResultSummary itemCount={filteredItems.length} pageResult={pageResult} />
       {filteredItems.length > 0 ? (
         <>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -105,17 +120,12 @@ export function renderLibraryPageContent(
               <JewelryCard item={item} key={item.id} />
             ))}
           </div>
-          {filteredItems.length >= effectiveLimit && effectiveLimit < maxLibraryLimit ? (
-            <div className="flex justify-center">
-              <a
-                className="inline-flex min-h-11 items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-4 text-sm font-bold text-[var(--sparkle-plum-deep)] shadow-[var(--sparkle-shadow-sm)]"
-                href={buildLibraryLimitHref(filters, Math.min(effectiveLimit + defaultLibraryLimit, maxLibraryLimit))}
-              >
-                Load more pieces
-              </a>
-            </div>
-          ) : null}
+          <LibraryContinuation filters={filters} pageResult={pageResult} />
         </>
+      ) : pageResult?.status === "error" ? (
+        <p className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 text-sm font-semibold text-[var(--sparkle-ink-muted)] shadow-[var(--sparkle-shadow-sm)]">
+          The shared Sparkle Suite jewelry catalog could not be loaded right now. Try again in a moment.
+        </p>
       ) : hasActiveFilters ? (
         <div className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-5 text-sm font-semibold text-[var(--sparkle-ink-muted)] shadow-[var(--sparkle-shadow-sm)]">
           <p>No library records match those filters.</p>
@@ -142,7 +152,7 @@ function normalizeLibraryFilters(searchParams: LibraryPageSearchParams = {}): Li
     material: getFirstSearchParam(searchParams.material)?.trim() ?? "",
     stone: getFirstSearchParam(searchParams.stone)?.trim() ?? "",
     year: getFirstSearchParam(searchParams.year)?.trim() ?? "",
-    limit: normalizeLibraryLimit(getFirstSearchParam(searchParams.limit)),
+    cursor: getFirstSearchParam(searchParams.cursor)?.trim() ?? "",
   };
 }
 
@@ -216,15 +226,8 @@ function deriveFallbackCatalogFacetOptions(items: JewelryItem[]): CatalogFacetOp
   };
 }
 
-function mergeCatalogFacetOptions(primary: CatalogFacetOptions, fallback: CatalogFacetOptions): CatalogFacetOptions {
-  return {
-    collections: primary.collections.length > 0 ? primary.collections : fallback.collections,
-    materials: primary.materials.length > 0 ? primary.materials : fallback.materials,
-    stones: primary.stones.length > 0 ? primary.stones : fallback.stones,
-    types: primary.types.length > 0 ? primary.types : fallback.types,
-    labels: primary.labels.length > 0 ? primary.labels : fallback.labels,
-    years: primary.years.length > 0 ? primary.years : fallback.years,
-  };
+function hasCatalogFacetOptions(facets: CatalogFacetOptions): boolean {
+  return Object.values(facets).some((options) => options.length > 0);
 }
 
 function countFacetValues(values: string[]) {
@@ -247,14 +250,7 @@ function normalizeCollectionYearFilter(year: string | undefined): number | undef
   return Number.isInteger(parsed) ? parsed : undefined;
 }
 
-function normalizeLibraryLimit(limit: string | undefined): number {
-  if (!limit || !/^\d+$/.test(limit)) return defaultLibraryLimit;
-  const parsed = Number.parseInt(limit, 10);
-  if (!Number.isInteger(parsed) || parsed < 1) return defaultLibraryLimit;
-  return Math.min(parsed, maxLibraryLimit);
-}
-
-function buildLibraryLimitHref(filters: LibraryFilters, limit: number): string {
+function buildLibraryCursorHref(filters: LibraryFilters, cursor: string): string {
   const params = new URLSearchParams();
   if (filters.q) params.set("q", filters.q);
   if (filters.type !== "all") params.set("type", filters.type);
@@ -263,6 +259,86 @@ function buildLibraryLimitHref(filters: LibraryFilters, limit: number): string {
   if (filters.stone) params.set("stone", filters.stone);
   if (filters.label !== "all") params.set("label", filters.label);
   if (filters.year) params.set("year", filters.year);
-  params.set("limit", String(limit));
+  params.set("cursor", cursor);
   return `/library?${params.toString()}`;
+}
+
+function LibraryResultSummary({
+  itemCount,
+  pageResult,
+}: {
+  itemCount: number;
+  pageResult?: CatalogPageReadResult;
+}) {
+  if (!pageResult) {
+    return (
+      <p className="text-sm font-semibold text-[var(--sparkle-ink-muted)]" data-smoke="library-result-summary">
+        {itemCount} {itemCount === 1 ? "piece" : "pieces"}
+      </p>
+    );
+  }
+
+  if (pageResult.status === "error") {
+    return null;
+  }
+
+  if (pageResult.pagination === "unsupported") {
+    return (
+      <div
+        className="rounded-[var(--sparkle-radius-sm)] border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950"
+        data-smoke="library-pagination-unsupported"
+        role="status"
+      >
+        <p className="font-black">The Jewelry Library may have more pieces than this page can show.</p>
+        <p>Catalog continuation is temporarily unavailable, so these results are partial.</p>
+      </div>
+    );
+  }
+
+  return (
+    <p className="text-sm font-semibold text-[var(--sparkle-ink-muted)]" data-smoke="library-result-summary">
+      {itemCount} {itemCount === 1 ? "piece" : "pieces"} on this page · {pageResult.pageInfo.totalCount} total matching {pageResult.pageInfo.totalCount === 1 ? "piece" : "pieces"}
+    </p>
+  );
+}
+
+function LibraryContinuation({
+  filters,
+  pageResult,
+}: {
+  filters: LibraryFilters;
+  pageResult?: CatalogPageReadResult;
+}) {
+  if (
+    !pageResult ||
+    pageResult.status === "error" ||
+    pageResult.pagination === "unsupported" ||
+    !pageResult.pageInfo.hasMore
+  ) {
+    return null;
+  }
+
+  if (!pageResult.pageInfo.nextCursor) {
+    return (
+      <p
+        className="rounded-[var(--sparkle-radius-sm)] border border-amber-300 bg-amber-50 p-4 text-center text-sm font-bold text-amber-950"
+        data-smoke="library-continuation-unavailable"
+        role="status"
+      >
+        More matching pieces exist, but the next page is temporarily unavailable.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex justify-center">
+      <a
+        className="inline-flex min-h-11 items-center justify-center rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-4 text-sm font-bold text-[var(--sparkle-plum-deep)] shadow-[var(--sparkle-shadow-sm)]"
+        data-smoke="library-next-page"
+        href={buildLibraryCursorHref(filters, pageResult.pageInfo.nextCursor)}
+      >
+        Next page
+      </a>
+    </div>
+  );
 }

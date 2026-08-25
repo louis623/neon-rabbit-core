@@ -8,6 +8,7 @@ import type { LibraryFilters } from "@/app/(hub)/library/page";
 
 type LibrarySearchProps = {
   facets: CatalogFacetOptions;
+  facetsAvailable?: boolean;
   filters: LibraryFilters;
 };
 
@@ -70,7 +71,7 @@ const facetGroups: Array<{
   },
 ];
 
-export function LibrarySearch({ facets, filters }: LibrarySearchProps) {
+export function LibrarySearch({ facets, facetsAvailable = true, filters }: LibrarySearchProps) {
   const activeFilterCount = getActiveFilters(filters).length;
 
   return (
@@ -121,7 +122,17 @@ export function LibrarySearch({ facets, filters }: LibrarySearchProps) {
         </div>
       </form>
       <SelectedFilters filters={filters} />
-      <LibraryFacetPanel activeFilterCount={activeFilterCount} facets={facets} filters={filters} />
+      {facetsAvailable ? (
+        <LibraryFacetPanel activeFilterCount={activeFilterCount} facets={facets} filters={filters} />
+      ) : (
+        <p
+          className="mt-4 rounded-[var(--sparkle-radius-sm)] border border-amber-300 bg-amber-50 p-3 text-sm font-semibold leading-6 text-amber-950"
+          data-smoke="library-facets-unavailable"
+          role="status"
+        >
+          Filter options are temporarily unavailable. Search still works, and no catalog options were inferred from this page.
+        </p>
+      )}
     </div>
   );
 }

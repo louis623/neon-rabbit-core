@@ -18,7 +18,12 @@ import {
   saveShowcaseCollectionAction,
   saveShowcaseProfileSetupAction,
 } from "@/app/(hub)/silver/showcase-owner-actions";
-import { getCatalogJewelryItems, shouldUseCatalogFixtureFallback } from "@/lib/sparkle-finder/catalog-service";
+import {
+  getAllCatalogJewelryItemsResult,
+  getCatalogJewelryItems,
+  getCatalogJewelryItemsByIdsResult,
+  shouldUseCatalogFixtureFallback,
+} from "@/lib/sparkle-finder/catalog-service";
 import {
   getCollectionItemsByCustomerId,
   getJewelryItemById,
@@ -47,25 +52,37 @@ type SilverPageAccountState = SparkleFinderAccountState & {
   isLocalPreview?: boolean;
 };
 
+const catalogBatchSize = 50;
+const catalogBatchConcurrency = 4;
+const ownerCollectionPageSize = 200;
+const ownerCollectionMaxPages = 10;
+const ownerCollectionMaxRows = ownerCollectionPageSize * ownerCollectionMaxPages;
+
+export type PersistedCollectionItemsResult =
+  | { status: "success"; items: ManagedCollectionItem[] }
+  | { status: "error"; items: []; message: string; missingDesignIds?: string[] };
+
 export default async function SilverPage() {
   const cookieStore = await cookies();
   const authMode = parseSparkleFinderAuthMode(cookieStore.get(sparkleFinderAuthCookieName)?.value);
   const accountState = await getCurrentSparkleFinderAccount({ localPreviewAuthMode: authMode });
-  const libraryItems = await getCatalogJewelryItems({ useFixtureFallback: shouldUseCatalogFixtureFallback() });
-  const persistedCollectionItems =
-    accountState.status === "authenticated" && accountState.isLocalPreview !== true
-      ? await getPersistedCollectionItems(accountState.customer.id, libraryItems)
-      : undefined;
-  const persistedFavoriteRepCards =
-    accountState.status === "authenticated" && accountState.isLocalPreview !== true
-      ? await getPersistedFavoriteRepCards(accountState)
-      : undefined;
-  const persistedShowcaseOwnerData =
-    accountState.status === "authenticated" && accountState.isLocalPreview !== true
-      ? await getPersistedShowcaseOwnerData(accountState.customer.id)
-      : undefined;
+  const shouldLoadPersistedState = accountState.status === "authenticated" && accountState.isLocalPreview !== true;
+  const [catalogResult, persistedCollectionResult, persistedFavoriteRepCards, persistedShowcaseOwnerData] = await Promise.all([
+    getSilverCatalogItems(),
+    shouldLoadPersistedState ? getPersistedCollectionItems(accountState.customer.id) : Promise.resolve(undefined),
+    shouldLoadPersistedState ? getPersistedFavoriteRepCards(accountState) : Promise.resolve(undefined),
+    shouldLoadPersistedState ? getPersistedShowcaseOwnerData(accountState.customer.id) : Promise.resolve(undefined),
+  ]);
 
-  return renderSilverPageContent(accountState, persistedCollectionItems, libraryItems, persistedFavoriteRepCards, persistedShowcaseOwnerData);
+  return renderSilverPageContent(
+    accountState,
+    persistedCollectionResult?.items,
+    catalogResult.items,
+    persistedFavoriteRepCards,
+    persistedShowcaseOwnerData,
+    persistedCollectionResult?.status === "error" ? persistedCollectionResult.message : undefined,
+    catalogResult.message,
+  );
 }
 
 export function renderSilverPageContent(
@@ -74,6 +91,8 @@ export function renderSilverPageContent(
   libraryItems: JewelryItem[] = getJewelryItems(),
   persistedFavoriteRepCards?: FavoriteRepCard[],
   persistedShowcaseOwnerData?: ShowcaseOwnerData,
+  collectionHydrationIssue?: string,
+  catalogIssue?: string,
 ) {
   const entitlements = getSparkleFinderAccountEntitlements(accountState);
   const isLocalPreview = accountState.isLocalPreview === true;
@@ -143,6 +162,24 @@ export function renderSilverPageContent(
         </div>
       </div>
 
+      {collectionHydrationIssue ? (
+        <div
+          className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-coral)] bg-[var(--sparkle-blush-bg)] px-4 py-3 text-sm font-semibold leading-6 text-[var(--sparkle-plum-deep)]"
+          role="alert"
+        >
+          {collectionHydrationIssue}
+        </div>
+      ) : null}
+
+      {catalogIssue ? (
+        <div
+          className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-coral)] bg-[var(--sparkle-blush-bg)] px-4 py-3 text-sm font-semibold leading-6 text-[var(--sparkle-plum-deep)]"
+          role="alert"
+        >
+          {catalogIssue}
+        </div>
+      ) : null}
+
       <div className="grid gap-4 lg:grid-cols-[minmax(18rem,0.45fr)_minmax(0,1fr)] lg:items-start">
         <ProfileSummaryPanel
           accountState={accountState}
@@ -184,6 +221,20 @@ export function renderSilverPageContent(
       />
     </section>
   );
+}
+
+async function getSilverCatalogItems(): Promise<{ items: JewelryItem[]; message?: string }> {
+  if (shouldUseCatalogFixtureFallback()) {
+    return { items: await getCatalogJewelryItems({ useFixtureFallback: true }) };
+  }
+
+  const result = await getAllCatalogJewelryItemsResult();
+  return result.status === "success"
+    ? { items: result.items }
+    : {
+        items: [],
+        message: "The complete jewelry catalog couldn't be loaded, so adding a piece is temporarily unavailable.",
+      };
 }
 
 function SilverUpgradePrompt({ accountState }: { accountState: SilverPageAccountState }) {
@@ -228,27 +279,160 @@ function createEmptySilverProfile(customerId: string): SilverProfile {
   };
 }
 
-async function getPersistedCollectionItems(userId: string, libraryItems: JewelryItem[]): Promise<ManagedCollectionItem[]> {
+export async function getPersistedCollectionItems(userId: string): Promise<PersistedCollectionItemsResult> {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("sparkle_finder_collection_items")
-      .select("id,user_id,jewelry_item_id,state,note,is_highlighted,acquisition_source,acquisition_context,acquisition_marked_at,visibility,showcase_status,reveal_story,personal_photo_url,is_rarest_reveal")
-      .eq("user_id", userId);
-
-    if (error || !Array.isArray(data)) {
-      return [];
+    const collectionRowsResult = await loadOrderedOwnerCollectionRows(supabase, userId);
+    if (collectionRowsResult.status === "error") {
+      return {
+        status: "error",
+        items: [],
+        message: collectionRowsResult.reason === "page_limit"
+          ? `Your Sparkle Showcase has more than ${ownerCollectionMaxRows.toLocaleString("en-US")} saved pieces and can't be loaded safely yet. No partial collection was shown.`
+          : "We couldn't load your saved Sparkle Showcase pieces. Please try again.",
+      };
     }
 
-    return data.flatMap((row) => {
-      const item = mapPersistedCollectionItem(row);
-      const jewelryItem = item ? findLibraryItemById(item.jewelryItemId, libraryItems) ?? getJewelryItemById(item.jewelryItemId) : null;
+    const collectionItems = collectionRowsResult.rows.map((row) => mapPersistedCollectionItem(row, userId));
+    if (collectionItems.some((item) => item === null)) {
+      return {
+        status: "error",
+        items: [],
+        message: "Some saved Sparkle Showcase pieces couldn't be read safely. Please try again.",
+      };
+    }
+
+    const hydratedCatalog = await loadPersistedCatalogItemsByDesignIds(
+      collectionItems.flatMap((item) => (item ? [item.jewelryItemId] : [])),
+    );
+    if (hydratedCatalog.status === "error") {
+      return {
+        status: "error",
+        items: [],
+        message: "Your Sparkle Showcase couldn't reach the jewelry catalog. Please try again.",
+      };
+    }
+
+    if (hydratedCatalog.missingDesignIds.length > 0) {
+      return {
+        status: "error",
+        items: [],
+        message: "Some saved pieces are no longer available in the jewelry catalog. Nothing was substituted.",
+        missingDesignIds: hydratedCatalog.missingDesignIds,
+      };
+    }
+
+    const catalogById = new Map(hydratedCatalog.items.map((item) => [normalizeExactDesignId(item.id), item]));
+    const items = collectionItems.flatMap((item) => {
+      const jewelryItem = item ? catalogById.get(normalizeExactDesignId(item.jewelryItemId)) : undefined;
 
       return item && jewelryItem ? [{ ...item, jewelryItem }] : [];
     });
+
+    return { status: "success", items };
   } catch {
-    return [];
+    return {
+      status: "error",
+      items: [],
+      message: "We couldn't load your saved Sparkle Showcase pieces. Please try again.",
+    };
   }
+}
+
+type PersistedCatalogHydrationResult =
+  | { status: "success"; items: JewelryItem[]; missingDesignIds: string[] }
+  | { status: "error" };
+
+async function loadPersistedCatalogItemsByDesignIds(
+  designIds: string[],
+): Promise<PersistedCatalogHydrationResult> {
+  const uniqueDesignIds = [...new Map(
+    designIds
+      .map((designId) => designId.trim())
+      .filter(Boolean)
+      .map((designId) => [designId, designId]),
+  ).values()];
+  if (uniqueDesignIds.length === 0) {
+    return { status: "success", items: [], missingDesignIds: [] };
+  }
+
+  const batches: string[][] = [];
+  for (let index = 0; index < uniqueDesignIds.length; index += catalogBatchSize) {
+    batches.push(uniqueDesignIds.slice(index, index + catalogBatchSize));
+  }
+
+  const results: Array<Extract<Awaited<ReturnType<typeof getCatalogJewelryItemsByIdsResult>>, { status: "success" }>> = [];
+  for (let index = 0; index < batches.length; index += catalogBatchConcurrency) {
+    const batchResults = await Promise.all(
+      batches
+        .slice(index, index + catalogBatchConcurrency)
+        .map((batch) => getCatalogJewelryItemsByIdsResult(batch)),
+    );
+    for (const result of batchResults) {
+      if (result.status === "error") {
+        return { status: "error" };
+      }
+      results.push(result);
+    }
+  }
+
+  const items = results.flatMap((result) => result.items);
+  const requestedIds = new Set(uniqueDesignIds);
+  if (items.some((item) => !requestedIds.has(normalizeExactDesignId(item.id)))) {
+    return { status: "error" };
+  }
+
+  const returnedIds = new Set(items.map((item) => normalizeExactDesignId(item.id)));
+  const reportedMissingIds = results.flatMap((result) => result.missingDesignIds);
+  const missingDesignIds = [...new Set([
+    ...reportedMissingIds
+      .map(normalizeExactDesignId)
+      .filter((designId) => requestedIds.has(designId)),
+    ...uniqueDesignIds.filter((designId) => !returnedIds.has(designId)),
+  ])];
+
+  return { status: "success", items, missingDesignIds };
+}
+
+type OwnerCollectionRowsResult =
+  | { status: "success"; rows: unknown[] }
+  | { status: "error"; reason: "unavailable" | "page_limit" };
+
+async function loadOrderedOwnerCollectionRows(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+): Promise<OwnerCollectionRowsResult> {
+  const rows: unknown[] = [];
+
+  for (let page = 0; page <= ownerCollectionMaxPages; page += 1) {
+    const from = page * ownerCollectionPageSize;
+    const { data, error } = await supabase
+      .from("sparkle_finder_collection_items")
+      .select("id,user_id,jewelry_item_id,state,note,is_highlighted,acquisition_source,acquisition_context,acquisition_marked_at,visibility,showcase_status,reveal_story,personal_photo_url,is_rarest_reveal")
+      .eq("user_id", userId)
+      .order("id", { ascending: true })
+      .range(from, from + ownerCollectionPageSize - 1);
+
+    if (error || !Array.isArray(data)) {
+      return { status: "error", reason: "unavailable" };
+    }
+    if (page === ownerCollectionMaxPages) {
+      return data.length > 0
+        ? { status: "error", reason: "page_limit" }
+        : { status: "success", rows };
+    }
+
+    rows.push(...data);
+    if (data.length < ownerCollectionPageSize) {
+      return { status: "success", rows };
+    }
+  }
+
+  return { status: "error", reason: "page_limit" };
+}
+
+function normalizeExactDesignId(designId: string): string {
+  return designId.trim();
 }
 
 async function getPersistedFavoriteRepCards(
@@ -276,7 +460,7 @@ function findLibraryItemById(itemId: string, libraryItems: readonly JewelryItem[
 
 type PersistedManagedCollectionItem = Omit<ManagedCollectionItem, "jewelryItem">;
 
-function mapPersistedCollectionItem(row: unknown): PersistedManagedCollectionItem | null {
+function mapPersistedCollectionItem(row: unknown, userId: string): PersistedManagedCollectionItem | null {
   if (!row || typeof row !== "object") {
     return null;
   }
@@ -287,7 +471,7 @@ function mapPersistedCollectionItem(row: unknown): PersistedManagedCollectionIte
   const jewelryItemId = readString(record.jewelry_item_id);
   const state = readCollectionState(record.state);
 
-  if (!id || !customerId || !jewelryItemId || !state) {
+  if (!id || customerId !== userId || !jewelryItemId || !state) {
     return null;
   }
 

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildFinderNicNacTools } from "../../lib/sparkle-finder/nic-nac/tools";
 import {
   getCatalogJewelryItemById,
+  getCatalogJewelryItemsPageResult,
   getFinderAvailabilityForJewelryItem,
   getFinderLiveShows,
 } from "../../lib/sparkle-finder/catalog-service";
@@ -12,20 +13,71 @@ vi.mock("../../lib/sparkle-finder/catalog-service", async (importOriginal) => {
   return {
     ...actual,
     getCatalogJewelryItemById: vi.fn(),
+    getCatalogJewelryItemsPageResult: vi.fn(),
     getFinderAvailabilityForJewelryItem: vi.fn(),
     getFinderLiveShows: vi.fn(),
   };
 });
 
 const getCatalogJewelryItemByIdMock = vi.mocked(getCatalogJewelryItemById);
+const getCatalogJewelryItemsPageResultMock = vi.mocked(getCatalogJewelryItemsPageResult);
 const getFinderAvailabilityForJewelryItemMock = vi.mocked(getFinderAvailabilityForJewelryItem);
 const getFinderLiveShowsMock = vi.mocked(getFinderLiveShows);
 
 describe("Sparkle Finder Nic-Nac tools", () => {
   beforeEach(() => {
     getCatalogJewelryItemByIdMock.mockReset();
+    getCatalogJewelryItemsPageResultMock.mockReset();
     getFinderAvailabilityForJewelryItemMock.mockReset();
     getFinderLiveShowsMock.mockReset();
+  });
+
+  it("returns authoritative catalog continuation metadata instead of treating one page as complete", async () => {
+    getCatalogJewelryItemsPageResultMock.mockResolvedValue({
+      status: "success",
+      pagination: "supported",
+      schemaVersion: 2,
+      items: [{
+        id: "design-rbp5902-ruby",
+        itemNumber: "RBP5902",
+        name: "Ruby Birthday Ring",
+        collectionName: "Birthday Collection",
+        collectionYear: 2026,
+        jewelryType: "ring",
+        material: "Rose gold",
+        mainStone: "Ruby",
+        description: "The exact Ruby variant.",
+        bpMsrp: 19.95,
+        imageUrl: "https://cdn.example.test/rbp5902-ruby.jpg",
+        bpLabel: "standard",
+        searchTags: ["ruby"],
+        availableListingCount: 2,
+        knownRepListingIds: [],
+      }],
+      pageInfo: { totalCount: 14, hasMore: true, nextCursor: "catalog-page-2" },
+    });
+    const tools = buildFinderNicNacTools({ userId: "customer-silver-celeste" }, ["catalog"]);
+
+    const result = await executeTool(tools.search_catalog, {
+      query: "RBP5902",
+      limit: 1,
+      cursor: "catalog-page-1",
+    });
+
+    expect(getCatalogJewelryItemsPageResultMock).toHaveBeenCalledWith({
+      query: "RBP5902",
+      limit: 1,
+      cursor: "catalog-page-1",
+      useFixtureFallback: false,
+    });
+    expect(result).toMatchObject({
+      status: "connected",
+      count: 1,
+      totalCount: 14,
+      hasMore: true,
+      nextCursor: "catalog-page-2",
+      items: [{ id: "design-rbp5902-ruby", itemNumber: "RBP5902", mainStone: "Ruby" }],
+    });
   });
 
   it("finds bounded Sparkle Suite availability leads for a jewelry item", async () => {

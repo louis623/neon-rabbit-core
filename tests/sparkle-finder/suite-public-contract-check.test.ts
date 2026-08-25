@@ -26,6 +26,7 @@ describe("Sparkle Suite public Finder contract checker", () => {
       capabilities: {
         catalogPagination: "supported",
         catalogBatch: "supported",
+        catalogFacets: "supported",
         availabilityQuantity: "supported",
         availabilityPagination: "supported",
       },
@@ -78,6 +79,7 @@ describe("Sparkle Suite public Finder contract checker", () => {
       capabilities: {
         catalogPagination: "unsupported",
         catalogBatch: "unsupported",
+        catalogFacets: "unsupported",
         availabilityQuantity: "unsupported",
         availabilityPagination: "unsupported",
       },
@@ -165,6 +167,18 @@ function makeStrictFetcher(
         schemaVersion: 2,
         items: [catalogItem("design-a")],
         missingDesignIds: [missingProbe],
+      });
+    }
+
+    if (url.pathname.endsWith("/catalog/facets")) {
+      return json({
+        schemaVersion: 2,
+        facets: Object.fromEntries(
+          ["collections", "materials", "stones", "types", "labels", "years"].map((key) => [
+            key,
+            [{ value: key === "labels" ? "standard" : `all-${key}`, count: 3 }],
+          ]),
+        ),
       });
     }
 

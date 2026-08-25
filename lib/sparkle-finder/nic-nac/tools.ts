@@ -2,7 +2,7 @@ import { tool, type ToolSet } from "ai";
 import { z } from "zod";
 import {
   getCatalogJewelryItemById,
-  getCatalogJewelryItems,
+  getCatalogJewelryItemsPageResult,
   getFinderAvailabilityForJewelryItem,
   getFinderLiveShows,
 } from "../catalog-service";
@@ -144,17 +144,37 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
       inputSchema: z.object({
         query: z.string(),
         limit: z.number().int().min(1).max(12).optional(),
+        cursor: z.string().max(2_048).optional(),
       }),
-      execute: async ({ query, limit }) => {
-        const items = await getCatalogJewelryItems({
+      execute: async ({ query, limit, cursor }) => {
+        const result = await getCatalogJewelryItemsPageResult({
           query,
           limit: limit ?? 8,
+          cursor,
           useFixtureFallback: false,
         });
 
+        if (result.status === "error") {
+          return {
+            status: "contract_unavailable",
+            count: 0,
+            totalCount: null,
+            hasMore: false,
+            nextCursor: null,
+            items: [],
+            guidance: "The shared jewelry catalog is temporarily unavailable. Do not imply that no matching designs exist.",
+          };
+        }
+
+        const pageInfo = result.pagination === "supported" ? result.pageInfo : null;
+
         return {
-          count: items.length,
-          items: items.map((item) => ({
+          status: result.pagination === "supported" ? "connected" : "partial",
+          count: result.items.length,
+          totalCount: pageInfo?.totalCount ?? null,
+          hasMore: pageInfo?.hasMore ?? null,
+          nextCursor: pageInfo?.nextCursor ?? null,
+          items: result.items.map((item) => ({
             id: item.id,
             itemNumber: item.itemNumber,
             name: item.name,
@@ -166,7 +186,7 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
             availableListingCount: item.availableListingCount ?? 0,
           })),
           guidance:
-            "availableListingCount is an internal compatibility field that counts dancers. Use dancer or dancers in every visible response.",
+            "Catalog results are one bounded page. Use nextCursor when hasMore is true. If status is partial, say continuation is temporarily unavailable. availableListingCount is an internal compatibility field; use dancer or dancers in every visible response.",
         };
       },
     });

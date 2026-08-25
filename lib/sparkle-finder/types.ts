@@ -48,12 +48,15 @@ export type JewelryItem = {
   jewelryType: JewelryType;
   material?: string | null;
   mainStone?: string | null;
+  description?: string | null;
   bpMsrp?: number | null;
   imageUrl: string;
   bpLabel: BombPartyLabel;
   itemNumber: string;
   searchTags?: string[];
   availableListingCount?: number;
+  availableLeadCount?: number;
+  availableDancerCount?: number;
   knownRepListingIds: string[];
 };
 

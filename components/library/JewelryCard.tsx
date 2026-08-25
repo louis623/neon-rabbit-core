@@ -30,13 +30,17 @@ export function JewelryCard({ item }: JewelryCardProps) {
   const metadata = [
     formatAvailabilityCount(item.availableListingCount, item.knownRepListingIds),
     item.collectionYear ? String(item.collectionYear) : null,
-    item.material,
-    item.mainStone,
     ...(item.searchTags ?? []).slice(0, 2),
   ].filter((value): value is string => Boolean(value));
+  const exactDesignHref = `/library/${encodeURIComponent(item.id)}`;
+  const exactSaveHref = `/silver?piece=${encodeURIComponent(item.id)}#add-to-sparkle-showcase`;
 
   return (
-    <article className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]">
+    <article
+      className="rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-[var(--sparkle-paper)] p-4 shadow-[var(--sparkle-shadow-sm)]"
+      data-design-id={item.id}
+      data-smoke="library-jewelry-card"
+    >
       <div className="grid aspect-[4/3] place-items-center overflow-hidden rounded-[var(--sparkle-radius-sm)] border border-[rgba(239,201,201,0.72)] bg-[linear-gradient(135deg,#fffefd,#fff3f0)]">
         <JewelryImageFrame imageUrl={item.imageUrl} jewelryType={item.jewelryType} name={item.name} />
       </div>
@@ -55,6 +59,16 @@ export function JewelryCard({ item }: JewelryCardProps) {
           {item.name}
         </h2>
         <p className="mt-1 text-sm leading-6 text-[var(--sparkle-ink-muted)]">{item.collectionName}</p>
+        <div
+          className="mt-3 grid grid-cols-2 gap-2 rounded-[var(--sparkle-radius-sm)] border border-[rgba(238,44,155,0.16)] bg-[var(--sparkle-blush-bg)] p-3"
+          data-smoke="library-variant-identity"
+        >
+          <VariantFact label="Stone" value={item.mainStone} />
+          <VariantFact label="Material" value={item.material} />
+          <p className="col-span-2 text-xs font-bold text-[var(--sparkle-ink-muted)]">
+            Item {item.itemNumber}
+          </p>
+        </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {metadata.map((value, index) => (
             <span
@@ -68,14 +82,14 @@ export function JewelryCard({ item }: JewelryCardProps) {
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-3 text-sm font-bold text-white"
-            href={`/library/${item.id}`}
+            href={exactDesignHref}
           >
             <Search aria-hidden="true" className="size-4" />
             View piece
           </Link>
           <Link
             className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)]"
-            href={`/silver?piece=${encodeURIComponent(item.id)}#add-to-sparkle-showcase`}
+            href={exactSaveHref}
           >
             <Heart aria-hidden="true" className="size-4" />
             Save
@@ -83,5 +97,16 @@ export function JewelryCard({ item }: JewelryCardProps) {
         </div>
       </div>
     </article>
+  );
+}
+
+function VariantFact({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-xs font-black uppercase tracking-[0.08em] text-[var(--sparkle-ink-muted)]">{label}</p>
+      <p className="mt-1 break-words text-sm font-bold leading-5 text-[var(--sparkle-plum-deep)]">
+        {value?.trim() || "Not listed"}
+      </p>
+    </div>
   );
 }

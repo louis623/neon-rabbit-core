@@ -2,8 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 import {
   getCatalogJewelryItemById,
   getCatalogJewelryItemByIdResult,
+  getCatalogJewelryItemsByIdsResult,
   getCatalogFacetOptions,
+  getAllCatalogJewelryItemsResult,
   getCatalogJewelryItems,
+  getCatalogJewelryItemsPageResult,
   getCatalogJewelryItemsResult,
   getFinderAvailabilityForJewelryItem,
   getFinderLiveShows,
@@ -33,6 +36,7 @@ describe("Sparkle Finder public API catalog service", () => {
       jewelryType: "ring",
       material: "Rose gold",
       mainStone: "Pink stone",
+      description: null,
       bpMsrp: 19.95,
       imageUrl: "https://cdn.example.test/design-123.jpg",
       bpLabel: "diamond",
@@ -100,6 +104,399 @@ describe("Sparkle Finder public API catalog service", () => {
         cache: "no-store",
       },
     );
+  });
+
+  it("reads authoritative v2 page metadata and keeps same-item-number designs distinct", async () => {
+    const fetchCatalog = vi.fn(async () =>
+      jsonResponse({
+        schemaVersion: 2,
+        items: [
+          apiCatalogItem({
+            designId: "design-variant-a",
+            itemNumber: "RG-SAME",
+            description: "First exact variant",
+          }),
+          apiCatalogItem({
+            designId: "design-variant-b",
+            itemNumber: "RG-SAME",
+            description: "Second exact variant",
+          }),
+        ],
+        pageInfo: { totalCount: 4, hasMore: true, nextCursor: "opaque.page.2" },
+      }),
+    );
+
+    const result = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      cursor: "opaque.page.1",
+      fetcher: fetchCatalog,
+      limit: 2,
+      useFixtureFallback: false,
+    });
+
+    expect(fetchCatalog).toHaveBeenCalledWith(
+      "https://suite.example/api/public/finder/catalog?limit=2&cursor=opaque.page.1",
+      { cache: "no-store" },
+    );
+    expect(result).toEqual({
+      status: "success",
+      pagination: "supported",
+      schemaVersion: 2,
+      items: [
+        expect.objectContaining({
+          id: "design-variant-a",
+          itemNumber: "RG-SAME",
+          description: "First exact variant",
+        }),
+        expect.objectContaining({
+          id: "design-variant-b",
+          itemNumber: "RG-SAME",
+          description: "Second exact variant",
+        }),
+      ],
+      pageInfo: { totalCount: 4, hasMore: true, nextCursor: "opaque.page.2" },
+    });
+  });
+
+  it("accepts an authoritative short page when metadata says more results remain", async () => {
+    const result = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () =>
+        jsonResponse({
+          schemaVersion: 2,
+          items: [apiCatalogItem({ designId: "design-short", description: null })],
+          pageInfo: { totalCount: 51, hasMore: true, nextCursor: "short-page-next" },
+        }),
+      ),
+      limit: 50,
+      useFixtureFallback: false,
+    });
+
+    expect(result).toMatchObject({
+      status: "success",
+      pagination: "supported",
+      pageInfo: { totalCount: 51, hasMore: true, nextCursor: "short-page-next" },
+    });
+  });
+
+  it("rejects invalid page bounds before making a catalog request", async () => {
+    const fetchCatalog = vi.fn();
+    const oversizedLimit = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchCatalog,
+      limit: 51,
+      useFixtureFallback: false,
+    });
+    const oversizedQuery = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchCatalog,
+      query: "q".repeat(257),
+      useFixtureFallback: false,
+    });
+    const oversizedFilter = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      collection: "c".repeat(161),
+      fetcher: fetchCatalog,
+      useFixtureFallback: false,
+    });
+
+    expect(oversizedLimit).toEqual({ status: "error", reason: "invalid_contract" });
+    expect(oversizedQuery).toEqual({ status: "error", reason: "invalid_contract" });
+    expect(oversizedFilter).toEqual({ status: "error", reason: "invalid_contract" });
+    expect(fetchCatalog).not.toHaveBeenCalled();
+  });
+
+  it("detects the legacy catalog response without claiming pagination support", async () => {
+    const result = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () => jsonResponse({ items: [apiCatalogItem()] })),
+      useFixtureFallback: false,
+    });
+
+    expect(result).toEqual({
+      status: "success",
+      pagination: "unsupported",
+      items: [expect.objectContaining({ id: "design-123", description: null })],
+    });
+  });
+
+  it("fails closed on malformed v2 metadata and catalog item fields", async () => {
+    const malformedMetadata = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () =>
+        jsonResponse({
+          schemaVersion: 2,
+          items: [apiCatalogItem({ description: null })],
+          pageInfo: { totalCount: 1, hasMore: true, nextCursor: null },
+        }),
+      ),
+      useFixtureFallback: false,
+    });
+    const malformedItem = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () =>
+        jsonResponse({
+          schemaVersion: 2,
+          items: [{ ...apiCatalogItem({ description: null }), availableListingCount: -1 }],
+          pageInfo: { totalCount: 1, hasMore: false, nextCursor: null },
+        }),
+      ),
+      useFixtureFallback: false,
+    });
+    const unsafeMetadata = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () =>
+        jsonResponse({
+          schemaVersion: 2,
+          items: [],
+          pageInfo: { totalCount: Number.MAX_SAFE_INTEGER + 1, hasMore: false, nextCursor: null },
+        }),
+      ),
+      useFixtureFallback: false,
+    });
+    const unsafeCount = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () =>
+        jsonResponse({
+          schemaVersion: 2,
+          items: [{
+            ...apiCatalogItem({ description: null }),
+            availableListingCount: Number.MAX_SAFE_INTEGER + 1,
+          }],
+          pageInfo: { totalCount: 1, hasMore: false, nextCursor: null },
+        }),
+      ),
+      useFixtureFallback: false,
+    });
+
+    expect(malformedMetadata).toEqual({ status: "error", reason: "invalid_contract" });
+    expect(malformedItem).toEqual({ status: "error", reason: "invalid_contract" });
+    expect(unsafeMetadata).toEqual({ status: "error", reason: "invalid_contract" });
+    expect(unsafeCount).toEqual({ status: "error", reason: "invalid_contract" });
+  });
+
+  it("rejects duplicate design identities and an immediately repeated cursor", async () => {
+    const duplicate = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () =>
+        jsonResponse({
+          schemaVersion: 2,
+          items: [
+            apiCatalogItem({ designId: "design-repeat", description: null }),
+            apiCatalogItem({ designId: "DESIGN-REPEAT", description: null }),
+          ],
+          pageInfo: { totalCount: 2, hasMore: false, nextCursor: null },
+        }),
+      ),
+      useFixtureFallback: false,
+    });
+    const cursorLoop = await getCatalogJewelryItemsPageResult({
+      apiBaseUrl: "https://suite.example",
+      cursor: "opaque.same",
+      fetcher: vi.fn(async () =>
+        jsonResponse({
+          schemaVersion: 2,
+          items: [apiCatalogItem({ description: null })],
+          pageInfo: { totalCount: 2, hasMore: true, nextCursor: "opaque.same" },
+        }),
+      ),
+      useFixtureFallback: false,
+    });
+
+    expect(duplicate).toEqual({ status: "error", reason: "duplicate_design_id" });
+    expect(cursorLoop).toEqual({ status: "error", reason: "cursor_loop" });
+  });
+
+  it("walks bounded v2 pages and rejects cross-page design repetition", async () => {
+    const fetchCatalog = vi.fn(async (input: string) => {
+      const url = new URL(input);
+      return url.searchParams.get("cursor") === "page-2"
+        ? jsonResponse({
+            schemaVersion: 2,
+            items: [apiCatalogItem({ designId: "design-repeat", description: null })],
+            pageInfo: { totalCount: 2, hasMore: false, nextCursor: null },
+          })
+        : jsonResponse({
+            schemaVersion: 2,
+            items: [apiCatalogItem({ designId: "design-repeat", description: null })],
+            pageInfo: { totalCount: 2, hasMore: true, nextCursor: "page-2" },
+          });
+    });
+
+    const result = await getAllCatalogJewelryItemsResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchCatalog,
+      limit: 1,
+    });
+
+    expect(result).toEqual({ status: "error", reason: "duplicate_design_id" });
+    expect(fetchCatalog).toHaveBeenCalledTimes(2);
+  });
+
+  it("walks more than 50 v2 catalog records without loss", async () => {
+    const firstPage = Array.from({ length: 50 }, (_, index) =>
+      apiCatalogItem({ designId: `design-${index + 1}`, description: null }),
+    );
+    const fetchCatalog = vi.fn(async (input: string) => {
+      const cursor = new URL(input).searchParams.get("cursor");
+      return cursor === "page-2"
+        ? jsonResponse({
+            schemaVersion: 2,
+            items: [apiCatalogItem({ designId: "design-51", description: null })],
+            pageInfo: { totalCount: 51, hasMore: false, nextCursor: null },
+          })
+        : jsonResponse({
+            schemaVersion: 2,
+            items: firstPage,
+            pageInfo: { totalCount: 51, hasMore: true, nextCursor: "page-2" },
+          });
+    });
+
+    const result = await getAllCatalogJewelryItemsResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchCatalog,
+      limit: 50,
+    });
+
+    expect(result.status).toBe("success");
+    expect(result.status === "success" ? result.items : []).toHaveLength(51);
+    expect(result.status === "success" ? result.totalCount : 0).toBe(51);
+    expect(fetchCatalog).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps all-pages semantics full-from-first-page and rejects an initial cursor without fetching", async () => {
+    const fetchCatalog = vi.fn();
+    const result = await getAllCatalogJewelryItemsResult({
+      apiBaseUrl: "https://suite.example",
+      cursor: "page-2",
+      fetcher: fetchCatalog,
+    });
+
+    expect(result).toEqual({ status: "error", reason: "invalid_contract" });
+    expect(fetchCatalog).not.toHaveBeenCalled();
+  });
+
+  it("fails a full walk when totals change, a later cursor loops, or the page guard is exhausted", async () => {
+    const changedTotal = await getAllCatalogJewelryItemsResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async (input: string) =>
+        new URL(input).searchParams.has("cursor")
+          ? jsonResponse({
+              schemaVersion: 2,
+              items: [apiCatalogItem({ designId: "design-2", description: null })],
+              pageInfo: { totalCount: 3, hasMore: false, nextCursor: null },
+            })
+          : jsonResponse({
+              schemaVersion: 2,
+              items: [apiCatalogItem({ designId: "design-1", description: null })],
+              pageInfo: { totalCount: 2, hasMore: true, nextCursor: "page-2" },
+            }),
+      ),
+      limit: 1,
+    });
+    const laterLoop = await getAllCatalogJewelryItemsResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async (input: string) => {
+        const cursor = new URL(input).searchParams.get("cursor");
+        const page = cursor === "page-2" ? 2 : cursor === "page-3" ? 3 : 1;
+        return jsonResponse({
+          schemaVersion: 2,
+          items: [apiCatalogItem({ designId: `loop-design-${page}`, description: null })],
+          pageInfo: {
+            totalCount: 4,
+            hasMore: true,
+            nextCursor: page === 1 ? "page-2" : page === 2 ? "page-3" : "page-2",
+          },
+        });
+      }),
+      limit: 1,
+    });
+    const pageLimit = await getAllCatalogJewelryItemsResult({
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () =>
+        jsonResponse({
+          schemaVersion: 2,
+          items: [apiCatalogItem({ designId: "guard-design", description: null })],
+          pageInfo: { totalCount: 2, hasMore: true, nextCursor: "page-2" },
+        }),
+      ),
+      limit: 1,
+      maxPages: 1,
+    });
+
+    expect(changedTotal).toEqual({ status: "error", reason: "invalid_contract" });
+    expect(laterLoop).toEqual({ status: "error", reason: "cursor_loop" });
+    expect(pageLimit).toEqual({ status: "error", reason: "page_limit" });
+  });
+
+  it("hydrates exact v2 batch results in request order and reports missing designs", async () => {
+    const fetchBatch = vi.fn(async () =>
+      jsonResponse({
+        schemaVersion: 2,
+        items: [
+          apiCatalogItem({ designId: "design-b", itemNumber: "RG-SAME", description: "B" }),
+          apiCatalogItem({ designId: "design-a", itemNumber: "RG-SAME", description: "A" }),
+        ],
+        missingDesignIds: ["design-missing"],
+      }),
+    );
+
+    const result = await getCatalogJewelryItemsByIdsResult(
+      ["design-a", "design-missing", "design-b", "design-a"],
+      { apiBaseUrl: "https://suite.example", fetcher: fetchBatch },
+    );
+
+    expect(fetchBatch).toHaveBeenCalledWith(
+      "https://suite.example/api/public/finder/catalog/batch",
+      {
+        cache: "no-store",
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ designIds: ["design-a", "design-missing", "design-b"] }),
+      },
+    );
+    expect(result).toEqual({
+      status: "success",
+      schemaVersion: 2,
+      items: [
+        expect.objectContaining({ id: "design-a", description: "A" }),
+        expect.objectContaining({ id: "design-b", description: "B" }),
+      ],
+      missingDesignIds: ["design-missing"],
+    });
+  });
+
+  it("fails closed when batch hydration is inexact or exceeds 50 distinct IDs", async () => {
+    const inexact = await getCatalogJewelryItemsByIdsResult(["design-a"], {
+      apiBaseUrl: "https://suite.example",
+      fetcher: vi.fn(async () =>
+        jsonResponse({
+          schemaVersion: 2,
+          items: [apiCatalogItem({ designId: "design-other", description: null })],
+          missingDesignIds: [],
+        }),
+      ),
+    });
+    const fetchTooMany = vi.fn();
+    const tooMany = await getCatalogJewelryItemsByIdsResult(
+      Array.from({ length: 51 }, (_, index) => `design-${index}`),
+      { apiBaseUrl: "https://suite.example", fetcher: fetchTooMany },
+    );
+
+    expect(inexact).toEqual({ status: "error", reason: "invalid_contract" });
+    expect(tooMany).toEqual({ status: "error", reason: "invalid_contract" });
+    expect(fetchTooMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects an oversized batch design ID before making a request", async () => {
+    const fetchBatch = vi.fn();
+    const result = await getCatalogJewelryItemsByIdsResult(
+      ["d".repeat(257)],
+      { apiBaseUrl: "https://suite.example", fetcher: fetchBatch },
+    );
+
+    expect(result).toEqual({ status: "error", reason: "invalid_contract" });
+    expect(fetchBatch).not.toHaveBeenCalled();
   });
 
   it("reads dynamic catalog facets from the Sparkle Suite public Finder API", async () => {
@@ -790,6 +1187,7 @@ function apiCatalogItem(overrides: Partial<SparkleSuiteFinderCatalogItem> = {}):
     mainStone: "Pink stone",
     bpMsrp: 19.95,
     canonicalPhotoUrl: "https://cdn.example.test/design-123.jpg",
+    description: null,
     searchTags: ["rose gold"],
     availableListingCount: 2,
     ...overrides,

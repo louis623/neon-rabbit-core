@@ -24,7 +24,7 @@ import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import { JewelryCard } from "../../components/library/JewelryCard";
 import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/account-service";
-import type { FinderAvailabilityResult, FinderLiveShow } from "../../lib/sparkle-finder/catalog-service";
+import type { CatalogPageReadResult, FinderAvailabilityResult, FinderLiveShow } from "../../lib/sparkle-finder/catalog-service";
 import type { FavoriteRepCard, PublicCollectorProfile } from "../../lib/sparkle-finder/social-types";
 import type { JewelryItem, LiveShow, RepSummary } from "../../lib/sparkle-finder/types";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
@@ -1014,10 +1014,57 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("Pearl");
   });
 
-  it("offers a load-more path when the catalog result set reaches the current page limit", () => {
-    const items = Array.from({ length: 24 }, (_, index): JewelryItem => ({
+  it("uses authoritative cursor metadata even when a page is shorter than the requested limit", () => {
+    const items = Array.from({ length: 3 }, (_, index): JewelryItem => ({
       id: `design-load-more-${index}`,
-      name: `Load More Ring ${index}`,
+      name: `Ruby Glow Ring ${index}`,
+      collectionName: "Garden Glow",
+      collectionYear: 2026,
+      jewelryType: "ring",
+      material: "Rose gold",
+      mainStone: "Pink opal",
+      imageUrl: "",
+      bpLabel: "diamond",
+      itemNumber: `RG-LM-${index}`,
+      availableListingCount: 1,
+      knownRepListingIds: [],
+    }));
+    const filters = {
+      q: "ruby glow",
+      type: "ring" as const,
+      label: "diamond" as const,
+      collection: "Garden Glow",
+      material: "Rose gold",
+      stone: "Pink opal",
+      year: "2026",
+      cursor: "current-page",
+    };
+
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent(items, filters, libraryFacetOptions(), supportedCatalogPage(items, {
+        totalCount: 73,
+        hasMore: true,
+        nextCursor: "opaque+/= next page",
+      })),
+    );
+
+    expect(markup).toContain("3 pieces on this page · 73 total matching pieces");
+    expect(markup).toContain("Next page");
+    expect(markup).toContain("cursor=opaque%2B%2F%3D+next+page");
+    expect(markup).toContain("q=ruby+glow");
+    expect(markup).toContain("type=ring");
+    expect(markup).toContain("collection=Garden+Glow");
+    expect(markup).toContain("material=Rose+gold");
+    expect(markup).toContain("stone=Pink+opal");
+    expect(markup).toContain("label=diamond");
+    expect(markup).toContain("year=2026");
+    expect(markup).not.toContain("limit=");
+  });
+
+  it("hides continuation when authoritative metadata says a full page is complete", () => {
+    const items = Array.from({ length: 24 }, (_, index): JewelryItem => ({
+      id: `design-complete-${index}`,
+      name: `Complete Ring ${index}`,
       collectionName: "Garden Glow",
       collectionYear: 2026,
       jewelryType: "ring",
@@ -1025,15 +1072,149 @@ describe("Sparkle Finder hub routes", () => {
       mainStone: "Pink opal",
       imageUrl: "",
       bpLabel: "standard",
-      itemNumber: `RG-LM-${index}`,
+      itemNumber: `RG-DONE-${index}`,
       availableListingCount: 1,
       knownRepListingIds: [],
     }));
 
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent(items, undefined, undefined, supportedCatalogPage(items, {
+        totalCount: 24,
+        hasMore: false,
+        nextCursor: null,
+      })),
+    );
+
+    expect(markup).toContain("24 pieces on this page · 24 total matching pieces");
+    expect(markup).not.toContain("Next page");
+    expect(markup).not.toContain("Load more pieces");
+  });
+
+  it("shows legacy catalog results as explicitly partial without inventing continuation", () => {
+    const items = libraryFilterItems();
+    const pageResult: CatalogPageReadResult = {
+      status: "success",
+      pagination: "unsupported",
+      items: items.map((item) => ({ ...item, description: null })),
+    };
+
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent(items, undefined, undefined, pageResult),
+    );
+
+    expect(markup).toContain("The Jewelry Library may have more pieces than this page can show.");
+    expect(markup).toContain("these results are partial");
+    expect(markup).not.toContain("Next page");
+    expect(markup).not.toContain("Showing 2 of");
+  });
+
+  it("treats a successful Suite page as authoritative instead of filtering it a second time", () => {
+    const items = [{
+      ...libraryFilterItems()[0],
+      id: "design-authoritative",
+      collectionName: "Garden Glow",
+    }];
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent(
+        items,
+        {
+          q: "",
+          type: "all",
+          label: "all",
+          collection: "Garden",
+          cursor: "",
+        },
+        libraryFacetOptions(),
+        supportedCatalogPage(items, { totalCount: 1, hasMore: false, nextCursor: null }),
+      ),
+    );
+
+    expect(markup).toContain("design-authoritative");
+    expect(markup).not.toContain("No library records match those filters.");
+  });
+
+  it("reports unavailable facets instead of inferring options from the current page", () => {
+    const items = libraryFilterItems();
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent(
+        items,
+        undefined,
+        {
+          collections: [],
+          materials: [],
+          stones: [],
+          types: [],
+          labels: [],
+          years: [],
+        },
+        supportedCatalogPage(items, { totalCount: 12, hasMore: true, nextCursor: "page-2" }),
+        false,
+      ),
+    );
+
+    expect(markup).toContain("Filter options are temporarily unavailable.");
+    expect(markup).toContain("no catalog options were inferred from this page");
+    expect(markup).not.toContain("Search collections");
+  });
+
+  it("clears the opaque cursor from search and facet changes", () => {
+    const markup = renderToStaticMarkup(
+      renderLibraryPageContent(libraryFilterItems(), {
+        q: "rose",
+        type: "ring",
+        label: "diamond",
+        collection: "Garden Glow",
+        cursor: "stale-page-cursor",
+      }, libraryFacetOptions()),
+    );
+
+    expect(markup).not.toContain('name="cursor"');
+    expect(markup).not.toContain("cursor=stale-page-cursor");
+  });
+
+  it("renders same-item variants as distinct exact-design cards", () => {
+    const items: JewelryItem[] = [
+      {
+        id: "design-rose-quartz",
+        name: "Baguette Braid Sparkle",
+        collectionName: "July Birthday 2026",
+        collectionYear: 2026,
+        jewelryType: "earrings",
+        material: "Rhodium Plating",
+        mainStone: "Rose Quartz Cubic Zirconia",
+        imageUrl: "https://cdn.example.test/rose-quartz.png",
+        bpLabel: "standard",
+        itemNumber: "ER59000",
+        availableListingCount: 1,
+        knownRepListingIds: [],
+      },
+      {
+        id: "design-ruby",
+        name: "Baguette Braid Sparkle",
+        collectionName: "July Birthday 2026",
+        collectionYear: 2026,
+        jewelryType: "earrings",
+        material: "Rhodium Plating",
+        mainStone: "Lab-Created Ruby",
+        imageUrl: "https://cdn.example.test/ruby.png",
+        bpLabel: "standard",
+        itemNumber: "ER59000",
+        availableListingCount: 1,
+        knownRepListingIds: [],
+      },
+    ];
+
     const markup = renderToStaticMarkup(renderLibraryPageContent(items));
 
-    expect(markup).toContain("Load more pieces");
-    expect(markup).toContain("limit=48");
+    expect(markup).toContain('data-design-id="design-rose-quartz"');
+    expect(markup).toContain('data-design-id="design-ruby"');
+    expect(markup).toContain('href="/library/design-rose-quartz"');
+    expect(markup).toContain('href="/library/design-ruby"');
+    expect(markup).toContain("Rose Quartz Cubic Zirconia");
+    expect(markup).toContain("Lab-Created Ruby");
+    expect(markup.match(/Item ER59000/g)).toHaveLength(2);
+    expect(markup).toContain("text-xs font-black uppercase tracking-[0.08em] text-[var(--sparkle-ink-muted)]");
+    expect(markup).not.toContain("text-[0.66rem] font-black uppercase tracking-[0.1em] text-[var(--sparkle-coral)]");
   });
 
   it("matches library searches by collection year", () => {
@@ -1968,6 +2149,23 @@ function libraryFacetOptions() {
     types: [{ value: "ring", count: 1 }],
     labels: [{ value: "diamond", count: 1 }],
     years: [{ value: "2026", count: 1 }],
+  };
+}
+
+function supportedCatalogPage(
+  items: JewelryItem[],
+  pageInfo: {
+    totalCount: number;
+    hasMore: boolean;
+    nextCursor: string | null;
+  },
+): CatalogPageReadResult {
+  return {
+    status: "success",
+    pagination: "supported",
+    schemaVersion: 2,
+    items: items.map((item) => ({ ...item, description: null })),
+    pageInfo,
   };
 }
 

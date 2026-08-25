@@ -19,8 +19,13 @@ export type SparkleSuiteFinderCatalogItem = {
   mainStone: string | null;
   bpMsrp: number | null;
   canonicalPhotoUrl: string | null;
+  description?: string | null;
   searchTags: string[];
   availableListingCount: number;
+};
+
+export type CatalogJewelryItem = JewelryItem & {
+  description: string | null;
 };
 
 export type SparkleSuiteFinderLeadShow = {
@@ -89,15 +94,63 @@ export type CatalogFacetOption = {
 export type CatalogFacetOptions = Record<CatalogFacetKey, CatalogFacetOption[]>;
 
 export type CatalogItemsReadResult =
-  | { status: "success"; items: JewelryItem[] }
+  | { status: "success"; items: CatalogJewelryItem[] }
   | { status: "error" };
 
 export type CatalogItemReadResult =
-  | { status: "success"; item?: JewelryItem }
+  | { status: "success"; item?: CatalogJewelryItem }
   | { status: "error" };
 
-type CatalogReadOptions = {
+export type CatalogPageInfo = {
+  totalCount: number;
+  hasMore: boolean;
+  nextCursor: string | null;
+};
+
+export type CatalogReadErrorReason =
+  | "unavailable"
+  | "invalid_contract"
+  | "unsupported_pagination"
+  | "duplicate_design_id"
+  | "cursor_loop"
+  | "page_limit";
+
+export type CatalogPageReadResult =
+  | {
+      status: "success";
+      pagination: "supported";
+      schemaVersion: 2;
+      items: CatalogJewelryItem[];
+      pageInfo: CatalogPageInfo;
+    }
+  | {
+      status: "success";
+      pagination: "unsupported";
+      items: CatalogJewelryItem[];
+    }
+  | { status: "error"; reason: CatalogReadErrorReason };
+
+export type CatalogBatchReadResult =
+  | {
+      status: "success";
+      schemaVersion: 2;
+      items: CatalogJewelryItem[];
+      missingDesignIds: string[];
+    }
+  | { status: "error"; reason: CatalogReadErrorReason };
+
+export type CatalogAllPagesReadResult =
+  | {
+      status: "success";
+      schemaVersion: 2;
+      items: CatalogJewelryItem[];
+      totalCount: number;
+    }
+  | { status: "error"; reason: CatalogReadErrorReason };
+
+export type CatalogReadOptions = {
   apiBaseUrl?: string;
+  cursor?: string;
   fetcher?: (input: string, init?: RequestInit) => Promise<Response>;
   collection?: string;
   collectionYear?: number;
@@ -110,16 +163,8 @@ type CatalogReadOptions = {
   useFixtureFallback?: boolean;
 };
 
-type CatalogListResponse = {
-  items?: SparkleSuiteFinderCatalogItem[];
-};
-
 type CatalogFacetsResponse = {
   facets?: Partial<CatalogFacetOptions>;
-};
-
-type CatalogDetailResponse = {
-  item?: SparkleSuiteFinderCatalogItem;
 };
 
 type AvailabilityResponse = {
@@ -165,6 +210,14 @@ type SparkleSuiteFinderAvailabilityMatch = {
 
 const defaultSparkleSuiteFinderApiBaseUrl = "https://www.yoursparklesuite.com";
 const defaultCatalogLimit = 50;
+const maxCatalogLimit = 50;
+const maxCatalogCursorLength = 2_048;
+const maxCatalogQueryLength = 256;
+const maxCatalogFilterLength = 160;
+const maxCatalogDesignIdLength = 256;
+const maxCatalogYear = 9_999;
+const maxCatalogBatchDesignIds = 50;
+const defaultCatalogWalkMaxPages = 100;
 const defaultAvailabilityLimit = 24;
 const defaultLiveShowsLimit = 50;
 const defaultRepDirectoryLimit = 200;
@@ -175,28 +228,134 @@ export async function getCatalogJewelryItems(options: CatalogReadOptions = {}): 
 }
 
 export async function getCatalogJewelryItemsResult(options: CatalogReadOptions = {}): Promise<CatalogItemsReadResult> {
+  const result = await getCatalogJewelryItemsPageResult(options);
+
+  return result.status === "success"
+    ? { status: "success", items: result.items }
+    : { status: "error" };
+}
+
+export async function getCatalogJewelryItemsPageResult(
+  options: CatalogReadOptions = {},
+): Promise<CatalogPageReadResult> {
+  if (!isValidCatalogPageRequest(options)) {
+    return { status: "error", reason: "invalid_contract" };
+  }
+
   const apiBaseUrl = getSparkleSuiteFinderApiBaseUrl(options);
 
   if (!apiBaseUrl) {
     return options.useFixtureFallback === false
-      ? { status: "error" }
-      : { status: "success", items: fallbackItems(options) };
+      ? { status: "error", reason: "unavailable" }
+      : { status: "success", pagination: "unsupported", items: fallbackCatalogItems(options) };
   }
 
   const params = buildCatalogParams(options, { includeLimit: true });
 
   try {
-    const payload = await fetchJson<CatalogListResponse>(
+    const payload = await fetchJson<unknown>(
       `${apiBaseUrl}/api/public/finder/catalog?${params.toString()}`,
       options,
     );
-    const items = Array.isArray(payload.items) ? payload.items : [];
-
-    return { status: "success", items: items.map(mapSparkleSuiteFinderCatalogItem) };
-  } catch {
+    return parseCatalogPageResponse(payload, options);
+  } catch (error) {
+    const reason = error instanceof CatalogContractError ? error.reason : "unavailable";
     return options.useFixtureFallback === false
-      ? { status: "error" }
-      : { status: "success", items: fallbackItems(options) };
+      ? { status: "error", reason }
+      : { status: "success", pagination: "unsupported", items: fallbackCatalogItems(options) };
+  }
+}
+
+export async function getAllCatalogJewelryItemsResult(
+  options: CatalogReadOptions & { maxPages?: number } = {},
+): Promise<CatalogAllPagesReadResult> {
+  if (options.cursor?.trim()) {
+    return { status: "error", reason: "invalid_contract" };
+  }
+
+  const maxPages = normalizeCatalogWalkPageLimit(options.maxPages);
+  const items: CatalogJewelryItem[] = [];
+  const seenDesignIds = new Set<string>();
+  const seenCursors = new Set<string>();
+  let cursor: string | undefined;
+  let totalCount: number | null = null;
+
+  for (let pageNumber = 0; pageNumber < maxPages; pageNumber += 1) {
+    const page = await getCatalogJewelryItemsPageResult({
+      ...options,
+      cursor,
+      useFixtureFallback: false,
+    });
+    if (page.status === "error") {
+      return page;
+    }
+    if (page.pagination === "unsupported") {
+      return { status: "error", reason: "unsupported_pagination" };
+    }
+    if (totalCount !== null && page.pageInfo.totalCount !== totalCount) {
+      return { status: "error", reason: "invalid_contract" };
+    }
+    totalCount = page.pageInfo.totalCount;
+
+    for (const item of page.items) {
+      const normalizedDesignId = item.id.toLocaleLowerCase();
+      if (seenDesignIds.has(normalizedDesignId)) {
+        return { status: "error", reason: "duplicate_design_id" };
+      }
+      seenDesignIds.add(normalizedDesignId);
+      items.push(item);
+    }
+
+    if (!page.pageInfo.hasMore) {
+      return items.length === totalCount
+        ? { status: "success", schemaVersion: 2, items, totalCount }
+        : { status: "error", reason: "invalid_contract" };
+    }
+
+    const nextCursor = page.pageInfo.nextCursor;
+    if (!nextCursor || seenCursors.has(nextCursor)) {
+      return { status: "error", reason: "cursor_loop" };
+    }
+    seenCursors.add(nextCursor);
+    cursor = nextCursor;
+  }
+
+  return { status: "error", reason: "page_limit" };
+}
+
+export async function getCatalogJewelryItemsByIdsResult(
+  designIds: string[],
+  options: Pick<CatalogReadOptions, "apiBaseUrl" | "fetcher"> = {},
+): Promise<CatalogBatchReadResult> {
+  const normalizedDesignIds = normalizeRequestedDesignIds(designIds);
+  if (!normalizedDesignIds || normalizedDesignIds.length > maxCatalogBatchDesignIds) {
+    return { status: "error", reason: "invalid_contract" };
+  }
+  if (normalizedDesignIds.length === 0) {
+    return { status: "success", schemaVersion: 2, items: [], missingDesignIds: [] };
+  }
+
+  const apiBaseUrl = getSparkleSuiteFinderApiBaseUrl(options);
+  if (!apiBaseUrl) {
+    return { status: "error", reason: "unavailable" };
+  }
+
+  try {
+    const payload = await fetchJson<unknown>(
+      `${apiBaseUrl}/api/public/finder/catalog/batch`,
+      options,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ designIds: normalizedDesignIds }),
+      },
+    );
+    return parseCatalogBatchResponse(payload, normalizedDesignIds);
+  } catch (error) {
+    return {
+      status: "error",
+      reason: error instanceof CatalogContractError ? error.reason : "unavailable",
+    };
   }
 }
 
@@ -246,16 +405,24 @@ export async function getCatalogJewelryItemByIdResult(
   }
 
   try {
-    const payload = await fetchJson<CatalogDetailResponse>(
+    const payload = await fetchJson<unknown>(
       `${apiBaseUrl}/api/public/finder/catalog/${encodeURIComponent(trimmedItemId)}`,
       options,
     );
+    if (!isRecord(payload) || !("item" in payload)) {
+      throw new CatalogContractError("invalid_contract");
+    }
+    if (payload.item === null || payload.item === undefined) {
+      return { status: "success", item: fallbackItemById(trimmedItemId, options) };
+    }
+    const item = parseCatalogItem(payload.item, { requireDescription: true });
+    if (item.designId.toLocaleLowerCase() !== trimmedItemId.toLocaleLowerCase()) {
+      throw new CatalogContractError("invalid_contract");
+    }
 
     return {
       status: "success",
-      item: payload.item
-        ? mapSparkleSuiteFinderCatalogItem(payload.item)
-        : fallbackItemById(trimmedItemId, options),
+      item: mapSparkleSuiteFinderCatalogItem(item),
     };
   } catch (error) {
     if (isCatalogApiNotFound(error)) {
@@ -370,7 +537,7 @@ export async function getFinderRepDirectoryData(options: CatalogReadOptions = {}
   }
 }
 
-export function mapSparkleSuiteFinderCatalogItem(item: SparkleSuiteFinderCatalogItem): JewelryItem {
+export function mapSparkleSuiteFinderCatalogItem(item: SparkleSuiteFinderCatalogItem): CatalogJewelryItem {
   return {
     id: item.designId,
     name: item.designName.trim() || item.itemNumber,
@@ -379,6 +546,7 @@ export function mapSparkleSuiteFinderCatalogItem(item: SparkleSuiteFinderCatalog
     jewelryType: mapSparkleSuiteFinderJewelryType(item.jewelryType),
     material: item.material,
     mainStone: item.mainStone,
+    description: item.description?.trim() || null,
     bpMsrp: item.bpMsrp,
     imageUrl: item.canonicalPhotoUrl?.trim() ?? "",
     bpLabel: deriveBombPartyLabel(item),
@@ -742,9 +910,299 @@ function getRepDirectoryShowUrl(show: SparkleSuiteFinderRepDirectoryShow, repSit
   return showUrl?.trim() || repSiteUrl?.trim() || "";
 }
 
-async function fetchJson<T>(url: string, options: CatalogReadOptions): Promise<T> {
+function parseCatalogPageResponse(payload: unknown, options: CatalogReadOptions): CatalogPageReadResult {
+  if (!isRecord(payload) || !Array.isArray(payload.items)) {
+    throw new CatalogContractError("invalid_contract");
+  }
+
+  if (payload.schemaVersion === undefined) {
+    const legacyItems = parseCatalogItems(payload.items, { requireDescription: false });
+    assertDistinctCatalogDesignIds(legacyItems);
+    return {
+      status: "success",
+      pagination: "unsupported",
+      items: legacyItems.map(mapSparkleSuiteFinderCatalogItem),
+    };
+  }
+
+  if (payload.schemaVersion !== 2 || !isRecord(payload.pageInfo)) {
+    throw new CatalogContractError("invalid_contract");
+  }
+
+  const items = parseCatalogItems(payload.items, { requireDescription: true });
+  assertDistinctCatalogDesignIds(items);
+  const pageInfo = parseCatalogPageInfo(payload.pageInfo, items.length);
+  const requestedLimit = options.limit ?? defaultCatalogLimit;
+  if (!Number.isSafeInteger(requestedLimit) || requestedLimit < 1 || items.length > requestedLimit) {
+    throw new CatalogContractError("invalid_contract");
+  }
+  const requestedCursor = options.cursor?.trim();
+  if (requestedCursor && pageInfo.nextCursor === requestedCursor) {
+    throw new CatalogContractError("cursor_loop");
+  }
+
+  return {
+    status: "success",
+    pagination: "supported",
+    schemaVersion: 2,
+    items: items.map(mapSparkleSuiteFinderCatalogItem),
+    pageInfo,
+  };
+}
+
+function parseCatalogBatchResponse(
+  payload: unknown,
+  requestedDesignIds: string[],
+): CatalogBatchReadResult {
+  if (
+    !isRecord(payload)
+    || payload.schemaVersion !== 2
+    || !Array.isArray(payload.items)
+    || !Array.isArray(payload.missingDesignIds)
+  ) {
+    throw new CatalogContractError("invalid_contract");
+  }
+
+  const rawItems = parseCatalogItems(payload.items, { requireDescription: true });
+  assertDistinctCatalogDesignIds(rawItems);
+  const missingDesignIds = payload.missingDesignIds.map((designId) => {
+    const normalized = readRequiredString(designId);
+    if (!normalized) {
+      throw new CatalogContractError("invalid_contract");
+    }
+    return normalized;
+  });
+  assertDistinctDesignIdStrings(missingDesignIds);
+
+  const requestedByNormalizedId = new Map(
+    requestedDesignIds.map((designId) => [designId.toLocaleLowerCase(), designId]),
+  );
+  const itemByNormalizedId = new Map(
+    rawItems.map((item) => [item.designId.toLocaleLowerCase(), item]),
+  );
+  const missingNormalizedIds = new Set(missingDesignIds.map((designId) => designId.toLocaleLowerCase()));
+
+  for (const designId of itemByNormalizedId.keys()) {
+    if (!requestedByNormalizedId.has(designId) || missingNormalizedIds.has(designId)) {
+      throw new CatalogContractError("invalid_contract");
+    }
+  }
+  for (const designId of missingNormalizedIds) {
+    if (!requestedByNormalizedId.has(designId) || itemByNormalizedId.has(designId)) {
+      throw new CatalogContractError("invalid_contract");
+    }
+  }
+  for (const designId of requestedByNormalizedId.keys()) {
+    if (!itemByNormalizedId.has(designId) && !missingNormalizedIds.has(designId)) {
+      throw new CatalogContractError("invalid_contract");
+    }
+  }
+
+  return {
+    status: "success",
+    schemaVersion: 2,
+    items: requestedDesignIds.flatMap((designId) => {
+      const item = itemByNormalizedId.get(designId.toLocaleLowerCase());
+      return item ? [mapSparkleSuiteFinderCatalogItem(item)] : [];
+    }),
+    missingDesignIds: requestedDesignIds.filter((designId) =>
+      missingNormalizedIds.has(designId.toLocaleLowerCase()),
+    ),
+  };
+}
+
+function parseCatalogPageInfo(value: Record<string, unknown>, itemCount: number): CatalogPageInfo {
+  const { totalCount, hasMore, nextCursor } = value;
+  if (
+    !Number.isSafeInteger(totalCount)
+    || Number(totalCount) < 0
+    || typeof hasMore !== "boolean"
+    || (nextCursor !== null && typeof nextCursor !== "string")
+  ) {
+    throw new CatalogContractError("invalid_contract");
+  }
+  const normalizedNextCursor = typeof nextCursor === "string" ? nextCursor.trim() : null;
+  if (
+    Number(totalCount) < itemCount
+    || (hasMore && Number(totalCount) <= itemCount)
+    || (hasMore && (!normalizedNextCursor || normalizedNextCursor.length > maxCatalogCursorLength || itemCount === 0))
+    || (!hasMore && normalizedNextCursor !== null)
+  ) {
+    throw new CatalogContractError("invalid_contract");
+  }
+  return {
+    totalCount: Number(totalCount),
+    hasMore,
+    nextCursor: normalizedNextCursor,
+  };
+}
+
+function parseCatalogItems(
+  values: unknown[],
+  options: { requireDescription: boolean },
+): SparkleSuiteFinderCatalogItem[] {
+  return values.map((value) => parseCatalogItem(value, options));
+}
+
+function parseCatalogItem(
+  value: unknown,
+  { requireDescription }: { requireDescription: boolean },
+): SparkleSuiteFinderCatalogItem {
+  if (!isRecord(value)) {
+    throw new CatalogContractError("invalid_contract");
+  }
+  const designId = readRequiredString(value.designId);
+  const itemNumber = readRequiredString(value.itemNumber);
+  const designName = readRequiredString(value.designName);
+  const jewelryType = value.jewelryType;
+  const description = value.description;
+  if (
+    !designId
+    || !itemNumber
+    || !designName
+    || !isSparkleSuiteFinderJewelryType(jewelryType)
+    || !isNullableString(value.collectionName)
+    || !isNullableInteger(value.collectionYear)
+    || !isNullableString(value.material)
+    || !isNullableString(value.mainStone)
+    || !isNullableFiniteNumber(value.bpMsrp)
+    || !isNullableString(value.canonicalPhotoUrl)
+    || !Array.isArray(value.searchTags)
+    || !value.searchTags.every((tag) => typeof tag === "string")
+    || !isNonnegativeInteger(value.availableListingCount)
+    || (requireDescription
+      ? !("description" in value) || !isNullableString(description)
+      : description !== undefined && !isNullableString(description))
+  ) {
+    throw new CatalogContractError("invalid_contract");
+  }
+
+  return {
+    designId,
+    itemNumber,
+    designName,
+    collectionName: cleanNullableString(value.collectionName),
+    collectionYear: value.collectionYear as number | null,
+    jewelryType,
+    material: cleanNullableString(value.material),
+    mainStone: cleanNullableString(value.mainStone),
+    bpMsrp: value.bpMsrp as number | null,
+    canonicalPhotoUrl: cleanNullableString(value.canonicalPhotoUrl),
+    description: cleanNullableString(description),
+    searchTags: [...value.searchTags],
+    availableListingCount: Number(value.availableListingCount),
+  };
+}
+
+function assertDistinctCatalogDesignIds(items: SparkleSuiteFinderCatalogItem[]): void {
+  assertDistinctDesignIdStrings(items.map((item) => item.designId));
+}
+
+function assertDistinctDesignIdStrings(designIds: string[]): void {
+  const seen = new Set<string>();
+  for (const designId of designIds) {
+    const normalized = designId.toLocaleLowerCase();
+    if (seen.has(normalized)) {
+      throw new CatalogContractError("duplicate_design_id");
+    }
+    seen.add(normalized);
+  }
+}
+
+function normalizeRequestedDesignIds(designIds: string[]): string[] | null {
+  if (!Array.isArray(designIds)) {
+    return null;
+  }
+  const normalized: string[] = [];
+  const seen = new Set<string>();
+  for (const value of designIds) {
+    const designId = readRequiredString(value);
+    if (!designId || designId.length > maxCatalogDesignIdLength) {
+      return null;
+    }
+    const normalizedDesignId = designId.toLocaleLowerCase();
+    if (seen.has(normalizedDesignId)) {
+      continue;
+    }
+    seen.add(normalizedDesignId);
+    normalized.push(designId);
+    if (normalized.length > maxCatalogBatchDesignIds) {
+      return normalized;
+    }
+  }
+  return normalized;
+}
+
+function isValidCatalogPageRequest(options: CatalogReadOptions): boolean {
+  const limit = options.limit ?? defaultCatalogLimit;
+  return Number.isSafeInteger(limit)
+    && limit >= 1
+    && limit <= maxCatalogLimit
+    && (options.collectionYear === undefined
+      || (Number.isSafeInteger(options.collectionYear)
+        && options.collectionYear >= 0
+        && options.collectionYear <= maxCatalogYear))
+    && isBoundedOptionalString(options.cursor, maxCatalogCursorLength)
+    && isBoundedOptionalString(options.query, maxCatalogQueryLength)
+    && isBoundedOptionalString(options.collection, maxCatalogFilterLength)
+    && isBoundedOptionalString(options.material, maxCatalogFilterLength)
+    && isBoundedOptionalString(options.mainStone, maxCatalogFilterLength)
+    && isBoundedOptionalString(options.type, maxCatalogFilterLength)
+    && isBoundedOptionalString(options.label, maxCatalogFilterLength);
+}
+
+function isBoundedOptionalString(value: unknown, maxLength: number): boolean {
+  return value === undefined || (typeof value === "string" && value.trim().length <= maxLength);
+}
+
+function normalizeCatalogWalkPageLimit(value: number | undefined): number {
+  if (value === undefined) {
+    return defaultCatalogWalkMaxPages;
+  }
+  return Number.isSafeInteger(value) && value >= 1
+    ? Math.min(value, defaultCatalogWalkMaxPages)
+    : 0;
+}
+
+function isSparkleSuiteFinderJewelryType(value: unknown): value is SparkleSuiteFinderJewelryType {
+  return value === "ring"
+    || value === "necklace"
+    || value === "earrings"
+    || value === "stack"
+    || value === "bracelet";
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
+}
+
+function isNullableInteger(value: unknown): value is number | null {
+  return value === null || (Number.isSafeInteger(value) && Number(value) >= 0);
+}
+
+function isNullableFiniteNumber(value: unknown): value is number | null {
+  return value === null || (typeof value === "number" && Number.isFinite(value) && value >= 0);
+}
+
+function isNonnegativeInteger(value: unknown): value is number {
+  return Number.isSafeInteger(value) && Number(value) >= 0;
+}
+
+function cleanNullableString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+async function fetchJson<T>(
+  url: string,
+  options: Pick<CatalogReadOptions, "fetcher">,
+  init: RequestInit = {},
+): Promise<T> {
   const fetcher = options.fetcher ?? fetch;
-  const response = await fetcher(url, { cache: "no-store" });
+  const response = await fetcher(url, { cache: "no-store", ...init });
 
   if (!response.ok) {
     throw new CatalogApiError(response.status);
@@ -760,6 +1218,16 @@ class CatalogApiError extends Error {
     super(`Sparkle Suite Finder API returned ${status}`);
     this.name = "CatalogApiError";
     this.status = status;
+  }
+}
+
+class CatalogContractError extends Error {
+  readonly reason: CatalogReadErrorReason;
+
+  constructor(reason: CatalogReadErrorReason) {
+    super(`Sparkle Suite Finder catalog contract failed: ${reason}`);
+    this.name = "CatalogContractError";
+    this.reason = reason;
   }
 }
 
@@ -782,6 +1250,7 @@ function buildCatalogParams(options: CatalogReadOptions, { includeLimit }: { inc
 
   if (includeLimit) {
     params.set("limit", String(options.limit ?? defaultCatalogLimit));
+    appendCatalogFilterParam(params, "cursor", options.cursor);
   }
 
   appendCatalogFilterParam(params, "query", options.query);
@@ -890,8 +1359,15 @@ function fallbackItems(options: CatalogReadOptions): JewelryItem[] {
   return options.useFixtureFallback === false ? [] : getFixtureJewelryItems();
 }
 
-function fallbackItemById(itemId: string, options: CatalogReadOptions): JewelryItem | undefined {
-  return options.useFixtureFallback === false ? undefined : getFixtureJewelryItems().find((item) => item.id === itemId);
+function fallbackCatalogItems(options: CatalogReadOptions): CatalogJewelryItem[] {
+  return fallbackItems(options).map((item) => ({
+    ...item,
+    description: item.description?.trim() || null,
+  }));
+}
+
+function fallbackItemById(itemId: string, options: CatalogReadOptions): CatalogJewelryItem | undefined {
+  return fallbackCatalogItems(options).find((item) => item.id === itemId);
 }
 
 function getFixtureJewelryItems(): JewelryItem[] {

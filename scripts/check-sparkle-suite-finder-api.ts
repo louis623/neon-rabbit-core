@@ -11,6 +11,7 @@ export type ContractReport = {
   capabilities: {
     catalogPagination: Capability;
     catalogBatch: Capability;
+    catalogFacets: Capability;
     availabilityQuantity: Capability;
     availabilityPagination: Capability;
   };
@@ -74,6 +75,7 @@ export async function runSparkleSuiteFinderContractCheck(
   let catalogSchemaVersion: ContractReport["catalogSchemaVersion"] = "unknown";
   let catalogPagination: Capability = "unsupported";
   let catalogBatch: Capability = "unsupported";
+  let catalogFacets: Capability = "unsupported";
   let availabilityQuantity: Capability = "unsupported";
   let availabilityPagination: Capability = "unsupported";
   let catalogItems = 0;
@@ -131,6 +133,16 @@ export async function runSparkleSuiteFinderContractCheck(
   }
   if (mode === "strict" && catalogBatch === "unsupported") {
     failures.push("Exact catalog batch hydration is unsupported or invalid.");
+  }
+
+  if (catalogPageOne?.isV2) {
+    const facets = await request(`${baseUrl}/api/public/finder/catalog/facets`);
+    catalogFacets = auditCatalogFacets(facets, catalogPageOne.totalCount, failures)
+      ? "supported"
+      : "unsupported";
+  }
+  if (mode === "strict" && catalogFacets === "unsupported") {
+    failures.push("Exact catalog facets are unsupported or invalid.");
   }
 
   if (firstDesignId) {
@@ -198,7 +210,7 @@ export async function runSparkleSuiteFinderContractCheck(
     mode,
     baseUrl,
     failures,
-    capabilities: { catalogPagination, catalogBatch, availabilityQuantity, availabilityPagination },
+    capabilities: { catalogPagination, catalogBatch, catalogFacets, availabilityQuantity, availabilityPagination },
     catalogSchemaVersion,
     catalogItems,
     catalogPagesRead,
@@ -218,6 +230,7 @@ export function formatSparkleSuiteFinderContractReport(report: ContractReport): 
     `CATALOG_SCHEMA_VERSION=${report.catalogSchemaVersion}`,
     `CATALOG_PAGINATION=${report.capabilities.catalogPagination}`,
     `CATALOG_BATCH=${report.capabilities.catalogBatch}`,
+    `CATALOG_FACETS=${report.capabilities.catalogFacets}`,
     `AVAILABILITY_QUANTITY=${report.capabilities.availabilityQuantity}`,
     `AVAILABILITY_PAGINATION=${report.capabilities.availabilityPagination}`,
     `CATALOG_ITEMS=${report.catalogItems}`,
@@ -332,6 +345,50 @@ function auditCatalogBatch(payload: unknown, requestedIds: string[], failures: s
   if (!returned.has(requestedIds[0])) failures.push("Catalog batch did not return the known catalog designId.");
   if (!missing.has(missingDesignIdProbe)) failures.push("Catalog batch did not report the missing designId probe.");
   if (missing.size !== missingList.length) failures.push("Catalog batch repeated a missingDesignId.");
+  return failures.length === before;
+}
+
+function auditCatalogFacets(payload: unknown, totalCount: number | null, failures: string[]): boolean {
+  const before = failures.length;
+  const record = asRecord(payload);
+  const facets = asRecord(record?.facets);
+
+  if (!record || record.schemaVersion !== 2 || !facets) {
+    failures.push("Catalog facets response must include schemaVersion 2 and a facets object.");
+    return false;
+  }
+
+  for (const key of ["collections", "materials", "stones", "types", "labels", "years"]) {
+    const values = facets[key];
+    if (!Array.isArray(values)) {
+      failures.push(`Catalog facets response is missing ${key}.`);
+      continue;
+    }
+
+    const seen = new Set<string>();
+    let countTotal = 0;
+    for (const [index, value] of values.entries()) {
+      const option = asRecord(value);
+      const facetValue = readString(option?.value);
+      const count = option?.count;
+
+      if (!facetValue || !isPositiveInteger(count)) {
+        failures.push(`Catalog ${key} facet ${index + 1} is invalid.`);
+        continue;
+      }
+      if (seen.has(facetValue)) failures.push(`Catalog ${key} facets repeat ${facetValue}.`);
+      seen.add(facetValue);
+      countTotal += count;
+    }
+
+    if (totalCount !== null && countTotal > totalCount) {
+      failures.push(`Catalog ${key} facet counts exceed totalCount.`);
+    }
+    if (totalCount !== null && (key === "types" || key === "labels") && countTotal !== totalCount) {
+      failures.push(`Catalog ${key} facet counts do not cover totalCount exactly.`);
+    }
+  }
+
   return failures.length === before;
 }
 

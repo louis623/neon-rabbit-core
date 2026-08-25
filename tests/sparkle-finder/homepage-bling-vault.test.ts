@@ -154,7 +154,9 @@ describe("Homepage Bling Vault showroom", () => {
     expect(mosaicSource).toContain("loadBlingVaultPage(activeFilter, persistedItems.length");
     expect(mosaicSource).toContain("loadBlingVaultPage(filter, 0, initialBatchSize)");
     expect(pageActionSource).toContain("supabase.auth.getUser()");
-    expect(pageActionSource).toContain('.eq("user_id", authData.user.id)');
+    expect(pageActionSource).toContain('.eq("user_id", userId)');
+    expect(pageActionSource).toContain('.order("id", { ascending: true })');
+    expect(pageActionSource).toContain("ownerCollectionMaxPages");
     expect(pageActionSource).toContain("filtered.slice(safeOffset, safeOffset + limit)");
     expect(pageActionSource).toContain('status: "error"');
     expect(heroActionSource).toContain("useActionState");

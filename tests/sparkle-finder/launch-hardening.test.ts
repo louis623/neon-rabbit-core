@@ -201,12 +201,18 @@ describe("Sparkle Finder launch hardening", () => {
   it("disables fixture fallback for production catalog and live-show route reads", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("SPARKLE_FINDER_ENABLE_PREVIEW_AUTH", "");
-    const getCatalogJewelryItems = vi.fn().mockResolvedValue([]);
+    const getCatalogJewelryItemsPageResult = vi.fn().mockResolvedValue({
+      status: "success",
+      pagination: "supported",
+      schemaVersion: 2,
+      items: [],
+      pageInfo: { totalCount: 0, hasMore: false, nextCursor: null },
+    });
     const getCatalogFacetOptions = vi.fn().mockResolvedValue(emptyFacetOptions());
     const getFinderLiveShows = vi.fn().mockResolvedValue([]);
     vi.doMock("@/lib/sparkle-finder/catalog-service", async (importOriginal) => ({
       ...((await importOriginal()) as Record<string, unknown>),
-      getCatalogJewelryItems,
+      getCatalogJewelryItemsPageResult,
       getCatalogFacetOptions,
       getFinderLiveShows,
     }));
@@ -217,7 +223,7 @@ describe("Sparkle Finder launch hardening", () => {
     await LibraryPage();
     await LiveShowsPage();
 
-    expect(getCatalogJewelryItems).toHaveBeenCalledWith(expect.objectContaining({ useFixtureFallback: false }));
+    expect(getCatalogJewelryItemsPageResult).toHaveBeenCalledWith(expect.objectContaining({ useFixtureFallback: false }));
     expect(getCatalogFacetOptions).toHaveBeenCalledWith(expect.objectContaining({ useFixtureFallback: false }));
     expect(getFinderLiveShows).toHaveBeenCalledWith(expect.objectContaining({ useFixtureFallback: false }));
   });

@@ -146,6 +146,56 @@ test.describe("Sparkle Finder homepage smoke", () => {
     });
   }
 
+  test("Library follows a valid v2 cursor without repeating exact design identities", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.context().clearCookies();
+    await page.context().addCookies([
+      {
+        name: "sparkle_finder_auth_mode",
+        value: "silver",
+        url: baseUrl,
+      },
+    ]);
+
+    await page.goto(`${baseUrl}/library`, { waitUntil: "domcontentloaded" });
+
+    const firstPageCards = page.locator('[data-smoke="library-jewelry-card"]');
+    const firstCard = firstPageCards.first();
+    await expect(firstCard).toBeVisible();
+    await expect(firstCard.locator('[data-smoke="library-variant-identity"]')).toBeVisible();
+    const exactDesignId = await firstCard.getAttribute("data-design-id");
+    expect(exactDesignId).toBeTruthy();
+    await expect(firstCard.getByRole("link", { name: "View piece" })).toHaveAttribute(
+      "href",
+      `/library/${encodeURIComponent(exactDesignId!)}`,
+    );
+
+    const firstPageDesignIds = await firstPageCards.evaluateAll((cards) =>
+      cards.map((card) => card.getAttribute("data-design-id")).filter((value): value is string => Boolean(value)),
+    );
+    const nextPage = page.locator('[data-smoke="library-next-page"]');
+    await expect(nextPage).toBeVisible();
+    await expect(nextPage).toHaveText("Next page");
+    const nextPageHref = await nextPage.getAttribute("href");
+    expect(nextPageHref).toContain("cursor=");
+    await nextPage.click();
+    await expect(page).toHaveURL(/\/library\?cursor=/);
+
+    const secondPageCards = page.locator('[data-smoke="library-jewelry-card"]');
+    await expect(secondPageCards.first()).toBeVisible();
+    const secondPageDesignIds = await secondPageCards.evaluateAll((cards) =>
+      cards.map((card) => card.getAttribute("data-design-id")).filter((value): value is string => Boolean(value)),
+    );
+    expect(secondPageDesignIds.length).toBeGreaterThan(0);
+    expect(secondPageDesignIds.some((designId) => firstPageDesignIds.includes(designId))).toBe(false);
+
+    const search = page.getByRole("searchbox", { name: "Search the Jewelry Library" });
+    await search.fill("ring");
+    await page.getByRole("button", { name: "Search", exact: true }).click();
+    await expect(page).toHaveURL(/\/library\?q=ring(?:&|$)/);
+    expect(new URL(page.url()).searchParams.has("cursor")).toBe(false);
+  });
+
   test("signup shows Silver trial and phone privacy defaults", async ({ page }) => {
     await page.goto(`${baseUrl}/auth/sign-up`, { waitUntil: "domcontentloaded" });
 

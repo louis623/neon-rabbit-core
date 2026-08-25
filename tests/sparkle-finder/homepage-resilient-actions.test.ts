@@ -98,7 +98,7 @@ describe("Homepage Hero Piece and Bling Vault actions", () => {
       })),
     }));
     vi.doMock("@/lib/sparkle-finder/catalog-service", () => ({
-      getCatalogJewelryItemsResult: vi.fn().mockResolvedValue({ status: "error" }),
+      getCatalogJewelryItemsByIdsResult: vi.fn().mockResolvedValue({ status: "error", reason: "unavailable" }),
     }));
 
     const { loadBlingVaultPage } = await import("../../app/actions/bling-vault");
@@ -130,16 +130,20 @@ describe("Homepage Hero Piece and Bling Vault actions", () => {
   });
 
   it("returns a bounded successful page without trusting a client owner id", async () => {
+    const getCatalogJewelryItemsByIdsResult = vi.fn().mockResolvedValue({
+      status: "success",
+      schemaVersion: 2,
+      items: [jewelryItem("jewel-1"), jewelryItem("jewel-2")],
+      missingDesignIds: [],
+    });
+    const client = blingVaultClient({
+      rows: [collectionRow(), collectionRow({ id: "owned-2", jewelry_item_id: "jewel-2" })],
+    });
     vi.doMock("@/lib/supabase/server", () => ({
-      createClient: vi.fn().mockResolvedValue(blingVaultClient({
-        rows: [collectionRow(), collectionRow({ id: "owned-2", jewelry_item_id: "jewel-2" })],
-      })),
+      createClient: vi.fn().mockResolvedValue(client),
     }));
     vi.doMock("@/lib/sparkle-finder/catalog-service", () => ({
-      getCatalogJewelryItemsResult: vi.fn().mockResolvedValue({
-        status: "success",
-        items: [jewelryItem("jewel-1"), jewelryItem("jewel-2")],
-      }),
+      getCatalogJewelryItemsByIdsResult,
     }));
 
     const { loadBlingVaultPage } = await import("../../app/actions/bling-vault");
@@ -149,6 +153,83 @@ describe("Homepage Hero Piece and Bling Vault actions", () => {
       status: "success",
       total: 2,
       items: [{ id: "owned-2", customerId: userId }],
+    });
+    expect(getCatalogJewelryItemsByIdsResult).toHaveBeenCalledWith(["jewel-1", "jewel-2"]);
+    expect(client.collectionQuery.order).toHaveBeenCalledWith("id", { ascending: true });
+    expect(client.collectionQuery.range).toHaveBeenCalledWith(0, 199);
+  });
+
+  it("chunks more than 50 exact saved IDs for Bling Vault hydration", async () => {
+    const rows = Array.from({ length: 51 }, (_, index) => collectionRow({
+      id: `owned-${index + 1}`,
+      jewelry_item_id: `jewel-${index + 1}`,
+    }));
+    const getCatalogJewelryItemsByIdsResult = vi.fn().mockImplementation(async (designIds: string[]) => ({
+      status: "success",
+      schemaVersion: 2,
+      items: designIds.map(jewelryItem),
+      missingDesignIds: [],
+    }));
+    vi.doMock("@/lib/supabase/server", () => ({
+      createClient: vi.fn().mockResolvedValue(blingVaultClient({ rows })),
+    }));
+    vi.doMock("@/lib/sparkle-finder/catalog-service", () => ({
+      getCatalogJewelryItemsByIdsResult,
+    }));
+
+    const { loadBlingVaultPage } = await import("../../app/actions/bling-vault");
+    const result = await loadBlingVaultPage("all", 0, 16);
+
+    expect(result).toMatchObject({ status: "success", total: 51 });
+    expect(getCatalogJewelryItemsByIdsResult).toHaveBeenCalledTimes(2);
+    expect(getCatalogJewelryItemsByIdsResult.mock.calls[0]?.[0]).toHaveLength(50);
+    expect(getCatalogJewelryItemsByIdsResult.mock.calls[1]?.[0]).toEqual(["jewel-51"]);
+  });
+
+  it("reports an exact saved design id that the batch catalog cannot hydrate", async () => {
+    vi.doMock("@/lib/supabase/server", () => ({
+      createClient: vi.fn().mockResolvedValue(blingVaultClient({ rows: [collectionRow()] })),
+    }));
+    vi.doMock("@/lib/sparkle-finder/catalog-service", () => ({
+      getCatalogJewelryItemsByIdsResult: vi.fn().mockResolvedValue({
+        status: "success",
+        schemaVersion: 2,
+        items: [],
+        missingDesignIds: ["jewel-1"],
+      }),
+    }));
+
+    const { loadBlingVaultPage } = await import("../../app/actions/bling-vault");
+    const result = await loadBlingVaultPage("all", 0, 8);
+
+    expect(result).toEqual({
+      status: "error",
+      message: "Some saved pieces are no longer available in the jewelry catalog. Nothing was substituted.",
+      missingDesignIds: ["jewel-1"],
+    });
+  });
+
+  it("never substitutes a different design that happens to share the saved item's number", async () => {
+    const returnedItem = jewelryItem("different-design-id");
+    returnedItem.itemNumber = "JEWEL-1";
+    vi.doMock("@/lib/supabase/server", () => ({
+      createClient: vi.fn().mockResolvedValue(blingVaultClient({ rows: [collectionRow()] })),
+    }));
+    vi.doMock("@/lib/sparkle-finder/catalog-service", () => ({
+      getCatalogJewelryItemsByIdsResult: vi.fn().mockResolvedValue({
+        status: "success",
+        schemaVersion: 2,
+        items: [returnedItem],
+        missingDesignIds: ["jewel-1"],
+      }),
+    }));
+
+    const { loadBlingVaultPage } = await import("../../app/actions/bling-vault");
+    const result = await loadBlingVaultPage("all", 0, 8);
+
+    expect(result).toEqual({
+      status: "error",
+      message: "Your Bling Vault couldn't reach the jewelry catalog. Please try again.",
     });
   });
 });
@@ -179,6 +260,19 @@ function heroClient({
 }
 
 function blingVaultClient({ rows }: { rows: Record<string, unknown>[] }) {
+  const range = vi.fn((from: number, to: number) => Promise.resolve({
+    data: rows.slice(from, to + 1),
+    error: null,
+  }));
+  const order = vi.fn(() => ({ range }));
+  const ownerRowsResult = { data: rows, error: null };
+  const eqResult = {
+    order,
+    then: <TResult1 = typeof ownerRowsResult, TResult2 = never>(
+      onfulfilled?: ((value: typeof ownerRowsResult) => TResult1 | PromiseLike<TResult1>) | null,
+      onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
+    ) => Promise.resolve(ownerRowsResult).then(onfulfilled, onrejected),
+  };
   return {
     auth: {
       getUser: vi.fn().mockResolvedValue({
@@ -188,9 +282,10 @@ function blingVaultClient({ rows }: { rows: Record<string, unknown>[] }) {
     },
     from: vi.fn(() => ({
       select: vi.fn(() => ({
-        eq: vi.fn().mockResolvedValue({ data: rows, error: null }),
+        eq: vi.fn(() => eqResult),
       })),
     })),
+    collectionQuery: { order, range },
   };
 }
 
