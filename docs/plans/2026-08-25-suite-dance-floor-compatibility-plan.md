@@ -516,7 +516,7 @@ This release may be folded into Releases 1-3 when each checker change belongs to
 - `git diff --check`
 - `npm run smoke:sparkle-finder`
 - `npm run smoke:finder-nic-nac`
-- read-only `npm exec tsx scripts/check-sparkle-suite-finder-api.ts`
+- read-only `npm run check:suite-contract:strict`
 - rendered checks at 320px, 390px, tablet, and desktop
 - keyboard, focus, labels, live-region, and retry-state checks
 - production deployment reaches `READY`

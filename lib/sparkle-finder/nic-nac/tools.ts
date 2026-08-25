@@ -197,56 +197,90 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
       description:
         "Find bounded public Sparkle Suite Dance Floor dancers and next-show leads for a Sparkle Finder catalog item.",
       inputSchema: z.object({
-        itemId: z.string(),
+        itemId: z.string().trim().min(1).max(256).describe(
+          "Exact Sparkle Suite catalog design ID. Resolve an item number through catalog search and disambiguate variants before calling this tool.",
+        ),
         limit: z.number().int().min(1).max(12).optional(),
+        exactCursor: z.string().trim().min(1).max(2_048).optional(),
+        similarCursor: z.string().trim().min(1).max(2_048).optional(),
       }),
-      execute: async ({ itemId, limit }) => {
+      execute: async ({ itemId, limit, exactCursor, similarCursor }) => {
         const trimmedItemId = itemId.trim();
 
         if (!trimmedItemId) {
-          return {
+          return availabilityToolError({
             status: "missing_item_id",
-            leads: [],
-            guidance: "Ask for the item number or catalog item before checking for dancers on the Dance Floor.",
-          };
+            guidance:
+              "An exact catalog design ID is required. If the customer supplied an item number, search the catalog and disambiguate its material or stone variants before checking the Dance Floor.",
+          });
         }
 
         const availability = await getFinderAvailabilityForJewelryItem(trimmedItemId, {
           limit: limit ?? 8,
+          exactCursor,
+          similarCursor,
           useFixtureFallback: false,
         });
 
         if (!availability) {
-          return {
+          return availabilityToolError({
             status: "unavailable",
             itemId: trimmedItemId,
-            leads: [],
             guidance: "Sparkle Suite availability could not be read right now. Offer to retry.",
-          };
+          });
         }
 
         if (!availability.requestedItem) {
-          return {
+          return availabilityToolError({
             status: "item_not_found",
             itemId: trimmedItemId,
-            leads: [],
             guidance: "No shared catalog item matched that id. Guide the customer to search the catalog or Studio.",
-          };
+          });
         }
 
-        const leads = [
-          ...availability.exactMatches.map((match) => ({
+        if (!isSafeAvailabilityResult(availability, trimmedItemId, { exactCursor, similarCursor })) {
+          return availabilityToolError({
+            status: "contract_unavailable",
+            itemId: trimmedItemId,
+            guidance:
+              "Sparkle Suite availability returned incomplete quantity or continuation data. Do not claim that no dancers are available; offer to retry.",
+          });
+        }
+
+        const isContinuation = Boolean(exactCursor?.trim() || similarCursor?.trim());
+        const includeExactBucket = !isContinuation || Boolean(exactCursor?.trim());
+        const includeSimilarBucket = !isContinuation || Boolean(similarCursor?.trim());
+        const exactLeads = includeExactBucket ? availability.exactMatches.map((match) => ({
             matchType: "exact_item" as const,
             ...mapAvailabilityLead(match),
-          })),
-          ...availability.similarMatches.map((match) => ({
+          })) : [];
+        const similarLeads = includeSimilarBucket ? availability.similarMatches.map((match) => ({
             matchType: "same_collection_type" as const,
             ...mapAvailabilityLead(match),
-          })),
-        ];
+          })) : [];
+        const leads = [...exactLeads, ...similarLeads];
+        const leadCount = leads.length;
+        const dancerCount = sumDancerQuantity(leads);
+        const totalLeadCount = availability.exactPageInfo.totalLeadCount
+          + availability.similarPageInfo.totalLeadCount;
+        const totalDancerCount = availability.exactPageInfo.totalDancerCount
+          + availability.similarPageInfo.totalDancerCount;
+        const exactHasMore = includeExactBucket && availability.exactPageInfo.hasMore;
+        const similarHasMore = includeSimilarBucket && availability.similarPageInfo.hasMore;
+        const hasMore = exactHasMore || similarHasMore;
+        const nextCursor = hasMore
+          ? {
+              exactCursor: exactHasMore ? availability.exactPageInfo.nextCursor : null,
+              similarCursor: similarHasMore ? availability.similarPageInfo.nextCursor : null,
+            }
+          : null;
+        const currentPageGuidance = leadCount === totalLeadCount && dancerCount === totalDancerCount
+          ? ""
+          : ` Showing ${leadCount} ${leadCount === 1 ? "rep lead" : "rep leads"} and ${dancerCount} ${dancerCount === 1 ? "dancer" : "dancers"} in this page response.`;
 
         return {
           status: "connected",
+          availabilityKnown: true,
           item: {
             id: availability.requestedItem.id,
             itemNumber: availability.requestedItem.itemNumber,
@@ -255,10 +289,18 @@ export function buildFinderNicNacTools(ctx: FinderNicNacToolContext, intents: Fi
             jewelryType: availability.requestedItem.jewelryType,
             availableListingCount: availability.requestedItem.availableListingCount ?? 0,
           },
-          count: leads.length,
-          leads: leads.slice(0, limit ?? 8),
-          guidance:
-            "Use dancer leads for Dance Floor and next-show discovery only. listingId, listedAt, and availableListingCount are internal compatibility fields and must not appear as product terminology. Do not mutate Sparkle Suite Dance Floors from Finder.",
+          leadCount,
+          dancerCount,
+          totalLeadCount,
+          totalDancerCount,
+          hasMore,
+          nextCursor,
+          exactPageInfo: availability.exactPageInfo,
+          similarPageInfo: availability.similarPageInfo,
+          count: leadCount,
+          countDeprecated: true,
+          leads,
+          guidance: `${formatAvailabilitySummary(totalLeadCount, totalDancerCount)}${currentPageGuidance} Use dancer leads for Dance Floor and next-show discovery only. Continue with the cursor for each active bucket when that bucket has more results. count, listingId, listedAt, and availableListingCount are deprecated internal compatibility fields and must not appear as product terminology. Do not mutate Sparkle Suite Dance Floors from Finder.`,
         };
       },
     });
@@ -850,6 +892,10 @@ type FinderAvailabilityLeadInput = NonNullable<
   Awaited<ReturnType<typeof getFinderAvailabilityForJewelryItem>>
 >["exactMatches"][number];
 
+type FinderAvailabilityToolResult = NonNullable<
+  Awaited<ReturnType<typeof getFinderAvailabilityForJewelryItem>>
+>;
+
 function mapAvailabilityLead(match: FinderAvailabilityLeadInput) {
   return {
     listingId: match.listingId,
@@ -865,6 +911,107 @@ function mapAvailabilityLead(match: FinderAvailabilityLeadInput) {
     nextShowAt: match.nextShow.startsAt,
     nextShowStatus: match.nextShow.status,
     customerSiteUrl: match.customerSiteUrl,
+    quantityAvailable: match.quantityAvailable,
+  };
+}
+
+function isSafeAvailabilityResult(
+  availability: FinderAvailabilityToolResult,
+  requestedItemId: string,
+  cursors: { exactCursor?: string; similarCursor?: string },
+): boolean {
+  if (availability.schemaVersion !== 2 || availability.requestedItem.id !== requestedItemId) {
+    return false;
+  }
+
+  const exactMatches = availability.exactMatches;
+  const similarMatches = availability.similarMatches;
+  if (
+    !isSafeAvailabilityPageInfo(availability.exactPageInfo, exactMatches, cursors.exactCursor)
+    || !isSafeAvailabilityPageInfo(availability.similarPageInfo, similarMatches, cursors.similarCursor)
+  ) {
+    return false;
+  }
+
+  const seenListingIds = new Set<string>();
+  for (const match of [...exactMatches, ...similarMatches]) {
+    if (
+      !Number.isInteger(match.quantityAvailable)
+      || match.quantityAvailable < 1
+      || !match.listingId
+      || seenListingIds.has(match.listingId)
+    ) {
+      return false;
+    }
+    seenListingIds.add(match.listingId);
+  }
+
+  return exactMatches.every((match) => match.item.id === requestedItemId)
+    && similarMatches.every((match) => match.item.id !== requestedItemId);
+}
+
+function isSafeAvailabilityPageInfo(
+  pageInfo: FinderAvailabilityToolResult["exactPageInfo"],
+  matches: FinderAvailabilityLeadInput[],
+  requestedCursor: string | undefined,
+): boolean {
+  const nextCursor = typeof pageInfo?.nextCursor === "string" ? pageInfo.nextCursor.trim() : pageInfo?.nextCursor;
+  const currentDancerCount = sumDancerQuantity(matches);
+  const normalizedRequestedCursor = requestedCursor?.trim();
+  if (
+    !pageInfo
+    || !Number.isInteger(pageInfo.totalLeadCount)
+    || pageInfo.totalLeadCount < matches.length
+    || !Number.isInteger(pageInfo.totalDancerCount)
+    || pageInfo.totalDancerCount < pageInfo.totalLeadCount
+    || pageInfo.totalDancerCount < currentDancerCount
+    || typeof pageInfo.hasMore !== "boolean"
+    || (nextCursor !== null && typeof nextCursor !== "string")
+    || (pageInfo.hasMore && (!nextCursor || nextCursor.length > 2_048 || matches.length === 0))
+    || (!pageInfo.hasMore && nextCursor !== null)
+    || (normalizedRequestedCursor && nextCursor === normalizedRequestedCursor)
+    || (!normalizedRequestedCursor && !pageInfo.hasMore && pageInfo.totalLeadCount !== matches.length)
+    || (!normalizedRequestedCursor && !pageInfo.hasMore && pageInfo.totalDancerCount !== currentDancerCount)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function sumDancerQuantity(matches: Array<{ quantityAvailable: number }>): number {
+  return matches.reduce((total, match) => total + match.quantityAvailable, 0);
+}
+
+function formatAvailabilitySummary(leadCount: number, dancerCount: number): string {
+  return `${leadCount} ${leadCount === 1 ? "rep lead" : "rep leads"} · ${dancerCount} ${dancerCount === 1 ? "dancer" : "dancers"} available.`;
+}
+
+function availabilityToolError({
+  status,
+  guidance,
+  itemId,
+}: {
+  status: "missing_item_id" | "unavailable" | "item_not_found" | "contract_unavailable";
+  guidance: string;
+  itemId?: string;
+}) {
+  return {
+    status,
+    availabilityKnown: false,
+    ...(itemId ? { itemId } : {}),
+    leadCount: null,
+    dancerCount: null,
+    totalLeadCount: null,
+    totalDancerCount: null,
+    hasMore: null,
+    nextCursor: null,
+    exactPageInfo: null,
+    similarPageInfo: null,
+    count: null,
+    countDeprecated: true,
+    leads: [],
+    guidance,
   };
 }
 

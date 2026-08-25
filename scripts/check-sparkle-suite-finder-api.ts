@@ -294,8 +294,9 @@ function auditCatalogPage(
 function assertCatalogItem(
   value: unknown,
   label: string,
-  requireDescription: boolean,
+  requireAvailabilityCounts: boolean,
   failures: string[],
+  requireDescription = requireAvailabilityCounts,
 ): Record<string, unknown> | null {
   const record = asRecord(value);
   if (!record) {
@@ -307,6 +308,28 @@ function assertCatalogItem(
   }
   if (!isNonnegativeInteger(record.availableListingCount)) {
     failures.push(`${label} has invalid availableListingCount.`);
+  }
+  if (requireAvailabilityCounts && !isNonnegativeInteger(record.availableLeadCount)) {
+    failures.push(`${label} has invalid availableLeadCount.`);
+  }
+  if (requireAvailabilityCounts && !isNonnegativeInteger(record.availableDancerCount)) {
+    failures.push(`${label} has invalid availableDancerCount.`);
+  }
+  if (
+    requireAvailabilityCounts
+    && isNonnegativeInteger(record.availableListingCount)
+    && isNonnegativeInteger(record.availableLeadCount)
+    && record.availableListingCount !== record.availableLeadCount
+  ) {
+    failures.push(`${label} availableListingCount no longer matches availableLeadCount.`);
+  }
+  if (
+    requireAvailabilityCounts
+    && isNonnegativeInteger(record.availableLeadCount)
+    && isNonnegativeInteger(record.availableDancerCount)
+    && record.availableDancerCount < record.availableLeadCount
+  ) {
+    failures.push(`${label} availableDancerCount is smaller than availableLeadCount.`);
   }
   if (requireDescription && !("description" in record)) failures.push(`${label} is missing description.`);
   if (requireDescription && record.description !== null && typeof record.description !== "string") {
@@ -408,7 +431,10 @@ function auditAvailability(
     failures.push(`${options.label} is not an object.`);
     return null;
   }
-  const requestedItem = asRecord(record.requestedItem);
+  const isV2 = record.schemaVersion === 2;
+  const requestedItem = isV2
+    ? assertCatalogItem(record.requestedItem, `${options.label} requestedItem`, true, failures, false)
+    : asRecord(record.requestedItem);
   if (readString(requestedItem?.designId) !== options.requestedDesignId) {
     failures.push(`${options.label} requestedItem does not preserve the requested designId.`);
   }
@@ -417,7 +443,6 @@ function auditAvailability(
     return null;
   }
 
-  const isV2 = record.schemaVersion === 2;
   if (record.schemaVersion !== undefined && !isV2) {
     failures.push(`${options.label} has unsupported schemaVersion ${String(record.schemaVersion)}.`);
   }
@@ -443,6 +468,10 @@ function auditAvailability(
   const similarMatches = readMatches(record.similarMatches, "similar");
   assertUnique(exactMatches, "listingId", `${options.label} exact matches`, failures);
   assertUnique(similarMatches, "listingId", `${options.label} similar matches`, failures);
+  assertUnique([...exactMatches, ...similarMatches], "listingId", `${options.label} availability matches`, failures);
+  if (similarMatches.some((match) => readString(asRecord(match.item)?.designId) === options.requestedDesignId)) {
+    failures.push(`${options.label} similar matches repeat the requested designId.`);
+  }
   if (!isV2) {
     return {
       isV2: false,
@@ -493,6 +522,9 @@ function assertAvailabilityMatch(
   }
   if (!readString(record.listingId)) failures.push(`${label} is missing listingId.`);
   const itemDesignId = readString(asRecord(record.item)?.designId);
+  if (requireQuantity) {
+    assertCatalogItem(record.item, `${label} item`, true, failures, false);
+  }
   if (!itemDesignId) failures.push(`${label} is missing item.designId.`);
   if (exactDesignId && itemDesignId !== exactDesignId) failures.push(`${label} does not preserve exact requested designId.`);
   const rep = asRecord(record.rep);
@@ -547,6 +579,18 @@ function assertAvailabilityPageInfo(
   }
   const cursor = assertCursorPageInfo(record, label, requestedCursor, failures);
   if (!cursor || leadCount === null || dancerCount === null) return null;
+  if (cursor.hasMore && matches.length === 0) {
+    failures.push(`${label} cannot have an empty current page when hasMore is true.`);
+  }
+  if (cursor.hasMore && leadCount <= matches.length) {
+    failures.push(`${label} totalLeadCount must exceed the current match count when hasMore is true.`);
+  }
+  if (!requestedCursor && !cursor.hasMore && leadCount !== matches.length) {
+    failures.push(`${label} totalLeadCount must equal the first terminal page match count.`);
+  }
+  if (!requestedCursor && !cursor.hasMore && dancerCount !== currentDancers) {
+    failures.push(`${label} totalDancerCount must equal the first terminal page quantity.`);
+  }
   return { ...cursor, totalLeadCount: leadCount, totalDancerCount: dancerCount };
 }
 
@@ -757,11 +801,11 @@ function readString(value: unknown): string {
 }
 
 function isNonnegativeInteger(value: unknown): value is number {
-  return typeof value === "number" && Number.isInteger(value) && value >= 0;
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
 }
 
 function isPositiveInteger(value: unknown): value is number {
-  return typeof value === "number" && Number.isInteger(value) && value > 0;
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
 
 async function runFromCli() {

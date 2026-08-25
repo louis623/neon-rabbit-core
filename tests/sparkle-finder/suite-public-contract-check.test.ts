@@ -116,6 +116,18 @@ describe("Sparkle Suite public Finder contract checker", () => {
     expect(report.failures).toContain("catalog page 2 repeats designId design-a from page 1.");
   });
 
+  it("fails inconsistent v2 catalog lead and dancer counts", async () => {
+    const fetcher = makeStrictFetcher({ malformedCatalogCounts: true });
+
+    const report = await runSparkleSuiteFinderContractCheck({ baseUrl, fetcher, mode: "strict" });
+
+    expect(report.ok).toBe(false);
+    expect(report.failures).toEqual(expect.arrayContaining([
+      "catalog page 1 item 1 availableListingCount no longer matches availableLeadCount.",
+      "catalog page 1 item 1 availableDancerCount is smaller than availableLeadCount.",
+    ]));
+  });
+
   it("fails repeated listing IDs across availability pages", async () => {
     const fetcher = makeStrictFetcher({ repeatAvailabilityPage: true });
 
@@ -128,6 +140,38 @@ describe("Sparkle Suite public Finder contract checker", () => {
     expect(report.failures).toContain(
       "availability similar page 2 repeats listingId listing-similar-1 from page 1.",
     );
+  });
+
+  it("fails availability identities and nested catalog shapes that Finder rejects", async () => {
+    const report = await runSparkleSuiteFinderContractCheck({
+      baseUrl,
+      fetcher: makeStrictFetcher({ malformedAvailabilityContract: true }),
+      mode: "strict",
+    });
+
+    expect(report.ok).toBe(false);
+    expect(report.failures).toEqual(expect.arrayContaining([
+      "availability page 1 requestedItem is missing itemNumber.",
+      "availability page 1 requestedItem has invalid availableLeadCount.",
+      "availability page 1 availability matches repeats listingId listing-shared.",
+      "availability page 1 similar matches repeat the requested designId.",
+    ]));
+  });
+
+  it("fails pageInfo states that Finder rejects", async () => {
+    const report = await runSparkleSuiteFinderContractCheck({
+      baseUrl,
+      fetcher: makeStrictFetcher({ malformedAvailabilityPageInfo: true }),
+      mode: "strict",
+    });
+
+    expect(report.ok).toBe(false);
+    expect(report.failures).toEqual(expect.arrayContaining([
+      "availability page 1 exactPageInfo cannot have an empty current page when hasMore is true.",
+      "availability page 1 exactPageInfo totalLeadCount must exceed the current match count when hasMore is true.",
+      "availability page 1 similarPageInfo totalLeadCount must equal the first terminal page match count.",
+      "availability page 1 similarPageInfo totalDancerCount must equal the first terminal page quantity.",
+    ]));
   });
 
   it("allows a valid strict contract with zero positive public inventory", async () => {
@@ -153,8 +197,11 @@ describe("Sparkle Suite public Finder contract checker", () => {
 function makeStrictFetcher(
   options: {
     malformedV2?: boolean;
+    malformedCatalogCounts?: boolean;
     repeatCatalogPage?: boolean;
     repeatAvailabilityPage?: boolean;
+    malformedAvailabilityContract?: boolean;
+    malformedAvailabilityPageInfo?: boolean;
     zeroInventory?: boolean;
   } = {},
 ) {
@@ -196,7 +243,12 @@ function makeStrictFetcher(
       }
       return json({
         schemaVersion: 2,
-        items: [catalogItem("design-a"), catalogItem("design-b")],
+        items: [
+          options.malformedCatalogCounts
+            ? { ...catalogItem("design-a"), availableLeadCount: 2, availableDancerCount: 1 }
+            : catalogItem("design-a"),
+          catalogItem("design-b"),
+        ],
         pageInfo: options.malformedV2
           ? { totalCount: -1, hasMore: true, nextCursor: null }
           : { totalCount: 3, hasMore: true, nextCursor: "catalog-next" },
@@ -232,6 +284,27 @@ function makeStrictFetcher(
         );
       }
 
+      if (options.malformedAvailabilityContract) {
+        return json({
+          ...availabilityResponse(
+            [availabilityMatch("listing-shared", "design-a", 1)],
+            [availabilityMatch("listing-shared", "design-a", 1)],
+            { totalLeadCount: 1, totalDancerCount: 1, hasMore: false, nextCursor: null },
+            { totalLeadCount: 1, totalDancerCount: 1, hasMore: false, nextCursor: null },
+          ),
+          requestedItem: { designId: "design-a" },
+        });
+      }
+
+      if (options.malformedAvailabilityPageInfo) {
+        return json(availabilityResponse(
+          [],
+          [availabilityMatch("listing-similar-1", "design-similar-1", 3)],
+          { totalLeadCount: 0, totalDancerCount: 0, hasMore: true, nextCursor: "exact-next" },
+          { totalLeadCount: 2, totalDancerCount: 4, hasMore: false, nextCursor: null },
+        ));
+      }
+
       const exact = availabilityMatch(
         "listing-exact-1",
         options.malformedV2 ? "wrong-design" : "design-a",
@@ -258,8 +331,17 @@ function catalogItem(designId: string, v2 = true) {
     designId,
     itemNumber: designId === "design-a" ? "RBP5902" : `ER-${designId}`,
     designName: `Design ${designId}`,
+    collectionName: null,
+    collectionYear: null,
+    jewelryType: "ring",
+    material: null,
+    mainStone: null,
+    bpMsrp: null,
+    canonicalPhotoUrl: null,
+    searchTags: [],
     description: v2 ? `Description ${designId}` : undefined,
     availableListingCount: 0,
+    ...(v2 ? { availableLeadCount: 0, availableDancerCount: 0 } : {}),
   };
 }
 
@@ -270,7 +352,7 @@ function availabilityMatch(listingId: string, designId: string, quantityAvailabl
     photoUrl: null,
     photoSource: "canonical",
     ...(quantityAvailable === undefined ? {} : { quantityAvailable }),
-    item: { designId },
+    item: catalogItem(designId),
     rep: {
       repId: "rep-1",
       showName: "Demo Sparkle",
@@ -295,7 +377,7 @@ function availabilityResponse(
 ) {
   return {
     schemaVersion: 2,
-    requestedItem: { designId: "design-a" },
+    requestedItem: catalogItem("design-a"),
     exactMatches,
     similarMatches,
     exactPageInfo,

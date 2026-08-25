@@ -22,6 +22,8 @@ export type SparkleSuiteFinderCatalogItem = {
   description?: string | null;
   searchTags: string[];
   availableListingCount: number;
+  availableLeadCount?: number;
+  availableDancerCount?: number;
 };
 
 export type CatalogJewelryItem = JewelryItem & {
@@ -61,8 +63,10 @@ export type SparkleSuiteFinderRepDirectoryItem = {
 
 export type FinderAvailabilityMatch = {
   listingId: string;
+  quantityAvailable: number;
   listedAt: string | null;
   photoUrl: string | null;
+  photoSource?: "listing" | "canonical" | "missing";
   item: JewelryItem;
   showName: string;
   repFirstName: string;
@@ -70,10 +74,20 @@ export type FinderAvailabilityMatch = {
   nextShow: SparkleSuiteFinderLeadShow;
 };
 
+export type FinderAvailabilityPageInfo = {
+  totalLeadCount: number;
+  totalDancerCount: number;
+  hasMore: boolean;
+  nextCursor: string | null;
+};
+
 export type FinderAvailabilityResult = {
-  requestedItem: JewelryItem | null;
+  schemaVersion: 2;
+  requestedItem: JewelryItem;
   exactMatches: FinderAvailabilityMatch[];
   similarMatches: FinderAvailabilityMatch[];
+  exactPageInfo: FinderAvailabilityPageInfo;
+  similarPageInfo: FinderAvailabilityPageInfo;
 };
 
 export type FinderLiveShow = SparkleSuiteFinderLeadShow;
@@ -151,6 +165,8 @@ export type CatalogAllPagesReadResult =
 export type CatalogReadOptions = {
   apiBaseUrl?: string;
   cursor?: string;
+  exactCursor?: string;
+  similarCursor?: string;
   fetcher?: (input: string, init?: RequestInit) => Promise<Response>;
   collection?: string;
   collectionYear?: number;
@@ -167,12 +183,6 @@ type CatalogFacetsResponse = {
   facets?: Partial<CatalogFacetOptions>;
 };
 
-type AvailabilityResponse = {
-  requestedItem?: SparkleSuiteFinderCatalogItem | null;
-  exactMatches?: SparkleSuiteFinderAvailabilityMatch[];
-  similarMatches?: SparkleSuiteFinderAvailabilityMatch[];
-};
-
 type LiveShowsResponse = {
   shows?: SparkleSuiteFinderLeadShow[];
 };
@@ -183,6 +193,7 @@ type RepDirectoryResponse = {
 
 type SparkleSuiteFinderAvailabilityMatch = {
   listingId: string;
+  quantityAvailable: number;
   listedAt: string | null;
   photoUrl: string | null;
   photoSource?: "listing" | "canonical" | "missing";
@@ -415,7 +426,10 @@ export async function getCatalogJewelryItemByIdResult(
     if (payload.item === null || payload.item === undefined) {
       return { status: "success", item: fallbackItemById(trimmedItemId, options) };
     }
-    const item = parseCatalogItem(payload.item, { requireDescription: true });
+    const item = parseCatalogItem(payload.item, {
+      requireAvailabilityCounts: true,
+      requireDescription: true,
+    });
     if (item.designId.toLocaleLowerCase() !== trimmedItemId.toLocaleLowerCase()) {
       throw new CatalogContractError("invalid_contract");
     }
@@ -444,7 +458,7 @@ export async function getFinderAvailabilityForJewelryItem(
 ): Promise<FinderAvailabilityResult | undefined> {
   const trimmedItemId = itemId.trim();
 
-  if (!trimmedItemId) {
+  if (!isValidAvailabilityRequest(trimmedItemId, options)) {
     return undefined;
   }
 
@@ -458,33 +472,15 @@ export async function getFinderAvailabilityForJewelryItem(
     designId: trimmedItemId,
     limit: String(options.limit ?? defaultAvailabilityLimit),
   });
+  appendCatalogFilterParam(params, "exactCursor", options.exactCursor);
+  appendCatalogFilterParam(params, "similarCursor", options.similarCursor);
 
   try {
-    const payload = await fetchJson<AvailabilityResponse>(
+    const payload = await fetchJson<unknown>(
       `${apiBaseUrl}/api/public/finder/availability?${params.toString()}`,
       options,
     );
-    const requestedItem = isAvailabilityCatalogItem(payload.requestedItem)
-      && payload.requestedItem.designId.trim() === trimmedItemId
-      ? mapSparkleSuiteFinderCatalogItem(payload.requestedItem)
-      : null;
-    const exactMatches = mapAvailabilityMatches(payload.exactMatches, apiBaseUrl)
-      .filter((match) => match.item.id === trimmedItemId);
-    const seenListingIds = new Set(exactMatches.map((match) => match.listingId));
-    const similarMatches = mapAvailabilityMatches(payload.similarMatches, apiBaseUrl).filter((match) => {
-      if (match.item.id === trimmedItemId || seenListingIds.has(match.listingId)) {
-        return false;
-      }
-
-      seenListingIds.add(match.listingId);
-      return true;
-    });
-
-    return {
-      requestedItem,
-      exactMatches,
-      similarMatches,
-    };
+    return parseAvailabilityResponse(payload, trimmedItemId, apiBaseUrl, options);
   } catch {
     return undefined;
   }
@@ -553,6 +549,8 @@ export function mapSparkleSuiteFinderCatalogItem(item: SparkleSuiteFinderCatalog
     itemNumber: item.itemNumber,
     searchTags: Array.isArray(item.searchTags) ? [...item.searchTags] : [],
     availableListingCount: item.availableListingCount,
+    availableLeadCount: item.availableLeadCount,
+    availableDancerCount: item.availableDancerCount,
     knownRepListingIds: [],
   };
 }
@@ -577,46 +575,174 @@ export function shouldUseCatalogFixtureFallback(env: Record<string, string | und
   return env.NODE_ENV !== "production" || env.SPARKLE_FINDER_ENABLE_PREVIEW_AUTH === "true";
 }
 
-function mapAvailabilityMatches(
-  matches: SparkleSuiteFinderAvailabilityMatch[] | undefined,
+function parseAvailabilityResponse(
+  payload: unknown,
+  requestedDesignId: string,
   apiBaseUrl: string,
-): FinderAvailabilityMatch[] {
-  return (matches ?? []).flatMap((match) => {
-    if (!isAvailabilityCatalogItem(match.item)) {
-      return [];
-    }
+  options: Pick<CatalogReadOptions, "exactCursor" | "similarCursor">,
+): FinderAvailabilityResult {
+  if (
+    !isRecord(payload)
+    || payload.schemaVersion !== 2
+    || !Array.isArray(payload.exactMatches)
+    || !Array.isArray(payload.similarMatches)
+  ) {
+    throw new CatalogContractError("invalid_contract");
+  }
 
-    const listingId = readRequiredString(match.listingId);
-    const repId = readRequiredString(match.rep?.repId);
-    const showName = readRequiredString(match.rep?.showName) || readRequiredString(match.showName);
-    const repFirstName = readRequiredString(match.rep?.repFirstName) || readRequiredString(match.repFirstName);
-    const customerSiteUrl = readSuitePublicUrl(
-      match.rep?.customerSiteUrl ?? match.customerSiteUrl,
-      apiBaseUrl,
-    );
-    const nextShow = normalizeAvailabilityShow(
-      match.nextShow,
-      { customerSiteUrl: customerSiteUrl ?? "", repFirstName, showName },
-      repId,
-    );
-
-    if (!listingId || !nextShow || !customerSiteUrl || !showName || !repFirstName) {
-      return [];
-    }
-
-    return [
-      {
-        listingId,
-        listedAt: match.listedAt,
-        photoUrl: normalizeAvailabilityPhoto(match),
-        item: mapSparkleSuiteFinderCatalogItem(match.item),
-        showName,
-        repFirstName,
-        customerSiteUrl,
-        nextShow,
-      },
-    ];
+  const requestedItem = parseCatalogItem(payload.requestedItem, {
+    requireAvailabilityCounts: true,
+    requireDescription: false,
   });
+  if (requestedItem.designId !== requestedDesignId) {
+    throw new CatalogContractError("invalid_contract");
+  }
+
+  const exactMatches = payload.exactMatches.map((match) =>
+    parseAvailabilityMatch(match, apiBaseUrl),
+  );
+  const similarMatches = payload.similarMatches.map((match) =>
+    parseAvailabilityMatch(match, apiBaseUrl),
+  );
+  if (exactMatches.some((match) => match.item.id !== requestedDesignId)) {
+    throw new CatalogContractError("invalid_contract");
+  }
+  if (similarMatches.some((match) => match.item.id === requestedDesignId)) {
+    throw new CatalogContractError("invalid_contract");
+  }
+
+  assertDistinctAvailabilityListingIds([...exactMatches, ...similarMatches]);
+  const exactPageInfo = parseAvailabilityPageInfo(
+    payload.exactPageInfo,
+    exactMatches,
+    options.exactCursor,
+  );
+  const similarPageInfo = parseAvailabilityPageInfo(
+    payload.similarPageInfo,
+    similarMatches,
+    options.similarCursor,
+  );
+
+  return {
+    schemaVersion: 2,
+    requestedItem: mapSparkleSuiteFinderCatalogItem(requestedItem),
+    exactMatches,
+    similarMatches,
+    exactPageInfo,
+    similarPageInfo,
+  };
+}
+
+function parseAvailabilityMatch(value: unknown, apiBaseUrl: string): FinderAvailabilityMatch {
+  if (!isRecord(value) || !isRecord(value.rep)) {
+    throw new CatalogContractError("invalid_contract");
+  }
+
+  const match = value as unknown as SparkleSuiteFinderAvailabilityMatch;
+  const listingId = readRequiredString(match.listingId);
+  const quantityAvailable = match.quantityAvailable;
+  const listedAt = match.listedAt;
+  const repId = readRequiredString(match.rep?.repId);
+  const showName = readRequiredString(match.rep?.showName);
+  const repFirstName = readRequiredString(match.rep?.repFirstName);
+  const customerSiteUrl = readSuitePublicUrl(match.rep?.customerSiteUrl, apiBaseUrl);
+  const item = parseCatalogItem(match.item, {
+    requireAvailabilityCounts: true,
+    requireDescription: false,
+  });
+  const nextShow = normalizeAvailabilityShow(
+    match.nextShow,
+    { customerSiteUrl: customerSiteUrl ?? "", repFirstName, showName },
+    repId,
+  );
+
+  if (
+    !listingId
+    || listingId.length > maxCatalogDesignIdLength
+    || !isPositiveSafeInteger(quantityAvailable)
+    || (listedAt !== null && (typeof listedAt !== "string" || Number.isNaN(Date.parse(listedAt))))
+    || !nextShow
+    || !customerSiteUrl
+    || !showName
+    || !repFirstName
+    || (match.photoSource !== "listing" && match.photoSource !== "canonical" && match.photoSource !== "missing")
+    || (match.photoSource === "missing" && match.photoUrl !== null)
+  ) {
+    throw new CatalogContractError("invalid_contract");
+  }
+
+  return {
+    listingId,
+    quantityAvailable,
+    listedAt,
+    photoUrl: normalizeAvailabilityPhoto(match),
+    photoSource: match.photoSource,
+    item: mapSparkleSuiteFinderCatalogItem(item),
+    showName,
+    repFirstName,
+    customerSiteUrl,
+    nextShow,
+  };
+}
+
+function parseAvailabilityPageInfo(
+  value: unknown,
+  matches: FinderAvailabilityMatch[],
+  requestedCursor: string | undefined,
+): FinderAvailabilityPageInfo {
+  if (!isRecord(value)) {
+    throw new CatalogContractError("invalid_contract");
+  }
+  const { totalLeadCount, totalDancerCount, hasMore, nextCursor } = value;
+  const currentPageDancerCount = matches.reduce((sum, match) => sum + match.quantityAvailable, 0);
+  if (
+    !isNonnegativeInteger(totalLeadCount)
+    || !isNonnegativeInteger(totalDancerCount)
+    || !Number.isSafeInteger(currentPageDancerCount)
+    || totalLeadCount < matches.length
+    || totalDancerCount < totalLeadCount
+    || totalDancerCount < currentPageDancerCount
+    || typeof hasMore !== "boolean"
+    || (nextCursor !== null && typeof nextCursor !== "string")
+  ) {
+    throw new CatalogContractError("invalid_contract");
+  }
+
+  const normalizedNextCursor = typeof nextCursor === "string" ? nextCursor.trim() : null;
+  const normalizedRequestedCursor = requestedCursor?.trim();
+  if (
+    (hasMore && (!normalizedNextCursor || normalizedNextCursor.length > maxCatalogCursorLength || matches.length === 0))
+    || (hasMore && totalLeadCount <= matches.length)
+    || (!hasMore && normalizedNextCursor !== null)
+    || (normalizedRequestedCursor && normalizedNextCursor === normalizedRequestedCursor)
+    || (!normalizedRequestedCursor && !hasMore && totalLeadCount !== matches.length)
+    || (!normalizedRequestedCursor
+      && !hasMore
+      && totalDancerCount !== currentPageDancerCount)
+  ) {
+    throw new CatalogContractError("invalid_contract");
+  }
+
+  return {
+    totalLeadCount,
+    totalDancerCount,
+    hasMore,
+    nextCursor: normalizedNextCursor,
+  };
+}
+
+function assertDistinctAvailabilityListingIds(matches: FinderAvailabilityMatch[]): void {
+  const seen = new Set<string>();
+  for (const match of matches) {
+    if (seen.has(match.listingId)) {
+      throw new CatalogContractError("duplicate_design_id");
+    }
+    seen.add(match.listingId);
+  }
+}
+
+function isPositiveSafeInteger(value: unknown): value is number {
+  return Number.isSafeInteger(value) && Number(value) > 0;
 }
 
 function normalizeAvailabilityShow(
@@ -673,21 +799,6 @@ function normalizeAvailabilityPhoto(match: SparkleSuiteFinderAvailabilityMatch):
   }
 
   return photoUrl;
-}
-
-function isAvailabilityCatalogItem(value: unknown): value is SparkleSuiteFinderCatalogItem {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return false;
-  }
-
-  const item = value as Partial<SparkleSuiteFinderCatalogItem>;
-  return Boolean(
-    readRequiredString(item.designId)
-    && readRequiredString(item.itemNumber)
-    && readRequiredString(item.designName)
-    && item.jewelryType
-    && ["ring", "necklace", "earrings", "stack", "bracelet"].includes(item.jewelryType),
-  );
 }
 
 function mapLiveShows(shows: SparkleSuiteFinderLeadShow[] | undefined): FinderLiveShow[] {
@@ -916,7 +1027,10 @@ function parseCatalogPageResponse(payload: unknown, options: CatalogReadOptions)
   }
 
   if (payload.schemaVersion === undefined) {
-    const legacyItems = parseCatalogItems(payload.items, { requireDescription: false });
+    const legacyItems = parseCatalogItems(payload.items, {
+      requireAvailabilityCounts: false,
+      requireDescription: false,
+    });
     assertDistinctCatalogDesignIds(legacyItems);
     return {
       status: "success",
@@ -929,7 +1043,10 @@ function parseCatalogPageResponse(payload: unknown, options: CatalogReadOptions)
     throw new CatalogContractError("invalid_contract");
   }
 
-  const items = parseCatalogItems(payload.items, { requireDescription: true });
+  const items = parseCatalogItems(payload.items, {
+    requireAvailabilityCounts: true,
+    requireDescription: true,
+  });
   assertDistinctCatalogDesignIds(items);
   const pageInfo = parseCatalogPageInfo(payload.pageInfo, items.length);
   const requestedLimit = options.limit ?? defaultCatalogLimit;
@@ -963,7 +1080,10 @@ function parseCatalogBatchResponse(
     throw new CatalogContractError("invalid_contract");
   }
 
-  const rawItems = parseCatalogItems(payload.items, { requireDescription: true });
+  const rawItems = parseCatalogItems(payload.items, {
+    requireAvailabilityCounts: true,
+    requireDescription: true,
+  });
   assertDistinctCatalogDesignIds(rawItems);
   const missingDesignIds = payload.missingDesignIds.map((designId) => {
     const normalized = readRequiredString(designId);
@@ -1039,14 +1159,14 @@ function parseCatalogPageInfo(value: Record<string, unknown>, itemCount: number)
 
 function parseCatalogItems(
   values: unknown[],
-  options: { requireDescription: boolean },
+  options: CatalogItemParseOptions,
 ): SparkleSuiteFinderCatalogItem[] {
   return values.map((value) => parseCatalogItem(value, options));
 }
 
 function parseCatalogItem(
   value: unknown,
-  { requireDescription }: { requireDescription: boolean },
+  { requireAvailabilityCounts, requireDescription }: CatalogItemParseOptions,
 ): SparkleSuiteFinderCatalogItem {
   if (!isRecord(value)) {
     throw new CatalogContractError("invalid_contract");
@@ -1070,6 +1190,10 @@ function parseCatalogItem(
     || !Array.isArray(value.searchTags)
     || !value.searchTags.every((tag) => typeof tag === "string")
     || !isNonnegativeInteger(value.availableListingCount)
+    || (requireAvailabilityCounts && !isNonnegativeInteger(value.availableLeadCount))
+    || (requireAvailabilityCounts && !isNonnegativeInteger(value.availableDancerCount))
+    || (requireAvailabilityCounts && Number(value.availableListingCount) !== Number(value.availableLeadCount))
+    || (requireAvailabilityCounts && Number(value.availableDancerCount) < Number(value.availableLeadCount))
     || (requireDescription
       ? !("description" in value) || !isNullableString(description)
       : description !== undefined && !isNullableString(description))
@@ -1091,8 +1215,15 @@ function parseCatalogItem(
     description: cleanNullableString(description),
     searchTags: [...value.searchTags],
     availableListingCount: Number(value.availableListingCount),
+    availableLeadCount: value.availableLeadCount === undefined ? undefined : Number(value.availableLeadCount),
+    availableDancerCount: value.availableDancerCount === undefined ? undefined : Number(value.availableDancerCount),
   };
 }
+
+type CatalogItemParseOptions = {
+  requireAvailabilityCounts: boolean;
+  requireDescription: boolean;
+};
 
 function assertDistinctCatalogDesignIds(items: SparkleSuiteFinderCatalogItem[]): void {
   assertDistinctDesignIdStrings(items.map((item) => item.designId));
@@ -1149,6 +1280,17 @@ function isValidCatalogPageRequest(options: CatalogReadOptions): boolean {
     && isBoundedOptionalString(options.mainStone, maxCatalogFilterLength)
     && isBoundedOptionalString(options.type, maxCatalogFilterLength)
     && isBoundedOptionalString(options.label, maxCatalogFilterLength);
+}
+
+function isValidAvailabilityRequest(itemId: string, options: CatalogReadOptions): boolean {
+  const limit = options.limit ?? defaultAvailabilityLimit;
+  return Boolean(itemId)
+    && itemId.length <= maxCatalogDesignIdLength
+    && Number.isSafeInteger(limit)
+    && limit >= 1
+    && limit <= maxCatalogLimit
+    && isBoundedOptionalString(options.exactCursor, maxCatalogCursorLength)
+    && isBoundedOptionalString(options.similarCursor, maxCatalogCursorLength);
 }
 
 function isBoundedOptionalString(value: unknown, maxLength: number): boolean {

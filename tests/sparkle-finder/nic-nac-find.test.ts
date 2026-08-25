@@ -251,10 +251,12 @@ function apiAvailability(): FinderAvailabilityResult {
   };
 
   return {
+    schemaVersion: 2,
     requestedItem,
     exactMatches: [
       {
         listingId: "listing-exact-api",
+        quantityAvailable: 2,
         listedAt: "2026-06-06T12:00:00.000Z",
         photoUrl: "",
         item: requestedItem,
@@ -274,6 +276,7 @@ function apiAvailability(): FinderAvailabilityResult {
     similarMatches: [
       {
         listingId: "listing-similar-api",
+        quantityAvailable: 3,
         listedAt: "2026-06-06T12:30:00.000Z",
         photoUrl: "",
         item: {
@@ -294,5 +297,17 @@ function apiAvailability(): FinderAvailabilityResult {
         },
       },
     ],
+    exactPageInfo: {
+      totalLeadCount: 1,
+      totalDancerCount: 2,
+      hasMore: false,
+      nextCursor: null,
+    },
+    similarPageInfo: {
+      totalLeadCount: 1,
+      totalDancerCount: 3,
+      hasMore: false,
+      nextCursor: null,
+    },
   };
 }

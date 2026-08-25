@@ -8,17 +8,28 @@ type JewelryCardProps = {
 };
 
 export function formatAvailabilityCount(
-  count: number | null | undefined,
+  leadCount: number | null | undefined,
+  dancerCount: number | null | undefined,
+  legacyListingCount: number | null | undefined,
   knownRepListingIds: string[] = [],
 ): string {
-  if (typeof count === "number") {
-    if (count < 1) {
+  if (isNonnegativeInteger(leadCount) && isNonnegativeInteger(dancerCount) && dancerCount >= leadCount) {
+    if (leadCount === 0 && dancerCount === 0) {
       return "No dancers right now";
     }
-
-    return count === 1 ? "1 dancer" : `${count} dancers`;
+    if (leadCount > 0) {
+      return `${formatLeadCount(leadCount)} · ${formatDancerCount(dancerCount)}`;
+    }
   }
 
+  const knownLeadCount = isNonnegativeInteger(leadCount)
+    ? leadCount
+    : isNonnegativeInteger(legacyListingCount)
+      ? legacyListingCount
+      : knownRepListingIds.length;
+  if (knownLeadCount > 0) {
+    return `${formatLeadCount(knownLeadCount)} · dancer quantity unavailable`;
+  }
   if (knownRepListingIds.length > 0) {
     return knownRepListingIds.length === 1 ? "Known dancer lead" : "Known dancer leads";
   }
@@ -28,7 +39,12 @@ export function formatAvailabilityCount(
 
 export function JewelryCard({ item }: JewelryCardProps) {
   const metadata = [
-    formatAvailabilityCount(item.availableListingCount, item.knownRepListingIds),
+    formatAvailabilityCount(
+      item.availableLeadCount,
+      item.availableDancerCount,
+      item.availableListingCount,
+      item.knownRepListingIds,
+    ),
     item.collectionYear ? String(item.collectionYear) : null,
     ...(item.searchTags ?? []).slice(0, 2),
   ].filter((value): value is string => Boolean(value));
@@ -81,14 +97,14 @@ export function JewelryCard({ item }: JewelryCardProps) {
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
-            className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-3 text-sm font-bold text-white"
+            className="inline-flex min-h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] bg-[var(--sparkle-plum)] px-3 text-sm font-bold text-white"
             href={exactDesignHref}
           >
             <Search aria-hidden="true" className="size-4" />
             View piece
           </Link>
           <Link
-            className="inline-flex min-h-10 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)]"
+            className="inline-flex min-h-11 items-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-border)] bg-white px-3 text-sm font-bold text-[var(--sparkle-rose)]"
             href={exactSaveHref}
           >
             <Heart aria-hidden="true" className="size-4" />
@@ -98,6 +114,18 @@ export function JewelryCard({ item }: JewelryCardProps) {
       </div>
     </article>
   );
+}
+
+function isNonnegativeInteger(value: number | null | undefined): value is number {
+  return Number.isInteger(value) && Number(value) >= 0;
+}
+
+function formatLeadCount(count: number): string {
+  return `${count} ${count === 1 ? "rep lead" : "rep leads"}`;
+}
+
+function formatDancerCount(count: number): string {
+  return `${count} ${count === 1 ? "dancer available" : "dancers available"}`;
 }
 
 function VariantFact({ label, value }: { label: string; value: string | null | undefined }) {

@@ -348,6 +348,7 @@ test.describe("Sparkle Finder homepage smoke", () => {
   });
 
   test("Silver library item detail exposes bounded Nic-Nac and local Dance Floor paths", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
     await page.context().clearCookies();
     await page.context().addCookies([
       {
@@ -369,6 +370,14 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByRole("heading", { name: "Nic-Nac" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Check saved pieces" })).toBeVisible();
     await expect(page.getByText("Exact dancer lead", { exact: true }).first()).toBeVisible();
+    await expect(page.locator('[data-smoke="availability-total-summary"]')).toContainText("rep lead");
+    await expect(page.locator('[data-smoke="availability-total-summary"]')).toContainText(/dancers? available/);
+    await expect(page.locator('[data-smoke="dancer-lead-card"]').first()).toContainText("1 dancer available");
+    mkdirSync(screenshotDir, { recursive: true });
+    await page.screenshot({
+      fullPage: true,
+      path: join(screenshotDir, "sparkle-finder-availability-mobile.png"),
+    });
     await expectNoGuardrailCopy(page);
     await expectNoExampleLinksOnCurrentPage(page);
 
@@ -397,12 +406,30 @@ test.describe("Sparkle Finder homepage smoke", () => {
     await expect(page.getByRole("button", { name: "Check saved pieces" })).toBeVisible();
     const repSiteLink = page.getByRole("link", { name: "Visit Rep Site" }).first();
     await expect(repSiteLink).toBeVisible();
+    await expect(page.locator('[data-smoke="availability-total-summary"]')).toContainText("rep lead");
+    await expect(page.locator('[data-smoke="availability-total-summary"]')).toContainText("dancer");
+    await expect(page.locator('[data-smoke="dancer-lead-card"]').first()).toContainText(/\d+ dancers? available/);
     await expect(repSiteLink).toHaveAttribute(
       "href",
       new RegExp(`^${escapeRegExp(sparkleSuiteFinderBaseUrl)}/`),
     );
     await expect(page.getByRole("link", { name: "Open Dance Floor" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Open rep profile" })).toHaveCount(0);
+    const exactContinuation = page.locator('[data-smoke="availability-exact_item-next"]');
+    if (await exactContinuation.count()) {
+      await expect(exactContinuation).toHaveText(/Next page of exact leads/);
+      await expect(exactContinuation).toHaveAttribute("href", /exactCursor=.*#known-dancer-leads/);
+      await exactContinuation.click();
+      await expect(page).toHaveURL(/exactCursor=.*#known-dancer-leads/);
+      await expect(page.locator("#known-dancer-leads")).toBeVisible();
+      await expect(page.locator('[data-smoke="availability-exact_item-bucket"]')).toContainText("This page shows");
+      await page.goBack();
+    }
+    const similarContinuation = page.locator('[data-smoke="availability-same_collection_type-next"]');
+    if (await similarContinuation.count()) {
+      await expect(similarContinuation).toHaveText(/Next page of similar leads/);
+      await expect(similarContinuation).toHaveAttribute("href", /similarCursor=.*#known-dancer-leads/);
+    }
     await expectNoGuardrailCopy(page);
   });
 

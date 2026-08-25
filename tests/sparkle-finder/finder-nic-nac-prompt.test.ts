@@ -24,7 +24,7 @@ describe("Sparkle Finder Nic-Nac prompt builder", () => {
     expect(prompt).toContain("the feature is always the Dance Floor");
     expect(prompt).toContain("jewelry offered there are dancers");
     expect(prompt).toContain("availableListingCount, listingId, listedAt, boardItemCount");
-    expect(prompt).toContain("Treat those names as internal only");
+    expect(prompt).toContain("Treat those names as deprecated/internal only");
   });
 
   it("normalizes legacy linked memory to the approved Dance Floor vocabulary", () => {
@@ -75,6 +75,27 @@ describe("Sparkle Finder Nic-Nac prompt builder", () => {
     expect(prompt).toContain("Rarest Reveals are owned pieces only");
     expect(prompt).toContain("Wishlist and Looking for Showcase pieces are jewelry the customer is hunting");
     expect(prompt).toContain("not pieces they own, found, or revealed");
+  });
+
+  it("keeps rep leads separate from dancer quantity and explains continuation truthfully", () => {
+    const prompt = buildFinderNicNacSystemPrompt({
+      activeToolNames: ["find_rep_board_availability"],
+      intents: ["availability"],
+    });
+
+    expect(prompt).toContain("leadCount is the number of rep leads on this page");
+    expect(prompt).toContain("dancerCount is the sum of dancers available on this page");
+    expect(prompt).toContain("totalLeadCount and totalDancerCount are the authoritative complete-result totals");
+    expect(prompt).toContain("State overall availability from the authoritative totals");
+    expect(prompt).toContain('"2 rep leads · 5 dancers available."');
+    expect(prompt).toContain("qualify them as \"showing\" counts");
+    expect(prompt).toContain("Continue only buckets with a non-null cursor");
+    expect(prompt).toContain("never restart or repeat a finished or inactive bucket");
+    expect(prompt).toContain("availabilityKnown is false, all counts are unknown");
+    expect(prompt).toContain("itemId must be the exact catalog design ID");
+    expect(prompt).toContain("disambiguate same-item-number material or stone variants");
+    expect(prompt).toContain("Never substitute an item-number match or merge same-item-number variants");
+    expect(prompt).toContain("deprecated count alias are internal tool data");
   });
 
   it("tells linked Sparkle Suite reps that Suite mutations require the Suite surface", () => {

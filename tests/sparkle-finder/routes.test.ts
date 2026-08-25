@@ -7,7 +7,7 @@ import TermsAndConditionsPage from "../../app/terms-and-conditions/page";
 import { renderHomeContent, renderPublicHomeContent } from "../../app/page";
 import { renderAccountPageContent } from "../../app/account/page";
 import { renderDashboardPageContent } from "../../app/(hub)/dashboard/page";
-import { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/page";
+import ItemDetailPage, { renderItemDetailPageContent } from "../../app/(hub)/library/[itemId]/page";
 import { renderLibraryPageContent } from "../../app/(hub)/library/page";
 import { renderLiveShowsPageContent } from "../../app/(hub)/live-shows/page";
 import { renderRepsPageContent } from "../../app/(hub)/reps/page";
@@ -20,6 +20,7 @@ import { renderSignUpPageContent } from "../../app/auth/sign-up/page";
 import { FavoriteRepsPanel } from "../../components/favorites/FavoriteRepsPanel";
 import { JewelryImageFrame } from "../../components/library/JewelryImageFrame";
 import { PieceImage } from "../../components/showcase/RarestReveals";
+import { RepLeadPanel } from "../../components/showcase/RepLeadPanel";
 import { GET as previewAuthGET } from "../../app/auth/preview/[mode]/route";
 import { renderSilverPageContent } from "../../app/(hub)/silver/page";
 import { JewelryCard } from "../../components/library/JewelryCard";
@@ -27,6 +28,9 @@ import type { CurrentSparkleFinderAccountState } from "../../lib/sparkle-finder/
 import type { CatalogPageReadResult, FinderAvailabilityResult, FinderLiveShow } from "../../lib/sparkle-finder/catalog-service";
 import type { FavoriteRepCard, PublicCollectorProfile } from "../../lib/sparkle-finder/social-types";
 import type { JewelryItem, LiveShow, RepSummary } from "../../lib/sparkle-finder/types";
+import type { SparkleShowcasePiece } from "../../lib/sparkle-finder/showcase-types";
+import * as accountService from "../../lib/sparkle-finder/account-service";
+import * as catalogService from "../../lib/sparkle-finder/catalog-service";
 import { getLocalDevAuthState } from "../../lib/sparkle-finder/auth";
 import { buildHomepageBlingVaultModel, type HomepageBlingVaultItem } from "../../lib/sparkle-finder/homepage-bling-vault";
 import { findSparkleFinderCopyViolations } from "../../lib/sparkle-finder/copy-guardrails";
@@ -41,6 +45,10 @@ import {
   sparkleFinderPrivacyPolicyDocument,
   sparkleFinderTermsAndConditionsDocument,
 } from "../../lib/sparkle-finder/legal-content";
+
+const { cookiesMock } = vi.hoisted(() => ({ cookiesMock: vi.fn() }));
+
+vi.mock("next/headers", () => ({ cookies: cookiesMock }));
 
 const routes = [
   ["dashboard", () => renderToStaticMarkup(renderDashboardPageContent())],
@@ -60,6 +68,8 @@ const publicRoutes = [
 describe("Sparkle Finder hub routes", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+    cookiesMock.mockReset();
   });
 
   it("renders the shared hub shell around dashboard content", () => {
@@ -1259,18 +1269,20 @@ describe("Sparkle Finder hub routes", () => {
         itemNumber: "BR1001",
         knownRepListingIds: [],
         searchTags: ["rose gold", "garden"],
-        availableListingCount: 2,
+      availableListingCount: 2,
+      availableLeadCount: 2,
+      availableDancerCount: 5,
       },
     ];
 
     const markup = renderToStaticMarkup(renderLibraryPageContent(items));
 
-    expect(markup).toContain("2 dancers");
+    expect(markup).toContain("2 rep leads · 5 dancers available");
     expect(markup).toContain("2026");
     expect(markup).toContain("rose gold");
   });
 
-  it("shows known dancer lead metadata when library card counts are unknown but leads exist", () => {
+  it("shows known lead counts without inventing dancer quantities", () => {
     const singularItems: JewelryItem[] = [
       {
         id: "design-known-lead",
@@ -1299,10 +1311,9 @@ describe("Sparkle Finder hub routes", () => {
     const singularMarkup = renderToStaticMarkup(renderLibraryPageContent(singularItems));
     const pluralMarkup = renderToStaticMarkup(renderLibraryPageContent(pluralItems));
 
-    expect(singularMarkup).toContain("Known dancer lead");
-    expect(singularMarkup).not.toContain("Known dancer leads");
+    expect(singularMarkup).toContain("1 rep lead · dancer quantity unavailable");
     expect(singularMarkup).not.toContain("No dancers right now");
-    expect(pluralMarkup).toContain("Known dancer leads");
+    expect(pluralMarkup).toContain("2 rep leads · dancer quantity unavailable");
     expect(pluralMarkup).not.toContain("No dancers right now");
   });
 
@@ -1414,6 +1425,42 @@ describe("Sparkle Finder hub routes", () => {
     expect(markup).not.toContain("sparklesuite.example");
   });
 
+  it("gives Showcase lead cards explicit fixture quantities and an exact-design continuation", () => {
+    const piece: SparkleShowcasePiece = {
+      id: "showcase-rainbow-crown",
+      customerId: "customer-1",
+      jewelryItemId: "jewel-rainbow-crown-ring",
+      state: "wishlist",
+      note: "",
+      isHighlighted: false,
+      visibility: "public",
+      showcaseStatus: "wishlist",
+      revealStory: "Still hunting.",
+      isRarestReveal: false,
+      jewelryItem: {
+        id: "jewel-rainbow-crown-ring",
+        name: "Rainbow Crown Ring",
+        collectionName: "Rainbow Royale",
+        jewelryType: "ring",
+        imageUrl: "",
+        bpLabel: "standard",
+        itemNumber: "RG-RAINBOW",
+        knownRepListingIds: [],
+      },
+    };
+
+    const markup = renderToStaticMarkup(createElement(RepLeadPanel, { piece }));
+
+    expect(markup).toContain("rep lead");
+    expect(markup).toContain("dancer available");
+    expect(markup).toContain("Preview leads count as one dancer each");
+    expect(markup).toContain('data-design-id="jewel-rainbow-crown-ring"');
+    expect(markup).toContain('data-design-id="jewel-starlit-crown-ring"');
+    expect(markup).toContain("Similar design: Starlit Halo Ring");
+    expect(markup).toContain('href="/library/jewel-rainbow-crown-ring"');
+    expect(markup).toContain("See all dancer leads");
+  });
+
   it("renders API-backed item detail availability with KISS rep site links", () => {
     const apiItem: JewelryItem = {
       id: "design-api",
@@ -1429,12 +1476,15 @@ describe("Sparkle Finder hub routes", () => {
       availableListingCount: 1,
     };
     const availability: FinderAvailabilityResult = {
+      schemaVersion: 2,
       requestedItem: apiItem,
       exactMatches: [
         {
           listingId: "listing-api",
           listedAt: null,
-          photoUrl: null,
+          photoUrl: "https://cdn.example.test/listing-api.jpg",
+          photoSource: "listing",
+          quantityAvailable: 2,
           item: apiItem,
           showName: "Demo Glow Show",
           repFirstName: "Demo",
@@ -1449,18 +1499,281 @@ describe("Sparkle Finder hub routes", () => {
           },
         },
       ],
-      similarMatches: [],
+      similarMatches: [
+        {
+          listingId: "listing-similar",
+          listedAt: null,
+          photoUrl: "https://cdn.example.test/listing-similar.jpg",
+          photoSource: "listing",
+          quantityAvailable: 3,
+          item: {
+            ...apiItem,
+            id: "design-similar",
+            name: "Similar Garden Gala Ring",
+            imageUrl: "https://cdn.example.test/similar-canonical.jpg",
+          },
+          showName: "Similar Glow Show",
+          repFirstName: "Sally",
+          customerSiteUrl: "https://www.yoursparklesuite.com/similar-show?c=rep-similar",
+          nextShow: {
+            showId: "show-similar",
+            showName: "Similar Glow Show",
+            repFirstName: "Sally",
+            startsAt: "2026-06-07T20:00:00.000Z",
+            status: "scheduled",
+            customerSiteUrl: "https://www.yoursparklesuite.com/similar-show?c=rep-similar",
+          },
+        },
+      ],
+      exactPageInfo: {
+        totalLeadCount: 13,
+        totalDancerCount: 21,
+        hasMore: true,
+        nextCursor: "exact+/= next",
+      },
+      similarPageInfo: {
+        totalLeadCount: 5,
+        totalDancerCount: 9,
+        hasMore: true,
+        nextCursor: "similar+/= next",
+      },
     };
 
     const markup = renderToStaticMarkup(
-      renderItemDetailPageContent({ itemId: "design-api" }, getLocalDevAuthState("silver"), apiItem, availability),
+      renderItemDetailPageContent(
+        { itemId: "design-api" },
+        getLocalDevAuthState("silver"),
+        apiItem,
+        availability,
+        { exactCursor: "current exact", similarCursor: "current similar" },
+        false,
+      ),
     );
 
     expect(markup).toContain("https://www.yoursparklesuite.com/demo-show?c=rep-demo");
     expect(markup).toContain("Demo Glow Show");
     expect(markup).toContain("Rep: Demo");
     expect(markup).toContain("Visit Rep Site");
+    expect(markup).toContain("18 rep leads · 30 dancers available");
+    expect(markup).toContain("2 dancers available");
+    expect(markup).toContain("3 dancers available");
+    expect(markup.match(/data-smoke="dancer-lead-card"/g)).toHaveLength(2);
+    expect(markup).toContain('data-design-id="design-api"');
+    expect(markup).toContain('data-design-id="design-similar"');
+    expect(markup).toContain('src="https://cdn.example.test/listing-api.jpg"');
+    expect(markup).toContain('src="https://cdn.example.test/listing-similar.jpg"');
+    expect(markup).not.toContain('src="https://cdn.example.test/similar-canonical.jpg"');
+    expect(markup.match(/data-photo-role="listing"/g)).toHaveLength(2);
+    expect(markup).toContain("Similar design: Similar Garden Gala Ring · Item RG-API");
+    expect(markup).toContain("exactCursor=exact%2B%2F%3D+next&amp;similarCursor=current+similar");
+    expect(markup).toContain("exactCursor=current+exact&amp;similarCursor=similar%2B%2F%3D+next");
+    expect(markup).toContain("#known-dancer-leads");
+    expect(markup).toContain("Next page of exact leads");
+    expect(markup).toContain("Next page of similar leads");
     expect(markup).not.toContain("Open Dance Floor");
+
+    const terminalMarkup = renderToStaticMarkup(
+      renderItemDetailPageContent(
+        { itemId: "design-api" },
+        getLocalDevAuthState("silver"),
+        apiItem,
+        {
+          ...availability,
+          exactPageInfo: { ...availability.exactPageInfo, hasMore: false, nextCursor: null },
+          similarPageInfo: { ...availability.similarPageInfo, hasMore: false, nextCursor: null },
+        },
+        { exactCursor: "final exact", similarCursor: "final similar" },
+        false,
+      ),
+    );
+    expect(terminalMarkup.match(/This is the final page\./g)).toHaveLength(2);
+    expect(terminalMarkup).toContain("This page shows 1 rep lead and 2 dancers available");
+    expect(terminalMarkup).not.toContain("Next page of exact leads");
+  });
+
+  it("labels canonical availability fallbacks as catalog photos instead of listing photos", () => {
+    const apiItem: JewelryItem = {
+      id: "design-canonical-photo",
+      name: "Canonical Photo Ring",
+      collectionName: "Garden Gala",
+      jewelryType: "ring",
+      imageUrl: "https://cdn.example.test/design-canonical-photo.jpg",
+      bpLabel: "standard",
+      itemNumber: "RG-CANONICAL",
+      knownRepListingIds: [],
+    };
+    const availability: FinderAvailabilityResult = {
+      schemaVersion: 2,
+      requestedItem: apiItem,
+      exactMatches: [{
+        listingId: "canonical-photo-lead",
+        listedAt: null,
+        photoUrl: apiItem.imageUrl,
+        photoSource: "canonical",
+        quantityAvailable: 1,
+        item: apiItem,
+        showName: "Canonical Glow Show",
+        repFirstName: "Casey",
+        customerSiteUrl: "https://www.yoursparklesuite.com/canonical",
+        nextShow: {
+          showId: "canonical-show",
+          showName: "Canonical Glow Show",
+          repFirstName: "Casey",
+          startsAt: "2026-06-07T20:00:00.000Z",
+          status: "scheduled",
+          customerSiteUrl: "https://www.yoursparklesuite.com/canonical",
+        },
+      }],
+      similarMatches: [],
+      exactPageInfo: { totalLeadCount: 1, totalDancerCount: 1, hasMore: false, nextCursor: null },
+      similarPageInfo: { totalLeadCount: 0, totalDancerCount: 0, hasMore: false, nextCursor: null },
+    };
+
+    const markup = renderToStaticMarkup(
+      renderItemDetailPageContent(
+        { itemId: apiItem.id },
+        getLocalDevAuthState("silver"),
+        apiItem,
+        availability,
+        undefined,
+        false,
+      ),
+    );
+
+    expect(markup).toContain('data-photo-role="canonical"');
+    expect(markup).toContain('alt="Canonical Photo Ring catalog photo"');
+    expect(markup).not.toContain("listing photo from Casey");
+  });
+
+  it("passes independent item-detail search cursors to the availability adapter", async () => {
+    const apiItem = {
+      id: "design-cursor-wiring",
+      name: "Cursor Wiring Ring",
+      collectionName: "Garden Gala",
+      collectionYear: 2026,
+      jewelryType: "ring" as const,
+      material: "Gold",
+      mainStone: "Ruby",
+      description: null,
+      bpMsrp: 19.95,
+      imageUrl: "",
+      bpLabel: "standard" as const,
+      itemNumber: "RBP5902",
+      searchTags: [],
+      availableListingCount: 0,
+      availableLeadCount: 0,
+      availableDancerCount: 0,
+      knownRepListingIds: [],
+    };
+    const availability: FinderAvailabilityResult = {
+      schemaVersion: 2,
+      requestedItem: apiItem,
+      exactMatches: [],
+      similarMatches: [],
+      exactPageInfo: { totalLeadCount: 0, totalDancerCount: 0, hasMore: false, nextCursor: null },
+      similarPageInfo: { totalLeadCount: 0, totalDancerCount: 0, hasMore: false, nextCursor: null },
+    };
+    cookiesMock.mockResolvedValue({ get: () => undefined });
+    vi.spyOn(accountService, "getCurrentSparkleFinderAccount").mockResolvedValue(getLocalDevAuthState("silver"));
+    vi.spyOn(catalogService, "getCatalogJewelryItemById").mockResolvedValue(apiItem);
+    const availabilitySpy = vi
+      .spyOn(catalogService, "getFinderAvailabilityForJewelryItem")
+      .mockResolvedValue(availability);
+
+    const page = await ItemDetailPage({
+      params: Promise.resolve({ itemId: apiItem.id }),
+      searchParams: Promise.resolve({
+        exactCursor: [" exact page two ", "ignored duplicate"],
+        similarCursor: " similar page three ",
+      }),
+    });
+    renderToStaticMarkup(page);
+
+    expect(availabilitySpy).toHaveBeenCalledWith(apiItem.id, expect.objectContaining({
+      exactCursor: "exact page two",
+      similarCursor: "similar page three",
+    }));
+  });
+
+  it("fails closed when an availability row has zero or malformed dancer quantity", () => {
+    const apiItem: JewelryItem = {
+      id: "design-zero",
+      name: "Zero Quantity Ring",
+      collectionName: "Garden Gala",
+      jewelryType: "ring",
+      imageUrl: "https://cdn.example.test/design-zero.jpg",
+      bpLabel: "standard",
+      itemNumber: "RG-ZERO",
+      knownRepListingIds: [],
+    };
+    const invalidAvailability = {
+      schemaVersion: 2,
+      requestedItem: apiItem,
+      exactMatches: [{
+        listingId: "zero-listing",
+        listedAt: null,
+        photoUrl: "https://cdn.example.test/zero-listing.jpg",
+        quantityAvailable: 0,
+        item: apiItem,
+        showName: "Zero Show",
+        repFirstName: "Zero",
+        customerSiteUrl: "https://www.yoursparklesuite.com/zero",
+        nextShow: {
+          showId: "zero-show",
+          showName: "Zero Show",
+          repFirstName: "Zero",
+          startsAt: "2026-06-07T20:00:00.000Z",
+          status: "scheduled",
+          customerSiteUrl: "https://www.yoursparklesuite.com/zero",
+        },
+      }],
+      similarMatches: [],
+      exactPageInfo: { totalLeadCount: 1, totalDancerCount: 1, hasMore: false, nextCursor: null },
+      similarPageInfo: { totalLeadCount: 0, totalDancerCount: 0, hasMore: false, nextCursor: null },
+    } as FinderAvailabilityResult;
+
+    const markup = renderToStaticMarkup(
+      renderItemDetailPageContent(
+        { itemId: apiItem.id },
+        getLocalDevAuthState("silver"),
+        apiItem,
+        invalidAvailability,
+        undefined,
+        false,
+      ),
+    );
+
+    expect(markup).toContain("could not be read safely");
+    expect(markup).not.toContain("zero-listing");
+    expect(markup).not.toContain("zero-listing.jpg");
+    expect(markup).not.toContain("0 dancers available");
+  });
+
+  it("shows a truthful temporary state when production availability is unavailable", () => {
+    const apiItem: JewelryItem = {
+      id: "design-unavailable",
+      name: "Unavailable Ring",
+      collectionName: "Garden Gala",
+      jewelryType: "ring",
+      imageUrl: "",
+      bpLabel: "standard",
+      itemNumber: "RG-OFFLINE",
+      knownRepListingIds: [],
+    };
+
+    const markup = renderToStaticMarkup(
+      renderItemDetailPageContent(
+        { itemId: apiItem.id },
+        getLocalDevAuthState("silver"),
+        apiItem,
+        undefined,
+        undefined,
+        false,
+      ),
+    );
+
+    expect(markup).toContain("Dancer availability is temporarily unavailable");
+    expect(markup).not.toContain("No dancer leads yet");
   });
 
   it("renders library detail photos with full-photo framing", () => {

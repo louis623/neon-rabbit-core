@@ -5,6 +5,7 @@ import {
   getCatalogJewelryItemsPageResult,
   getFinderAvailabilityForJewelryItem,
   getFinderLiveShows,
+  type FinderAvailabilityResult,
 } from "../../lib/sparkle-finder/catalog-service";
 
 vi.mock("../../lib/sparkle-finder/catalog-service", async (importOriginal) => {
@@ -82,6 +83,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
 
   it("finds bounded Sparkle Suite availability leads for a jewelry item", async () => {
     getFinderAvailabilityForJewelryItemMock.mockResolvedValue({
+      schemaVersion: 2,
       requestedItem: {
         id: "design-er13229",
         name: "The Florence Earrings",
@@ -101,6 +103,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
       exactMatches: [
         {
           listingId: "listing-er13229-bling",
+          quantityAvailable: 2,
           listedAt: "2026-06-21T20:00:00.000Z",
           photoUrl: "https://cdn.example.test/listing-er13229.jpg",
           item: {
@@ -135,6 +138,7 @@ describe("Sparkle Finder Nic-Nac tools", () => {
       similarMatches: [
         {
           listingId: "listing-er13230-bling",
+          quantityAvailable: 3,
           listedAt: "2026-06-21T20:05:00.000Z",
           photoUrl: "https://cdn.example.test/listing-er13230.jpg",
           item: {
@@ -166,6 +170,18 @@ describe("Sparkle Finder Nic-Nac tools", () => {
           },
         },
       ],
+      exactPageInfo: {
+        totalLeadCount: 4,
+        totalDancerCount: 8,
+        hasMore: true,
+        nextCursor: "exact-page-2",
+      },
+      similarPageInfo: {
+        totalLeadCount: 2,
+        totalDancerCount: 6,
+        hasMore: false,
+        nextCursor: null,
+      },
     });
     const tools = buildFinderNicNacTools(
       {
@@ -177,14 +193,19 @@ describe("Sparkle Finder Nic-Nac tools", () => {
     const result = await executeTool(tools.find_rep_board_availability, {
       itemId: " design-er13229 ",
       limit: 1,
+      exactCursor: "exact-page-1",
+      similarCursor: "similar-page-1",
     });
 
     expect(getFinderAvailabilityForJewelryItemMock).toHaveBeenCalledWith("design-er13229", {
       limit: 1,
+      exactCursor: "exact-page-1",
+      similarCursor: "similar-page-1",
       useFixtureFallback: false,
     });
     expect(result).toEqual({
       status: "connected",
+      availabilityKnown: true,
       item: {
         id: "design-er13229",
         itemNumber: "ER13229",
@@ -193,7 +214,29 @@ describe("Sparkle Finder Nic-Nac tools", () => {
         jewelryType: "earrings",
         availableListingCount: 2,
       },
+      leadCount: 2,
+      dancerCount: 5,
+      totalLeadCount: 6,
+      totalDancerCount: 14,
+      hasMore: true,
+      nextCursor: {
+        exactCursor: "exact-page-2",
+        similarCursor: null,
+      },
+      exactPageInfo: {
+        totalLeadCount: 4,
+        totalDancerCount: 8,
+        hasMore: true,
+        nextCursor: "exact-page-2",
+      },
+      similarPageInfo: {
+        totalLeadCount: 2,
+        totalDancerCount: 6,
+        hasMore: false,
+        nextCursor: null,
+      },
       count: 2,
+      countDeprecated: true,
       leads: [
         {
           matchType: "exact_item",
@@ -210,11 +253,244 @@ describe("Sparkle Finder Nic-Nac tools", () => {
           nextShowAt: "2026-06-22T23:00:00.000Z",
           nextShowStatus: "scheduled",
           customerSiteUrl: "https://bling.example.test",
+          quantityAvailable: 2,
+        },
+        {
+          matchType: "same_collection_type",
+          listingId: "listing-er13230-bling",
+          listedAt: "2026-06-21T20:05:00.000Z",
+          itemId: "design-er13230",
+          itemNumber: "ER13230",
+          itemName: "The Florence Sister Earrings",
+          collectionName: "Sterling Club",
+          jewelryType: "earrings",
+          photoUrl: "https://cdn.example.test/listing-er13230.jpg",
+          repFirstName: "Brittany",
+          showName: "BlingKitchen Glow Night",
+          nextShowAt: "2026-06-22T23:00:00.000Z",
+          nextShowStatus: "scheduled",
+          customerSiteUrl: "https://bling.example.test",
+          quantityAvailable: 3,
         },
       ],
       guidance:
-        "Use dancer leads for Dance Floor and next-show discovery only. listingId, listedAt, and availableListingCount are internal compatibility fields and must not appear as product terminology. Do not mutate Sparkle Suite Dance Floors from Finder.",
+        "6 rep leads · 14 dancers available. Showing 2 rep leads and 5 dancers in this page response. Use dancer leads for Dance Floor and next-show discovery only. Continue with the cursor for each active bucket when that bucket has more results. count, listingId, listedAt, and availableListingCount are deprecated internal compatibility fields and must not appear as product terminology. Do not mutate Sparkle Suite Dance Floors from Finder.",
     });
+  });
+
+  it("reports a grouped listing as one rep lead and its full dancer quantity", async () => {
+    getFinderAvailabilityForJewelryItemMock.mockResolvedValue(
+      quantityAwareAvailability({
+        exactQuantities: [2],
+        exactTotalLeadCount: 1,
+        exactTotalDancerCount: 2,
+      }),
+    );
+    const tools = buildFinderNicNacTools({ userId: "customer-silver-celeste" }, ["availability"]);
+
+    const result = await executeTool(tools.find_rep_board_availability, {
+      itemId: "design-quantity",
+      limit: 8,
+    });
+
+    expect(result).toMatchObject({
+      status: "connected",
+      availabilityKnown: true,
+      leadCount: 1,
+      dancerCount: 2,
+      totalLeadCount: 1,
+      totalDancerCount: 2,
+      hasMore: false,
+      nextCursor: null,
+      count: 1,
+      countDeprecated: true,
+      leads: [{
+        matchType: "exact_item",
+        itemId: "design-quantity",
+        itemNumber: "RBP5902",
+        quantityAvailable: 2,
+      }],
+      guidance: expect.stringContaining("1 rep lead · 2 dancers available."),
+    });
+  });
+
+  it("fails closed when quantity metadata is invalid instead of defaulting a dancer", async () => {
+    const invalid = quantityAwareAvailability({ exactQuantities: [2] });
+    invalid.exactMatches[0].quantityAvailable = 0;
+    getFinderAvailabilityForJewelryItemMock.mockResolvedValue(invalid);
+    const tools = buildFinderNicNacTools({ userId: "customer-silver-celeste" }, ["availability"]);
+
+    const result = await executeTool(tools.find_rep_board_availability, {
+      itemId: "design-quantity",
+    });
+
+    expect(result).toMatchObject({
+      status: "contract_unavailable",
+      availabilityKnown: false,
+      itemId: "design-quantity",
+      leadCount: null,
+      dancerCount: null,
+      totalLeadCount: null,
+      totalDancerCount: null,
+      hasMore: null,
+      count: null,
+      leads: [],
+    });
+    expect(JSON.stringify(result)).not.toContain("quantityAvailable\":1");
+  });
+
+  it("fails closed on duplicate leads and repeated continuation cursors", async () => {
+    const duplicate = quantityAwareAvailability({ exactQuantities: [1], similarQuantities: [1] });
+    duplicate.similarMatches[0].listingId = duplicate.exactMatches[0].listingId;
+    getFinderAvailabilityForJewelryItemMock.mockResolvedValueOnce(duplicate);
+    const tools = buildFinderNicNacTools({ userId: "customer-silver-celeste" }, ["availability"]);
+
+    const duplicateResult = await executeTool(tools.find_rep_board_availability, {
+      itemId: "design-quantity",
+    });
+    expect(duplicateResult).toMatchObject({ status: "contract_unavailable", leads: [] });
+
+    const repeatedCursor = quantityAwareAvailability({
+      exactQuantities: [1],
+      exactTotalLeadCount: 2,
+      exactTotalDancerCount: 2,
+    });
+    getFinderAvailabilityForJewelryItemMock.mockResolvedValueOnce(repeatedCursor);
+
+    const repeatedCursorResult = await executeTool(tools.find_rep_board_availability, {
+      itemId: "design-quantity",
+      exactCursor: "exact-next",
+    });
+    expect(repeatedCursorResult).toMatchObject({ status: "contract_unavailable", leads: [] });
+  });
+
+  it("continues asymmetric buckets across three calls without restarting finished leads", async () => {
+    const initial = quantityAwareAvailability({
+      exactQuantities: [1],
+      exactTotalLeadCount: 3,
+      exactTotalDancerCount: 3,
+      similarQuantities: [2],
+      similarTotalLeadCount: 2,
+      similarTotalDancerCount: 4,
+    });
+    initial.exactPageInfo.nextCursor = "exact-page-2";
+    initial.similarPageInfo.nextCursor = "similar-page-2";
+
+    const middle = quantityAwareAvailability({
+      exactQuantities: [1],
+      exactTotalLeadCount: 3,
+      exactTotalDancerCount: 3,
+      similarQuantities: [2],
+      similarTotalLeadCount: 2,
+      similarTotalDancerCount: 4,
+    });
+    middle.exactMatches[0].listingId = "listing-exact-1";
+    middle.similarMatches[0].listingId = "listing-similar-1";
+    middle.exactPageInfo.nextCursor = "exact-page-3";
+    middle.similarPageInfo.hasMore = false;
+    middle.similarPageInfo.nextCursor = null;
+
+    const terminal = quantityAwareAvailability({
+      exactQuantities: [1],
+      exactTotalLeadCount: 3,
+      exactTotalDancerCount: 3,
+      similarQuantities: [2],
+      similarTotalLeadCount: 2,
+      similarTotalDancerCount: 4,
+    });
+    terminal.exactMatches[0].listingId = "listing-exact-2";
+    terminal.exactPageInfo.hasMore = false;
+    terminal.exactPageInfo.nextCursor = null;
+    // Suite restarts an omitted bucket at page one; Nic-Nac must ignore this repeated payload.
+    terminal.similarMatches[0].listingId = "listing-similar-0";
+    terminal.similarPageInfo.nextCursor = "similar-page-2";
+
+    getFinderAvailabilityForJewelryItemMock
+      .mockResolvedValueOnce(initial)
+      .mockResolvedValueOnce(middle)
+      .mockResolvedValueOnce(terminal);
+    const tools = buildFinderNicNacTools({ userId: "customer-silver-celeste" }, ["availability"]);
+
+    const first = await executeTool(tools.find_rep_board_availability, { itemId: "design-quantity", limit: 1 });
+    const second = await executeTool(tools.find_rep_board_availability, {
+      itemId: "design-quantity",
+      limit: 1,
+      exactCursor: "exact-page-2",
+      similarCursor: "similar-page-2",
+    });
+    const third = await executeTool(tools.find_rep_board_availability, {
+      itemId: "design-quantity",
+      limit: 1,
+      exactCursor: "exact-page-3",
+    });
+
+    expect(first).toMatchObject({
+      leadCount: 2,
+      dancerCount: 3,
+      nextCursor: { exactCursor: "exact-page-2", similarCursor: "similar-page-2" },
+    });
+    expect(second).toMatchObject({
+      leadCount: 2,
+      dancerCount: 3,
+      nextCursor: { exactCursor: "exact-page-3", similarCursor: null },
+    });
+    expect(third).toMatchObject({
+      availabilityKnown: true,
+      leadCount: 1,
+      dancerCount: 1,
+      totalLeadCount: 5,
+      totalDancerCount: 7,
+      hasMore: false,
+      nextCursor: null,
+      leads: [{ listingId: "listing-exact-2", matchType: "exact_item" }],
+      guidance: expect.stringContaining(
+        "5 rep leads · 7 dancers available. Showing 1 rep lead and 1 dancer in this page response.",
+      ),
+    });
+
+    const listingIds = [first, second, third].flatMap((result) =>
+      (result as { leads: Array<{ listingId: string }> }).leads.map((lead) => lead.listingId),
+    );
+    expect(listingIds).toEqual([
+      "listing-exact-0",
+      "listing-similar-0",
+      "listing-exact-1",
+      "listing-similar-1",
+      "listing-exact-2",
+    ]);
+    expect(new Set(listingIds).size).toBe(listingIds.length);
+    expect(getFinderAvailabilityForJewelryItemMock).toHaveBeenNthCalledWith(3, "design-quantity", {
+      limit: 1,
+      exactCursor: "exact-page-3",
+      similarCursor: undefined,
+      useFixtureFallback: false,
+    });
+  });
+
+  it("preserves same-item-number variant design IDs and rejects cross-attached exact matches", async () => {
+    const valid = quantityAwareAvailability({ exactQuantities: [1], similarQuantities: [1] });
+    valid.similarMatches[0].item.itemNumber = "RBP5902";
+    getFinderAvailabilityForJewelryItemMock.mockResolvedValueOnce(valid);
+    const tools = buildFinderNicNacTools({ userId: "customer-silver-celeste" }, ["availability"]);
+
+    const result = await executeTool(tools.find_rep_board_availability, { itemId: "design-quantity" });
+
+    expect(result).toMatchObject({
+      status: "connected",
+      leads: [
+        { matchType: "exact_item", itemId: "design-quantity", itemNumber: "RBP5902" },
+        { matchType: "same_collection_type", itemId: "design-similar", itemNumber: "RBP5902" },
+      ],
+    });
+
+    const mismatched = quantityAwareAvailability({ exactQuantities: [1] });
+    mismatched.exactMatches[0].item = {
+      ...mismatched.exactMatches[0].item,
+      id: "design-wrong-variant",
+    };
+    getFinderAvailabilityForJewelryItemMock.mockResolvedValueOnce(mismatched);
+    const mismatchResult = await executeTool(tools.find_rep_board_availability, { itemId: "design-quantity" });
+    expect(mismatchResult).toMatchObject({ status: "contract_unavailable", leads: [] });
   });
 
   it("lists upcoming Sparkle Suite live shows through Finder-safe discovery", async () => {
@@ -949,6 +1225,85 @@ describe("Sparkle Finder Nic-Nac tools", () => {
     });
   });
 });
+
+function quantityAwareAvailability({
+  exactQuantities = [],
+  similarQuantities = [],
+  exactTotalLeadCount = exactQuantities.length,
+  exactTotalDancerCount = exactQuantities.reduce((total, quantity) => total + quantity, 0),
+  similarTotalLeadCount = similarQuantities.length,
+  similarTotalDancerCount = similarQuantities.reduce((total, quantity) => total + quantity, 0),
+}: {
+  exactQuantities?: number[];
+  similarQuantities?: number[];
+  exactTotalLeadCount?: number;
+  exactTotalDancerCount?: number;
+  similarTotalLeadCount?: number;
+  similarTotalDancerCount?: number;
+}): FinderAvailabilityResult {
+  const requestedItem = {
+    id: "design-quantity",
+    itemNumber: "RBP5902",
+    name: "Ruby Birthday Ring",
+    collectionName: "Birthday Collection",
+    collectionYear: 2026,
+    jewelryType: "ring" as const,
+    material: "Rose gold",
+    mainStone: "Ruby",
+    description: "The exact Ruby variant.",
+    bpMsrp: 19.95,
+    imageUrl: "https://cdn.example.test/design-quantity.jpg",
+    bpLabel: "standard" as const,
+    searchTags: ["ruby"],
+    availableListingCount: exactQuantities.length,
+    knownRepListingIds: [],
+  };
+  const makeMatch = (quantityAvailable: number, index: number, similar: boolean) => ({
+    listingId: `listing-${similar ? "similar" : "exact"}-${index}`,
+    listedAt: `2026-08-25T12:0${index}:00.000Z`,
+    photoUrl: `https://cdn.example.test/listing-${similar ? "similar" : "exact"}-${index}.jpg`,
+    quantityAvailable,
+    item: similar
+      ? {
+          ...requestedItem,
+          id: "design-similar",
+          itemNumber: "RG5903",
+          name: "Rose Quartz Birthday Ring",
+          mainStone: "Rose Quartz",
+        }
+      : requestedItem,
+    showName: "Quantity Glow Show",
+    repFirstName: "Quinn",
+    customerSiteUrl: "https://www.yoursparklesuite.com/quantity-glow",
+    nextShow: {
+      showId: "show-quantity",
+      showName: "Quantity Glow Show",
+      repFirstName: "Quinn",
+      startsAt: "2026-08-26T20:00:00.000Z",
+      status: "scheduled" as const,
+      customerSiteUrl: "https://www.yoursparklesuite.com/quantity-glow",
+    },
+  });
+
+  return {
+    schemaVersion: 2,
+    requestedItem,
+    exactMatches: exactQuantities.map((quantity, index) => makeMatch(quantity, index, false)),
+    similarMatches: similarQuantities.map((quantity, index) => makeMatch(quantity, index, true)),
+    exactPageInfo: {
+      totalLeadCount: exactTotalLeadCount,
+      totalDancerCount: exactTotalDancerCount,
+      hasMore: exactTotalLeadCount > exactQuantities.length,
+      nextCursor: exactTotalLeadCount > exactQuantities.length ? "exact-next" : null,
+    },
+    similarPageInfo: {
+      totalLeadCount: similarTotalLeadCount,
+      totalDancerCount: similarTotalDancerCount,
+      hasMore: similarTotalLeadCount > similarQuantities.length,
+      nextCursor: similarTotalLeadCount > similarQuantities.length ? "similar-next" : null,
+    },
+  };
+}
 
 async function executeTool(tool: unknown, input: Record<string, unknown>) {
   const executable = tool as {
