@@ -1,5 +1,13 @@
 # Sparkle Finder Session Log
 
+## 2026-08-25 - Sparkle Suite Dance Floor Compatibility Gate
+
+- Published `docs/plans/2026-08-25-suite-dance-floor-compatibility-plan.md` in Finder commit `48a001c`, pushed it, and deployed production as `dpl_4gnt5YC3t4R2WH5ucufDCUasTLaq`; the deployment was `READY`, aliased to `https://yoursparklefinder.com`, returned `200`, and had no recent runtime errors.
+- Audited the active Sparkle Suite implementation at branch `codex/nic-nac-trade-hardening`, commit `56a87a3fe3bd86702dd9096da261f41ea52400c3`, using three read-only contract lanes for catalog, availability, and Studio. No Suite files or live customer data were changed.
+- Confirmed three upstream gates: catalog has no cursor/page metadata, exact totals, or batch hydration; availability exposes listing rows rather than pending-adjusted physical dancer quantity; and Studio does not expose exact candidate continuation or durable stage-aware idempotency.
+- Created `docs/handoffs/2026-08-25-suite-finder-compatibility-prerequisites.md` as an implementation-ready Suite handoff. It preserves mixed-version compatibility, exact variant identity, legacy `RBP` normalization, existing availability eligibility, public-query bounds, and Suite ownership of quantity, replay, and canonical-photo validation.
+- Finder Releases 1-3 remain intentionally unimplemented until the Suite-first contracts are deployed and verified. Finder will not fabricate pagination, calculate pending reservations, trust caller-declared photo approval, or invent an ambiguous-variant continuation protocol.
+
 ## 2026-08-22 - Showcase Quality Hardening And Launch Pass
 
 - Completed the five approved hardening releases in order: public Showcase privacy/RLS (`2bf00cc`), public routes and owned-only rarity semantics (`61ddb23`), phone-first owner management (`1b2643b`), copy/state/feedback polish (`d522c19`), and bounded block-aware public reads (`383cbf7`).
