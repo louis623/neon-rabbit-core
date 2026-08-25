@@ -1,255 +1,721 @@
-type CatalogResponse = {
-  items?: Array<{
-    designId?: string;
-    designName?: string;
-    availableListingCount?: number;
-  }>;
+import { pathToFileURL } from "node:url";
+
+export type ContractMode = "diagnostic" | "strict";
+export type Capability = "supported" | "unsupported";
+
+export type ContractReport = {
+  ok: boolean;
+  mode: ContractMode;
+  baseUrl: string;
+  failures: string[];
+  capabilities: {
+    catalogPagination: Capability;
+    catalogBatch: Capability;
+    availabilityQuantity: Capability;
+    availabilityPagination: Capability;
+  };
+  catalogSchemaVersion: 2 | "legacy" | "unknown";
+  catalogItems: number;
+  catalogPagesRead: number;
+  availabilityMatches: number;
+  availabilityLeads: number | null;
+  availabilityDancers: number | null;
+  availabilityPositiveInventory: boolean;
+  liveShows: number;
+  reps: number;
 };
 
-type AvailabilityResponse = {
-  exactMatches?: unknown[];
-  similarMatches?: unknown[];
+export type ContractCheckOptions = {
+  baseUrl?: string;
+  fetcher?: (input: string, init?: RequestInit) => Promise<Response>;
+  mode?: ContractMode;
+  timeoutMs?: number;
 };
 
-type LiveShowsResponse = {
-  shows?: unknown[];
+type PageInfo = { hasMore: boolean; nextCursor: string | null };
+type AvailabilityPageInfo = PageInfo & {
+  totalLeadCount: number;
+  totalDancerCount: number;
+};
+type CatalogAudit = {
+  isV2: boolean;
+  items: Record<string, unknown>[];
+  totalCount: number | null;
+  pageInfo: PageInfo | null;
+};
+type AvailabilityAudit = {
+  isV2: boolean;
+  exactMatches: Record<string, unknown>[];
+  similarMatches: Record<string, unknown>[];
+  exactPageInfo: AvailabilityPageInfo | null;
+  similarPageInfo: AvailabilityPageInfo | null;
+  dancerCount: number;
+  hasPositiveInventory: boolean;
 };
 
-type RepsResponse = {
-  reps?: unknown[];
-};
-
-const baseUrl = (
+const defaultBaseUrl = (
   process.env.SPARKLE_SUITE_FINDER_API_BASE_URL ??
   process.env.NEXT_PUBLIC_SPARKLE_SUITE_FINDER_API_BASE_URL ??
   "https://www.yoursparklesuite.com"
 ).replace(/\/+$/, "");
+const missingDesignIdProbe = "00000000-0000-4000-8000-000000000000";
 
-async function main() {
+export async function runSparkleSuiteFinderContractCheck(
+  options: ContractCheckOptions = {},
+): Promise<ContractReport> {
+  const baseUrl = (options.baseUrl ?? defaultBaseUrl).replace(/\/+$/, "");
+  const fetcher = options.fetcher ?? fetch;
+  const mode = options.mode ?? "diagnostic";
+  const timeoutMs = options.timeoutMs ?? 10_000;
   const failures: string[] = [];
-  const catalog = await readJson<CatalogResponse>(`${baseUrl}/api/public/finder/catalog?limit=2`, failures);
-  const firstItem = catalog?.items?.[0];
+  const request = (url: string, init?: RequestInit) =>
+    readJson(url, { fetcher, timeoutMs, init }, failures);
 
-  if (!firstItem?.designId) {
-    failures.push("Catalog did not return a first item with designId.");
+  let catalogSchemaVersion: ContractReport["catalogSchemaVersion"] = "unknown";
+  let catalogPagination: Capability = "unsupported";
+  let catalogBatch: Capability = "unsupported";
+  let availabilityQuantity: Capability = "unsupported";
+  let availabilityPagination: Capability = "unsupported";
+  let catalogItems = 0;
+  let catalogPagesRead = 0;
+  let availabilityMatches = 0;
+  let availabilityLeads: number | null = null;
+  let availabilityDancers: number | null = null;
+  let availabilityPositiveInventory = false;
+
+  const catalogPageOne = auditCatalogPage(
+    await request(`${baseUrl}/api/public/finder/catalog?limit=2`),
+    "catalog page 1",
+    null,
+    failures,
+  );
+  if (catalogPageOne) {
+    catalogSchemaVersion = catalogPageOne.isV2 ? 2 : "legacy";
+    catalogPagination = catalogPageOne.isV2 ? "supported" : "unsupported";
+    catalogItems = catalogPageOne.items.length;
+    catalogPagesRead = 1;
+  }
+  if (mode === "strict" && catalogPagination === "unsupported") {
+    failures.push("Catalog pagination is unsupported; strict mode requires schemaVersion 2 and pageInfo.");
   }
 
-  let availabilityMatches: unknown[] = [];
+  const firstDesignId = readString(catalogPageOne?.items[0]?.designId);
+  if (!firstDesignId) failures.push("Catalog did not return a first item with designId.");
 
-  if (firstItem?.designId) {
-    const availability = await readJson<AvailabilityResponse>(
-      `${baseUrl}/api/public/finder/availability?designId=${encodeURIComponent(firstItem.designId)}&limit=5`,
+  if (catalogPageOne?.isV2 && catalogPageOne.pageInfo?.hasMore && catalogPageOne.pageInfo.nextCursor) {
+    const cursor = catalogPageOne.pageInfo.nextCursor;
+    const pageTwo = auditCatalogPage(
+      await request(`${baseUrl}/api/public/finder/catalog?limit=2&cursor=${encodeURIComponent(cursor)}`),
+      "catalog page 2",
+      cursor,
       failures,
     );
-    availabilityMatches = [...(availability?.exactMatches ?? []), ...(availability?.similarMatches ?? [])];
-
-    for (const [index, match] of availabilityMatches.entries()) {
-      assertAvailabilityMatch(match, `availability match ${index + 1}`, failures);
+    if (pageTwo) {
+      catalogPagesRead += 1;
+      catalogItems += pageTwo.items.length;
+      assertNoCrossPageRepeats(catalogPageOne.items, pageTwo.items, "designId", "catalog page 2", failures);
+      if (catalogPageOne.totalCount !== pageTwo.totalCount) {
+        failures.push("catalog page 2 changed totalCount from page 1.");
+      }
     }
   }
 
-  const liveShows = await readJson<LiveShowsResponse>(`${baseUrl}/api/public/finder/live-shows?limit=5`, failures);
-
-  if (!Array.isArray(liveShows?.shows)) {
-    failures.push("Live-shows endpoint did not return a shows array.");
-  } else {
-    for (const [index, show] of liveShows.shows.entries()) {
-      assertFinderShow(show, `live-shows item ${index + 1}`, failures);
-    }
+  if (catalogPageOne?.isV2 && firstDesignId) {
+    const requestedIds = [firstDesignId, missingDesignIdProbe];
+    const batch = await request(`${baseUrl}/api/public/finder/catalog/batch`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ designIds: requestedIds }),
+    });
+    catalogBatch = auditCatalogBatch(batch, requestedIds, failures) ? "supported" : "unsupported";
+  }
+  if (mode === "strict" && catalogBatch === "unsupported") {
+    failures.push("Exact catalog batch hydration is unsupported or invalid.");
   }
 
-  const reps = await readJson<RepsResponse>(`${baseUrl}/api/public/finder/reps?limit=200`, failures);
-
-  if (!Array.isArray(reps?.reps)) {
-    failures.push("Reps endpoint did not return a reps array.");
-  } else {
-    for (const [index, rep] of reps.reps.entries()) {
-      assertFinderRep(rep, `reps item ${index + 1}`, failures);
+  if (firstDesignId) {
+    const pageOne = auditAvailability(
+      await request(`${baseUrl}/api/public/finder/availability?designId=${encodeURIComponent(firstDesignId)}&limit=5`),
+      {
+        label: "availability page 1",
+        baseUrl,
+        requestedDesignId: firstDesignId,
+        exactCursor: null,
+        similarCursor: null,
+      },
+      failures,
+    );
+    if (pageOne) {
+      availabilityMatches = pageOne.exactMatches.length + pageOne.similarMatches.length;
+      availabilityLeads = pageOne.isV2 && pageOne.exactPageInfo && pageOne.similarPageInfo
+        ? pageOne.exactPageInfo.totalLeadCount + pageOne.similarPageInfo.totalLeadCount
+        : null;
+      availabilityDancers = pageOne.isV2 && pageOne.exactPageInfo && pageOne.similarPageInfo
+        ? pageOne.exactPageInfo.totalDancerCount + pageOne.similarPageInfo.totalDancerCount
+        : null;
+      availabilityPositiveInventory = availabilityDancers !== null
+        ? availabilityDancers > 0
+        : pageOne.hasPositiveInventory;
+      availabilityQuantity = pageOne.isV2 ? "supported" : "unsupported";
+      availabilityPagination = pageOne.isV2 ? "supported" : "unsupported";
+      if (pageOne.isV2) {
+        await auditAvailabilityPageTwo({
+          baseUrl,
+          bucket: "exact",
+          firstDesignId,
+          pageOne,
+          request,
+          failures,
+        });
+        await auditAvailabilityPageTwo({
+          baseUrl,
+          bucket: "similar",
+          firstDesignId,
+          pageOne,
+          request,
+          failures,
+        });
+      }
     }
   }
-
-  if (failures.length > 0) {
-    console.error("Sparkle Suite Finder API contract check failed:");
-    for (const failure of failures) {
-      console.error(`- ${failure}`);
-    }
-    process.exit(1);
+  if (mode === "strict" && availabilityQuantity === "unsupported") {
+    failures.push("Availability quantity is unsupported; strict mode requires positive integer net quantities.");
+  }
+  if (mode === "strict" && availabilityPagination === "unsupported") {
+    failures.push("Availability pagination is unsupported; strict mode requires exact and similar bucket pageInfo.");
   }
 
-  const catalogItems = catalog?.items ?? [];
-  const liveShowItems = liveShows?.shows ?? [];
-  const repItems = reps?.reps ?? [];
+  const liveShowsPayload = await request(`${baseUrl}/api/public/finder/live-shows?limit=5`);
+  const shows = readArrayField(liveShowsPayload, "shows", "Live-shows endpoint", failures);
+  shows.forEach((show, index) => assertFinderShow(show, `live-shows item ${index + 1}`, false, failures));
 
-  console.log(`OK ${baseUrl}`);
-  console.log(`CATALOG_ITEMS=${catalogItems.length}`);
-  console.log(`FIRST_ID=${firstItem?.designId ?? ""}`);
-  console.log(`FIRST_NAME=${firstItem?.designName ?? ""}`);
-  console.log(`AVAILABILITY_MATCHES=${availabilityMatches.length}`);
-  console.log(`LIVE_SHOWS=${liveShowItems.length}`);
-  console.log(`REPS=${repItems.length}`);
+  const repsPayload = await request(`${baseUrl}/api/public/finder/reps?limit=200`);
+  const reps = readArrayField(repsPayload, "reps", "Reps endpoint", failures);
+  reps.forEach((rep, index) => assertFinderRep(rep, `reps item ${index + 1}`, baseUrl, failures));
+
+  return {
+    ok: failures.length === 0,
+    mode,
+    baseUrl,
+    failures,
+    capabilities: { catalogPagination, catalogBatch, availabilityQuantity, availabilityPagination },
+    catalogSchemaVersion,
+    catalogItems,
+    catalogPagesRead,
+    availabilityMatches,
+    availabilityLeads,
+    availabilityDancers,
+    availabilityPositiveInventory,
+    liveShows: shows.length,
+    reps: reps.length,
+  };
 }
 
-async function readJson<T>(url: string, failures: string[]): Promise<T | null> {
-  let response: Response;
+export function formatSparkleSuiteFinderContractReport(report: ContractReport): string[] {
+  return [
+    `${report.ok ? "OK" : "FAILED"} ${report.baseUrl}`,
+    `MODE=${report.mode}`,
+    `CATALOG_SCHEMA_VERSION=${report.catalogSchemaVersion}`,
+    `CATALOG_PAGINATION=${report.capabilities.catalogPagination}`,
+    `CATALOG_BATCH=${report.capabilities.catalogBatch}`,
+    `AVAILABILITY_QUANTITY=${report.capabilities.availabilityQuantity}`,
+    `AVAILABILITY_PAGINATION=${report.capabilities.availabilityPagination}`,
+    `CATALOG_ITEMS=${report.catalogItems}`,
+    `CATALOG_PAGES_READ=${report.catalogPagesRead}`,
+    `AVAILABILITY_MATCHES=${report.availabilityMatches}`,
+    `AVAILABILITY_LEADS=${report.availabilityLeads ?? "unsupported"}`,
+    `AVAILABILITY_DANCERS=${report.availabilityDancers ?? "unsupported"}`,
+    `AVAILABILITY_POSITIVE_INVENTORY=${report.availabilityPositiveInventory}`,
+    `LIVE_SHOWS=${report.liveShows}`,
+    `REPS=${report.reps}`,
+    ...report.failures.map((failure) => `FAILURE=${failure}`),
+  ];
+}
 
+function auditCatalogPage(
+  payload: unknown,
+  label: string,
+  requestedCursor: string | null,
+  failures: string[],
+): CatalogAudit | null {
+  const record = asRecord(payload);
+  if (!record) {
+    failures.push(`${label} is not an object.`);
+    return null;
+  }
+  if (!Array.isArray(record.items)) {
+    failures.push(`${label} did not return an items array.`);
+    return null;
+  }
+
+  const isV2 = record.schemaVersion === 2;
+  if (record.schemaVersion !== undefined && !isV2) {
+    failures.push(`${label} has unsupported schemaVersion ${String(record.schemaVersion)}.`);
+  }
+  const items = record.items.flatMap((item, index) => {
+    const candidate = assertCatalogItem(item, `${label} item ${index + 1}`, isV2, failures);
+    return candidate ? [candidate] : [];
+  });
+  assertUnique(items, "designId", label, failures);
+  if (!isV2) return { isV2: false, items, totalCount: null, pageInfo: null };
+
+  const pageInfoRecord = asRecord(record.pageInfo);
+  if (!pageInfoRecord) {
+    failures.push(`${label} is missing pageInfo.`);
+    return { isV2: true, items, totalCount: null, pageInfo: null };
+  }
+  const totalCount = isNonnegativeInteger(pageInfoRecord.totalCount) ? pageInfoRecord.totalCount : null;
+  if (totalCount === null) {
+    failures.push(`${label} pageInfo has invalid totalCount.`);
+  } else if (totalCount < items.length) {
+    failures.push(`${label} totalCount is smaller than the current item count.`);
+  }
+  return {
+    isV2: true,
+    items,
+    totalCount,
+    pageInfo: assertCursorPageInfo(pageInfoRecord, `${label} pageInfo`, requestedCursor, failures),
+  };
+}
+
+function assertCatalogItem(
+  value: unknown,
+  label: string,
+  requireDescription: boolean,
+  failures: string[],
+): Record<string, unknown> | null {
+  const record = asRecord(value);
+  if (!record) {
+    failures.push(`${label} is not an object.`);
+    return null;
+  }
+  for (const field of ["designId", "itemNumber", "designName"]) {
+    if (!readString(record[field])) failures.push(`${label} is missing ${field}.`);
+  }
+  if (!isNonnegativeInteger(record.availableListingCount)) {
+    failures.push(`${label} has invalid availableListingCount.`);
+  }
+  if (requireDescription && !("description" in record)) failures.push(`${label} is missing description.`);
+  if (requireDescription && record.description !== null && typeof record.description !== "string") {
+    failures.push(`${label} has invalid description.`);
+  }
+  return record;
+}
+
+function auditCatalogBatch(payload: unknown, requestedIds: string[], failures: string[]): boolean {
+  const before = failures.length;
+  const record = asRecord(payload);
+  if (!record || record.schemaVersion !== 2) {
+    failures.push("Catalog batch response is missing schemaVersion 2.");
+    return false;
+  }
+  if (!Array.isArray(record.items) || !Array.isArray(record.missingDesignIds)) {
+    failures.push("Catalog batch response must include items and missingDesignIds arrays.");
+    return false;
+  }
+  const items = record.items.flatMap((item, index) => {
+    const candidate = assertCatalogItem(item, `catalog batch item ${index + 1}`, true, failures);
+    return candidate ? [candidate] : [];
+  });
+  assertUnique(items, "designId", "catalog batch", failures);
+  const requested = new Set(requestedIds);
+  const returned = new Set(items.map((item) => readString(item.designId)).filter(Boolean));
+  const missingList = record.missingDesignIds.map(readString).filter(Boolean);
+  const missing = new Set(missingList);
+  for (const id of returned) if (!requested.has(id)) failures.push(`catalog batch returned unrequested designId ${id}.`);
+  for (const id of missing) if (!requested.has(id)) failures.push(`catalog batch reported unrequested missingDesignId ${id}.`);
+  for (const id of requested) {
+    if (Number(returned.has(id)) + Number(missing.has(id)) !== 1) {
+      failures.push(`catalog batch did not resolve requested designId ${id} exactly once.`);
+    }
+  }
+  if (!returned.has(requestedIds[0])) failures.push("Catalog batch did not return the known catalog designId.");
+  if (!missing.has(missingDesignIdProbe)) failures.push("Catalog batch did not report the missing designId probe.");
+  if (missing.size !== missingList.length) failures.push("Catalog batch repeated a missingDesignId.");
+  return failures.length === before;
+}
+
+function auditAvailability(
+  payload: unknown,
+  options: {
+    label: string;
+    baseUrl: string;
+    requestedDesignId: string;
+    exactCursor: string | null;
+    similarCursor: string | null;
+  },
+  failures: string[],
+): AvailabilityAudit | null {
+  const record = asRecord(payload);
+  if (!record) {
+    failures.push(`${options.label} is not an object.`);
+    return null;
+  }
+  const requestedItem = asRecord(record.requestedItem);
+  if (readString(requestedItem?.designId) !== options.requestedDesignId) {
+    failures.push(`${options.label} requestedItem does not preserve the requested designId.`);
+  }
+  if (!Array.isArray(record.exactMatches) || !Array.isArray(record.similarMatches)) {
+    failures.push(`${options.label} must include exactMatches and similarMatches arrays.`);
+    return null;
+  }
+
+  const isV2 = record.schemaVersion === 2;
+  if (record.schemaVersion !== undefined && !isV2) {
+    failures.push(`${options.label} has unsupported schemaVersion ${String(record.schemaVersion)}.`);
+  }
+  let dancerCount = 0;
+  let hasPositiveInventory = false;
+  const readMatches = (values: unknown[], bucket: "exact" | "similar") =>
+    values.flatMap((match, index) => {
+      const candidate = assertAvailabilityMatch(
+        match,
+        `${options.label} ${bucket} match ${index + 1}`,
+        isV2,
+        bucket === "exact" ? options.requestedDesignId : null,
+        options.baseUrl,
+        failures,
+      );
+      if (candidate && isPositiveInteger(candidate.quantityAvailable)) {
+        dancerCount += candidate.quantityAvailable;
+        hasPositiveInventory = true;
+      }
+      return candidate ? [candidate] : [];
+    });
+  const exactMatches = readMatches(record.exactMatches, "exact");
+  const similarMatches = readMatches(record.similarMatches, "similar");
+  assertUnique(exactMatches, "listingId", `${options.label} exact matches`, failures);
+  assertUnique(similarMatches, "listingId", `${options.label} similar matches`, failures);
+  if (!isV2) {
+    return {
+      isV2: false,
+      exactMatches,
+      similarMatches,
+      exactPageInfo: null,
+      similarPageInfo: null,
+      dancerCount: 0,
+      hasPositiveInventory: false,
+    };
+  }
+
+  return {
+    isV2: true,
+    exactMatches,
+    similarMatches,
+    exactPageInfo: assertAvailabilityPageInfo(
+      record.exactPageInfo,
+      `${options.label} exactPageInfo`,
+      options.exactCursor,
+      exactMatches,
+      failures,
+    ),
+    similarPageInfo: assertAvailabilityPageInfo(
+      record.similarPageInfo,
+      `${options.label} similarPageInfo`,
+      options.similarCursor,
+      similarMatches,
+      failures,
+    ),
+    dancerCount,
+    hasPositiveInventory,
+  };
+}
+
+function assertAvailabilityMatch(
+  value: unknown,
+  label: string,
+  requireQuantity: boolean,
+  exactDesignId: string | null,
+  baseUrl: string,
+  failures: string[],
+): Record<string, unknown> | null {
+  const record = asRecord(value);
+  if (!record) {
+    failures.push(`${label} is not an object.`);
+    return null;
+  }
+  if (!readString(record.listingId)) failures.push(`${label} is missing listingId.`);
+  const itemDesignId = readString(asRecord(record.item)?.designId);
+  if (!itemDesignId) failures.push(`${label} is missing item.designId.`);
+  if (exactDesignId && itemDesignId !== exactDesignId) failures.push(`${label} does not preserve exact requested designId.`);
+  const rep = asRecord(record.rep);
+  for (const field of ["repId", "showName", "repFirstName", "customerSiteUrl"]) {
+    if (!readString(rep?.[field])) failures.push(`${label} is missing rep.${field}.`);
+  }
+  const repId = readString(rep?.repId);
+  assertOptionalSuiteUrl(rep?.customerSiteUrl, `${label} rep.customerSiteUrl`, baseUrl, failures);
+  assertFinderShow(record.nextShow, `${label} nextShow`, true, failures);
+  const nextShow = asRecord(record.nextShow);
+  if (repId && readString(nextShow?.repId) !== repId) {
+    failures.push(`${label} nextShow.repId does not match rep.repId.`);
+  }
+  if (record.photoSource !== "listing" && record.photoSource !== "canonical" && record.photoSource !== "missing") {
+    failures.push(`${label} has invalid photoSource.`);
+  }
+  if (record.photoSource === "missing" && record.photoUrl !== null) {
+    failures.push(`${label} has a photoUrl while photoSource is missing.`);
+  }
+  if (requireQuantity && !isPositiveInteger(record.quantityAvailable)) {
+    failures.push(`${label} quantityAvailable must be a positive integer.`);
+  }
+  return record;
+}
+
+function assertAvailabilityPageInfo(
+  value: unknown,
+  label: string,
+  requestedCursor: string | null,
+  matches: Record<string, unknown>[],
+  failures: string[],
+): AvailabilityPageInfo | null {
+  const record = asRecord(value);
+  if (!record) {
+    failures.push(`${label} is missing.`);
+    return null;
+  }
+  const leadCount = isNonnegativeInteger(record.totalLeadCount) ? record.totalLeadCount : null;
+  const dancerCount = isNonnegativeInteger(record.totalDancerCount) ? record.totalDancerCount : null;
+  if (leadCount === null) failures.push(`${label} has invalid totalLeadCount.`);
+  if (dancerCount === null) failures.push(`${label} has invalid totalDancerCount.`);
+  if (leadCount !== null && leadCount < matches.length) failures.push(`${label} totalLeadCount is smaller than the current match count.`);
+  if (leadCount !== null && dancerCount !== null && dancerCount < leadCount) {
+    failures.push(`${label} totalDancerCount is smaller than totalLeadCount.`);
+  }
+  const currentDancers = matches.reduce(
+    (total, match) => total + (isPositiveInteger(match.quantityAvailable) ? match.quantityAvailable : 0),
+    0,
+  );
+  if (dancerCount !== null && dancerCount < currentDancers) {
+    failures.push(`${label} totalDancerCount is smaller than current page quantity.`);
+  }
+  const cursor = assertCursorPageInfo(record, label, requestedCursor, failures);
+  if (!cursor || leadCount === null || dancerCount === null) return null;
+  return { ...cursor, totalLeadCount: leadCount, totalDancerCount: dancerCount };
+}
+
+async function auditAvailabilityPageTwo(options: {
+  baseUrl: string;
+  bucket: "exact" | "similar";
+  firstDesignId: string;
+  pageOne: AvailabilityAudit;
+  request: (url: string, init?: RequestInit) => Promise<unknown>;
+  failures: string[];
+}) {
+  const pageInfo = options.bucket === "exact" ? options.pageOne.exactPageInfo : options.pageOne.similarPageInfo;
+  if (!pageInfo?.hasMore || !pageInfo.nextCursor) return;
+  const cursorKey = options.bucket === "exact" ? "exactCursor" : "similarCursor";
+  const pageTwo = auditAvailability(
+    await options.request(
+      `${options.baseUrl}/api/public/finder/availability?designId=${encodeURIComponent(options.firstDesignId)}&limit=5&${cursorKey}=${encodeURIComponent(pageInfo.nextCursor)}`,
+    ),
+    {
+      label: `availability ${options.bucket} page 2`,
+      baseUrl: options.baseUrl,
+      requestedDesignId: options.firstDesignId,
+      exactCursor: options.bucket === "exact" ? pageInfo.nextCursor : null,
+      similarCursor: options.bucket === "similar" ? pageInfo.nextCursor : null,
+    },
+    options.failures,
+  );
+  if (!pageTwo) return;
+  const first = options.bucket === "exact" ? options.pageOne.exactMatches : options.pageOne.similarMatches;
+  const second = options.bucket === "exact" ? pageTwo.exactMatches : pageTwo.similarMatches;
+  assertNoCrossPageRepeats(first, second, "listingId", `availability ${options.bucket} page 2`, options.failures);
+  const secondPageInfo = options.bucket === "exact" ? pageTwo.exactPageInfo : pageTwo.similarPageInfo;
+  if (
+    secondPageInfo &&
+    (secondPageInfo.totalLeadCount !== pageInfo.totalLeadCount ||
+      secondPageInfo.totalDancerCount !== pageInfo.totalDancerCount)
+  ) {
+    options.failures.push(`availability ${options.bucket} page 2 changed complete-result totals from page 1.`);
+  }
+}
+
+function assertCursorPageInfo(
+  record: Record<string, unknown>,
+  label: string,
+  requestedCursor: string | null,
+  failures: string[],
+): PageInfo | null {
+  if (typeof record.hasMore !== "boolean") {
+    failures.push(`${label} has invalid hasMore.`);
+    return null;
+  }
+  if (record.hasMore) {
+    const cursor = readString(record.nextCursor);
+    if (!cursor) {
+      failures.push(`${label} requires a nonempty nextCursor when hasMore is true.`);
+      return null;
+    }
+    if (requestedCursor && cursor === requestedCursor) failures.push(`${label} repeated the requested cursor.`);
+    return { hasMore: true, nextCursor: cursor };
+  }
+  if (record.nextCursor !== null) failures.push(`${label} requires nextCursor null when hasMore is false.`);
+  return { hasMore: false, nextCursor: null };
+}
+
+function assertFinderShow(value: unknown, label: string, nestedAvailability: boolean, failures: string[]) {
+  const record = asRecord(value);
+  if (!record) {
+    failures.push(`${label} is not an object.`);
+    return;
+  }
+  const fields = nestedAvailability
+    ? ["showId", "repId", "startsAt"]
+    : ["showId", "showName", "repFirstName", "startsAt", "customerSiteUrl"];
+  for (const field of fields) if (!readString(record[field])) failures.push(`${label} is missing ${field}.`);
+  if (!readString(record.startsAt) || Number.isNaN(Date.parse(String(record.startsAt)))) {
+    failures.push(`${label} has invalid startsAt.`);
+  }
+  if (record.status !== "live" && record.status !== "scheduled") failures.push(`${label} has invalid status.`);
+}
+
+function assertFinderRep(value: unknown, label: string, baseUrl: string, failures: string[]) {
+  const record = asRecord(value);
+  if (!record) {
+    failures.push(`${label} is not an object.`);
+    return;
+  }
+  for (const field of ["repId", "displayName"]) if (!readString(record[field])) failures.push(`${label} is missing ${field}.`);
+  for (const field of ["businessName", "avatarUrl", "state", "customerSiteUrl", "repBoardUrl"]) {
+    if (record[field] !== null && record[field] !== undefined && typeof record[field] !== "string") {
+      failures.push(`${label} has invalid ${field}.`);
+    }
+  }
+  assertOptionalHttpsUrl(record.avatarUrl, `${label} avatarUrl`, failures);
+  assertOptionalSuiteUrl(record.customerSiteUrl, `${label} customerSiteUrl`, baseUrl, failures);
+  assertOptionalSuiteUrl(record.repBoardUrl, `${label} repBoardUrl`, baseUrl, failures);
+  if (record.nextShow !== null && record.nextShow !== undefined) {
+    const show = asRecord(record.nextShow);
+    if (!show) failures.push(`${label} nextShow is not an object.`);
+    else {
+      if (!readString(show.showId ?? show.id)) failures.push(`${label} nextShow is missing showId.`);
+      if (!readString(show.showName ?? show.title)) failures.push(`${label} nextShow is missing title.`);
+      if (!readString(show.startsAt) || Number.isNaN(Date.parse(String(show.startsAt)))) failures.push(`${label} nextShow has invalid startsAt.`);
+      if (show.status !== "live" && show.status !== "scheduled") failures.push(`${label} nextShow has invalid status.`);
+      assertOptionalSuiteUrl(show.customerSiteUrl ?? show.customerShowUrl, `${label} nextShow customerShowUrl`, baseUrl, failures);
+    }
+  }
+}
+
+function assertOptionalHttpsUrl(value: unknown, label: string, failures: string[]) {
+  if (value === null || value === undefined || value === "") return;
   try {
-    response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(10_000) });
+    const url = new URL(String(value));
+    if (url.protocol !== "https:" || url.username || url.password || url.port) failures.push(`${label} is not a safe HTTPS URL.`);
+  } catch {
+    failures.push(`${label} is not a valid URL.`);
+  }
+}
+
+function assertOptionalSuiteUrl(value: unknown, label: string, baseUrl: string, failures: string[]) {
+  if (value === null || value === undefined || value === "") return;
+  assertOptionalHttpsUrl(value, label, failures);
+  try {
+    const candidate = new URL(String(value));
+    const suiteHost = new URL(baseUrl).hostname.toLowerCase();
+    const allowed = new Set([suiteHost, suiteHost.startsWith("www.") ? suiteHost.slice(4) : `www.${suiteHost}`]);
+    if (!allowed.has(candidate.hostname.toLowerCase())) failures.push(`${label} is not hosted by Sparkle Suite.`);
+  } catch {
+    // The general URL validator records the error.
+  }
+}
+
+function readArrayField(payload: unknown, field: string, label: string, failures: string[]): unknown[] {
+  const record = asRecord(payload);
+  if (!record || !Array.isArray(record[field])) {
+    failures.push(`${label} did not return a ${field} array.`);
+    return [];
+  }
+  return record[field] as unknown[];
+}
+
+async function readJson(
+  url: string,
+  options: {
+    fetcher: (input: string, init?: RequestInit) => Promise<Response>;
+    timeoutMs: number;
+    init?: RequestInit;
+  },
+  failures: string[],
+): Promise<unknown> {
+  let response: Response;
+  try {
+    response = await options.fetcher(url, {
+      ...options.init,
+      cache: "no-store",
+      signal: options.init?.signal ?? AbortSignal.timeout(options.timeoutMs),
+    });
   } catch (error) {
     failures.push(`${url} could not be reached: ${error instanceof Error ? error.message : String(error)}.`);
     return null;
   }
-
   const contentType = response.headers.get("content-type") ?? "";
-
   if (!response.ok) {
     failures.push(`${url} returned ${response.status}.`);
     return null;
   }
-
   if (!contentType.includes("application/json")) {
     failures.push(`${url} returned ${contentType || "no content type"} instead of application/json.`);
     return null;
   }
-
   try {
-    return (await response.json()) as T;
+    return await response.json();
   } catch {
     failures.push(`${url} returned invalid JSON.`);
     return null;
   }
 }
 
-function assertAvailabilityMatch(value: unknown, label: string, failures: string[]) {
-  if (!value || typeof value !== "object") {
-    failures.push(`${label} is not an object.`);
-    return;
-  }
-
-  const record = value as Record<string, unknown>;
-
-  for (const field of ["listingId", "showName", "repFirstName", "customerSiteUrl"]) {
-    if (typeof record[field] !== "string" || record[field] === "") {
-      failures.push(`${label} is missing ${field}.`);
-    }
-  }
-
-  assertFinderShow(record.nextShow, `${label} nextShow`, failures);
-}
-
-function assertFinderShow(value: unknown, label: string, failures: string[]) {
-  if (!value || typeof value !== "object") {
-    failures.push(`${label} is not an object.`);
-    return;
-  }
-
-  const record = value as Record<string, unknown>;
-
-  for (const field of ["showId", "showName", "repFirstName", "startsAt", "customerSiteUrl"]) {
-    if (typeof record[field] !== "string" || record[field] === "") {
-      failures.push(`${label} is missing ${field}.`);
-    }
-  }
-
-  if (record.status !== "live" && record.status !== "scheduled") {
-    failures.push(`${label} has invalid status.`);
+function assertUnique(rows: Record<string, unknown>[], field: string, label: string, failures: string[]) {
+  const seen = new Set<string>();
+  for (const row of rows) {
+    const id = readString(row[field]);
+    if (!id) continue;
+    if (seen.has(id)) failures.push(`${label} repeats ${field} ${id}.`);
+    seen.add(id);
   }
 }
 
-function assertFinderRep(value: unknown, label: string, failures: string[]) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    failures.push(`${label} is not an object.`);
-    return;
-  }
-
-  const record = value as Record<string, unknown>;
-
-  for (const field of ["repId", "displayName"]) {
-    if (typeof record[field] !== "string" || record[field].trim() === "") {
-      failures.push(`${label} is missing ${field}.`);
-    }
-  }
-
-  for (const field of ["businessName", "avatarUrl", "state", "customerSiteUrl", "repBoardUrl"]) {
-    if (record[field] !== null && record[field] !== undefined && typeof record[field] !== "string") {
-      failures.push(`${label} has invalid ${field}.`);
-    }
-  }
-
-
-  assertOptionalHttpsUrl(record.avatarUrl, `${label} avatarUrl`, failures);
-  assertOptionalSuiteUrl(record.customerSiteUrl, `${label} customerSiteUrl`, failures);
-  assertOptionalSuiteUrl(record.repBoardUrl, `${label} repBoardUrl`, failures);
-
-  if (record.nextShow !== null && record.nextShow !== undefined) {
-    assertRepDirectoryShow(record.nextShow, `${label} nextShow`, failures);
+function assertNoCrossPageRepeats(
+  first: Record<string, unknown>[],
+  second: Record<string, unknown>[],
+  field: string,
+  label: string,
+  failures: string[],
+) {
+  const seen = new Set(first.map((row) => readString(row[field])).filter(Boolean));
+  for (const row of second) {
+    const id = readString(row[field]);
+    if (id && seen.has(id)) failures.push(`${label} repeats ${field} ${id} from page 1.`);
   }
 }
 
-function assertRepDirectoryShow(value: unknown, label: string, failures: string[]) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    failures.push(`${label} is not an object.`);
-    return;
-  }
-
-  const record = value as Record<string, unknown>;
-  const showId = record.showId ?? record.id;
-  const title = record.showName ?? record.title;
-
-  if (typeof showId !== "string" || showId.trim() === "") failures.push(`${label} is missing showId.`);
-  if (typeof title !== "string" || title.trim() === "") failures.push(`${label} is missing title.`);
-  if (typeof record.startsAt !== "string" || Number.isNaN(Date.parse(record.startsAt))) {
-    failures.push(`${label} has invalid startsAt.`);
-  }
-  if (record.status !== "live" && record.status !== "scheduled") failures.push(`${label} has invalid status.`);
-
-  assertOptionalSuiteUrl(
-    record.customerSiteUrl ?? record.customerShowUrl,
-    `${label} customerShowUrl`,
-    failures,
-  );
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 }
 
-function assertOptionalHttpsUrl(value: unknown, label: string, failures: string[]) {
-  if (value === null || value === undefined || value === "") return;
+function readString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
 
-  try {
-    const url = new URL(String(value));
-    if (url.protocol !== "https:" || url.username || url.password || url.port) {
-      failures.push(`${label} is not a safe HTTPS URL.`);
-    }
-  } catch {
-    failures.push(`${label} is not a valid URL.`);
+function isNonnegativeInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
+}
+
+function isPositiveInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value > 0;
+}
+
+async function runFromCli() {
+  const strict = process.argv.includes("--strict") || process.env.SPARKLE_FINDER_REQUIRE_SUITE_V2 === "true";
+  const report = await runSparkleSuiteFinderContractCheck({ mode: strict ? "strict" : "diagnostic" });
+  for (const line of formatSparkleSuiteFinderContractReport(report)) {
+    (report.ok ? console.log : console.error)(line);
   }
+  if (!report.ok) process.exitCode = 1;
 }
 
-function assertOptionalSuiteUrl(value: unknown, label: string, failures: string[]) {
-  if (value === null || value === undefined || value === "") return;
-
-  assertOptionalHttpsUrl(value, label, failures);
-
-  try {
-    const candidate = new URL(String(value));
-    const suite = new URL(baseUrl);
-    const allowedHosts = new Set([
-      suite.hostname.toLowerCase(),
-      suite.hostname.toLowerCase().startsWith("www.")
-        ? suite.hostname.toLowerCase().slice(4)
-        : `www.${suite.hostname.toLowerCase()}`,
-    ]);
-
-    if (!allowedHosts.has(candidate.hostname.toLowerCase())) {
-      failures.push(`${label} is not hosted by Sparkle Suite.`);
-    }
-  } catch {
-    // The general URL validator records the actionable error.
-  }
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  void runFromCli();
 }
-
-function fail(message: string): never {
-  console.error(`Sparkle Suite Finder API contract check failed: ${message}`);
-  process.exit(1);
-}
-
-main().catch((error) => {
-  fail(error instanceof Error ? error.message : String(error));
-});

@@ -123,6 +123,23 @@ describe("Sparkle Finder Showcase Studio intake", () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["malformed JSON", new Response("not-json", { status: 200, headers: { "Content-Type": "application/json" } })],
+    ["an unknown status", jsonResponse({ status: "future_unknown_status", message: "Treat me as success." })],
+    ["a missing status", jsonResponse({ message: "Treat me as success." })],
+  ])("fails closed when Suite returns %s", async (_label, response) => {
+    const result = await submitShowcaseStudioIntake(studioRequest(), {
+      config: suiteIntakeConfig(),
+      fetcher: vi.fn(async () => response),
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: "unavailable",
+      message: "Showcase Studio received an invalid response from the master database intake.",
+    });
+  });
+
   it("reads the internal Suite intake URL and token from Finder environment variables", () => {
     const config = getShowcaseStudioConfig({
       SPARKLE_SUITE_FINDER_INTAKE_API_URL: "https://suite.example/api/internal/finder/jewelry-intake",

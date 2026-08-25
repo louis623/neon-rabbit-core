@@ -142,6 +142,15 @@ function createSuiteIntakePayload(request: ShowcaseStudioIntakeRequest) {
 function mapSuiteIntakeResponse(body: unknown): ShowcaseStudioResult {
   const record = readRecord(body);
   const status = readStatus(record.status);
+
+  if (!status) {
+    return {
+      ok: false,
+      status: "unavailable",
+      message: "Showcase Studio received an invalid response from the master database intake.",
+    };
+  }
+
   const message = cleanText(readString(record.message), 240) || defaultMessageForStatus(status);
 
   if (status === "photo_rejected") {
@@ -171,7 +180,7 @@ function mapSuiteIntakeResponse(body: unknown): ShowcaseStudioResult {
   };
 }
 
-function readStatus(value: unknown): Exclude<ShowcaseStudioIntakeStatus, "needs_label" | "unavailable"> {
+function readStatus(value: unknown): Exclude<ShowcaseStudioIntakeStatus, "needs_label" | "unavailable"> | null {
   if (
     value === "needs_confirmation" ||
     value === "needs_jewelry_photo" ||
@@ -184,7 +193,7 @@ function readStatus(value: unknown): Exclude<ShowcaseStudioIntakeStatus, "needs_
     return value;
   }
 
-  return "needs_confirmation";
+  return null;
 }
 
 async function safeReadJson(response: Response): Promise<unknown> {

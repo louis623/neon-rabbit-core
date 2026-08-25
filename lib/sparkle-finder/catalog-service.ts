@@ -140,11 +140,27 @@ type SparkleSuiteFinderAvailabilityMatch = {
   listingId: string;
   listedAt: string | null;
   photoUrl: string | null;
+  photoSource?: "listing" | "canonical" | "missing";
   item: SparkleSuiteFinderCatalogItem;
-  showName: string;
-  repFirstName: string;
-  customerSiteUrl: string;
-  nextShow: SparkleSuiteFinderLeadShow | null;
+  rep?: {
+    repId: string;
+    showName: string;
+    repFirstName: string;
+    customerSiteUrl: string;
+  } | null;
+  showName?: string;
+  repFirstName?: string;
+  customerSiteUrl?: string;
+  nextShow:
+    | SparkleSuiteFinderLeadShow
+    | {
+        showId: string;
+        repId: string;
+        startsAt: string;
+        title: string | null;
+        status: "scheduled" | "live";
+      }
+    | null;
 };
 
 const defaultSparkleSuiteFinderApiBaseUrl = "https://www.yoursparklesuite.com";
@@ -281,11 +297,26 @@ export async function getFinderAvailabilityForJewelryItem(
       `${apiBaseUrl}/api/public/finder/availability?${params.toString()}`,
       options,
     );
+    const requestedItem = isAvailabilityCatalogItem(payload.requestedItem)
+      && payload.requestedItem.designId.trim() === trimmedItemId
+      ? mapSparkleSuiteFinderCatalogItem(payload.requestedItem)
+      : null;
+    const exactMatches = mapAvailabilityMatches(payload.exactMatches, apiBaseUrl)
+      .filter((match) => match.item.id === trimmedItemId);
+    const seenListingIds = new Set(exactMatches.map((match) => match.listingId));
+    const similarMatches = mapAvailabilityMatches(payload.similarMatches, apiBaseUrl).filter((match) => {
+      if (match.item.id === trimmedItemId || seenListingIds.has(match.listingId)) {
+        return false;
+      }
+
+      seenListingIds.add(match.listingId);
+      return true;
+    });
 
     return {
-      requestedItem: payload.requestedItem ? mapSparkleSuiteFinderCatalogItem(payload.requestedItem) : null,
-      exactMatches: mapAvailabilityMatches(payload.exactMatches),
-      similarMatches: mapAvailabilityMatches(payload.similarMatches),
+      requestedItem,
+      exactMatches,
+      similarMatches,
     };
   } catch {
     return undefined;
@@ -378,25 +409,117 @@ export function shouldUseCatalogFixtureFallback(env: Record<string, string | und
   return env.NODE_ENV !== "production" || env.SPARKLE_FINDER_ENABLE_PREVIEW_AUTH === "true";
 }
 
-function mapAvailabilityMatches(matches: SparkleSuiteFinderAvailabilityMatch[] | undefined): FinderAvailabilityMatch[] {
+function mapAvailabilityMatches(
+  matches: SparkleSuiteFinderAvailabilityMatch[] | undefined,
+  apiBaseUrl: string,
+): FinderAvailabilityMatch[] {
   return (matches ?? []).flatMap((match) => {
-    if (!match.nextShow || !match.customerSiteUrl || !match.showName || !match.repFirstName) {
+    if (!isAvailabilityCatalogItem(match.item)) {
+      return [];
+    }
+
+    const listingId = readRequiredString(match.listingId);
+    const repId = readRequiredString(match.rep?.repId);
+    const showName = readRequiredString(match.rep?.showName) || readRequiredString(match.showName);
+    const repFirstName = readRequiredString(match.rep?.repFirstName) || readRequiredString(match.repFirstName);
+    const customerSiteUrl = readSuitePublicUrl(
+      match.rep?.customerSiteUrl ?? match.customerSiteUrl,
+      apiBaseUrl,
+    );
+    const nextShow = normalizeAvailabilityShow(
+      match.nextShow,
+      { customerSiteUrl: customerSiteUrl ?? "", repFirstName, showName },
+      repId,
+    );
+
+    if (!listingId || !nextShow || !customerSiteUrl || !showName || !repFirstName) {
       return [];
     }
 
     return [
       {
-        listingId: match.listingId,
+        listingId,
         listedAt: match.listedAt,
-        photoUrl: match.photoUrl,
+        photoUrl: normalizeAvailabilityPhoto(match),
         item: mapSparkleSuiteFinderCatalogItem(match.item),
-        showName: match.showName,
-        repFirstName: match.repFirstName,
-        customerSiteUrl: match.customerSiteUrl,
-        nextShow: match.nextShow,
+        showName,
+        repFirstName,
+        customerSiteUrl,
+        nextShow,
       },
     ];
   });
+}
+
+function normalizeAvailabilityShow(
+  value: SparkleSuiteFinderAvailabilityMatch["nextShow"],
+  fallback: Pick<SparkleSuiteFinderLeadShow, "customerSiteUrl" | "repFirstName" | "showName">,
+  expectedRepId: string,
+): SparkleSuiteFinderLeadShow | null {
+  if (!value) {
+    return null;
+  }
+
+  const showId = readRequiredString(value.showId);
+  const startsAt = readRequiredString(value.startsAt);
+  const status = value.status === "live" || value.status === "scheduled" ? value.status : null;
+  const showName = ("showName" in value ? readRequiredString(value.showName) : readRequiredString(value.title))
+    || fallback.showName;
+  const repFirstName = "repFirstName" in value ? readRequiredString(value.repFirstName) : fallback.repFirstName;
+  const customerSiteUrl = fallback.customerSiteUrl;
+  const nextShowRepId = "repId" in value ? readRequiredString(value.repId) : expectedRepId;
+
+  if (
+    !showId
+    || !startsAt
+    || Number.isNaN(Date.parse(startsAt))
+    || !status
+    || !showName
+    || !repFirstName
+    || !customerSiteUrl
+    || (expectedRepId && nextShowRepId !== expectedRepId)
+  ) {
+    return null;
+  }
+
+  return {
+    showId,
+    showName,
+    repFirstName,
+    startsAt,
+    status,
+    customerSiteUrl,
+  };
+}
+
+function normalizeAvailabilityPhoto(match: SparkleSuiteFinderAvailabilityMatch): string | null {
+  if (match.photoSource === "missing") {
+    return null;
+  }
+
+  const photoUrl = readHttpsUrl(match.photoUrl);
+
+  if (match.photoSource === "canonical") {
+    const canonicalPhotoUrl = readHttpsUrl(match.item.canonicalPhotoUrl);
+    return photoUrl && canonicalPhotoUrl === photoUrl ? photoUrl : null;
+  }
+
+  return photoUrl;
+}
+
+function isAvailabilityCatalogItem(value: unknown): value is SparkleSuiteFinderCatalogItem {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const item = value as Partial<SparkleSuiteFinderCatalogItem>;
+  return Boolean(
+    readRequiredString(item.designId)
+    && readRequiredString(item.itemNumber)
+    && readRequiredString(item.designName)
+    && item.jewelryType
+    && ["ring", "necklace", "earrings", "stack", "bracelet"].includes(item.jewelryType),
+  );
 }
 
 function mapLiveShows(shows: SparkleSuiteFinderLeadShow[] | undefined): FinderLiveShow[] {

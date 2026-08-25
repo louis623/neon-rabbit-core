@@ -7,6 +7,8 @@
     "build": "next build",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
+    "check:suite-contract": "tsx scripts/check-sparkle-suite-finder-api.ts",
+    "check:suite-contract:strict": "tsx scripts/check-sparkle-suite-finder-api.ts --strict",
     "smoke:sparkle-finder": "tsx scripts/smoke-sparkle-finder.ts",
     "smoke:finder-nic-nac": "tsx scripts/smoke-finder-nic-nac.ts",
     "smoke:finder-nic-nac:guard": "tsx scripts/smoke-finder-nic-nac.ts --expect-missing-model",

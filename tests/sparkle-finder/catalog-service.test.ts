@@ -276,6 +276,54 @@ describe("Sparkle Finder public API catalog service", () => {
     });
   });
 
+  it("keeps compatibility with the former top-level availability rep and show fields", async () => {
+    const nestedMatch = apiAvailabilityMatch({
+      listingId: "listing-legacy",
+      designId: "design-123",
+      designName: "Starlight Diamond Ring",
+    });
+    const fetchAvailability = vi.fn(async () =>
+      jsonResponse({
+        requestedItem: apiCatalogItem({ designId: "design-123" }),
+        exactMatches: [
+          {
+            ...nestedMatch,
+            rep: undefined,
+            showName: "Legacy Glow Show",
+            repFirstName: "Legacy",
+            customerSiteUrl: "https://suite.example/legacy-show?c=rep-legacy",
+            nextShow: {
+              showId: "show-legacy",
+              showName: "Legacy Glow Show",
+              repFirstName: "Legacy",
+              startsAt: "2026-06-06T20:00:00.000Z",
+              status: "scheduled",
+              customerSiteUrl: "https://suite.example/legacy-show?c=rep-legacy",
+            },
+          },
+        ],
+        similarMatches: [],
+      }),
+    );
+
+    const availability = await getFinderAvailabilityForJewelryItem("design-123", {
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchAvailability,
+      useFixtureFallback: false,
+    });
+
+    expect(availability?.exactMatches[0]).toMatchObject({
+      listingId: "listing-legacy",
+      showName: "Legacy Glow Show",
+      repFirstName: "Legacy",
+      customerSiteUrl: "https://suite.example/legacy-show?c=rep-legacy",
+      nextShow: {
+        showId: "show-legacy",
+        showName: "Legacy Glow Show",
+      },
+    });
+  });
+
   it("skips malformed availability matches without a next show", async () => {
     const fetchAvailability = vi.fn(async () =>
       jsonResponse({
@@ -301,6 +349,129 @@ describe("Sparkle Finder public API catalog service", () => {
     });
 
     expect(availability?.exactMatches).toEqual([]);
+  });
+
+  it("fails closed on mismatched rep/show identity and unsafe Suite URLs", async () => {
+    const mismatchedRep = apiAvailabilityMatch({
+      listingId: "listing-mismatched-rep",
+      designId: "design-123",
+      designName: "Starlight Diamond Ring",
+    });
+    mismatchedRep.nextShow.repId = "rep-other";
+    const unsafeUrl = apiAvailabilityMatch({
+      listingId: "listing-unsafe-url",
+      designId: "design-123",
+      designName: "Starlight Diamond Ring",
+    });
+    unsafeUrl.rep.customerSiteUrl = "https://malicious.example/show";
+    const fetchAvailability = vi.fn(async () =>
+      jsonResponse({
+        requestedItem: apiCatalogItem({ designId: "design-123" }),
+        exactMatches: [mismatchedRep, unsafeUrl],
+        similarMatches: [],
+      }),
+    );
+
+    const availability = await getFinderAvailabilityForJewelryItem("design-123", {
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchAvailability,
+      useFixtureFallback: false,
+    });
+
+    expect(availability?.exactMatches).toEqual([]);
+  });
+
+  it("preserves listing photos while failing closed on missing or mismatched canonical photos", async () => {
+    const listingPhoto = apiAvailabilityMatch({
+      listingId: "listing-photo",
+      designId: "design-123",
+      designName: "Starlight Diamond Ring",
+    });
+    const missingPhoto = {
+      ...apiAvailabilityMatch({
+        listingId: "listing-missing-photo",
+        designId: "design-123",
+        designName: "Starlight Diamond Ring",
+      }),
+      photoSource: "missing" as const,
+    };
+    const canonicalPhoto = {
+      ...apiAvailabilityMatch({
+        listingId: "listing-canonical-photo",
+        designId: "design-123",
+        designName: "Starlight Diamond Ring",
+      }),
+      photoSource: "canonical" as const,
+      photoUrl: "https://cdn.example.test/design-123.jpg",
+    };
+    const mismatchedCanonicalPhoto = {
+      ...apiAvailabilityMatch({
+        listingId: "listing-mismatched-canonical",
+        designId: "design-123",
+        designName: "Starlight Diamond Ring",
+      }),
+      photoSource: "canonical" as const,
+      photoUrl: "https://cdn.example.test/wrong-design.jpg",
+    };
+    const fetchAvailability = vi.fn(async () =>
+      jsonResponse({
+        requestedItem: apiCatalogItem({ designId: "design-123" }),
+        exactMatches: [listingPhoto, missingPhoto, canonicalPhoto, mismatchedCanonicalPhoto],
+        similarMatches: [],
+      }),
+    );
+
+    const availability = await getFinderAvailabilityForJewelryItem("design-123", {
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchAvailability,
+      useFixtureFallback: false,
+    });
+
+    expect(availability?.exactMatches.map((match) => [match.listingId, match.photoUrl])).toEqual([
+      ["listing-photo", "https://cdn.example.test/listing.jpg"],
+      ["listing-missing-photo", null],
+      ["listing-canonical-photo", "https://cdn.example.test/design-123.jpg"],
+      ["listing-mismatched-canonical", null],
+    ]);
+  });
+
+  it("keeps exact identity and removes duplicate listing ids across availability buckets", async () => {
+    const exact = apiAvailabilityMatch({
+      listingId: "listing-shared",
+      designId: "design-123",
+      designName: "Starlight Diamond Ring",
+    });
+    const wrongExact = apiAvailabilityMatch({
+      listingId: "listing-wrong-exact",
+      designId: "design-other",
+      designName: "Other Ring",
+    });
+    const repeatedSimilar = apiAvailabilityMatch({
+      listingId: "listing-shared",
+      designId: "design-similar",
+      designName: "Similar Ring",
+    });
+    const validSimilar = apiAvailabilityMatch({
+      listingId: "listing-similar",
+      designId: "design-similar",
+      designName: "Similar Ring",
+    });
+    const fetchAvailability = vi.fn(async () =>
+      jsonResponse({
+        requestedItem: apiCatalogItem({ designId: "design-123" }),
+        exactMatches: [exact, wrongExact],
+        similarMatches: [repeatedSimilar, validSimilar],
+      }),
+    );
+
+    const availability = await getFinderAvailabilityForJewelryItem("design-123", {
+      apiBaseUrl: "https://suite.example",
+      fetcher: fetchAvailability,
+      useFixtureFallback: false,
+    });
+
+    expect(availability?.exactMatches.map((match) => match.listingId)).toEqual(["listing-shared"]);
+    expect(availability?.similarMatches.map((match) => match.listingId)).toEqual(["listing-similar"]);
   });
 
   it("reads live shows from the Sparkle Suite public Finder API", async () => {
@@ -638,18 +809,20 @@ function apiAvailabilityMatch({
     listingId,
     listedAt: "2026-06-06T12:00:00.000Z",
     photoUrl: "https://cdn.example.test/listing.jpg",
-    photoSource: "canonical",
+    photoSource: "listing",
     item: apiCatalogItem({ designId, designName }),
-    showName: "Demo Glow Show",
-    repFirstName: "Demo",
-    customerSiteUrl: "https://suite.example/demo-show?c=rep-demo",
-    nextShow: {
-      showId: "show-demo",
+    rep: {
+      repId: "rep-demo",
       showName: "Demo Glow Show",
       repFirstName: "Demo",
-      startsAt: "2026-06-06T20:00:00.000Z",
-      status: "scheduled",
       customerSiteUrl: "https://suite.example/demo-show?c=rep-demo",
+    },
+    nextShow: {
+      showId: "show-demo",
+      repId: "rep-demo",
+      startsAt: "2026-06-06T20:00:00.000Z",
+      title: "Demo Glow Show",
+      status: "scheduled",
     },
   };
 }
