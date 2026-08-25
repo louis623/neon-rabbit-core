@@ -4,6 +4,30 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 25, 2026 - Sparkle Finder compatibility upgrade
+
+- Audited the Finder prerequisite handoff and plan while preserving all existing
+  Suite behavior and the pre-existing dirty vault work.
+- Implemented catalog v2, quantity-aware availability/reservations, Showcase
+  Studio v2, and the authenticated Studio manual-review queue. Kept v1 and all
+  rollout compatibility fields.
+- Applied only migrations `20260825017000`, `20260825018000`, and
+  `20260825019000`; linked migration history matches. Read-only and rollback-only
+  production DB checks verified totals, permissions, plans, replay, and cleanup.
+- Focused compatibility verification finished at 160/160 tests; local and
+  Vercel builds passed. The full Suite sweep retained 48 unrelated stale
+  failures already represented by the broad-suite cleanup open item.
+- Pushed application commit `f3de6c15715049d7db5f913af5a5f9e02a7f23d4`
+  and manually deployed exact commit as `dpl_H4TuzixGEezkUFE2pnaVc5MVxzb5`.
+  Both Suite aliases resolve to it, Finder's live strict checker passes, public
+  customer-site/Dance Floor reads return 200, and the new deployment log scan
+  found no errors, warnings, or 500s.
+- No Louis/customer authenticated session was used and no production smoke data
+  remains. The temporary clean release worktree and Vercel link token were
+  removed after deployment.
+
+---
+
 ## August 23-25, 2026 - Team Management, customer-data, and Dance Floor inventory repair
 
 - Opened the Sparkle Suite Workspace and Control Center as separate in-app-browser tabs and kept the product boundary explicit: `/nic-nac` is the rep Workspace; `/control-center` is the operator surface.
@@ -22,6 +46,15 @@ Running log of significant work sessions. Most recent first.
 - Live synthetic reviewer replay used only `sparkle-reviewer+preview@neonrabbit.net`: Nic-Nac added ER13229, recognized a second identical physical pair, produced one dancer at quantity `2`, persisted a completed workflow with no blockers, and removed the temporary listing. Root, health, auth redirects, live customer assets, and post-release 5xx logs were checked. No Louis, Heather, customer, checkout, email, SMS, or provider account was used.
 - Release lesson: Vercel CLI `59.5.0` completed the application compile/typecheck/static generation locally but failed its local prebuilt packaging step on `/amethyst/unsubscribe`. The normal remote Vercel builder succeeded with deployment-scoped, verified Git metadata. Treat local prebuilt packaging failure separately from application build failure, and never bypass the branch guard; use exact metadata and inspect the resulting deployment/aliases.
 - The temporary exact-commit release worktree was verified and removed after deployment. Pre-existing unrelated `vault` edits plus `artifacts/` and `test-results/` were preserved untouched.
+
+---
+
+## August 24, 2026 - ThumbAPI / Lemon Squeezy charge attribution note
+
+- Investigated Louis's late-July `$20.00` charge question by searching Sparkle Suite memory, broader repository sources, and Open Brain / Codex session logs.
+- Sparkle Suite itself showed no ThumbAPI or Lemon Squeezy integration. The `$20` references found inside Sparkle Suite memory were unrelated internal spend-cap notes, not card-billing evidence.
+- The strongest attribution evidence came from July 22-24, 2026 Open Brain / Codex records, which tie `ThumbAPI` directly to the shipped `Some Dude + AI` YouTube thumbnail generator workflow in `C:\Users\louis\kalshi-repo` / the `AI Hustle Dashboard`.
+- Working conclusion for future sessions: when a charge descriptor mentions `ThumbAPI`, `Thumb API`, or `Lemon Squeezy`, treat it as most likely connected to that Some Dude + AI YouTube-thumbnail workflow unless fresher billing evidence proves otherwise.
 
 ---
 

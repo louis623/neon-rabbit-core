@@ -42,6 +42,16 @@ For manual Vercel releases, provide the verified allowlisted branch, repository 
 
 Variant, quantity, retry, and public-visibility checks use rollback-only database transactions and the dedicated reviewer persona. Do not use Louis's protected internal demo account or Heather/customer accounts to work around the authenticated browser-runtime limitation.
 
+## August 24, 2026 - ThumbAPI and Lemon Squeezy attribution
+
+**ThumbAPI is part of the Some Dude + AI YouTube workflow, not Sparkle Suite.**
+
+Future billing or tooling questions about `ThumbAPI`, `Thumb API`, or a `Lemon Squeezy` charge should be traced first to the `Some Dude + AI` / `AI Hustle Dashboard` YouTube-thumbnail flow in `C:\Users\louis\kalshi-repo`, not to Sparkle Suite repositories or Sparkle Suite Stripe billing.
+
+**The relevant rollout window is July 22-24, 2026.**
+
+Open Brain / Codex session evidence in that date range ties ThumbAPI to the shipped YouTube thumbnail generator workflow and shows active credit usage there. Treat late-July charges carrying a ThumbAPI or Lemon Squeezy descriptor as presumed related unless newer billing evidence disproves it.
+
 ## August 22-23, 2026 - responsive customer browsing and one resource hub
 
 **Keep sticky customer chrome on desktop, but let it scroll away on phones and tablets.**
@@ -1464,3 +1474,25 @@ Team Management has two related but separate workflows: Start Strong onboarding 
 - **Baking & Sweets is the single public home for desserts and baked goods.** New recipe drafts, editor saves, and public rendering normalize legacy `Baking` and `Dessert` into `Baking & Sweets`; do not reintroduce the legacy labels as selectable categories.
 - **An All view must have a visibility-safe fallback.** Fixed editorial groups can improve presentation, but any visible recipe whose category is new or unexpected must render in an explicit catch-all group rather than silently disappear.
 - **No-bake is a recipe trait, not a public Pantry category.** No-bake desserts and treats belong in `Baking & Sweets`; do not reintroduce `No-Bake Treats` as an editor option, AI output, stored category, or public grouping.
+
+# August 25, 2026 - Suite/Finder source-of-truth contract
+
+- **Sparkle Suite owns the facts; Sparkle Finder owns presentation and customer
+  discovery.** Jewelry design IDs/variants, item numbers, rep/show eligibility,
+  reservation state, and physical availability are defined by Suite. Finder
+  must consume the versioned Suite contracts instead of reconstructing those
+  facts independently.
+- **Legacy contracts remain during migrations.** New v2 pagination, quantity,
+  and Studio continuation are additive. Do not remove v1 endpoints or legacy
+  fields until every deployed Finder consumer has migrated and a separate
+  removal is approved.
+- **A lead is not a dancer.** Listing-row opportunity totals and physical
+  pending-adjusted quantities remain separately named. Reservations must be
+  serialized and idempotent so concurrent customers cannot overbook a listing.
+- **Finder photos are evidence, not canonical Suite assets.** Temporary Finder
+  URLs are never stored as canonical photos. Unverified evidence enters the
+  explicit operator-review queue and can only be connected to an exact existing
+  Suite design through an audited finalization.
+- **Finder/Suite repo merging is deferred.** Complete and stabilize this
+  compatibility release first; evaluate a monorepo only as a separate follow-up
+  with shared contract packages and independent deploy boundaries.

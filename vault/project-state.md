@@ -1,5 +1,29 @@
 # Project State
 
+## August 25, 2026 Session - Sparkle Finder compatibility release
+
+- Sparkle Suite remains canonical for jewelry identity, rep/show eligibility,
+  Dance Floor availability, and Showcase Studio continuation. Finder consumes
+  versioned additive contracts and does not redefine Suite facts.
+- Released application commit `f3de6c15715049d7db5f913af5a5f9e02a7f23d4`
+  manually as Vercel production deployment
+  `dpl_H4TuzixGEezkUFE2pnaVc5MVxzb5`
+  (`https://sparkle-suite-oue90ghgg-louis-2849s-projects.vercel.app`). Both
+  Sparkle Suite customer domains resolve to this exact deployment.
+- Applied migrations `20260825017000`, `20260825018000`, and `20260825019000`
+  for capacity-safe reservations/quantity availability, catalog v2, and Studio
+  v2 idempotency/manual review. No synthetic production rows remain.
+- Finder's live strict contract check passes. Production currently has no
+  Finder-eligible upcoming-show inventory, so live availability is truthfully
+  zero; installed positive-quantity behavior was verified at the database
+  contract layer.
+- Detailed release record:
+  `docs/sparkle-suite/operations/2026-08-25-finder-compatibility-release.md`.
+
+**Last updated:** August 25, 2026
+
+---
+
 ## August 23-25, 2026 Session - Team identity, customer profiles, and Nic-Nac dancer hardening
 
 - **A rep can belong to one team while managing a different team:** `member_team_name` is the upline/team the rep belongs to and is the only team identity shown in the Workspace header. `team_name` is the team the rep manages; it is edited in **Team Management** and drives that rep's Join Team page and New Rep Onboarding sites. A rep may have either, both, or neither. Generic Brittany-specific fallbacks were removed from onboarding. Public team cards now also accept and render Whatnot links.

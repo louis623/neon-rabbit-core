@@ -294,7 +294,13 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [ ] **Run a real live-show/multi-device trade timing test** - backend race handling and production UI pressure passed, but the exact live-show human timing with extension context and multiple devices has not been tested directly.
 - [ ] **Review stale broad Nic-Nac/support regression expectations** - the durable memory work passed its focused tests/build/smoke, but a broad test sweep still showed unrelated stale failures in branding CSS expectations and old TradeBoard shared-knowledge wording. Triage before using that broad suite as a final green gate.
 - [ ] **Triage current full Suite Vitest sweep failures** - June 22 full `npx vitest run --passWithNoTests` still fails unrelated start/prelaunch server-page render tests and master brand document expectation tests. Focused Secret Rep ID bridge tests and production build pass.
-- [ ] **Investigate unrelated Sparkle Finder public API 500s** - final Vercel log scan during the Nic-Nac memory closeout showed two unrelated `www.yoursparklesuite.com` public Finder 500s for availability/catalog detail. Nic-Nac memory routes were clean; investigate separately if the Finder surface is in scope.
+- [x] **Investigate and upgrade Sparkle Finder public APIs** - completed August
+  25 in application commit `f3de6c15` and production deployment
+  `dpl_H4TuzixGEezkUFE2pnaVc5MVxzb5`. Catalog detail/configuration now fails
+  truthfully instead of returning false authoritative empties, Finder strict
+  contracts pass live, and the post-release error/warning/500 log scan was
+  clean. Release record:
+  `docs/sparkle-suite/operations/2026-08-25-finder-compatibility-release.md`.
 - [ ] **Continue Sparkle Suite polishing/editing** - paused awaiting Louis's
   next concrete item. For deployed review, use
   `https://www.yoursparklesuite.com` after confirming it serves the exact
