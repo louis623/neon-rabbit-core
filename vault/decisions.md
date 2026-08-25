@@ -1,5 +1,47 @@
 # Decision Log
 
+## August 23-25, 2026 - Team identity and dancer variant/quantity rules
+
+**The team a rep belongs to and the team a rep manages are separate facts.**
+
+`member_team_name` identifies the team/upline the rep belongs to and may appear in the Workspace header and public-site membership copy. `team_name` identifies the rep's own managed team and is edited from Team Management; it personalizes Join Team and New Rep Onboarding. A rep may belong to somebody else's team while simultaneously managing their own. Managed-team identity does not belong in the Workspace header.
+
+**Team onboarding must be tenant-specific, never Brittany-specific.**
+
+Join Team, New Rep Onboarding, participant messages, and fallbacks resolve from the managing rep's saved team/business identity. Do not use Brittany, Britt With Bling, or Diamond Peak Society as general defaults. Public team cards support Whatnot alongside the existing social destinations.
+
+**Do not invent a Bomb Party item-number suffix for a stone/color deviation.**
+
+The external item number remains the Bomb Party number. Sparkle Suite's internal identity uses the exact catalog `design_id` plus normalized variant facts such as main stone/material. Item number alone is therefore not unique. The customer UI should distinguish the variant with human-readable stone/material, while legacy technical identifiers remain internal.
+
+**Different variant means separate dancer; identical physical copy means quantity.**
+
+Two pieces with the same item number but different stone/material/photo identity are separate dancers. Two truly identical physical copies owned by the same rep are one dancer with `quantity_available`. Quantity changes must be atomic and idempotent: a fresh intentional mutation increments; replaying the same rep-scoped key returns the prior result without another increment.
+
+**Catalog facts and listing presentation have different scopes.**
+
+A canonical catalog correction affects every user of that exact design. A rep-owned listing may have its own customer-facing photo and quantity. Nic-Nac must carry the exact selected `designId` through Jewelry Library, API, and service layers and validate item/material/stone agreement before mutation; it must not silently fall back to the first matching item number.
+
+**Legacy `RBP` is a supported necklace prefix.**
+
+Older genuine Bomb Party inventory cannot be rejected solely because a narrow modern-prefix allowlist omitted `RBP`. Prefix validation should aid identification, not erase legitimate legacy inventory.
+
+**Public inventory is complete and progressively rendered.**
+
+The server/template must provide every available dancer for the targeted rep. Search, filters, and client paging may limit what is rendered at one moment, but a fixed server query cap must not make valid inventory disappear from customer view.
+
+**Nic-Nac must describe backend failures truthfully and resume durably.**
+
+Storage, database, workflow, and photo-understanding failures are distinct. Do not tell a rep to take a closer photo when the save failed on the backend. Persist classified failure context, retain exact variant inputs, use durable conversation rollover, and clear client retry keys only after refreshed state is known.
+
+**Production release metadata must remain exact even when deploying a clean detached worktree.**
+
+For manual Vercel releases, provide the verified allowlisted branch, repository owner/slug, and exact commit as deployment-scoped metadata so `scripts/check-active-branch.mjs` passes honestly. A local Vercel prebuilt-packaging failure after a successful Next build is not permission to bypass provenance; use the normal remote builder, verify the exact deployment ID and all aliases, and inspect post-release logs.
+
+**Real accounts are not acceptance-test infrastructure.**
+
+Variant, quantity, retry, and public-visibility checks use rollback-only database transactions and the dedicated reviewer persona. Do not use Louis's protected internal demo account or Heather/customer accounts to work around the authenticated browser-runtime limitation.
+
 ## August 22-23, 2026 - responsive customer browsing and one resource hub
 
 **Keep sticky customer chrome on desktop, but let it scroll away on phones and tablets.**
