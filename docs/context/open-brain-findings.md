@@ -20,7 +20,8 @@ Verification record:
 - Release 3 deployment `dpl_34Hs61FVJmuLi4E6pMcX8zZCJSvc` reached `READY` and the production custom domain was verified.
 - Lint, production build, `56` Vitest files / `756` tests, the read-only strict Suite contract gate, `20` required Sparkle Finder smoke checks with `2` expected optional skips, the Nic-Nac mission guard, and visual checks at 320px, 390px, tablet, and desktop passed.
 - Positive production Studio mutation/replay remains deliberately deferred until Louis designates a demo account and data. No arbitrary production customer records or uploads should be created to manufacture that evidence.
-- Release 4 contract-fixture and checker hardening is still in progress and is not part of this completion record.
+- Release 4 (`1b52f44`) completed the compatibility program with sanitized exact-variant, multi-page quantity, zero/removed dancer, and stable-submission Studio ambiguity/replay fixtures. The strict checker now samples up to five pages without leaking opaque cursors, and it detects cursor cycles, repeated exact identities, total drift, and terminal aggregate mismatches. Deployment `dpl_GKS4RzyHxnpchfYsypE3q3UT67DR` reached `READY`; the custom domain returned `200` with no recent runtime errors.
+- Final Release 4 verification passed lint, production build, `57` Vitest files / `760` tests, the strengthened live Suite contract gate, `20` required Sparkle Finder smoke checks with `2` expected optional skips, the Nic-Nac guard, and independent review.
 
 Key lessons:
 

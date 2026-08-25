@@ -1,7 +1,7 @@
 # Sparkle Suite Dance Floor Compatibility Plan
 
 **Date:** August 25, 2026  
-**Status:** Releases 1-3 complete and live; Release 4 in progress<br>
+**Status:** Complete; Releases 1-4 are implemented, deployed, and verified<br>
 **Finder baseline:** `codex-sparkle-finder-v1` at `7ba4802d47db7ad40825215b2c577ba468cb0188`  
 **Suite source baseline:** `f81eed6a5e8026dd8d333ffbe247a40474547afc` with Open Brain closeout `56a87a3fe3bd86702dd9096da261f41ea52400c3`  
 **Suite production:** `dpl_AvvFpuzNXXrajduF9cBqGQei9x2J` at `https://www.yoursparklesuite.com`  
@@ -14,7 +14,7 @@
 - Release 2 is complete and live in Finder commit `93107f6`: separate lead/dancer totals, positive Suite-owned net quantity, zero/removed exclusion, and bounded continuation.
 - Release 3 is complete and live in Finder commit `b8ecf57`, with smoke-test follow-up `0613800`: active phone-first Studio, private persisted evidence without base64 transport, exact candidate confirmation without auto-selection, and owner-verified monotonic recovery. Finder-private migration `20260825143000_sparkle_finder_showcase_studio_recovery.sql` is applied and remote history is current.
 - Release 3 production deployment `dpl_34Hs61FVJmuLi4E6pMcX8zZCJSvc` is `READY` and verified at `https://yoursparklefinder.com`. Lint, build, `56` Vitest files / `756` tests, strict live contract, `20` required smoke checks with `2` expected optional skips, Nic-Nac guard, and 320px/390px/tablet/desktop visual checks passed.
-- Release 4 is not complete. Its synthetic fixtures, checker hardening, independent full gate, commit, push, deployment, and production verification must finish before this plan is closed.
+- Release 4 is complete and live in Finder commit `1b52f44`. Sanitized v2 fixtures cover exact variants, multi-page catalog and availability, positive/zero/removed dancer quantities, and stable-submission Studio ambiguity/replay. The strict read-only checker samples up to five pages with all-page cursor/identity guards and terminal total checks. Deployment `dpl_GKS4RzyHxnpchfYsypE3q3UT67DR` reached `READY`, the custom domain returned `200`, and recent runtime errors were empty.
 - Positive signed-in production Studio mutation/replay remains deferred until Louis designates a demo account, data, and cleanup procedure.
 
 ## Goal
@@ -517,7 +517,7 @@ Suggested commit: `feat: add variant-safe Showcase Studio continuation`
 
 ## Release 4: Harden cross-product regression detection
 
-**Implementation status:** In progress. Do not mark complete until its independent verification, commit, push, deployment, and production gate pass.
+**Implementation status:** Complete and live in Finder commit `1b52f44`, deployed as `dpl_GKS4RzyHxnpchfYsypE3q3UT67DR` and verified at the custom domain.
 
 This release may be folded into Releases 1-3 when each checker change belongs to that boundary, but the final gate is independent.
 
