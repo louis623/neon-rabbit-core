@@ -1,12 +1,18 @@
 # Sparkle Suite Prerequisites For Finder Dance Floor Compatibility
 
 **Date:** August 25, 2026  
-**Status:** Required before Finder Releases 1-3 in `docs/plans/2026-08-25-suite-dance-floor-compatibility-plan.md`  
+**Status:** Completed by live Suite compatibility release `f3de6c15`; Finder Releases 1-3 are implemented<br>
 **Suite repository:** `C:\Users\louis\sparkle-suite-repo`  
 **Suite branch:** `codex/nic-nac-trade-hardening`  
 **Audited Suite HEAD:** `56a87a3fe3bd86702dd9096da261f41ea52400c3`  
 **Suite production baseline:** `dpl_AvvFpuzNXXrajduF9cBqGQei9x2J` at `https://www.yoursparklesuite.com`  
 **Finder repository:** `C:\Users\louis\sparkle-finder-repo`
+
+## Completion record
+
+Sparkle Suite release `f3de6c15` supplied the required `schemaVersion: 2` catalog, batch hydration, pending-adjusted availability, and Showcase Studio v2 resolve/confirm/replay contracts. Finder's read-only strict contract gate passed against production before implementation continued.
+
+Finder consumed the contracts in Release 1 commit `0c54a32`, Release 2 commit `93107f6`, and Release 3 commit `b8ecf57` with smoke follow-up `0613800`. Suite remains canonical for designs, variants, reps, shows, and dancer availability. This handoff is retained as the compatibility boundary and does not authorize Finder-side Suite inventory writes or duplicate Suite migrations.
 
 ## Purpose
 

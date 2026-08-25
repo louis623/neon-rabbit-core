@@ -4,6 +4,30 @@ Initial pull date: 2026-05-28
 
 > Historical terminology note (2026-08-22): early Open Brain excerpts below preserve the words used in the source research. Active customer and rep vocabulary now uses `Dance Floor` for the feature and `dancers` for its inventory. Those archival excerpts are not approved product copy.
 
+## 2026-08-25 Sparkle Suite Compatibility Addendum
+
+Sparkle Finder now consumes Sparkle Suite compatibility release `f3de6c15` through versioned public read contracts for catalog and availability plus a separate authenticated, idempotent Showcase Studio continuation contract. Suite remains canonical for designs and exact variants, reps, shows, pending-adjusted dancer availability, and Showcase Studio resolution/continuation. Finder uses those facts for customer discovery and collection workflows without writing to Suite Dance Floor inventory or sharing Finder customer auth with Suite.
+
+Completed through Finder Release 3:
+
+- Release 1 (`0c54a32`) replaced first-page assumptions with bounded `schemaVersion: 2` cursor pagination, exact totals/facets, exact batch hydration, and exact-`designId` variant preservation.
+- Release 2 (`93107f6`) separated distinct rep leads from the sum of physical dancers available. Suite supplies net positive quantities after pending requests; Finder excludes zero, removed, and malformed rows and does not subtract pending quantities itself.
+- Release 3 (`b8ecf57`, with smoke follow-up `0613800`) activated a phone-first Showcase Studio on `/silver`. Two full-aspect phone photos are validated and privately persisted; Suite receives persisted evidence identities rather than base64 images. Ambiguous results preserve exact candidates and require explicit selection with no automatic first-candidate choice.
+- Studio ownership and replay safety are enforced with signed-in owner verification, narrowly scoped service-role writes, stable account-scoped submission IDs, deterministic private objects, staged monotonic states, and terminal conflict rejection. Migration `20260825143000_sparkle_finder_showcase_studio_recovery.sql` is applied and remote migration history is current.
+
+Verification record:
+
+- Release 3 deployment `dpl_34Hs61FVJmuLi4E6pMcX8zZCJSvc` reached `READY` and the production custom domain was verified.
+- Lint, production build, `56` Vitest files / `756` tests, the read-only strict Suite contract gate, `20` required Sparkle Finder smoke checks with `2` expected optional skips, the Nic-Nac mission guard, and visual checks at 320px, 390px, tablet, and desktop passed.
+- Positive production Studio mutation/replay remains deliberately deferred until Louis designates a demo account and data. No arbitrary production customer records or uploads should be created to manufacture that evidence.
+- Release 4 contract-fixture and checker hardening is still in progress and is not part of this completion record.
+
+Key lessons:
+
+- Cross-product compatibility is safest when the product that owns the data also owns totals, eligibility, pending consumption, exact variant resolution, and replay behavior.
+- Customer evidence should be stored once behind the owning product's auth boundary and referenced by exact server-verified identities; copying base64 images across product APIs enlarges payloads and weakens recovery guarantees.
+- Same-item-number candidates are not interchangeable. Stone, material, canonical photo, description, and customer confirmation must remain attached to exact `designId` values.
+
 ## 2026-08-22 Sparkle Finder Launch-Quality Addendum
 
 Sparkle Finder moved from a feature-complete collection concept to a launch-quality, phone-first customer product. The work preserved the existing Finder account, collection, Nic-Nac, Reps, Library, and Sparkle Suite integration capabilities while improving the customer-facing collection and social experience. It did not introduce buying, selling, customer-to-customer trading, checkout, or marketplace behavior.

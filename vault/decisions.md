@@ -1,5 +1,17 @@
 # Sparkle Finder Decisions
 
+## 2026-08-25 - Suite Owns Compatibility Truth; Finder Owns Safe Presentation
+
+Decision: Sparkle Suite is the canonical source for catalog designs and exact variants, reps, shows, pending-adjusted dancer availability, and Showcase Studio resolve/confirm/replay outcomes. Sparkle Finder consumes the public catalog and availability contracts read-only, uses the separate authenticated Studio POST contract only for idempotent resolve/confirm/replay continuation, keeps its separate customer auth boundary, and never recreates pending-quantity logic or exposes a Suite Dance Floor mutation path.
+
+Reason: A single source of truth prevents cross-product quantity drift, variant misidentification, and duplicate business logic while letting Finder remain a simple customer discovery and collection app.
+
+## 2026-08-25 - Showcase Studio Evidence And Continuation Fail Closed
+
+Decision: Showcase Studio sends Suite exact persisted asset identities rather than base64 images. Finder verifies the signed-in owner before tightly scoped service-role persistence, uses stable account-scoped submission UUIDs and deterministic private object paths, permits only monotonic staged recovery, and treats terminal replay conflicts as failures. Ambiguous Suite results preserve every exact candidate and always require explicit customer selection; Finder never auto-selects candidate zero.
+
+Reason: Private photo evidence must survive temporary cross-product failures without being duplicated, overwritten, exposed, or attached to the wrong customer or variant. Exact confirmation is safer than guessing from a shared item number, stone, material, or photo.
+
 ## 2026-08-22 - Public Showcases Stay Bounded, Private, And Canonical
 
 Decision: Public Showcase routes use allowlisted, bounded server reads with exact database summary counts and the true Hero Piece for metadata. Route reads are cached per request, and all viewer/owner/comment-author relationships honor either-direction blocks. Production Vercel aliases canonicalize to `https://yoursparklefinder.com`, while preview deployments remain available for private testing. Supabase compromised-password protection remains enabled as a launch baseline.

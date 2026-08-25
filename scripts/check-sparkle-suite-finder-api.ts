@@ -60,6 +60,8 @@ const defaultBaseUrl = (
   "https://www.yoursparklesuite.com"
 ).replace(/\/+$/, "");
 const missingDesignIdProbe = "00000000-0000-4000-8000-000000000000";
+const diagnosticPaginationPageLimit = 2;
+const strictPaginationPageLimit = 5;
 
 export async function runSparkleSuiteFinderContractCheck(
   options: ContractCheckOptions = {},
@@ -104,21 +106,40 @@ export async function runSparkleSuiteFinderContractCheck(
   const firstDesignId = readString(catalogPageOne?.items[0]?.designId);
   if (!firstDesignId) failures.push("Catalog did not return a first item with designId.");
 
-  if (catalogPageOne?.isV2 && catalogPageOne.pageInfo?.hasMore && catalogPageOne.pageInfo.nextCursor) {
-    const cursor = catalogPageOne.pageInfo.nextCursor;
-    const pageTwo = auditCatalogPage(
-      await request(`${baseUrl}/api/public/finder/catalog?limit=2&cursor=${encodeURIComponent(cursor)}`),
-      "catalog page 2",
-      cursor,
-      failures,
-    );
-    if (pageTwo) {
-      catalogPagesRead += 1;
-      catalogItems += pageTwo.items.length;
-      assertNoCrossPageRepeats(catalogPageOne.items, pageTwo.items, "designId", "catalog page 2", failures);
-      if (catalogPageOne.totalCount !== pageTwo.totalCount) {
-        failures.push("catalog page 2 changed totalCount from page 1.");
+  if (catalogPageOne?.isV2) {
+    const catalogPageLimit = mode === "strict" ? strictPaginationPageLimit : diagnosticPaginationPageLimit;
+    const seenDesignIds = rememberPageIdentities(catalogPageOne.items, "designId", 1);
+    const seenCursors = new Set<string>();
+    let pageInfo = catalogPageOne.pageInfo;
+
+    for (let pageNumber = 2; pageNumber <= catalogPageLimit && pageInfo?.hasMore && pageInfo.nextCursor; pageNumber += 1) {
+      const cursor = pageInfo.nextCursor;
+      if (seenCursors.has(cursor)) {
+        failures.push("catalog pagination repeated a prior cursor.");
+        break;
       }
+      seenCursors.add(cursor);
+
+      const label = `catalog page ${pageNumber}`;
+      const page = auditCatalogPage(
+        await request(`${baseUrl}/api/public/finder/catalog?limit=2&cursor=${encodeURIComponent(cursor)}`),
+        label,
+        cursor,
+        failures,
+      );
+      if (!page) break;
+
+      catalogPagesRead += 1;
+      catalogItems += page.items.length;
+      assertNoEarlierPageRepeats(page.items, "designId", label, pageNumber, seenDesignIds, failures);
+      if (catalogPageOne.totalCount !== page.totalCount) {
+        failures.push(`${label} changed totalCount from page 1.`);
+      }
+      pageInfo = page.pageInfo;
+    }
+
+    if (pageInfo && !pageInfo.hasMore && catalogPageOne.totalCount !== null && catalogItems !== catalogPageOne.totalCount) {
+      failures.push("Catalog terminal pages do not contain totalCount exact design identities.");
     }
   }
 
@@ -171,21 +192,23 @@ export async function runSparkleSuiteFinderContractCheck(
       availabilityQuantity = pageOne.isV2 ? "supported" : "unsupported";
       availabilityPagination = pageOne.isV2 ? "supported" : "unsupported";
       if (pageOne.isV2) {
-        await auditAvailabilityPageTwo({
+        await auditAvailabilityPages({
           baseUrl,
           bucket: "exact",
           firstDesignId,
           pageOne,
           request,
           failures,
+          pageLimit: mode === "strict" ? strictPaginationPageLimit : diagnosticPaginationPageLimit,
         });
-        await auditAvailabilityPageTwo({
+        await auditAvailabilityPages({
           baseUrl,
           bucket: "similar",
           firstDesignId,
           pageOne,
           request,
           failures,
+          pageLimit: mode === "strict" ? strictPaginationPageLimit : diagnosticPaginationPageLimit,
         });
       }
     }
@@ -594,41 +617,71 @@ function assertAvailabilityPageInfo(
   return { ...cursor, totalLeadCount: leadCount, totalDancerCount: dancerCount };
 }
 
-async function auditAvailabilityPageTwo(options: {
+async function auditAvailabilityPages(options: {
   baseUrl: string;
   bucket: "exact" | "similar";
   firstDesignId: string;
   pageOne: AvailabilityAudit;
   request: (url: string, init?: RequestInit) => Promise<unknown>;
   failures: string[];
+  pageLimit: number;
 }) {
-  const pageInfo = options.bucket === "exact" ? options.pageOne.exactPageInfo : options.pageOne.similarPageInfo;
-  if (!pageInfo?.hasMore || !pageInfo.nextCursor) return;
+  let pageInfo = options.bucket === "exact" ? options.pageOne.exactPageInfo : options.pageOne.similarPageInfo;
+  if (!pageInfo) return;
   const cursorKey = options.bucket === "exact" ? "exactCursor" : "similarCursor";
-  const pageTwo = auditAvailability(
-    await options.request(
-      `${options.baseUrl}/api/public/finder/availability?designId=${encodeURIComponent(options.firstDesignId)}&limit=5&${cursorKey}=${encodeURIComponent(pageInfo.nextCursor)}`,
-    ),
-    {
-      label: `availability ${options.bucket} page 2`,
-      baseUrl: options.baseUrl,
-      requestedDesignId: options.firstDesignId,
-      exactCursor: options.bucket === "exact" ? pageInfo.nextCursor : null,
-      similarCursor: options.bucket === "similar" ? pageInfo.nextCursor : null,
-    },
-    options.failures,
-  );
-  if (!pageTwo) return;
   const first = options.bucket === "exact" ? options.pageOne.exactMatches : options.pageOne.similarMatches;
-  const second = options.bucket === "exact" ? pageTwo.exactMatches : pageTwo.similarMatches;
-  assertNoCrossPageRepeats(first, second, "listingId", `availability ${options.bucket} page 2`, options.failures);
-  const secondPageInfo = options.bucket === "exact" ? pageTwo.exactPageInfo : pageTwo.similarPageInfo;
-  if (
-    secondPageInfo &&
-    (secondPageInfo.totalLeadCount !== pageInfo.totalLeadCount ||
-      secondPageInfo.totalDancerCount !== pageInfo.totalDancerCount)
-  ) {
-    options.failures.push(`availability ${options.bucket} page 2 changed complete-result totals from page 1.`);
+  const seenListingIds = rememberPageIdentities(first, "listingId", 1);
+  const seenCursors = new Set<string>();
+  const expectedLeadCount = pageInfo.totalLeadCount;
+  const expectedDancerCount = pageInfo.totalDancerCount;
+  let accumulatedDancerCount = countAvailableDancers(first);
+
+  for (let pageNumber = 2; pageNumber <= options.pageLimit && pageInfo.hasMore && pageInfo.nextCursor; pageNumber += 1) {
+    const cursor = pageInfo.nextCursor;
+    if (seenCursors.has(cursor)) {
+      options.failures.push(`availability ${options.bucket} pagination repeated a prior cursor.`);
+      break;
+    }
+    seenCursors.add(cursor);
+
+    const label = `availability ${options.bucket} page ${pageNumber}`;
+    const page = auditAvailability(
+      await options.request(
+        `${options.baseUrl}/api/public/finder/availability?designId=${encodeURIComponent(options.firstDesignId)}&limit=5&${cursorKey}=${encodeURIComponent(cursor)}`,
+      ),
+      {
+        label,
+        baseUrl: options.baseUrl,
+        requestedDesignId: options.firstDesignId,
+        exactCursor: options.bucket === "exact" ? cursor : null,
+        similarCursor: options.bucket === "similar" ? cursor : null,
+      },
+      options.failures,
+    );
+    if (!page) break;
+
+    const matches = options.bucket === "exact" ? page.exactMatches : page.similarMatches;
+    assertNoEarlierPageRepeats(matches, "listingId", label, pageNumber, seenListingIds, options.failures);
+    accumulatedDancerCount += countAvailableDancers(matches);
+
+    const nextPageInfo = options.bucket === "exact" ? page.exactPageInfo : page.similarPageInfo;
+    if (!nextPageInfo) break;
+    if (
+      nextPageInfo.totalLeadCount !== expectedLeadCount
+      || nextPageInfo.totalDancerCount !== expectedDancerCount
+    ) {
+      options.failures.push(`${label} changed complete-result totals from page 1.`);
+    }
+    pageInfo = nextPageInfo;
+  }
+
+  if (!pageInfo.hasMore) {
+    if (seenListingIds.size !== expectedLeadCount) {
+      options.failures.push(`availability ${options.bucket} terminal pages do not contain totalLeadCount exact listing identities.`);
+    }
+    if (accumulatedDancerCount !== expectedDancerCount) {
+      options.failures.push(`availability ${options.bucket} terminal pages do not sum to totalDancerCount.`);
+    }
   }
 }
 
@@ -778,18 +831,41 @@ function assertUnique(rows: Record<string, unknown>[], field: string, label: str
   }
 }
 
-function assertNoCrossPageRepeats(
-  first: Record<string, unknown>[],
-  second: Record<string, unknown>[],
+function rememberPageIdentities(
+  rows: Record<string, unknown>[],
+  field: string,
+  pageNumber: number,
+): Map<string, number> {
+  const identities = new Map<string, number>();
+  for (const row of rows) {
+    const id = readString(row[field]);
+    if (id) identities.set(id, pageNumber);
+  }
+  return identities;
+}
+
+function assertNoEarlierPageRepeats(
+  rows: Record<string, unknown>[],
   field: string,
   label: string,
+  pageNumber: number,
+  seenPages: Map<string, number>,
   failures: string[],
 ) {
-  const seen = new Set(first.map((row) => readString(row[field])).filter(Boolean));
-  for (const row of second) {
+  for (const row of rows) {
     const id = readString(row[field]);
-    if (id && seen.has(id)) failures.push(`${label} repeats ${field} ${id} from page 1.`);
+    if (!id) continue;
+    const seenPage = seenPages.get(id);
+    if (seenPage !== undefined) failures.push(`${label} repeats ${field} ${id} from page ${seenPage}.`);
+    else seenPages.set(id, pageNumber);
   }
+}
+
+function countAvailableDancers(rows: Record<string, unknown>[]): number {
+  return rows.reduce(
+    (total, row) => total + (isPositiveInteger(row.quantityAvailable) ? row.quantityAvailable : 0),
+    0,
+  );
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {

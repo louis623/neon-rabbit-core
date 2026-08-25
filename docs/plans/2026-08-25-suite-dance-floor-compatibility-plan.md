@@ -1,11 +1,21 @@
 # Sparkle Suite Dance Floor Compatibility Plan
 
 **Date:** August 25, 2026  
-**Status:** Approved for implementation planning; implementation not started  
+**Status:** Releases 1-3 complete and live; Release 4 in progress<br>
 **Finder baseline:** `codex-sparkle-finder-v1` at `7ba4802d47db7ad40825215b2c577ba468cb0188`  
 **Suite source baseline:** `f81eed6a5e8026dd8d333ffbe247a40474547afc` with Open Brain closeout `56a87a3fe3bd86702dd9096da261f41ea52400c3`  
 **Suite production:** `dpl_AvvFpuzNXXrajduF9cBqGQei9x2J` at `https://www.yoursparklesuite.com`  
 **Finder production:** `https://yoursparklefinder.com`
+
+## Implementation progress
+
+- The Suite dependency gate is complete through live compatibility release `f3de6c15`. Its `schemaVersion: 2` catalog, exact batch hydration, net-quantity availability, and Showcase Studio v2 contracts are the canonical cross-product source.
+- Release 1 is complete and live in Finder commit `0c54a32`: stable catalog pagination, exact totals/facets, batch hydration, and exact variant identity.
+- Release 2 is complete and live in Finder commit `93107f6`: separate lead/dancer totals, positive Suite-owned net quantity, zero/removed exclusion, and bounded continuation.
+- Release 3 is complete and live in Finder commit `b8ecf57`, with smoke-test follow-up `0613800`: active phone-first Studio, private persisted evidence without base64 transport, exact candidate confirmation without auto-selection, and owner-verified monotonic recovery. Finder-private migration `20260825143000_sparkle_finder_showcase_studio_recovery.sql` is applied and remote history is current.
+- Release 3 production deployment `dpl_34Hs61FVJmuLi4E6pMcX8zZCJSvc` is `READY` and verified at `https://yoursparklefinder.com`. Lint, build, `56` Vitest files / `756` tests, strict live contract, `20` required smoke checks with `2` expected optional skips, Nic-Nac guard, and 320px/390px/tablet/desktop visual checks passed.
+- Release 4 is not complete. Its synthetic fixtures, checker hardening, independent full gate, commit, push, deployment, and production verification must finish before this plan is closed.
+- Positive signed-in production Studio mutation/replay remains deferred until Louis designates a demo account, data, and cleanup procedure.
 
 ## Goal
 
@@ -22,7 +32,9 @@ After this plan is complete:
 - Finder never writes directly to Suite Dance Floor inventory or reimplements Suite's atomic listing RPC;
 - all verification uses fixtures, mocked contracts, or explicitly designated synthetic reviewer data.
 
-## Current findings
+## Planning-baseline findings
+
+The findings below describe the pre-implementation baseline. The identified gaps were closed by Releases 1-3 unless an item is explicitly carried into Release 4 or the designated-demo-account follow-up.
 
 ### Already compatible
 
@@ -34,7 +46,7 @@ After this plan is complete:
 - Finder's Nic-Nac tool policy forbids Sparkle Suite workspace and Dance Floor mutations.
 - Pending trade calculations and atomic listing mutation remain Suite responsibilities.
 
-### Gaps to close
+### Gaps identified at baseline
 
 1. The Library grows a first-page limit from `24` to `48` to a permanent maximum of `50`; it has no cursor, total, or authoritative `hasMore`.
 2. The live Suite catalog response currently exposes only `items`; `offset` and `page` are ignored. True Finder pagination therefore requires a Suite public API contract addition before Finder can consume it.
@@ -64,6 +76,8 @@ After this plan is complete:
 - Every implementation release is independently tested, committed, pushed, deployed, and verified at `https://yoursparklefinder.com` before the next release starts.
 
 ## Dependency gate: freeze the live cross-product contracts
+
+**Gate status:** Complete through live Suite compatibility release `f3de6c15`; Finder's strict read-only production check passed before Releases 1-3 proceeded.
 
 This gate is read-only and blocks code that depends on fields Suite may not expose yet.
 
@@ -144,6 +158,8 @@ If Suite does not yet support pagination, quantity fields, or confirmation conti
 - No Finder or shared database mutation occurs during this gate.
 
 ## Release 1: Preserve every catalog variant and add real continuation
+
+**Implementation status:** Complete and live in Finder commit `0c54a32`.
 
 ### 1.1 Extend the catalog adapter without breaking existing callers
 
@@ -228,6 +244,8 @@ Add regressions proving:
 Suggested commit: `feat: paginate Finder catalog and preserve variants`
 
 ## Release 2: Make Dance Floor availability quantity-aware
+
+**Implementation status:** Complete and live in Finder commit `93107f6`.
 
 ### 2.1 Separate lead counts from dancer quantities
 
@@ -334,6 +352,8 @@ Live positive-inventory checks are conditional when production has no public mat
 Suggested commit: `fix: make Dance Floor availability quantity-aware`
 
 ## Release 3: Activate variant-safe Showcase Studio
+
+**Implementation status:** Complete and live in Finder commit `b8ecf57`, with smoke-test follow-up `0613800` and Finder-private migration `20260825143000_sparkle_finder_showcase_studio_recovery.sql` applied.
 
 ### 3.1 Create an active phone-first Studio surface
 
@@ -496,6 +516,8 @@ At minimum:
 Suggested commit: `feat: add variant-safe Showcase Studio continuation`
 
 ## Release 4: Harden cross-product regression detection
+
+**Implementation status:** In progress. Do not mark complete until its independent verification, commit, push, deployment, and production gate pass.
 
 This release may be folded into Releases 1-3 when each checker change belongs to that boundary, but the final gate is independent.
 

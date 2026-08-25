@@ -1,12 +1,23 @@
 # Sparkle Finder Session Log
 
+## 2026-08-25 - Suite Compatibility Releases 1-3 Live
+
+- Sparkle Suite compatibility release `f3de6c15` deployed the frozen `schemaVersion: 2` catalog, batch hydration, quantity-aware availability, and Showcase Studio v2 contracts. Suite remains the canonical source for designs, exact variants, reps, shows, pending-adjusted dancer availability, and Studio resolution/continuation; Finder does not recreate or mutate those responsibilities.
+- Finder Release 1 shipped in commit `0c54a32`. It added real cursor continuation, exact totals/facets, bounded batch hydration, and exact-`designId` variant preservation. The release was pushed and deployed live at the custom domain.
+- Finder Release 2 shipped in commit `93107f6`. It separates rep/listing lead counts from summed physical dancer quantities, carries Suite's positive net `quantityAvailable`, excludes zero/removed/malformed inventory, and preserves read-only Dance Floor behavior. The release was pushed and deployed live at the custom domain.
+- Finder Release 3 shipped in commit `b8ecf57`, followed by smoke-test fix `0613800`. The active phone-first `/silver` Studio accepts two bounded full-aspect phone photos, persists evidence privately, resolves or confirms exact variants through Suite v2, retains all exact candidates without selecting the first, and resumes temporary failures with the same owner-scoped submission identity.
+- Studio requests do not send image base64 to Suite. Finder stores validated private evidence and supplies the exact persisted asset identities. Owner verification occurs through the signed-in auth client; tightly scoped service-role writes enforce deterministic paths and monotonic `draft`/`uploading`/`submitted`/`saved_pending_sync`/terminal transitions. Wrong-owner, conflicting replay, and terminal-regression attempts fail closed.
+- Applied Finder-private migration `20260825143000_sparkle_finder_showcase_studio_recovery.sql`; linked remote migration history is current. The migration tightens Studio mutation privileges, adds recovery states, and enforces one asset per submission/kind without altering or duplicating shared Suite migrations.
+- Release 3 deployment `dpl_34Hs61FVJmuLi4E6pMcX8zZCJSvc` reached `READY` and `https://yoursparklefinder.com` was verified. Checks passed: lint, production build, full Vitest (`56` files / `756` tests), read-only `npm run check:suite-contract:strict`, Sparkle Finder smoke (`20` required passed / `2` expected optional skips), Nic-Nac mission guard, and rendered 320px, 390px, tablet, and desktop reviews.
+- Release 4 cross-product regression hardening remains in progress. No positive production Studio mutation/replay was run; that check remains deferred until Louis designates a demo account, synthetic/demo data, and cleanup procedure.
+
 ## 2026-08-25 - Sparkle Suite Dance Floor Compatibility Gate
 
 - Published `docs/plans/2026-08-25-suite-dance-floor-compatibility-plan.md` in Finder commit `48a001c`, pushed it, and deployed production as `dpl_4gnt5YC3t4R2WH5ucufDCUasTLaq`; the deployment was `READY`, aliased to `https://yoursparklefinder.com`, returned `200`, and had no recent runtime errors.
 - Audited the active Sparkle Suite implementation at branch `codex/nic-nac-trade-hardening`, commit `56a87a3fe3bd86702dd9096da261f41ea52400c3`, using three read-only contract lanes for catalog, availability, and Studio. No Suite files or live customer data were changed.
 - Confirmed three upstream gates: catalog has no cursor/page metadata, exact totals, or batch hydration; availability exposes listing rows rather than pending-adjusted physical dancer quantity; and Studio does not expose exact candidate continuation or durable stage-aware idempotency.
 - Created `docs/handoffs/2026-08-25-suite-finder-compatibility-prerequisites.md` as an implementation-ready Suite handoff. It preserves mixed-version compatibility, exact variant identity, legacy `RBP` normalization, existing availability eligibility, public-query bounds, and Suite ownership of quantity, replay, and canonical-photo validation.
-- Finder Releases 1-3 remain intentionally unimplemented until the Suite-first contracts are deployed and verified. Finder will not fabricate pagination, calculate pending reservations, trust caller-declared photo approval, or invent an ambiguous-variant continuation protocol.
+- This gate was later satisfied by Suite compatibility release `f3de6c15`; the original finding is retained here as the reason Finder did not fabricate pagination, calculate pending reservations, trust caller-declared photo approval, or invent an ambiguous-variant continuation protocol.
 
 ## 2026-08-22 - Showcase Quality Hardening And Launch Pass
 
