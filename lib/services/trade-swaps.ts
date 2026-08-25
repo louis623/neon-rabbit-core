@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { createHash } from 'node:crypto'
 
 import { addListing } from '@/lib/services/trade-board'
 import { approveTrade } from '@/lib/services/trade-requests'
@@ -7,6 +8,7 @@ import { resolveItemNumber } from '@/lib/services/jewelry-database'
 import type {
   ApproveTradeSwapInput,
   ApproveTradeSwapResult,
+  ApproveTradeResult,
   JewelryType,
   ResolveTradeSwapReplacementInput,
   ResolveTradeSwapReplacementResult,
@@ -57,6 +59,30 @@ function normalizeOptionalText(value: string | undefined) {
   return trimmed || undefined
 }
 
+function normalizeOptionalComparable(value: string | undefined) {
+  return normalizeOptionalText(value)?.toLowerCase() ?? null
+}
+
+function getTradeSwapInputSignature(input: {
+  requestId: string
+  revealedItemNumber: string
+  revealedMaterial?: string
+  revealedRingSize?: string
+  repNotes?: string
+}) {
+  return createHash('sha256')
+    .update(
+      JSON.stringify({
+        requestId: input.requestId,
+        itemNumber: normalizeItemNumber(input.revealedItemNumber),
+        material: normalizeOptionalComparable(input.revealedMaterial),
+        ringSize: normalizeOptionalText(input.revealedRingSize) ?? null,
+        repNotes: normalizeOptionalText(input.repNotes) ?? null,
+      }),
+    )
+    .digest('hex')
+}
+
 function isRingType(typePrefix: JewelryType) {
   return typePrefix === 'RG'
 }
@@ -77,17 +103,50 @@ export async function approveTradeWithRevealedItemCapture(
     )
   }
 
-  const approved = await approveTrade(
-    supabase,
-    repId,
-    input.requestId,
-    input.repNotes,
-  )
+  const revealedMaterial = normalizeOptionalText(input.revealedMaterial)
+  const revealedRingSize = normalizeOptionalText(input.revealedRingSize)
+  const normalizedRepNotes = normalizeOptionalText(input.repNotes)
+  const swapInputSignature = getTradeSwapInputSignature({
+    requestId: input.requestId,
+    revealedItemNumber,
+    revealedMaterial,
+    revealedRingSize,
+    repNotes: normalizedRepNotes,
+  })
+
+  let approved: ApproveTradeResult
+  try {
+    approved = await approveTrade(
+      supabase,
+      repId,
+      input.requestId,
+      normalizedRepNotes,
+    )
+  } catch (error) {
+    if (!(error instanceof ServiceError) || error.code !== 'REQUEST_NOT_PENDING') {
+      throw error
+    }
+    const resumed = await loadApprovedTradeSwapForResume(
+      supabase,
+      repId,
+      input.requestId,
+    )
+    if (resumed.existingSwap) {
+      assertMatchingTradeSwapRetry(resumed.existingSwap, {
+        inputSignature: swapInputSignature,
+        revealedItemNumber,
+        revealedMaterial: revealedMaterial ?? null,
+        revealedRingSize: revealedRingSize ?? null,
+        repNotes: normalizedRepNotes ?? null,
+      })
+      return resumed.existingSwap.result
+    }
+    approved = resumed.approved
+  }
 
   const resolvedDesign = await resolveItemNumber(supabase, revealedItemNumber, {
-    material: input.revealedMaterial,
+    material: revealedMaterial,
   })
-  const revealedRingSize = normalizeOptionalText(input.revealedRingSize)
   let replacementStatus: TradeSwapReplacementStatus = 'needs_catalog_details'
   let revealedDesignId: string | null = null
   let replacementListingId: string | null = null
@@ -98,11 +157,24 @@ export async function approveTradeWithRevealedItemCapture(
       replacementStatus = 'needs_ring_size'
     } else {
       try {
+        const replacementInputSignature = createHash('sha256')
+          .update(
+            JSON.stringify({
+              requestId: approved.requestId,
+              itemNumber: revealedItemNumber,
+              material: revealedMaterial ?? null,
+              ringSize: revealedRingSize ?? null,
+              customerName: approved.customerName,
+            }),
+          )
+          .digest('hex')
         const replacement = await addListing(supabase, repId, {
           itemNumber: revealedItemNumber,
-          material: input.revealedMaterial,
+          material: revealedMaterial,
           ringSize: revealedRingSize,
           repNotes: `Added from approved trade swap for ${approved.customerName}.`,
+          idempotencyKey: `trade-swap-replacement:${approved.requestId}`,
+          inputSignature: replacementInputSignature,
         })
         replacementListingId = replacement.listingId
         replacementStatus = 'added_to_board'
@@ -119,15 +191,34 @@ export async function approveTradeWithRevealedItemCapture(
       request_id: approved.requestId,
       outgoing_listing_id: approved.listingId,
       revealed_item_number: revealedItemNumber,
+      revealed_material: revealedMaterial ?? null,
       revealed_ring_size: revealedRingSize ?? null,
       revealed_design_id: revealedDesignId,
       replacement_listing_id: replacementListingId,
       replacement_status: replacementStatus,
-      rep_notes: input.repNotes ?? null,
+      rep_notes: normalizedRepNotes ?? null,
+      input_signature: swapInputSignature,
     })
     .select('id, replacement_status')
     .single()
-  if (swapError) throw swapError
+  if (swapError) {
+    if (!isUniqueViolation(swapError)) throw swapError
+
+    const resumed = await loadApprovedTradeSwapForResume(
+      supabase,
+      repId,
+      approved.requestId,
+    )
+    if (!resumed.existingSwap) throw swapError
+    assertMatchingTradeSwapRetry(resumed.existingSwap, {
+      inputSignature: swapInputSignature,
+      revealedItemNumber,
+      revealedMaterial: revealedMaterial ?? null,
+      revealedRingSize: revealedRingSize ?? null,
+      repNotes: normalizedRepNotes ?? null,
+    })
+    return resumed.existingSwap.result
+  }
 
   return {
     swapId: swapRow.id as string,
@@ -140,6 +231,153 @@ export async function approveTradeWithRevealedItemCapture(
     replacementListingId,
     replacementStatus,
   }
+}
+
+async function loadApprovedTradeSwapForResume(
+  supabase: SupabaseClient,
+  repId: string,
+  requestId: string,
+): Promise<{
+  approved: ApproveTradeResult
+  existingSwap: {
+    inputSignature: string | null
+    revealedItemNumber: string
+    revealedMaterial: string | null
+    revealedRingSize: string | null
+    repNotes: string | null
+    result: ApproveTradeSwapResult
+  } | null
+}> {
+  const { data: requestRow, error: requestError } = await supabase
+    .from('trade_requests')
+    .select(
+      'id, status, customer_name, listing_id, listing:trade_listings!inner(rep_id), fulfillment:trade_fulfillment(id)',
+    )
+    .eq('id', requestId)
+    .maybeSingle()
+  if (requestError) throw requestError
+
+  const request = requestRow as
+    | {
+        id: string
+        status: string
+        customer_name: string
+        listing_id: string
+        listing: { rep_id: string } | Array<{ rep_id: string }> | null
+        fulfillment: { id: string } | Array<{ id: string }> | null
+      }
+    | null
+  const listing = request ? getSingleRelation(request.listing) : null
+  const fulfillment = request ? getSingleRelation(request.fulfillment) : null
+  if (
+    !request ||
+    request.status !== 'approved' ||
+    !listing ||
+    listing.rep_id !== repId ||
+    !fulfillment
+  ) {
+    throw errors.REQUEST_NOT_PENDING()
+  }
+
+  const approved: ApproveTradeResult = {
+    requestId: request.id,
+    fulfillmentId: fulfillment.id,
+    listingId: request.listing_id,
+    customerName: request.customer_name,
+    quantityAvailable: 0,
+  }
+
+  const { data: swapRow, error: swapError } = await supabase
+    .from('trade_swaps')
+    .select(
+      'id, input_signature, revealed_item_number, revealed_material, revealed_ring_size, revealed_design_id, replacement_listing_id, replacement_status, rep_notes',
+    )
+    .eq('request_id', requestId)
+    .maybeSingle()
+  if (swapError) throw swapError
+  if (!swapRow) return { approved, existingSwap: null }
+
+  return {
+    approved,
+    existingSwap: {
+      inputSignature:
+        typeof swapRow.input_signature === 'string'
+          ? swapRow.input_signature
+          : null,
+      revealedItemNumber: String(swapRow.revealed_item_number),
+      revealedMaterial:
+        typeof swapRow.revealed_material === 'string'
+          ? swapRow.revealed_material
+          : null,
+      revealedRingSize:
+        typeof swapRow.revealed_ring_size === 'string'
+          ? swapRow.revealed_ring_size
+          : null,
+      repNotes:
+        typeof swapRow.rep_notes === 'string' ? swapRow.rep_notes : null,
+      result: {
+        swapId: String(swapRow.id),
+        requestId: approved.requestId,
+        fulfillmentId: approved.fulfillmentId,
+        outgoingListingId: approved.listingId,
+        customerName: approved.customerName,
+        revealedItemNumber: String(swapRow.revealed_item_number),
+        revealedDesignId:
+          typeof swapRow.revealed_design_id === 'string'
+            ? swapRow.revealed_design_id
+            : null,
+        replacementListingId:
+          typeof swapRow.replacement_listing_id === 'string'
+            ? swapRow.replacement_listing_id
+            : null,
+        replacementStatus:
+          swapRow.replacement_status as TradeSwapReplacementStatus,
+      },
+    },
+  }
+}
+
+function assertMatchingTradeSwapRetry(
+  existingSwap: {
+    inputSignature: string | null
+    revealedItemNumber: string
+    revealedMaterial: string | null
+    revealedRingSize: string | null
+    repNotes: string | null
+  },
+  expected: {
+    inputSignature: string
+    revealedItemNumber: string
+    revealedMaterial: string | null
+    revealedRingSize: string | null
+    repNotes: string | null
+  },
+) {
+  const matches = existingSwap.inputSignature
+    ? existingSwap.inputSignature === expected.inputSignature
+    : existingSwap.revealedItemNumber === expected.revealedItemNumber &&
+      existingSwap.revealedRingSize === expected.revealedRingSize &&
+      (existingSwap.revealedMaterial === null ||
+        normalizeOptionalComparable(existingSwap.revealedMaterial) ===
+          normalizeOptionalComparable(expected.revealedMaterial ?? undefined)) &&
+      (existingSwap.repNotes === null ||
+        normalizeOptionalText(existingSwap.repNotes) === expected.repNotes)
+
+  if (!matches) {
+    throw errors.INVALID_INPUT(
+      'approved trade swap retry does not match the recorded revealed item',
+    )
+  }
+}
+
+function isUniqueViolation(error: unknown) {
+  if (!error || typeof error !== 'object') return false
+  const candidate = error as { code?: unknown; message?: unknown }
+  return (
+    candidate.code === '23505' ||
+    (typeof candidate.message === 'string' &&
+      candidate.message.toLowerCase().includes('duplicate key'))
+  )
 }
 
 function expectedReplacementCleanupError(err: unknown): boolean {

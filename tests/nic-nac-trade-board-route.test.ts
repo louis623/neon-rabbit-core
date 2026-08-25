@@ -9,6 +9,7 @@ const updateListingMock = vi.fn()
 const removeListingMock = vi.fn()
 const restoreListingMock = vi.fn()
 const processRepCustomListingPhotoUrlMock = vi.fn()
+const getCatalogListingMutationReceiptMock = vi.fn()
 
 vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
@@ -33,6 +34,8 @@ vi.mock('@/lib/services/trade-board', () => ({
   updateListing: (...args: unknown[]) => updateListingMock(...args),
   removeListing: (...args: unknown[]) => removeListingMock(...args),
   restoreListing: (...args: unknown[]) => restoreListingMock(...args),
+  getCatalogListingMutationReceipt: (...args: unknown[]) =>
+    getCatalogListingMutationReceiptMock(...args),
 }))
 
 vi.mock('@/lib/services/listing-photo-processing', () => ({
@@ -60,6 +63,8 @@ describe('dance floor route', () => {
     removeListingMock.mockReset()
     restoreListingMock.mockReset()
     processRepCustomListingPhotoUrlMock.mockReset()
+    getCatalogListingMutationReceiptMock.mockReset()
+    getCatalogListingMutationReceiptMock.mockResolvedValue(null)
   })
 
   it('returns the authenticated rep dance floor summary', async () => {
@@ -135,6 +140,7 @@ describe('dance floor route', () => {
         body: JSON.stringify({
           itemNumber: 'RG100',
           repNotes: 'Front table piece',
+          mutationKey: 'quick-add-1',
         }),
       }),
     )
@@ -144,6 +150,8 @@ describe('dance floor route', () => {
       repNotes: 'Front table piece',
       tradePreferences: undefined,
       listingPhotoUrl: undefined,
+      idempotencyKey: 'trade-board-api:quick-add-1',
+      inputSignature: expect.any(String),
     })
     expect(response.status).toBe(200)
   })
@@ -245,6 +253,7 @@ describe('dance floor route', () => {
         body: JSON.stringify({
           itemNumber: 'RG100',
           listingPhotoUrl: 'https://dropbox.example.com/ring.png',
+          mutationKey: 'quick-add-photo-1',
         }),
       }),
     )
@@ -253,13 +262,60 @@ describe('dance floor route', () => {
       repId: 'rep-1',
       sourceImageUrl: 'https://dropbox.example.com/ring.png',
       filenameStem: 'RG100-listing-photo',
+      mutationAssetKey: expect.any(String),
     })
     expect(addListingMock).toHaveBeenCalledWith({ marker: 'admin' }, 'rep-1', {
       itemNumber: 'RG100',
       repNotes: undefined,
       tradePreferences: undefined,
       listingPhotoUrl: 'https://cdn.example.com/rep-1/ring-enhanced.png',
+      idempotencyKey: 'trade-board-api:quick-add-photo-1',
+      inputSignature: expect.any(String),
     })
+  })
+
+  it('replays a committed custom-photo add before uploading another asset', async () => {
+    getPaidNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-1',
+      rep: { id: 'rep-1' },
+      supabase: { marker: 'supabase' },
+    })
+    getCatalogListingMutationReceiptMock.mockResolvedValueOnce({
+      listingId: 'listing-committed',
+      designId: 'design-1',
+      itemNumber: 'RG100',
+      designName: 'Aurora Ring',
+      status: 'available',
+      usesCanonicalPhoto: false,
+      quantityAvailable: 1,
+      groupedWithExisting: false,
+      mutationReplayed: true,
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/nic-nac/trade-board', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          itemNumber: 'RG100',
+          listingPhotoUrl: 'https://dropbox.example.com/ring.png',
+          mutationKey: 'quick-add-photo-replay',
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      result: {
+        listingId: 'listing-committed',
+        itemNumber: 'RG100',
+        quantityAvailable: 1,
+        mutationReplayed: true,
+      },
+    })
+    expect(processRepCustomListingPhotoUrlMock).not.toHaveBeenCalled()
+    expect(addListingMock).not.toHaveBeenCalled()
   })
 
   it('normalizes a custom listing photo before updateListing sees it', async () => {

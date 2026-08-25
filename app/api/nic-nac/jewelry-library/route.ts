@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
+import { createHash } from 'node:crypto'
 import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ServiceError } from '@/lib/services/errors'
 import { processRepCustomListingPhotoUrl } from '@/lib/services/listing-photo-processing'
 import { searchJewelryDatabase } from '@/lib/services/jewelry-database'
-import { addListing } from '@/lib/services/trade-board'
+import {
+  addListing,
+  getCatalogListingMutationReceipt,
+} from '@/lib/services/trade-board'
 import type { JewelryDatabaseResult, JewelryType } from '@/lib/services/types'
 
 export const runtime = 'nodejs'
@@ -147,23 +151,71 @@ export async function POST(request: Request) {
     const { repId } = await getPaidNicNacContext()
     const itemNumber =
       typeof body?.itemNumber === 'string' ? body.itemNumber.trim() : ''
+    const designId =
+      typeof body?.designId === 'string' ? body.designId.trim() : undefined
+    const mutationKey =
+      typeof body?.mutationKey === 'string' ? body.mutationKey.trim() : ''
+    if (!mutationKey) {
+      return NextResponse.json(
+        { error: 'mutationKey is required.' },
+        { status: 400 },
+      )
+    }
+    const material =
+      typeof body?.material === 'string' ? body.material.trim() : undefined
+    const mainStone =
+      typeof body?.mainStone === 'string' ? body.mainStone.trim() : undefined
     const listingPhotoUrl =
       typeof body?.listingPhotoUrl === 'string' ? body.listingPhotoUrl : undefined
+    const repNotes =
+      typeof body?.repNotes === 'string' ? body.repNotes.trim() : undefined
+    const tradePreferences =
+      typeof body?.tradePreferences === 'string'
+        ? body.tradePreferences.trim()
+        : undefined
+    const idempotencyKey = `jewelry-library-api:${mutationKey}`
+    const inputSignature = createHash('sha256')
+      .update(
+        JSON.stringify({
+          designId: designId || null,
+          itemNumber: itemNumber.toUpperCase(),
+          material: material?.toLowerCase() ?? null,
+          mainStone: mainStone?.toLowerCase() ?? null,
+          repNotes: repNotes || null,
+          tradePreferences: tradePreferences || null,
+          listingPhotoSource: listingPhotoUrl || null,
+        }),
+      )
+      .digest('hex')
+    const admin = createAdminClient()
+    const replay = await getCatalogListingMutationReceipt(admin, {
+      repId,
+      idempotencyKey,
+      inputSignature,
+    })
+    if (replay) {
+      return NextResponse.json({ ok: true, result: replay })
+    }
     const processedListingPhotoUrl = listingPhotoUrl
       ? (
           await processRepCustomListingPhotoUrl({
             repId,
             sourceImageUrl: listingPhotoUrl,
             filenameStem: `${itemNumber || 'listing'}-listing-photo`,
+            mutationAssetKey: inputSignature,
           })
         ).photoUrl
       : undefined
-    const result = await addListing(createAdminClient(), repId, {
+    const result = await addListing(admin, repId, {
+      ...(designId ? { designId } : {}),
       itemNumber,
-      repNotes: typeof body?.repNotes === 'string' ? body.repNotes : undefined,
-      tradePreferences:
-        typeof body?.tradePreferences === 'string' ? body.tradePreferences : undefined,
+      material,
+      mainStone,
+      repNotes,
+      tradePreferences,
       listingPhotoUrl: processedListingPhotoUrl,
+      idempotencyKey,
+      inputSignature,
     })
 
     return NextResponse.json({ ok: true, result })

@@ -87,6 +87,10 @@ export function mapTradeBoardIntakeSessionRow(
     missing: (row.missing_fields as string[] | null) ?? [],
     blockers: (row.hard_blockers as string[] | null) ?? [],
     warnings: (row.soft_warnings as string[] | null) ?? [],
+    metadata:
+      row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+        ? { ...(row.metadata as Record<string, unknown>) }
+        : {},
     photos,
     createdListingIds:
       ((row.created_listing_ids as string[] | null) ?? undefined) || undefined,
@@ -134,7 +138,7 @@ export async function getActiveTradeBoardIntakeSession(
     .select('*')
     .eq('rep_id', args.repId)
     .eq('conversation_id', args.conversationId)
-    .eq('status', 'active')
+    .in('status', ['active', 'needs_human_review'])
     .gt('expires_at', args.nowIso)
     .order('updated_at', { ascending: false })
     .limit(1)
@@ -154,6 +158,62 @@ export async function getActiveTradeBoardIntakeSession(
     ...(data as Record<string, unknown>),
     trade_board_intake_photos: photos ?? [],
   })
+}
+
+export interface TradeBoardIntakeFailureRecord {
+  workflowId: string
+  failureCount: number
+  workflowStatusAfter: 'active' | 'needs_human_review'
+  newlyEscalated: boolean
+  sameRunReplay: boolean
+}
+
+export async function recordTradeBoardIntakeFailure(
+  supabase: SupabaseClient,
+  args: {
+    sessionId: string
+    repId: string
+    conversationId: string
+    toolName: string
+    runId: string
+    failureSignature: string
+    inputSignature: string
+    errorCode: string
+    errorStage: string
+    retryable: boolean
+    nowIso: string
+  },
+): Promise<TradeBoardIntakeFailureRecord | null> {
+  const { data, error } = await supabase.rpc(
+    'rpc_record_trade_board_intake_failure',
+    {
+      p_session_id: args.sessionId,
+      p_rep_id: args.repId,
+      p_conversation_id: args.conversationId,
+      p_tool_name: args.toolName,
+      p_run_id: args.runId,
+      p_failure_signature: args.failureSignature,
+      p_input_signature: args.inputSignature,
+      p_error_code: args.errorCode,
+      p_error_stage: args.errorStage,
+      p_retryable: args.retryable,
+      p_now: args.nowIso,
+    },
+  )
+  if (error) throw error
+  if (!data) return null
+
+  const row = data as Record<string, unknown>
+  return {
+    workflowId: String(row.workflow_id),
+    failureCount: Number(row.failure_count),
+    workflowStatusAfter:
+      row.workflow_status_after === 'needs_human_review'
+        ? 'needs_human_review'
+        : 'active',
+    newlyEscalated: Boolean(row.newly_escalated),
+    sameRunReplay: Boolean(row.same_run_replay),
+  }
 }
 
 export async function createTradeBoardIntakeSession(
@@ -192,6 +252,55 @@ export async function updateTradeBoardIntakeSession(
     .eq('id', args.sessionId)
 
   if (error) throw error
+}
+
+/**
+ * Rebind an active intake to a replacement conversation without creating a new
+ * workflow. Only conversation ownership fields change; all known facts,
+ * failure metadata, phase/status, and confirmed photo state stay on the same
+ * durable workflow id.
+ */
+export async function transferActiveTradeBoardIntakeConversation(
+  supabase: SupabaseClient,
+  args: {
+    repId: string
+    sourceConversationId: string
+    destinationConversationId: string
+    nowIso: string
+  },
+): Promise<{
+  workflowId: string
+  destinationConversationId: string
+  replayed: boolean
+} | null> {
+  if (
+    !args.repId ||
+    !args.sourceConversationId ||
+    !args.destinationConversationId ||
+    args.sourceConversationId === args.destinationConversationId
+  ) {
+    throw new Error('Invalid Trade Board intake rollover scope')
+  }
+
+  const { data, error } = await supabase.rpc(
+    'rpc_rollover_trade_board_intake_v2',
+    {
+      p_rep_id: args.repId,
+      p_source_conversation_id: args.sourceConversationId,
+      p_destination_conversation_id: args.destinationConversationId,
+      p_now: args.nowIso,
+    },
+  )
+
+  if (error) throw error
+  if (!data) return null
+
+  const row = data as Record<string, unknown>
+  return {
+    workflowId: String(row.workflow_id),
+    destinationConversationId: String(row.destination_conversation_id),
+    replayed: Boolean(row.replayed),
+  }
 }
 
 export async function upsertTradeBoardIntakePhoto(

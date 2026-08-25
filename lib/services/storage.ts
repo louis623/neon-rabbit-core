@@ -87,6 +87,7 @@ export async function uploadJewelryPhoto(
   repId: string,
   base64Data: string,
   filename?: string,
+  options: { upsert?: boolean } = {},
 ): Promise<string> {
   const admin = createAdminClient()
   const { mime, base64 } = parseDataUrl(base64Data)
@@ -97,17 +98,55 @@ export async function uploadJewelryPhoto(
 
   const { error } = await admin.storage
     .from(PUBLIC_BUCKET)
-    .upload(key, buffer, { contentType: mime, upsert: false })
+    .upload(key, buffer, { contentType: mime, upsert: options.upsert === true })
   if (error) throw error
 
   const { data } = admin.storage.from(PUBLIC_BUCKET).getPublicUrl(key)
   return data.publicUrl
 }
 
+export interface CatalogDesignPhotoAsset {
+  objectPath: string
+  publicUrl: string
+}
+
+/**
+ * Upload a catalog source photo under the already-reserved internal design ID.
+ * Vendor item numbers can belong to more than one material/stone variant, so
+ * they must not be the storage identity. `upsert` intentionally stays off:
+ * one variant must never overwrite another variant's canonical source photo.
+ */
+export async function uploadCatalogDesignSourcePhoto(
+  repId: string,
+  designId: string,
+  base64Data: string,
+  filename?: string,
+): Promise<CatalogDesignPhotoAsset> {
+  const admin = createAdminClient()
+  const { mime, base64 } = parseDataUrl(base64Data)
+  const ext = MIME_EXT[mime.toLowerCase()] ?? 'jpg'
+  const safeName = filename
+    ? sanitizeFilename(stripKnownExtension(filename))
+    : 'source'
+  const key = `${repId}/designs/${designId}/${safeName}.${ext}`
+  const buffer = Buffer.from(base64, 'base64')
+
+  const bucket = admin.storage.from(PUBLIC_BUCKET)
+  const { error } = await bucket.upload(key, buffer, {
+    contentType: mime,
+    upsert: false,
+  })
+  if (error) throw error
+
+  const { data } = bucket.getPublicUrl(key)
+  return { objectPath: key, publicUrl: data.publicUrl }
+}
+
 export async function uploadStagedOriginalPhoto(
   repId: string,
   base64Data: string,
   filename?: string,
+  options: { designId?: string } = {},
 ): Promise<{ objectPath: string; signedUrl: string }> {
   const admin = createAdminClient()
   const { mime, base64 } = parseDataUrl(base64Data)
@@ -115,7 +154,10 @@ export async function uploadStagedOriginalPhoto(
   const baseName = filename
     ? sanitizeFilename(stripKnownExtension(filename))
     : randomUUID()
-  const key = `${repId}/${randomUUID()}-${baseName}.${ext}`
+  const keyPrefix = options.designId
+    ? `${repId}/designs/${options.designId}`
+    : repId
+  const key = `${keyPrefix}/${randomUUID()}-${baseName}.${ext}`
   const buffer = Buffer.from(base64, 'base64')
 
   const bucket = admin.storage.from(STAGING_BUCKET)
@@ -126,7 +168,10 @@ export async function uploadStagedOriginalPhoto(
   if (error) throw error
 
   const signed = await bucket.createSignedUrl(key, STAGING_URL_TTL_SECONDS)
-  if (signed.error) throw signed.error
+  if (signed.error) {
+    await bucket.remove([key])
+    throw signed.error
+  }
 
   return {
     objectPath: key,
@@ -225,6 +270,34 @@ export async function uploadTradeRequestRevealScreenshot(
     uploadedAt: uploadedAtDate.toISOString(),
     expiresAt: expiresAtDate.toISOString(),
   }
+}
+
+/** Remove source assets created for an abandoned catalog-design attempt. */
+export async function removeCatalogDesignPhotoAssets(input: {
+  publicObjectPath?: string | null
+  stagedObjectPath?: string | null
+}): Promise<void> {
+  const publicPaths = input.publicObjectPath?.trim()
+    ? [input.publicObjectPath.trim()]
+    : []
+  const stagedPaths = input.stagedObjectPath?.trim()
+    ? [input.stagedObjectPath.trim()]
+    : []
+  if (publicPaths.length === 0 && stagedPaths.length === 0) return
+
+  const admin = createAdminClient()
+  const cleanupErrors: unknown[] = []
+
+  if (publicPaths.length > 0) {
+    const { error } = await admin.storage.from(PUBLIC_BUCKET).remove(publicPaths)
+    if (error) cleanupErrors.push(error)
+  }
+  if (stagedPaths.length > 0) {
+    const { error } = await admin.storage.from(STAGING_BUCKET).remove(stagedPaths)
+    if (error) cleanupErrors.push(error)
+  }
+
+  if (cleanupErrors.length > 0) throw cleanupErrors[0]
 }
 
 export async function getTradeRequestRevealScreenshotSignedUrl(

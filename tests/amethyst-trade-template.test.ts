@@ -351,6 +351,7 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).not.toContain('<RulesStrip />')
     expect(jsx).not.toContain('tp-rules-strip')
     expect(jsx).toContain('piece.material')
+    expect(jsx).toContain('{piece.material} · {piece.stone}')
     expect(jsx).toContain('piece.photoUrl')
     expect(jsx).toContain('same collection')
     expect(jsx).toContain('same jewelry type')

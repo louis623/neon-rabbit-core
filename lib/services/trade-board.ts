@@ -331,6 +331,7 @@ type CatalogListingQuantityResult = {
   status: ListingStatus
   quantityAvailable: number
   groupedWithExisting: boolean
+  mutationReplayed: boolean
 }
 
 async function addOrIncrementCatalogListing(
@@ -343,10 +344,17 @@ async function addOrIncrementCatalogListing(
     ringSize?: string | null
     listingPhotoUrl?: string | null
     usesCanonicalPhoto: boolean
+    idempotencyKey?: string
+    inputSignature?: string
   },
 ): Promise<CatalogListingQuantityResult> {
+  if (!args.idempotencyKey?.trim() || !args.inputSignature?.trim()) {
+    throw errors.INVALID_INPUT(
+      'idempotencyKey and inputSignature required for catalog listing adds',
+    )
+  }
   const { data, error } = await supabase.rpc(
-    'rpc_add_or_increment_catalog_listing',
+    'rpc_add_or_increment_catalog_listing_v2',
     {
       p_rep_id: args.repId,
       p_design_id: args.designId,
@@ -355,6 +363,8 @@ async function addOrIncrementCatalogListing(
       p_ring_size: normalizeOptionalListingText(args.ringSize) ?? null,
       p_listing_photo_url: args.listingPhotoUrl ?? null,
       p_uses_canonical_photo: args.usesCanonicalPhoto,
+      p_idempotency_key: args.idempotencyKey,
+      p_input_signature: args.inputSignature,
     },
   )
   if (error) throw error
@@ -364,6 +374,7 @@ async function addOrIncrementCatalogListing(
         status: ListingStatus
         quantity_available: number
         grouped_with_existing: boolean
+        mutation_replayed?: boolean
       }
     | null
   if (!listing) throw errors.LISTING_NOT_FOUND(args.designId)
@@ -372,6 +383,61 @@ async function addOrIncrementCatalogListing(
     status: listing.status,
     quantityAvailable: listing.quantity_available,
     groupedWithExisting: listing.grouped_with_existing,
+    mutationReplayed: Boolean(listing.mutation_replayed),
+  }
+}
+
+export async function getCatalogListingMutationReceipt(
+  supabase: SupabaseClient,
+  args: { repId: string; idempotencyKey: string; inputSignature: string },
+): Promise<AddListingResult | null> {
+  const { data, error } = await supabase
+    .from('trade_listing_add_mutations')
+    .select('input_signature,result')
+    .eq('rep_id', args.repId)
+    .eq('idempotency_key', args.idempotencyKey)
+    .maybeSingle()
+  if (error) throw error
+  if (!data) return null
+  if (data.input_signature !== args.inputSignature) {
+    throw errors.INVALID_INPUT(
+      'catalog listing idempotency key reused with different input',
+    )
+  }
+  if (!data.result || typeof data.result !== 'object') return null
+
+  const receipt = data.result as Record<string, unknown>
+  const listingId = typeof receipt.listing_id === 'string' ? receipt.listing_id : ''
+  if (!listingId) return null
+
+  const { data: listingRow, error: listingError } = await supabase
+    .from('trade_listings')
+    .select(
+      'id, design_id, status, quantity_available, uses_canonical_photo, design:jewelry_designs!inner(item_number, design_name)',
+    )
+    .eq('rep_id', args.repId)
+    .eq('id', listingId)
+    .maybeSingle()
+  if (listingError) throw listingError
+  if (!listingRow) throw errors.LISTING_NOT_FOUND(listingId)
+
+  const designRelation = listingRow.design as
+    | { item_number: string; design_name: string }
+    | Array<{ item_number: string; design_name: string }>
+    | null
+  const design = Array.isArray(designRelation) ? designRelation[0] : designRelation
+  if (!design) throw errors.LISTING_NOT_FOUND(listingId)
+
+  return {
+    listingId,
+    designId: String(listingRow.design_id),
+    itemNumber: design.item_number,
+    designName: design.design_name,
+    status: listingRow.status as ListingStatus,
+    usesCanonicalPhoto: Boolean(listingRow.uses_canonical_photo),
+    quantityAvailable: Number(listingRow.quantity_available),
+    groupedWithExisting: Boolean(receipt.grouped_with_existing),
+    mutationReplayed: true,
   }
 }
 
@@ -689,10 +755,17 @@ export async function addListing(
   if (!input.itemNumber) throw errors.MISSING_ITEM_INPUT()
 
   const resolved = await resolveItemNumber(supabase, input.itemNumber, {
+    ...(input.designId !== undefined ? { designId: input.designId } : {}),
     ...(input.material !== undefined ? { material: input.material } : {}),
     ...(input.mainStone !== undefined ? { mainStone: input.mainStone } : {}),
   })
   if (!resolved.found) {
+    if (input.designId) {
+      throw errors.INVALID_INPUT(
+        'selected catalog variant does not match the supplied item details',
+        'That exact dancer variant changed in the jewelry library. Refresh the library and choose it again.',
+      )
+    }
     if (resolved.ambiguous) throw errors.NEEDS_MATERIAL_VARIANT(resolved.itemNumber)
     throw errors.NEEDS_FULL_INFO(input.itemNumber)
   }
@@ -725,22 +798,26 @@ export async function addListing(
     ringSize: input.ringSize,
     listingPhotoUrl: input.listingPhotoUrl,
     usesCanonicalPhoto,
+    idempotencyKey: input.idempotencyKey,
+    inputSignature: input.inputSignature,
   })
 
   // Increment times_listed via fetch-then-update (counter, not load-bearing).
-  const { data: designRow } = await supabase
-    .from('jewelry_designs')
-    .select('times_listed')
-    .eq('id', resolved.design.id)
-    .maybeSingle()
-  if (designRow) {
-    await supabase
+  if (!listing.mutationReplayed) {
+    const { data: designRow } = await supabase
       .from('jewelry_designs')
-      .update({
-        times_listed: ((designRow.times_listed as number | null) ?? 0) + 1,
-        updated_at: new Date().toISOString(),
-      })
+      .select('times_listed')
       .eq('id', resolved.design.id)
+      .maybeSingle()
+    if (designRow) {
+      await supabase
+        .from('jewelry_designs')
+        .update({
+          times_listed: ((designRow.times_listed as number | null) ?? 0) + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', resolved.design.id)
+    }
   }
 
   return {
@@ -752,6 +829,7 @@ export async function addListing(
     usesCanonicalPhoto,
     quantityAvailable: listing.quantityAvailable,
     groupedWithExisting: listing.groupedWithExisting,
+    mutationReplayed: listing.mutationReplayed,
   }
 }
 
@@ -791,50 +869,35 @@ export async function addListingBatch(
     )
   }
 
-  const itemNumbers = normalizedItems.map((i) => i.itemNumber)
-  const { data: designs, error: designErr } = await supabase
-    .from('jewelry_designs')
-    .select('id, item_number, design_name, collection_id, canonical_photo_url')
-    .in('item_number', itemNumbers)
-  if (designErr) throw designErr
-
-  const designByItem = new Map<
-    string,
-    {
-      id: string
-      design_name: string
-      collection_id: string | null
-      canonical_photo_url: string | null
-    }
-  >()
-  for (const d of designs ?? []) {
-    designByItem.set(d.item_number as string, {
-      id: d.id as string,
-      design_name: d.design_name as string,
-      collection_id: (d.collection_id as string | null) ?? null,
-      canonical_photo_url: (d.canonical_photo_url as string | null) ?? null,
-    })
-  }
-
   const ready: Array<{ item: BatchListingItem; designId: string; designName: string }> = []
   const needCollection: Array<{ itemNumber: string; designId: string; designName: string }> = []
   const needFullInfo: Array<{ itemNumber: string }> = []
 
   for (const item of normalizedItems) {
-    const d = designByItem.get(item.itemNumber)
-    if (!d) {
+    const resolved = await resolveItemNumber(supabase, item.itemNumber, {
+      ...(item.material !== undefined ? { material: item.material } : {}),
+      ...(item.mainStone !== undefined ? { mainStone: item.mainStone } : {}),
+    })
+    if (!resolved.found) {
+      if (resolved.ambiguous) {
+        throw errors.NEEDS_MATERIAL_VARIANT(item.itemNumber)
+      }
       needFullInfo.push({ itemNumber: item.itemNumber })
       continue
     }
-    if (!d.collection_id) {
+    if (!resolved.hasCollection) {
       needCollection.push({
         itemNumber: item.itemNumber,
-        designId: d.id,
-        designName: d.design_name,
+        designId: resolved.design.id,
+        designName: resolved.design.designName,
       })
       continue
     }
-    ready.push({ item, designId: d.id, designName: d.design_name })
+    ready.push({
+      item,
+      designId: resolved.design.id,
+      designName: resolved.design.designName,
+    })
   }
 
   if (ready.length === 0) {
@@ -843,6 +906,7 @@ export async function addListingBatch(
 
   const nowIso = new Date().toISOString()
   const addedByListingId = new Map<string, AddListingResult>()
+  const listingCountsByDesign = new Map<string, number>()
   for (const r of ready) {
     const usesCanonicalPhoto = !r.item.listingPhotoUrl
     const listing = await addOrIncrementCatalogListing(supabase, {
@@ -853,6 +917,8 @@ export async function addListingBatch(
       ringSize: r.item.ringSize,
       listingPhotoUrl: r.item.listingPhotoUrl,
       usesCanonicalPhoto,
+      idempotencyKey: r.item.idempotencyKey,
+      inputSignature: r.item.inputSignature,
     })
     addedByListingId.set(listing.listingId, {
       listingId: listing.listingId,
@@ -863,17 +929,17 @@ export async function addListingBatch(
       usesCanonicalPhoto,
       quantityAvailable: listing.quantityAvailable,
       groupedWithExisting: listing.groupedWithExisting,
+      mutationReplayed: listing.mutationReplayed,
     })
+    if (!listing.mutationReplayed) {
+      listingCountsByDesign.set(
+        r.designId,
+        (listingCountsByDesign.get(r.designId) ?? 0) + 1,
+      )
+    }
   }
 
   // Bump times_listed by physical listing count per design.
-  const listingCountsByDesign = new Map<string, number>()
-  for (const r of ready) {
-    listingCountsByDesign.set(
-      r.designId,
-      (listingCountsByDesign.get(r.designId) ?? 0) + 1,
-    )
-  }
   for (const [designId, listingCount] of listingCountsByDesign) {
     const { data: designRow } = await supabase
       .from('jewelry_designs')

@@ -178,6 +178,40 @@ describe('workspace request error copy', () => {
   })
 })
 
+describe('Dance Floor add retry keys', () => {
+  it('persists pending mutation keys across a page refresh and clears them only after success', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(source).toContain('window.localStorage.getItem(storageKey)')
+    expect(source).toContain('window.localStorage.setItem(storageKey, mutationKey)')
+    expect(source).toContain('getOrCreateTradeAddMutationKey(logicalMutation)')
+    expect(source).toContain('clearTradeAddMutationKey(logicalMutation)')
+    expect(source).toContain('window.localStorage.removeItem(')
+    expect(source).toContain('payload?.result?.mutationReplayed')
+    expect(source).toContain('No new copy was added. Tap Add again')
+    expect(source).toContain('body: JSON.stringify({\n          designId,')
+
+    const quickAddSource = source.slice(
+      source.indexOf('async function handleQuickAddListing()'),
+      source.indexOf('async function handleRemoveTradeListing'),
+    )
+    expect(quickAddSource.indexOf('await refreshTradeWorkspace()')).toBeLessThan(
+      quickAddSource.indexOf('clearTradeAddMutationKey(logicalMutation)'),
+    )
+
+    const libraryAddSource = source.slice(
+      source.indexOf('async function handleAddFromLibrary'),
+      source.indexOf('async function patchMessageDelivery'),
+    )
+    expect(libraryAddSource.indexOf('await Promise.all([')).toBeLessThan(
+      libraryAddSource.indexOf('clearTradeAddMutationKey(logicalMutation)'),
+    )
+  })
+})
+
 const DUPLICATE_CUSTOMERS = [
   {
     id: 'dup-1',
@@ -2017,7 +2051,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('aria-label="Filtered active dancers"')
     expect(html).toContain('alt="Sapphire Halo"')
     expect(html).toContain('Sapphire Halo')
-    expect(html).toContain('RG100')
+    expect(html).toContain('RG100 · Sterling · Sapphire')
     expect(html).toContain('Showing 1-1 of 1')
     expect(html).toContain('Remove')
     expect(html).toContain('Reset')

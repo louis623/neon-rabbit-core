@@ -2896,6 +2896,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     })
   const inventoryBrowseLoadPromiseRef = useRef<Promise<void> | null>(null)
   const inventoryBrowseFailedOffsetRef = useRef<number | null>(null)
+  const tradeAddMutationKeysRef = useRef<Map<string, string>>(new Map())
   const [tradeRequestsState, setTradeRequestsState] = useState<TradeRequestsState>({
     status: reviewWorkspaceMode ? 'ready' : 'loading',
     requests: reviewWorkspaceMode ? [] : undefined,
@@ -4673,6 +4674,44 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     reviewWorkspaceMode,
   ])
 
+  function getTradeAddMutationStorageKey(logicalMutation: string) {
+    const repScope = repProfileState.repId ?? repIdOverride ?? 'workspace'
+    return `sparkle-suite:trade-add:${repScope}:${logicalMutation}`
+  }
+
+  function getOrCreateTradeAddMutationKey(logicalMutation: string) {
+    const inMemoryKey = tradeAddMutationKeysRef.current.get(logicalMutation)
+    if (inMemoryKey) return inMemoryKey
+
+    const storageKey = getTradeAddMutationStorageKey(logicalMutation)
+    let persistedKey: string | null = null
+    try {
+      persistedKey = window.localStorage.getItem(storageKey)
+    } catch {
+      // Storage can be unavailable in private or restricted browser contexts.
+    }
+
+    const mutationKey = persistedKey || crypto.randomUUID()
+    tradeAddMutationKeysRef.current.set(logicalMutation, mutationKey)
+    try {
+      window.localStorage.setItem(storageKey, mutationKey)
+    } catch {
+      // The in-memory key still protects retries during the current page lifetime.
+    }
+    return mutationKey
+  }
+
+  function clearTradeAddMutationKey(logicalMutation: string) {
+    tradeAddMutationKeysRef.current.delete(logicalMutation)
+    try {
+      window.localStorage.removeItem(
+        getTradeAddMutationStorageKey(logicalMutation),
+      )
+    } catch {
+      // Nothing else is required after the server has confirmed success.
+    }
+  }
+
   async function handleQuickAddListing() {
     if (!quickAddItemNumber.trim()) {
       setTradeBoardActionState({
@@ -4682,6 +4721,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       })
       return
     }
+
+    const logicalMutation = `quick-add:${quickAddItemNumber.trim().toUpperCase()}`
+    const mutationKey = getOrCreateTradeAddMutationKey(logicalMutation)
 
     setTradeBoardActionState({
       pendingKey: 'quick-add',
@@ -4696,11 +4738,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           itemNumber: quickAddItemNumber,
+          mutationKey,
         }),
       })
 
       const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
+        | { error?: string; result?: { mutationReplayed?: boolean } }
         | null
 
       if (!response.ok) {
@@ -4709,10 +4752,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 
       setQuickAddItemNumber('')
       await refreshTradeWorkspace()
+      clearTradeAddMutationKey(logicalMutation)
       setTradeBoardActionState({
         pendingKey: null,
         error: null,
-        helperMessage: 'Dancer added to your Dance Floor.',
+        helperMessage: payload?.result?.mutationReplayed
+          ? 'Your earlier add already completed. No new copy was added. Tap Add again if you have another identical dancer.'
+          : 'Dancer added to your Dance Floor.',
       })
     } catch (error) {
       setTradeBoardActionState({
@@ -4974,9 +5020,12 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  async function handleAddFromLibrary(itemNumber: string) {
+  async function handleAddFromLibrary(result: JewelryDatabaseResult) {
+    const { designId, itemNumber, mainStone, material } = result
+    const logicalMutation = `library-add:${designId}:${material ?? ''}:${mainStone ?? ''}`
+    const mutationKey = getOrCreateTradeAddMutationKey(logicalMutation)
     setTradeBoardActionState({
-      pendingKey: `library:${itemNumber}`,
+      pendingKey: `library:${designId}`,
       error: null,
       helperMessage: null,
     })
@@ -4987,21 +5036,28 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         credentials: 'include',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
+          designId,
           itemNumber,
+          material,
+          mainStone,
+          mutationKey,
         }),
       })
       const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
+        | { error?: string; result?: { mutationReplayed?: boolean } }
         | null
       if (!response.ok) {
         throw new Error(payload?.error || 'Unable to add that dancer right now.')
       }
 
       await Promise.all([refreshTradeWorkspace(), loadJewelryLibrary(libraryFilters)])
+      clearTradeAddMutationKey(logicalMutation)
       setTradeBoardActionState({
         pendingKey: null,
         error: null,
-        helperMessage: `${itemNumber} added to your Dance Floor.`,
+        helperMessage: payload?.result?.mutationReplayed
+          ? 'Your earlier add already completed. No new copy was added. Tap Add again if you have another identical dancer.'
+          : `${itemNumber}${material ? ` · ${material}` : ''}${mainStone ? ` · ${mainStone}` : ''} added to your Dance Floor.`,
       })
     } catch (error) {
       setTradeBoardActionState({
@@ -7076,7 +7132,7 @@ export function JewelryLibraryCard({
   onSearch: (query: string) => void
   onFilterChange: (field: JewelryLibraryFilterField, value: string) => void
   onClear: () => void
-  onAddToBoard: (itemNumber: string) => void
+  onAddToBoard: (result: JewelryDatabaseResult) => void
   actionState: TradeBoardActionState
 }) {
   const results = state.results ?? []
@@ -7292,7 +7348,7 @@ function JewelryLibraryResultCard({
   result,
 }: {
   actionState: TradeBoardActionState
-  onAddToBoard: (itemNumber: string) => void
+  onAddToBoard: (result: JewelryDatabaseResult) => void
   result: JewelryDatabaseResult
 }) {
   const label = deriveJewelryLibraryLabel(result)
@@ -7351,11 +7407,11 @@ function JewelryLibraryResultCard({
           className={styles.libraryAddButton}
           disabled={
             result.isOnMyBoard ||
-            actionState.pendingKey === `library:${result.itemNumber}`
+            actionState.pendingKey === `library:${result.designId}`
           }
-          onClick={() => onAddToBoard(result.itemNumber)}
+          onClick={() => onAddToBoard(result)}
         >
-          {actionState.pendingKey === `library:${result.itemNumber}`
+          {actionState.pendingKey === `library:${result.designId}`
             ? 'Adding...'
             : result.isOnMyBoard
               ? 'Already listed'

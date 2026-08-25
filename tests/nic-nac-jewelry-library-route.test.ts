@@ -4,6 +4,7 @@ const getAuthenticatedRepMock = vi.fn()
 const searchJewelryDatabaseMock = vi.fn()
 const addListingMock = vi.fn()
 const processRepCustomListingPhotoUrlMock = vi.fn()
+const getCatalogListingMutationReceiptMock = vi.fn()
 
 vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
@@ -22,6 +23,8 @@ vi.mock('@/lib/services/jewelry-database', () => ({
 
 vi.mock('@/lib/services/trade-board', () => ({
   addListing: (...args: unknown[]) => addListingMock(...args),
+  getCatalogListingMutationReceipt: (...args: unknown[]) =>
+    getCatalogListingMutationReceiptMock(...args),
 }))
 
 vi.mock('@/lib/services/listing-photo-processing', () => ({
@@ -37,6 +40,8 @@ describe('jewelry library route', () => {
     searchJewelryDatabaseMock.mockReset()
     addListingMock.mockReset()
     processRepCustomListingPhotoUrlMock.mockReset()
+    getCatalogListingMutationReceiptMock.mockReset()
+    getCatalogListingMutationReceiptMock.mockResolvedValue(null)
   })
 
   it('searches the shared jewelry catalog for the authenticated rep', async () => {
@@ -187,16 +192,25 @@ describe('jewelry library route', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
+          designId: 'design-1',
           itemNumber: 'RG100',
+          material: 'Rose gold',
+          mainStone: 'Pink opal',
+          mutationKey: 'library-add-1',
         }),
       }),
     )
 
     expect(addListingMock).toHaveBeenCalledWith({ marker: 'admin' }, 'rep-1', {
+      designId: 'design-1',
       itemNumber: 'RG100',
+      material: 'Rose gold',
+      mainStone: 'Pink opal',
       repNotes: undefined,
       tradePreferences: undefined,
       listingPhotoUrl: undefined,
+      idempotencyKey: 'jewelry-library-api:library-add-1',
+      inputSignature: expect.any(String),
     })
     expect(response.status).toBe(200)
   })
@@ -225,6 +239,7 @@ describe('jewelry library route', () => {
         body: JSON.stringify({
           itemNumber: 'RG100',
           listingPhotoUrl: 'https://dropbox.example.com/ring.png',
+          mutationKey: 'library-add-photo-1',
         }),
       }),
     )
@@ -233,12 +248,17 @@ describe('jewelry library route', () => {
       repId: 'rep-1',
       sourceImageUrl: 'https://dropbox.example.com/ring.png',
       filenameStem: 'RG100-listing-photo',
+      mutationAssetKey: expect.any(String),
     })
     expect(addListingMock).toHaveBeenCalledWith({ marker: 'admin' }, 'rep-1', {
       itemNumber: 'RG100',
+      material: undefined,
+      mainStone: undefined,
       repNotes: undefined,
       tradePreferences: undefined,
       listingPhotoUrl: 'https://cdn.example.com/rep-1/ring-enhanced.png',
+      idempotencyKey: 'jewelry-library-api:library-add-photo-1',
+      inputSignature: expect.any(String),
     })
   })
 })

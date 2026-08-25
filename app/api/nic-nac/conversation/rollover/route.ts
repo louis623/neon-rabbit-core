@@ -4,12 +4,15 @@ import { AuthError, getPaidNicNacContext } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
 import {
   getConversationOwner,
+  deleteConversationMessages,
   insertConversationMessages,
   loadConversationForClient,
 } from '@/lib/nic-nac/persistence'
 import { findActionableApproval } from '@/lib/nic-nac/hitl-state'
 import { buildNicNacRolloverMessages } from '@/lib/nic-nac/rollover'
 import { logNicNacRollover } from '@/lib/nic-nac/rollover-telemetry'
+import { transferActiveTradeBoardIntakeConversation } from '@/lib/nic-nac/workflows/trade-board-intake-store'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -60,6 +63,36 @@ export async function POST(request: Request) {
     repId,
     messages,
   })
+  let workflowTransfer: Awaited<
+    ReturnType<typeof transferActiveTradeBoardIntakeConversation>
+  >
+  try {
+    workflowTransfer = await transferActiveTradeBoardIntakeConversation(
+      createAdminClient(),
+      {
+        repId,
+        sourceConversationId,
+        destinationConversationId: conversationId,
+        nowIso: new Date().toISOString(),
+      },
+    )
+  } catch (error) {
+    await deleteConversationMessages(supabase, { conversationId, repId })
+    throw error
+  }
+  if (workflowTransfer?.replayed) {
+    await deleteConversationMessages(supabase, { conversationId, repId })
+    const replayMessages = await loadConversationForClient(
+      supabase,
+      workflowTransfer.destinationConversationId,
+    )
+    return NextResponse.json({
+      conversationId: workflowTransfer.destinationConversationId,
+      messages: replayMessages,
+      carriedMessageCount: replayMessages.length,
+      workflowId: workflowTransfer.workflowId,
+    })
+  }
   await logNicNacRollover({
     repId,
     sourceConversationId,
@@ -71,5 +104,6 @@ export async function POST(request: Request) {
     conversationId,
     messages,
     carriedMessageCount: messages.length,
+    workflowId: workflowTransfer?.workflowId ?? null,
   })
 }

@@ -162,25 +162,22 @@ describe('add_listing — batch mode', () => {
 
     expect(addListingBatchMock).toHaveBeenCalledTimes(1)
     expect(addListingBatchMock.mock.calls[0][1]).toBe('rep-1')
-    expect(addListingBatchMock.mock.calls[0][2]).toEqual({
+    expect(addListingBatchMock.mock.calls[0][2]).toMatchObject({
       items: [
         {
           itemNumber: 'RG31452',
-          listingPhotoUrl: undefined,
-          repNotes: undefined,
-          tradePreferences: undefined,
+          idempotencyKey: expect.any(String),
+          inputSignature: expect.any(String),
         },
         {
           itemNumber: 'NK66139',
-          listingPhotoUrl: undefined,
-          repNotes: undefined,
-          tradePreferences: undefined,
+          idempotencyKey: expect.any(String),
+          inputSignature: expect.any(String),
         },
         {
           itemNumber: 'ER99999',
-          listingPhotoUrl: undefined,
-          repNotes: undefined,
-          tradePreferences: undefined,
+          idempotencyKey: expect.any(String),
+          inputSignature: expect.any(String),
         },
       ],
     })

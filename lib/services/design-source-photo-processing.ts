@@ -7,24 +7,28 @@ import {
 import { classifyJewelryPhotoSemantics } from '@/lib/services/jewelry-photo-semantics'
 import { createGuardedJewelryPhotoCrop } from '@/lib/services/jewelry-photo-crop'
 import {
-  uploadJewelryPhoto,
+  removeCatalogDesignPhotoAssets,
+  uploadCatalogDesignSourcePhoto,
   uploadStagedOriginalPhoto,
 } from '@/lib/services/storage'
 
 export type DesignSourcePhotoInput =
   | {
       repId: string
+      designId: string
       filenameStem: string
       sourceImageUrl: string
     }
   | {
       repId: string
+      designId: string
       filenameStem: string
       sourceImageDataUrl: string
     }
 
 export interface DesignSourcePhotoResult {
   publicPhotoUrl: string
+  publicObjectPath: string
   stagedOriginal: {
     objectPath: string
     signedUrl: string
@@ -157,15 +161,33 @@ export async function prepareDesignSourcePhoto(
     input.repId,
     normalizedDataUrl,
     `${input.filenameStem}-original`,
+    { designId: input.designId },
   )
-  const publicPhotoUrl = await uploadJewelryPhoto(
-    input.repId,
-    selectedDataUrl,
-    crop ? `${input.filenameStem}-cropped` : `${input.filenameStem}-source`,
-  )
+  let publicPhotoAsset: Awaited<
+    ReturnType<typeof uploadCatalogDesignSourcePhoto>
+  >
+  try {
+    publicPhotoAsset = await uploadCatalogDesignSourcePhoto(
+      input.repId,
+      input.designId,
+      selectedDataUrl,
+      crop ? `${input.filenameStem}-cropped` : `${input.filenameStem}-source`,
+    )
+  } catch (error) {
+    try {
+      await removeCatalogDesignPhotoAssets({
+        stagedObjectPath: stagedOriginal.objectPath,
+      })
+    } catch {
+      // Preserve the actionable upload error. Retention tooling can retry an
+      // isolated cleanup failure without obscuring the original cause.
+    }
+    throw error
+  }
 
   return {
-    publicPhotoUrl,
+    publicPhotoUrl: publicPhotoAsset.publicUrl,
+    publicObjectPath: publicPhotoAsset.objectPath,
     stagedOriginal,
     preflight: selectedPreflight,
     analysis: selectedAnalysis,

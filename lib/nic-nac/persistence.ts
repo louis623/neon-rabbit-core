@@ -153,6 +153,18 @@ export async function insertConversationMessages(
   if (error) throw error
 }
 
+export async function deleteConversationMessages(
+  supabase: SupabaseClient,
+  args: { conversationId: string; repId: string },
+): Promise<void> {
+  const { error } = await supabase
+    .from('nic_nac_conversations')
+    .delete()
+    .eq('conversation_id', args.conversationId)
+    .eq('rep_id', args.repId)
+  if (error) throw error
+}
+
 export async function reserveAssistantMessage(
   supabase: SupabaseClient,
   args: {

@@ -35,8 +35,13 @@
 //   mask the tool outcome.
 
 import type { Tool } from 'ai'
+import { createHash } from 'crypto'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
+import { classifyNicNacToolFailure } from '@/lib/nic-nac/tool-failure-classification'
+import { recordTradeBoardIntakeFailure } from '@/lib/nic-nac/workflows/trade-board-intake-store'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { createSupportReport } from '@/lib/services/support-reports'
 import type { ToolContext } from '../types'
 
 const TRANSIENT_RX = /ETIMEDOUT|ECONNRESET|ENOTFOUND|fetch failed|socket hang up|\b(408|429|502|503|504)\b/i
@@ -65,7 +70,7 @@ export function withErrorHandling({ name, ctx, readOnly }: Args, tool: Tool): To
         try {
           return await original.apply(tool, args)
         } catch (retryErr) {
-          return await escalate(retryErr, name, ctx)
+          return await escalate(retryErr, name, ctx, args[0])
         }
       }
       if (err instanceof NicNacToolError) {
@@ -76,7 +81,7 @@ export function withErrorHandling({ name, ctx, readOnly }: Args, tool: Tool): To
           message: err.userMessage,
         }
       }
-      return await escalate(err, name, ctx)
+      return await escalate(err, name, ctx, args[0])
     }
   }
 
@@ -84,7 +89,99 @@ export function withErrorHandling({ name, ctx, readOnly }: Args, tool: Tool): To
   return { ...(tool as object), execute: wrapped } as Tool
 }
 
-async function escalate(err: unknown, toolName: string, ctx: ToolContext) {
+function stableInputSignature(input: unknown): string {
+  const record =
+    input && typeof input === 'object' ? (input as Record<string, unknown>) : {}
+  const safe = {
+    mode: record.mode,
+    catalogMode: record.catalogMode,
+    itemNumber: record.itemNumber,
+    designName: record.designName,
+    collectionName: record.collectionName,
+    collectionYear: record.collectionYear,
+    material: record.material,
+    mainStone: record.mainStone,
+    ringSize: record.ringSize,
+    listingPhotoIndex: record.listingPhotoIndex,
+    piecePhotoIndex: record.piecePhotoIndex,
+    items: Array.isArray(record.items)
+      ? record.items.map((item) => {
+          const value =
+            item && typeof item === 'object'
+              ? (item as Record<string, unknown>)
+              : {}
+          return {
+            itemNumber: value.itemNumber,
+            material: value.material,
+            mainStone: value.mainStone,
+            ringSize: value.ringSize,
+          }
+        })
+      : undefined,
+  }
+  return createHash('sha256').update(JSON.stringify(safe)).digest('hex')
+}
+
+function redactFailureMessage(error: unknown): string {
+  const message = (error as Error)?.message ?? String(error)
+  return message.replace(/data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=]+/gi, '[image omitted]').slice(0, 500)
+}
+
+async function escalate(
+  err: unknown,
+  toolName: string,
+  ctx: ToolContext,
+  toolInput?: unknown,
+) {
+  const classification = classifyNicNacToolFailure(err)
+  const inputSignature = stableInputSignature(toolInput)
+  const failureSignature = createHash('sha256')
+    .update(
+      [
+        ctx.activeTradeBoardWorkflow?.id ?? 'no-workflow',
+        toolName,
+        classification.code,
+        classification.stage,
+        inputSignature,
+      ].join(':'),
+    )
+    .digest('hex')
+  let workflowFailure:
+    | Awaited<ReturnType<typeof recordTradeBoardIntakeFailure>>
+    | null = null
+
+  if (
+    toolName === 'add_listing' &&
+    ctx.activeTradeBoardWorkflow &&
+    ['active', 'needs_human_review'].includes(
+      ctx.activeTradeBoardWorkflow.status,
+    )
+  ) {
+    try {
+      workflowFailure = await recordTradeBoardIntakeFailure(
+        createAdminClient(),
+        {
+          sessionId: ctx.activeTradeBoardWorkflow.id,
+          repId: ctx.repId,
+          conversationId: ctx.conversationId,
+          toolName,
+          runId: ctx.runId,
+          failureSignature,
+          inputSignature,
+          errorCode: classification.code,
+          errorStage: classification.stage,
+          retryable: classification.retryable,
+          nowIso: new Date().toISOString(),
+        },
+      )
+    } catch (workflowError) {
+      console.error('[nic-nac] workflow failure recording failed', {
+        toolName,
+        workflowError,
+      })
+    }
+  }
+
   try {
     await logIncident({
       errorType: 'tool_unhandled',
@@ -94,12 +191,71 @@ async function escalate(err: unknown, toolName: string, ctx: ToolContext) {
       details: {
         toolName,
         runId: ctx.runId,
-        message: (err as Error)?.message ?? String(err),
-        stack: (err as Error)?.stack,
+        workflowId: ctx.activeTradeBoardWorkflow?.id ?? null,
+        errorCode: classification.code,
+        errorStage: classification.stage,
+        retryable: classification.retryable,
+        failureSignature,
+        attemptNumber: workflowFailure?.failureCount ?? 1,
+        workflowStatusAfter:
+          workflowFailure?.workflowStatusAfter ?? null,
+        inputSignature,
+        message: redactFailureMessage(err),
       },
     })
   } catch (logErr) {
     console.error('[nic-nac] nic_nac_incidents write failed', { toolName, logErr })
+  }
+
+  if (workflowFailure?.newlyEscalated) {
+    try {
+      await createSupportReport(createAdminClient(), {
+        source: 'nic_nac',
+        repId: ctx.repId,
+        conversationId: ctx.conversationId,
+        runId: ctx.runId,
+        reportType: 'bug',
+        urgency: 'blocking',
+        pageOrWorkflow: 'Nic-Nac / Dance Floor add dancer',
+        title: `Nic-Nac paused a dancer add (${classification.code})`,
+        details:
+          `Two matching backend save failures paused workflow ${workflowFailure.workflowId}. ` +
+          `Stage: ${classification.stage}. Failure signature: ${failureSignature}. ` +
+          'The rep-provided details and confirmed photo remain in the durable workflow.',
+        expectedResult: 'Save the dancer once and preserve the accepted variant and photo.',
+        actualResult: 'The backend save failed twice and the workflow was paused for human review.',
+        contactOk: true,
+      })
+    } catch (supportError) {
+      console.error('[nic-nac] automatic support report failed', {
+        workflowId: workflowFailure.workflowId,
+        supportError,
+      })
+    }
+  }
+
+  if (workflowFailure?.workflowStatusAfter === 'needs_human_review') {
+    return {
+      ok: false,
+      errorTier: 'escalate' as const,
+      code: classification.code,
+      stage: classification.stage,
+      needsHumanReview: true,
+      message:
+        'I paused this dancer add for the Neon Rabbit team to review. Your details and confirmed photo are still saved, so you do not need to upload them again.',
+    }
+  }
+
+  if (workflowFailure) {
+    return {
+      ok: false,
+      errorTier: 'escalate' as const,
+      code: classification.code,
+      stage: classification.stage,
+      retryable: true,
+      message:
+        'The save failed on the Sparkle Suite side. I kept your details and confirmed photo, so you can retry once without uploading it again.',
+    }
   }
   return {
     ok: false,

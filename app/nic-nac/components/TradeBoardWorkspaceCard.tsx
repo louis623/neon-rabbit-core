@@ -592,7 +592,9 @@ export function TradeBoardWorkspaceCard({
                           <div className={styles.boardInventoryPieceBody}>
                             <div className={styles.customerName}>{display.designName}</div>
                             <div className={styles.tradePieceMetaLine}>
-                              {display.itemNumber ?? display.repFacingNote}
+                              {display.itemNumber
+                                ? `${display.itemNumber}${display.material ? ` · ${display.material}` : ''}${display.mainStone ? ` · ${display.mainStone}` : ''}`
+                                : display.repFacingNote}
                             </div>
                             <div className={styles.tradePieceMetaLine}>
                               {display.typePrefix}

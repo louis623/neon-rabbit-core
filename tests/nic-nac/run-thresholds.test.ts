@@ -18,7 +18,7 @@ describe('Nic-Nac run thresholds', () => {
     })
   })
 
-  it('recommends rollover when a run crosses cost and latency thresholds', () => {
+  it('recommends rollover when a run crosses context and token thresholds', () => {
     const result = evaluateNicNacRunThresholds({
       latencyMs: 12_000,
       inputTokens: 85_000,
@@ -32,10 +32,25 @@ describe('Nic-Nac run thresholds', () => {
     expect(result.reasons).toEqual([
       'high_input_tokens',
       'high_total_tokens',
-      'slow_response',
       'context_compacted',
       'high_estimated_context',
     ])
+  })
+
+  it('records latency as a baseline without rolling a healthy context over', () => {
+    expect(
+      evaluateNicNacRunThresholds({
+        latencyMs: 45_000,
+        inputTokens: 2_000,
+        totalTokens: 2_200,
+        estimatedContextTokens: 2_000,
+        contextCompacted: false,
+        droppedMessageCount: 0,
+      }),
+    ).toEqual({
+      rolloverRecommended: false,
+      reasons: [],
+    })
   })
 
   it('recommends rollover when context compaction drops even one message', () => {

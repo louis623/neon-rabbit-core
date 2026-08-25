@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const analyzeServerImageQualityMock = vi.fn()
 const uploadJewelryPhotoMock = vi.fn()
+const uploadCatalogDesignSourcePhotoMock = vi.fn()
 const uploadStagedOriginalPhotoMock = vi.fn()
+const removeCatalogDesignPhotoAssetsMock = vi.fn()
 const createGuardedJewelryPhotoCropMock = vi.fn()
 
 vi.mock('@/lib/services/server-image-quality', () => ({
@@ -12,8 +14,12 @@ vi.mock('@/lib/services/server-image-quality', () => ({
 
 vi.mock('@/lib/services/storage', () => ({
   uploadJewelryPhoto: (...args: unknown[]) => uploadJewelryPhotoMock(...args),
+  uploadCatalogDesignSourcePhoto: (...args: unknown[]) =>
+    uploadCatalogDesignSourcePhotoMock(...args),
   uploadStagedOriginalPhoto: (...args: unknown[]) =>
     uploadStagedOriginalPhotoMock(...args),
+  removeCatalogDesignPhotoAssets: (...args: unknown[]) =>
+    removeCatalogDesignPhotoAssetsMock(...args),
 }))
 
 vi.mock('@/lib/services/jewelry-photo-crop', () => ({
@@ -131,7 +137,9 @@ describe('listing/design photo semantic integration', () => {
   beforeEach(() => {
     analyzeServerImageQualityMock.mockReset()
     uploadJewelryPhotoMock.mockReset()
+    uploadCatalogDesignSourcePhotoMock.mockReset()
     uploadStagedOriginalPhotoMock.mockReset()
+    removeCatalogDesignPhotoAssetsMock.mockReset()
     createGuardedJewelryPhotoCropMock.mockReset()
   })
 
@@ -196,6 +204,35 @@ describe('listing/design photo semantic integration', () => {
     })
   })
 
+  it('uses one deterministic upsert path for retries of the same listing mutation', async () => {
+    analyzeServerImageQualityMock.mockResolvedValueOnce(
+      confirmedBoxedDisplayAnalysisClassifiedAsPackaging,
+    )
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://cdn.example.com/deterministic-listing.jpg',
+    )
+
+    await processRepListingPhotoUrl(
+      {
+        repId: 'rep-1',
+        sourceImageUrl: 'https://images.example.com/confirmed-boxed-display.jpg',
+        filenameStem: 'ER59000-listing-photo',
+        mutationAssetKey: 'stable-signature',
+      },
+      {
+        fetch: vi.fn().mockResolvedValueOnce(makeImageResponse()),
+        confirmedJewelryFront: true,
+      },
+    )
+
+    expect(uploadJewelryPhotoMock).toHaveBeenCalledWith(
+      'rep-1',
+      expect.stringMatching(/^data:image\/jpeg;base64,/),
+      'ER59000-listing-photo-stable-signature-source',
+      { upsert: true },
+    )
+  })
+
   it('does not let subjective preflight reject a workflow-accepted listing photo', async () => {
     analyzeServerImageQualityMock.mockResolvedValueOnce(
       workflowAcceptedPhotoWithSubjectivePreflightFailures,
@@ -245,6 +282,7 @@ describe('listing/design photo semantic integration', () => {
     await expect(
       prepareDesignSourcePhoto({
         repId: 'rep-1',
+        designId: 'design-card',
         filenameStem: 'card-back',
         sourceImageDataUrl: 'data:image/jpeg;base64,AQID',
       }),
@@ -253,6 +291,7 @@ describe('listing/design photo semantic integration', () => {
       userMessage: expect.stringContaining('actual jewelry photo'),
     })
     expect(uploadJewelryPhotoMock).not.toHaveBeenCalled()
+    expect(uploadCatalogDesignSourcePhotoMock).not.toHaveBeenCalled()
   })
 
   it('uses a guarded crop for clear small listing jewelry instead of rejecting the original framing', async () => {
@@ -367,10 +406,14 @@ describe('listing/design photo semantic integration', () => {
       objectPath: 'rep-1/originals/boxed-earrings-original.jpg',
       signedUrl: 'https://signed.example.com/boxed-earrings-original.jpg',
     })
-    uploadJewelryPhotoMock.mockResolvedValueOnce('https://cdn.example.com/boxed-design.jpg')
+    uploadCatalogDesignSourcePhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/designs/design-boxed/boxed-earrings-cropped.jpg',
+      publicUrl: 'https://cdn.example.com/boxed-design.jpg',
+    })
 
     const result = await prepareDesignSourcePhoto({
       repId: 'rep-1',
+      designId: 'design-boxed',
       filenameStem: 'boxed-earrings',
       sourceImageDataUrl: 'data:image/jpeg;base64,AQID',
     })
@@ -392,13 +435,15 @@ describe('listing/design photo semantic integration', () => {
       objectPath: 'rep-1/originals/rep-approved-original.jpg',
       signedUrl: 'https://signed.example.com/rep-approved-original.jpg',
     })
-    uploadJewelryPhotoMock.mockResolvedValueOnce(
-      'https://cdn.example.com/rep-approved-design.jpg',
-    )
+    uploadCatalogDesignSourcePhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/designs/design-approved/rep-approved-design-source.jpg',
+      publicUrl: 'https://cdn.example.com/rep-approved-design.jpg',
+    })
 
     const result = await prepareDesignSourcePhoto(
       {
         repId: 'rep-1',
+        designId: 'design-approved',
         filenameStem: 'rep-approved-design',
         sourceImageDataUrl: 'data:image/jpeg;base64,AQID',
       },
@@ -447,10 +492,14 @@ describe('listing/design photo semantic integration', () => {
       objectPath: 'rep-1/originals/small-design-original.jpg',
       signedUrl: 'https://signed.example.com/small-design-original.jpg',
     })
-    uploadJewelryPhotoMock.mockResolvedValueOnce('https://cdn.example.com/design-cropped.jpg')
+    uploadCatalogDesignSourcePhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/designs/design-small/small-design-cropped.jpg',
+      publicUrl: 'https://cdn.example.com/design-cropped.jpg',
+    })
 
     const result = await prepareDesignSourcePhoto({
       repId: 'rep-1',
+      designId: 'design-small',
       filenameStem: 'small-design',
       sourceImageDataUrl: 'data:image/jpeg;base64,AQID',
     })

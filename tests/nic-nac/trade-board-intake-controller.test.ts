@@ -24,6 +24,7 @@ function baseState(
     missing: [],
     blockers: [],
     warnings: [],
+    metadata: {},
     photos: [],
     ...overrides,
   }
@@ -304,5 +305,37 @@ describe('Dance Floor intake controller', () => {
 
     expect(readiness.ready).toBe(false)
     expect(readiness.missing).toContain('jewelryFrontPhoto')
+  })
+
+  it('keeps a human-review workflow terminal and exposes no mutation tools', () => {
+    const state = baseState({
+      status: 'needs_human_review',
+      phase: 'needs_human_review',
+      known: {
+        itemNumber: 'ER59000',
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+      },
+      blockers: ['add_listing_backend_failure'],
+      photos: [
+        {
+          attachmentIndex: 1,
+          declaredRole: 'jewelry_front',
+          visualRole: 'jewelry',
+          roleConfirmed: true,
+          quality: 'usable',
+          qualityIssues: [],
+          notes: ['confirmed Ruby photo'],
+        },
+      ],
+    })
+
+    expect(getTradeBoardIntakeToolsRequired(state)).toEqual([])
+    expect(buildTradeBoardIntakePromptState(state)).toMatchObject({
+      workflow: { status: 'needs_human_review' },
+      nextAction: 'escalate_to_human_review',
+      blockers: ['add_listing_backend_failure'],
+      photos: [{ roleConfirmed: true }],
+    })
   })
 })

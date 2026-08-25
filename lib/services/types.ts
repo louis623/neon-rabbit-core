@@ -110,6 +110,8 @@ export interface GetMyBoardFilters {
 
 export interface AddListingInput {
   itemNumber: string
+  /** Exact internal catalog variant selected by a trusted Sparkle Suite surface. */
+  designId?: string
   clickwrapAccepted?: boolean
   collectionName?: string
   collectionYear?: number
@@ -119,6 +121,10 @@ export interface AddListingInput {
   repNotes?: string
   tradePreferences?: string
   listingPhotoUrl?: string // when omitted, falls back to canonical photo
+  /** Stable key for replaying one logical physical-piece add. */
+  idempotencyKey?: string
+  /** Stable digest of the logical add inputs; guards key reuse with new data. */
+  inputSignature?: string
 }
 
 export interface AddListingResult {
@@ -130,15 +136,20 @@ export interface AddListingResult {
   usesCanonicalPhoto: boolean
   quantityAvailable: number
   groupedWithExisting: boolean
+  /** True when this response confirms an earlier committed add instead of a new piece. */
+  mutationReplayed: boolean
 }
 
 export interface BatchListingItem {
   itemNumber: string
   material?: string
+  mainStone?: string
   ringSize?: string
   repNotes?: string
   tradePreferences?: string
   listingPhotoUrl?: string
+  idempotencyKey?: string
+  inputSignature?: string
 }
 
 export interface AddNonItemNumberListingInput {
@@ -1272,6 +1283,7 @@ export type ResolveItemNumberResult =
     }
 
 export interface CreateDesignInput {
+  designId?: string
   itemNumber: string
   designName: string
   piecePhotoUrl: string

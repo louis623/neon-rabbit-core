@@ -102,6 +102,7 @@ export interface TradeBoardIntakeSessionState {
   missing: string[]
   blockers: string[]
   warnings: string[]
+  metadata: Record<string, unknown>
   photos: TradeBoardIntakePhotoState[]
   createdListingIds?: string[]
   createdDesignId?: string

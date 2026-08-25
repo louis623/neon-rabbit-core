@@ -27,7 +27,9 @@ const createDesignMock = vi.fn()
 const resolveItemNumberMock = vi.fn()
 const updateCanonicalPhotoMock = vi.fn()
 const uploadJewelryPhotoMock = vi.fn()
+const uploadCatalogDesignSourcePhotoCallMock = vi.fn()
 const uploadStagedOriginalPhotoMock = vi.fn()
+const removeCatalogDesignPhotoAssetsMock = vi.fn()
 const publishApprovedPhotoMock = vi.fn()
 const updatePhotoPipelineStateMock = vi.fn()
 const executePhotoEnhancementMock = vi.fn()
@@ -83,8 +85,26 @@ vi.mock('@/lib/services/jewelry-database', () => ({
 
 vi.mock('@/lib/services/storage', () => ({
   uploadJewelryPhoto: (...args: unknown[]) => uploadJewelryPhotoMock(...args),
-  uploadStagedOriginalPhoto: (...args: unknown[]) =>
-    uploadStagedOriginalPhotoMock(...args),
+  uploadCatalogDesignSourcePhoto: async (
+    repId: unknown,
+    _designId: unknown,
+    data: unknown,
+    filename: unknown,
+  ) => {
+    uploadCatalogDesignSourcePhotoCallMock(repId, _designId, data, filename)
+    const publicUrl = await uploadJewelryPhotoMock(repId, data, filename)
+    return {
+      objectPath: `mock-design-assets/${String(filename)}`,
+      publicUrl,
+    }
+  },
+  uploadStagedOriginalPhoto: (
+    repId: unknown,
+    data: unknown,
+    filename: unknown,
+  ) => uploadStagedOriginalPhotoMock(repId, data, filename),
+  removeCatalogDesignPhotoAssets: (...args: unknown[]) =>
+    removeCatalogDesignPhotoAssetsMock(...args),
   publishApprovedPhoto: (...args: unknown[]) => publishApprovedPhotoMock(...args),
 }))
 
@@ -173,6 +193,7 @@ function activeWorkflow(
     missing: ['jewelryFrontPhoto'],
     blockers: [],
     warnings: [],
+    metadata: {},
     photos: [
       {
         attachmentIndex: 1,
@@ -252,7 +273,10 @@ function makeConversationLookupMock(
   }
 }
 
-function makeAdminClientMock(existingListings: Array<Record<string, unknown>> = []) {
+function makeAdminClientMock(
+  existingListings: Array<Record<string, unknown>> = [],
+  committedDesign: Record<string, unknown> | null = null,
+) {
   const duplicateLimit = vi.fn().mockResolvedValue({
     data: existingListings,
     error: null,
@@ -264,10 +288,19 @@ function makeAdminClientMock(existingListings: Array<Record<string, unknown>> = 
 
   return {
     from: vi.fn((table: string) => {
-      if (table !== 'trade_listings') {
-        throw new Error(`unexpected table ${table}`)
+      if (table === 'trade_listings') {
+        return { select: duplicateSelect }
       }
-      return { select: duplicateSelect }
+      if (table === 'jewelry_designs') {
+        const maybeSingle = vi.fn().mockResolvedValue({
+          data: committedDesign,
+          error: null,
+        })
+        const eq = vi.fn(() => ({ maybeSingle }))
+        const select = vi.fn(() => ({ eq }))
+        return { select }
+      }
+      throw new Error(`unexpected table ${table}`)
     }),
   }
 }
@@ -281,7 +314,9 @@ beforeEach(() => {
   resolveItemNumberMock.mockResolvedValue({ found: false })
   updateCanonicalPhotoMock.mockReset()
   uploadJewelryPhotoMock.mockReset()
+  uploadCatalogDesignSourcePhotoCallMock.mockReset()
   uploadStagedOriginalPhotoMock.mockReset()
+  removeCatalogDesignPhotoAssetsMock.mockReset()
   publishApprovedPhotoMock.mockReset()
   updatePhotoPipelineStateMock.mockReset()
   executePhotoEnhancementMock.mockReset()
@@ -641,6 +676,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       repId: 'rep-1',
       sourceImageUrl: 'data:image/jpeg;base64,Qk9YRUQ=',
       filenameStem: 'ER13229-listing-photo',
+      mutationAssetKey: expect.any(String),
     }, { confirmedJewelryFront: true })
     expect(addListingMock).toHaveBeenCalledWith(
       expect.anything(),
@@ -775,6 +811,254 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
     )
   })
 
+  it('creates ER59000 Ruby beside the existing Rose Quartz design with a distinct internal variant id', async () => {
+    resolveItemNumberMock.mockResolvedValue({
+      found: false,
+      itemNumber: 'ER59000',
+      variantCandidates: [
+        {
+          designId: 'design-rose-quartz',
+          itemNumber: 'ER59000',
+          designName: 'Baguette Braid Sparkle',
+          material: 'Rhodium Plating',
+          mainStone: 'Rose Quartz Cubic Zirconia',
+        },
+      ],
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://cdn.example.com/rep-1/designs/design-ruby/ER59000-source.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath:
+        'rep-1/designs/design-ruby/uuid-ER59000-original.jpg',
+      signedUrl: 'https://signed.example.com/ER59000-ruby-original',
+    })
+    createDesignMock.mockImplementationOnce(
+      async (_admin: unknown, input: { designId: string }) => ({
+        designId: input.designId,
+        itemNumber: 'ER59000',
+        collectionId: 'coll-og',
+        collectionName: 'OG',
+        typePrefix: 'ER',
+      }),
+    )
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-ruby',
+      designId: 'design-ruby',
+      itemNumber: 'ER59000',
+      designName: 'Baguette Braid Sparkle',
+      status: 'available',
+      usesCanonicalPhoto: false,
+    })
+
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        missing: [],
+        known: {
+          itemNumber: 'ER59000',
+          designName: 'Baguette Braid Sparkle',
+          collectionName: 'OG',
+          material: 'Rhodium Plating',
+          mainStone: 'Lab-Created Ruby',
+          bpMsrp: 128,
+        },
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,UlVCWQ==',
+            quality: 'usable',
+            qualityIssues: [],
+            notes: ['Ruby customer-facing photo'],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER59000',
+        designName: 'Baguette Braid Sparkle',
+        collectionName: 'OG',
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+        bpMsrp: 128,
+        piecePhotoIndex: 1,
+      }),
+    ).resolves.toMatchObject({
+      mode: 'single',
+      listingId: 'listing-ruby',
+      itemNumber: 'ER59000',
+      createdNewDesign: true,
+    })
+
+    const internalVariantId = createDesignMock.mock.calls[0][1].designId
+    expect(internalVariantId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    )
+    expect(uploadCatalogDesignSourcePhotoCallMock).toHaveBeenCalledWith(
+      'rep-1',
+      internalVariantId,
+      expect.stringMatching(/^data:image\/png;base64,/),
+      'ER59000-source',
+    )
+    expect(createDesignMock.mock.calls[0][1]).toMatchObject({
+      designId: internalVariantId,
+      itemNumber: 'ER59000',
+      material: 'Rhodium Plating',
+      mainStone: 'Lab-Created Ruby',
+    })
+    expect(resolveItemNumberMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'ER59000',
+      {
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+      },
+    )
+  })
+
+  it('cleans the Ruby variant photo assets when catalog creation fails so retry is safe', async () => {
+    resolveItemNumberMock.mockResolvedValue({
+      found: false,
+      itemNumber: 'ER59000',
+      variantCandidates: [],
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://cdn.example.com/rep-1/designs/design-ruby/ER59000-source.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath:
+        'rep-1/designs/design-ruby/uuid-ER59000-original.jpg',
+      signedUrl: 'https://signed.example.com/ER59000-ruby-original',
+    })
+    createDesignMock.mockRejectedValueOnce(
+      new Error('catalog insert failed'),
+    )
+
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        missing: [],
+        known: {
+          itemNumber: 'ER59000',
+          designName: 'Baguette Braid Sparkle',
+          collectionName: 'OG',
+          material: 'Rhodium Plating',
+          mainStone: 'Lab-Created Ruby',
+        },
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,UlVCWQ==',
+            quality: 'usable',
+            qualityIssues: [],
+            notes: [],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER59000',
+        designName: 'Baguette Braid Sparkle',
+        collectionName: 'OG',
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+        piecePhotoIndex: 1,
+      }),
+    ).rejects.toBeDefined()
+
+    expect(removeCatalogDesignPhotoAssetsMock).toHaveBeenCalledWith({
+      publicObjectPath: 'mock-design-assets/ER59000-source',
+      stagedObjectPath:
+        'rep-1/designs/design-ruby/uuid-ER59000-original.jpg',
+    })
+    expect(addListingMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps variant assets when a failed create response is read back as committed', async () => {
+    resolveItemNumberMock.mockResolvedValue({
+      found: false,
+      itemNumber: 'ER59000',
+      variantCandidates: [],
+    })
+    uploadJewelryPhotoMock.mockResolvedValueOnce(
+      'https://cdn.example.com/rep-1/designs/design-ruby/ER59000-source.jpg',
+    )
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/designs/design-ruby/uuid-ER59000-original.jpg',
+      signedUrl: 'https://signed.example.com/ER59000-ruby-original',
+    })
+    createDesignMock.mockRejectedValueOnce(new Error('response lost'))
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'listing-ruby',
+      designId: 'design-ruby',
+      itemNumber: 'ER59000',
+      designName: 'Baguette Braid Sparkle',
+      status: 'available',
+      usesCanonicalPhoto: false,
+      quantityAvailable: 1,
+      groupedWithExisting: false,
+    })
+    createAdminClientMock.mockReturnValue(
+      makeAdminClientMock([], {
+        id: 'design-ruby',
+        item_number: 'ER59000',
+        design_name: 'Baguette Braid Sparkle',
+        type_prefix: 'ER',
+        collection_id: 'collection-og',
+        search_tags: [],
+        material: 'Rhodium Plating',
+        main_stone: 'Lab-Created Ruby',
+        canonical_photo_url:
+          'https://cdn.example.com/rep-1/designs/design-ruby/ER59000-source.jpg',
+      }),
+    )
+
+    const tool = makeTool(makeConversationLookupMock([]), {
+      activeTradeBoardWorkflow: activeWorkflow({
+        phase: 'ready_to_add',
+        missing: [],
+        photos: [
+          {
+            attachmentIndex: 1,
+            declaredRole: 'jewelry_front',
+            visualRole: 'jewelry',
+            roleConfirmed: true,
+            imageUrl: 'data:image/jpeg;base64,UlVCWQ==',
+            quality: 'usable',
+            qualityIssues: [],
+            notes: [],
+          },
+        ],
+      }),
+    })
+
+    await expect(
+      tool.execute({
+        mode: 'single',
+        itemNumber: 'ER59000',
+        designName: 'Baguette Braid Sparkle',
+        collectionName: 'OG',
+        material: 'Rhodium Plating',
+        mainStone: 'Lab-Created Ruby',
+        piecePhotoIndex: 1,
+      }),
+    ).resolves.toMatchObject({ listingId: 'listing-ruby' })
+
+    expect(removeCatalogDesignPhotoAssetsMock).not.toHaveBeenCalled()
+  })
+
   it('processes a rep-level custom listing photo before creating the board listing', async () => {
     fetchMock.mockResolvedValueOnce(makeImageResponse(new Uint8Array([4, 5, 6])))
     createDesignMock.mockResolvedValueOnce({
@@ -811,6 +1095,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       repId: 'rep-1',
       sourceImageUrl: 'https://rep.example.com/raw-listing.jpg',
       filenameStem: 'NEW-100-listing-photo',
+      mutationAssetKey: expect.any(String),
     })
     expect(addListingMock.mock.calls[0][2]).toMatchObject({
       listingPhotoUrl: 'https://cdn.example.com/listings/rep-1/ring-enhanced.png',
@@ -854,6 +1139,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       repId: 'rep-1',
       sourceImageUrl: 'data:image/jpeg;base64,SkVXRUw=',
       filenameStem: 'ER76003-listing-photo',
+      mutationAssetKey: expect.any(String),
     })
     expect(addListingMock.mock.calls[0][2]).toMatchObject({
       listingPhotoUrl: 'https://cdn.example.com/listings/rep-1/elodie-jewelry.png',
@@ -936,6 +1222,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       repId: 'rep-1',
       sourceImageUrl: 'data:image/jpeg;base64,SkVXRUw=',
       filenameStem: 'ER13743-listing-photo',
+      mutationAssetKey: expect.any(String),
     })
     expect(addListingMock.mock.calls[0][2]).toMatchObject({
       itemNumber: 'ER13743',
@@ -997,6 +1284,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       repId: 'rep-1',
       sourceImageUrl: 'data:image/jpeg;base64,Qk9YRURfSkVXRUxSWQ==',
       filenameStem: 'ER13229-listing-photo',
+      mutationAssetKey: expect.any(String),
     })
     expect(addListingMock.mock.calls[0][2]).toMatchObject({
       itemNumber: 'ER13229',
@@ -1054,6 +1342,7 @@ describe('add_listing — manual URL fallback (Task 1.5B regression guard)', () 
       repId: 'rep-1',
       sourceImageUrl: 'data:image/jpeg;base64,Qk9YRURfSkVXRUxSWQ==',
       filenameStem: 'ER13229-listing-photo',
+      mutationAssetKey: expect.any(String),
     })
   })
 })
@@ -2384,6 +2673,13 @@ describe('add_listing - active workflow readiness guard', () => {
       activeTradeBoardWorkflow: activeWorkflow({
         phase: 'ready_to_add',
         missing: [],
+        metadata: {
+          addAttempt: {
+            failureSignature: 'same-backend-failure',
+            failureCount: 1,
+            lastFailureRunId: 'run-before-retry',
+          },
+        },
         photos: [
           {
             attachmentIndex: 1,
@@ -2406,6 +2702,18 @@ describe('add_listing - active workflow readiness guard', () => {
       }),
     ).resolves.toMatchObject({
       listingId: 'listing-1',
+    })
+    expect(
+      (
+        updateTradeBoardIntakeSessionMock.mock.calls[0][1].patch.metadata as {
+          addAttempt: Record<string, unknown>
+        }
+      ).addAttempt,
+    ).toMatchObject({
+      failureSignature: 'same-backend-failure',
+      failureCount: 1,
+      lastFailureRunId: 'run-before-retry',
+      lastAuthorizedRunId: 'run-1',
     })
     expect(updateTradeBoardIntakeSessionMock).toHaveBeenCalledWith(
       expect.anything(),
@@ -3151,6 +3459,7 @@ describe('add_listing - active workflow readiness guard', () => {
         repId: 'rep-1',
         sourceImageUrl: 'data:image/jpeg;base64,U0VDT05E',
         filenameStem: 'ER13229-listing-photo',
+        mutationAssetKey: expect.any(String),
       },
       { confirmedJewelryFront: true },
     )

@@ -4,12 +4,20 @@ export const NIC_NAC_ROLLOVER_TAIL_MESSAGES = 12
 
 export type NicNacConversationRunHealth = {
   rolloverRecommended?: boolean | null
+  rolloverReasons?: string[] | null
 } | null | undefined
 
 export function shouldStartNicNacRollover(
   runHealth: NicNacConversationRunHealth,
 ): boolean {
-  return runHealth?.rolloverRecommended === true
+  if (runHealth?.rolloverRecommended !== true) return false
+
+  // Latency is operational telemetry, not evidence that conversation context
+  // needs replacement. Requiring a concrete context/token reason also keeps
+  // historical latency-only health rows from triggering a late rollover.
+  return (runHealth.rolloverReasons ?? []).some(
+    (reason) => reason !== 'slow_response',
+  )
 }
 
 export function buildNicNacRolloverMessages(

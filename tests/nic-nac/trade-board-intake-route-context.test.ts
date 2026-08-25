@@ -312,6 +312,7 @@ describe('Dance Floor intake route context', () => {
     const activeBuilder = {
       select: vi.fn(() => activeBuilder),
       eq: vi.fn(() => activeBuilder),
+      in: vi.fn(() => activeBuilder),
       gt: vi.fn(() => activeBuilder),
       order: vi.fn(() => activeBuilder),
       limit: vi.fn(() => activeBuilder),
@@ -374,6 +375,7 @@ describe('Dance Floor intake route context', () => {
     const activeBuilder = {
       select: vi.fn(() => activeBuilder),
       eq: vi.fn(() => activeBuilder),
+      in: vi.fn(() => activeBuilder),
       gt: vi.fn(() => activeBuilder),
       order: vi.fn(() => activeBuilder),
       limit: vi.fn(() => activeBuilder),
@@ -455,10 +457,15 @@ describe('Dance Floor intake route context', () => {
       missing_fields: ['designName', 'jewelryFrontPhoto'],
       hard_blockers: [],
       soft_warnings: [],
+      metadata: {
+        failureCount: 1,
+        lastFailure: { code: 'object_exists', stage: 'storage_upload' },
+      },
     }
     const activeBuilder = {
       select: vi.fn(() => activeBuilder),
       eq: vi.fn(() => activeBuilder),
+      in: vi.fn(() => activeBuilder),
       gt: vi.fn(() => activeBuilder),
       order: vi.fn(() => activeBuilder),
       limit: vi.fn(() => activeBuilder),
@@ -540,6 +547,10 @@ describe('Dance Floor intake route context', () => {
     })
     expect(context.sessionAfter?.phase).toBe('ready_to_add')
     expect(context.sessionAfter?.missing).toEqual([])
+    expect(context.sessionAfter?.metadata).toEqual({
+      failureCount: 1,
+      lastFailure: { code: 'object_exists', stage: 'storage_upload' },
+    })
     expect(updateBuilder.update).toHaveBeenCalledWith(
       expect.objectContaining({
         design_name: 'The Florence Earrings',
@@ -550,6 +561,11 @@ describe('Dance Floor intake route context', () => {
         bp_msrp: 160,
         current_phase: 'ready_to_add',
         missing_fields: [],
+        metadata: {
+          failureCount: 1,
+          lastFailure: { code: 'object_exists', stage: 'storage_upload' },
+          duplicatePhysicalConfirmed: false,
+        },
       }),
     )
   })
@@ -573,6 +589,7 @@ describe('Dance Floor intake route context', () => {
     const activeBuilder = {
       select: vi.fn(() => activeBuilder),
       eq: vi.fn(() => activeBuilder),
+      in: vi.fn(() => activeBuilder),
       gt: vi.fn(() => activeBuilder),
       order: vi.fn(() => activeBuilder),
       limit: vi.fn(() => activeBuilder),
@@ -684,6 +701,7 @@ describe('Dance Floor intake route context', () => {
     const activeBuilder = {
       select: vi.fn(() => activeBuilder),
       eq: vi.fn(() => activeBuilder),
+      in: vi.fn(() => activeBuilder),
       gt: vi.fn(() => activeBuilder),
       order: vi.fn(() => activeBuilder),
       limit: vi.fn(() => activeBuilder),
@@ -821,6 +839,7 @@ describe('Dance Floor intake route context', () => {
     const activeBuilder = {
       select: vi.fn(() => activeBuilder),
       eq: vi.fn(() => activeBuilder),
+      in: vi.fn(() => activeBuilder),
       gt: vi.fn(() => activeBuilder),
       order: vi.fn(() => activeBuilder),
       limit: vi.fn(() => activeBuilder),
@@ -947,6 +966,7 @@ describe('Dance Floor intake route context', () => {
     const activeBuilder = {
       select: vi.fn(() => activeBuilder),
       eq: vi.fn(() => activeBuilder),
+      in: vi.fn(() => activeBuilder),
       gt: vi.fn(() => activeBuilder),
       order: vi.fn(() => activeBuilder),
       limit: vi.fn(() => activeBuilder),
@@ -1062,6 +1082,7 @@ describe('Dance Floor intake route context', () => {
     const activeBuilder = {
       select: vi.fn(() => activeBuilder),
       eq: vi.fn(() => activeBuilder),
+      in: vi.fn(() => activeBuilder),
       gt: vi.fn(() => activeBuilder),
       order: vi.fn(() => activeBuilder),
       limit: vi.fn(() => activeBuilder),

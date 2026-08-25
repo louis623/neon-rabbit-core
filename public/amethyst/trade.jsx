@@ -1265,7 +1265,7 @@ function TradeCard({ piece, onTap, repName, tierVisible }) {
           <span className="tp-card-msrp">Bomb Party MSRP <strong>{piece.msrp === null ? "TBD" : `$${piece.msrp}`}</strong></span>
         </div>
         <div className="tp-card-quantity">{Math.max(0, Number(piece.quantityAvailable ?? 1))} available</div>
-        <div className="tp-card-material">{piece.material}</div>
+        <div className="tp-card-material">{piece.material} · {piece.stone}</div>
         <div className="tp-card-rep slot" data-slot="brand separation">
           Offered by <strong>{repName}</strong>, an Independent Bomb Party Representative.
         </div>

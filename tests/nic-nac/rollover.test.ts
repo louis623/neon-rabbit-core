@@ -38,7 +38,22 @@ describe('Nic-Nac conversation rollover', () => {
   it('starts rollover only when run health explicitly recommends it', () => {
     expect(shouldStartNicNacRollover(null)).toBe(false)
     expect(shouldStartNicNacRollover({ rolloverRecommended: false })).toBe(false)
-    expect(shouldStartNicNacRollover({ rolloverRecommended: true })).toBe(true)
+    expect(
+      shouldStartNicNacRollover({
+        rolloverRecommended: true,
+        rolloverReasons: ['context_compacted'],
+      }),
+    ).toBe(true)
+  })
+
+  it('does not roll over latency-only or reasonless historical health rows', () => {
+    expect(shouldStartNicNacRollover({ rolloverRecommended: true })).toBe(false)
+    expect(
+      shouldStartNicNacRollover({
+        rolloverRecommended: true,
+        rolloverReasons: ['slow_response'],
+      }),
+    ).toBe(false)
   })
 
   it('keeps generated rollover ids bounded across repeated rollovers', () => {

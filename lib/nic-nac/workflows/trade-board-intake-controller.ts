@@ -24,6 +24,7 @@ export function createEmptyTradeBoardIntakeState(args: {
     missing: [],
     blockers: [],
     warnings: [],
+    metadata: {},
     photos: [],
   }
   const readiness = computeTradeBoardIntakeReadiness(state)
@@ -207,6 +208,36 @@ export function buildTradeBoardIntakePromptState(
   state: TradeBoardIntakeSessionState,
 ): TradeBoardIntakePromptState {
   const readiness = computeTradeBoardIntakeReadiness(state)
+  if (state.status === 'needs_human_review') {
+    return {
+      workflow: {
+        id: state.id,
+        type: state.workflowType,
+        catalogMode: state.catalogMode ?? 'item_number',
+        status: state.status,
+        phase: 'needs_human_review',
+      },
+      known: state.known,
+      photos: state.photos.map((photo, index) => ({
+        index: index + 1,
+        declaredRole: photo.declaredRole,
+        visualRole: photo.visualRole,
+        roleConfirmed: photo.roleConfirmed,
+        quality: photo.quality,
+        notes: photo.notes,
+      })),
+      missing: state.missing,
+      blockers: Array.from(
+        new Set([...state.blockers, 'add_listing_backend_failure']),
+      ),
+      nextAction: 'escalate_to_human_review',
+      hardRules: [
+        'do not call add_listing while this workflow needs human review',
+        'do not ask the rep to re-upload already confirmed photos',
+        'tell the rep their saved details and confirmed photo are retained',
+      ],
+    }
+  }
   const normalized = {
     ...state,
     missing: readiness.missing,

@@ -100,6 +100,17 @@ export async function getOrCreateTradeBoardIntakeContext(args: {
         conversationId: args.conversationId,
         lastUserMessageId: args.latestUserMessageId,
       }))
+    if (baseSession.status === 'needs_human_review') {
+      return {
+        sessionBefore: existing,
+        sessionAfter: baseSession,
+        workflowIntents: [],
+        toolPolicySource: 'active_workflow',
+        workflowPromptState: renderTradeBoardIntakePromptState(
+          buildTradeBoardIntakePromptState(baseSession),
+        ),
+      }
+    }
     const ingested = await ingestLatestTradeBoardIntakeTurn(workflowSupabase, {
       session: baseSession,
       messages: args.messages,
@@ -365,6 +376,7 @@ export async function ingestLatestTradeBoardIntakeTurn(
       rep_notes: known.repNotes ?? null,
       trade_preferences: known.tradePreferences ?? null,
       metadata: {
+        ...normalized.metadata,
         duplicatePhysicalConfirmed:
           known.duplicatePhysicalConfirmed === true,
       },

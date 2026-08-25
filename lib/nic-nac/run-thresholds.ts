@@ -10,7 +10,6 @@ export type NicNacRunThresholdInput = {
 export type NicNacRolloverReason =
   | 'high_input_tokens'
   | 'high_total_tokens'
-  | 'slow_response'
   | 'context_compacted'
   | 'high_estimated_context'
 
@@ -21,7 +20,6 @@ export type NicNacRunThresholdResult = {
 
 const HIGH_INPUT_TOKENS = 80_000
 const HIGH_TOTAL_TOKENS = 90_000
-const SLOW_RESPONSE_MS = 10_000
 const HIGH_ESTIMATED_CONTEXT_TOKENS = 20_000
 
 export function evaluateNicNacRunThresholds(
@@ -34,9 +32,6 @@ export function evaluateNicNacRunThresholds(
   }
   if ((input.totalTokens ?? 0) >= HIGH_TOTAL_TOKENS) {
     reasons.push('high_total_tokens')
-  }
-  if (input.latencyMs >= SLOW_RESPONSE_MS) {
-    reasons.push('slow_response')
   }
   if (input.contextCompacted && input.droppedMessageCount > 0) {
     reasons.push('context_compacted')

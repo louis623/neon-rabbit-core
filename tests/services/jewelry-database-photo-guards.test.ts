@@ -16,14 +16,15 @@ function makeCreateDesignSupabase() {
     error: null,
   })
 
+  const insert = vi.fn().mockReturnValue({
+    select: vi.fn().mockReturnValue({ single }),
+  })
+
   return {
+    insertMock: insert,
     from: vi.fn((table: string) => {
       if (table === 'jewelry_designs') {
-        return {
-          insert: vi.fn().mockReturnValue({
-            select: vi.fn().mockReturnValue({ single }),
-          }),
-        }
+        return { insert }
       }
 
       throw new Error(`unexpected table ${table}`)
@@ -122,6 +123,36 @@ describe('jewelry-database photo pipeline guards', () => {
       itemNumber: 'RG100',
       typePrefix: 'RG',
     })
+  })
+
+  it('inserts the preallocated internal variant id without changing the vendor item number', async () => {
+    const supabase = makeCreateDesignSupabase()
+
+    await createDesign(supabase as never, {
+      designId: 'design-ruby',
+      itemNumber: 'ER59000',
+      designName: 'Baguette Braid Sparkle',
+      material: 'Rhodium Plating',
+      mainStone: 'Lab-Created Ruby',
+      piecePhotoUrl:
+        'https://example.supabase.co/storage/v1/object/public/jewelry-photos/rep-1/designs/design-ruby/ER59000-source.jpg',
+      photoPipeline: {
+        originalPath:
+          'rep-1/designs/design-ruby/uuid-ER59000-original.jpg',
+        originalUrl:
+          'https://example.supabase.co/storage/v1/object/sign/jewelry-photo-staging/rep-1/designs/design-ruby/uuid-ER59000-original.jpg',
+        status: 'ready',
+      },
+    })
+
+    expect(supabase.insertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'design-ruby',
+        item_number: 'ER59000',
+        material: 'Rhodium Plating',
+        main_stone: 'Lab-Created Ruby',
+      }),
+    )
   })
 
   it('maps legacy RBP item numbers to the necklace catalog type without changing the item number', async () => {

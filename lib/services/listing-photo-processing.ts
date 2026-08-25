@@ -13,6 +13,7 @@ export interface ProcessRepListingPhotoUrlInput {
   repId: string
   sourceImageUrl: string
   filenameStem: string
+  mutationAssetKey?: string
 }
 
 export interface ProcessRepListingPhotoUrlOptions {
@@ -149,17 +150,22 @@ export async function processRepListingPhotoUrl(
     throw errors.LISTING_PHOTO_PREFLIGHT_FAILED(preflight.coachingMessages)
   }
 
-  const uploadStem = `${input.filenameStem}-${randomUUID()}`
-  const originalPhotoUrl = await uploadJewelryPhoto(
-    input.repId,
+  const deterministicMutationAsset = Boolean(input.mutationAssetKey)
+  const uploadStem = `${input.filenameStem}-${input.mutationAssetKey ?? randomUUID()}`
+  const uploadProcessedPhoto = (dataUrl: string, suffix: string) =>
+    deterministicMutationAsset
+      ? uploadJewelryPhoto(input.repId, dataUrl, `${uploadStem}-${suffix}`, {
+          upsert: true,
+        })
+      : uploadJewelryPhoto(input.repId, dataUrl, `${uploadStem}-${suffix}`)
+  const originalPhotoUrl = await uploadProcessedPhoto(
     toDataUrl(metadata.contentType, fetched.bytes),
-    `${uploadStem}-source`,
+    'source',
   )
   const croppedPhotoUrl = crop
-    ? await uploadJewelryPhoto(
-        input.repId,
+    ? await uploadProcessedPhoto(
         toDataUrl(selectedMetadata.contentType, selectedBytes),
-        `${uploadStem}-cropped`,
+        'cropped',
       )
     : null
 
@@ -272,10 +278,9 @@ export async function processRepListingPhotoUrl(
       }
     }
 
-    const enhancedPhotoUrl = await uploadJewelryPhoto(
-      input.repId,
+    const enhancedPhotoUrl = await uploadProcessedPhoto(
       toDataUrl(outputMetadata.contentType, enhanced.output.bytes),
-      `${uploadStem}-enhanced`,
+      'enhanced',
     )
 
     return {

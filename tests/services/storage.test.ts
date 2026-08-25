@@ -9,7 +9,9 @@ vi.mock('@/lib/supabase/admin', () => ({
 import {
   getTradeRequestRevealScreenshotSignedUrl,
   publishApprovedPhoto,
+  removeCatalogDesignPhotoAssets,
   removeTradeRequestRevealScreenshots,
+  uploadCatalogDesignSourcePhoto,
   uploadTradeRequestRevealScreenshot,
   uploadJewelryPhoto,
   uploadPublicSiteMedia,
@@ -154,6 +156,95 @@ describe('storage service', () => {
       },
     )
     expect(result).toBe('https://cdn.example.com/rep-photo.jpg')
+  })
+
+  it('scopes catalog source and staged objects to the internal design variant without overwriting', async () => {
+    const publicBucket = makeStorageBucket()
+    const stagedBucket = makeStorageBucket()
+    publicBucket.upload.mockResolvedValue({ error: null })
+    publicBucket.getPublicUrl
+      .mockReturnValueOnce({ data: { publicUrl: 'https://cdn.example.com/rose.jpg' } })
+      .mockReturnValueOnce({ data: { publicUrl: 'https://cdn.example.com/ruby.jpg' } })
+    stagedBucket.upload.mockResolvedValue({ error: null })
+    stagedBucket.createSignedUrl.mockResolvedValue({
+      data: { signedUrl: 'https://signed.example.com/ruby-original' },
+      error: null,
+    })
+
+    createAdminClientMock.mockReturnValue({
+      storage: {
+        from: vi.fn((bucket: string) => {
+          if (bucket === 'jewelry-photos') return publicBucket
+          if (bucket === 'jewelry-photo-staging') return stagedBucket
+          throw new Error(`Unexpected bucket ${bucket}`)
+        }),
+      },
+    })
+
+    const rose = await uploadCatalogDesignSourcePhoto(
+      'rep-7',
+      'design-rose-quartz',
+      'data:image/jpeg;base64,cm9zZQ==',
+      'ER59000-source',
+    )
+    const ruby = await uploadCatalogDesignSourcePhoto(
+      'rep-7',
+      'design-ruby',
+      'data:image/jpeg;base64,cnVieQ==',
+      'ER59000-source',
+    )
+    const stagedRuby = await uploadStagedOriginalPhoto(
+      'rep-7',
+      'data:image/jpeg;base64,cnVieQ==',
+      'ER59000-original',
+      { designId: 'design-ruby' },
+    )
+
+    expect(rose.objectPath).toBe(
+      'rep-7/designs/design-rose-quartz/ER59000-source.jpg',
+    )
+    expect(ruby.objectPath).toBe(
+      'rep-7/designs/design-ruby/ER59000-source.jpg',
+    )
+    expect(rose.objectPath).not.toBe(ruby.objectPath)
+    expect(stagedRuby.objectPath).toMatch(
+      /^rep-7\/designs\/design-ruby\/[0-9a-f-]+-ER59000-original\.jpg$/,
+    )
+    expect(publicBucket.upload).toHaveBeenNthCalledWith(
+      2,
+      'rep-7/designs/design-ruby/ER59000-source.jpg',
+      Buffer.from('ruby'),
+      { contentType: 'image/jpeg', upsert: false },
+    )
+  })
+
+  it('removes both public and staged assets for an abandoned design attempt', async () => {
+    const publicBucket = makeStorageBucket()
+    const stagedBucket = makeStorageBucket()
+    publicBucket.remove.mockResolvedValue({ error: null })
+    stagedBucket.remove.mockResolvedValue({ error: null })
+    createAdminClientMock.mockReturnValue({
+      storage: {
+        from: vi.fn((bucket: string) => {
+          if (bucket === 'jewelry-photos') return publicBucket
+          if (bucket === 'jewelry-photo-staging') return stagedBucket
+          throw new Error(`Unexpected bucket ${bucket}`)
+        }),
+      },
+    })
+
+    await removeCatalogDesignPhotoAssets({
+      publicObjectPath: 'rep-7/designs/design-ruby/ER59000-source.jpg',
+      stagedObjectPath:
+        'rep-7/designs/design-ruby/uuid-ER59000-original.jpg',
+    })
+
+    expect(publicBucket.remove).toHaveBeenCalledWith([
+      'rep-7/designs/design-ruby/ER59000-source.jpg',
+    ])
+    expect(stagedBucket.remove).toHaveBeenCalledWith([
+      'rep-7/designs/design-ruby/uuid-ER59000-original.jpg',
+    ])
   })
 
   it('uploads public site media to rep-scoped recipe folders', async () => {

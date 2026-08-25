@@ -56,6 +56,70 @@ function makeCleanupSupabase(rows: Array<Record<string, unknown>>) {
   return { client: { from } as never, spies: { from, eq, neq, order } }
 }
 
+function makeResumeApproveSupabase(options: {
+  swap: Record<string, unknown> | null
+  insertError?: Record<string, unknown> | null
+}) {
+  const requestMaybeSingle = vi.fn().mockResolvedValue({
+    data: {
+      id: 'request-1',
+      status: 'approved',
+      customer_name: 'Jamie',
+      listing_id: 'outgoing-listing-1',
+      listing: { rep_id: 'rep-1' },
+      fulfillment: { id: 'fulfillment-1' },
+    },
+    error: null,
+  })
+  const requestEq = vi.fn().mockReturnValue({ maybeSingle: requestMaybeSingle })
+  const requestSelect = vi.fn().mockReturnValue({ eq: requestEq })
+
+  const swapMaybeSingle = vi.fn().mockResolvedValue({
+    data: options.swap,
+    error: null,
+  })
+  const swapEq = vi.fn().mockReturnValue({ maybeSingle: swapMaybeSingle })
+  const swapSelect = vi.fn().mockReturnValue({ eq: swapEq })
+  const insertSingle = vi.fn().mockResolvedValue({
+    data: options.insertError
+      ? null
+      : { id: 'swap-1', replacement_status: 'added_to_board' },
+    error: options.insertError ?? null,
+  })
+  const insertSelect = vi.fn().mockReturnValue({ single: insertSingle })
+  const insert = vi.fn().mockReturnValue({ select: insertSelect })
+
+  const designLimit = vi.fn().mockResolvedValue({
+    data: [
+      {
+        id: 'design-1',
+        item_number: 'NK12345',
+        design_name: 'Moonlit Pendant',
+        material: null,
+        main_stone: null,
+        bp_msrp: 138,
+        canonical_photo_url: null,
+        type_prefix: 'NK',
+        collection_id: 'collection-1',
+        search_tags: [],
+        collection: { name: 'Lustre', collection_year: 2026 },
+      },
+    ],
+    error: null,
+  })
+  const designEq = vi.fn().mockReturnValue({ limit: designLimit })
+  const designSelect = vi.fn().mockReturnValue({ eq: designEq })
+
+  const from = vi.fn((table: string) => {
+    if (table === 'trade_requests') return { select: requestSelect }
+    if (table === 'trade_swaps') return { select: swapSelect, insert }
+    if (table === 'jewelry_designs') return { select: designSelect }
+    throw new Error(`unexpected table ${table}`)
+  })
+
+  return { client: { from } as never, spies: { insert } }
+}
+
 function makeResolveReplacementSupabase(options: {
   replacementListing?: Record<string, unknown> | null
   swap?: Record<string, unknown> | null
@@ -143,6 +207,131 @@ beforeEach(() => {
 })
 
 describe('approveTradeWithRevealedItemCapture', () => {
+  it('returns the recorded swap when a lost response is retried after commit', async () => {
+    approveTradeMock.mockRejectedValueOnce(errors.REQUEST_NOT_PENDING())
+    const { client } = makeResumeApproveSupabase({
+      swap: {
+        id: 'swap-existing',
+        revealed_item_number: 'NK12345',
+        revealed_ring_size: null,
+        revealed_design_id: 'design-1',
+        replacement_listing_id: 'replacement-listing-1',
+        replacement_status: 'added_to_board',
+      },
+    })
+
+    await expect(
+      approveTradeWithRevealedItemCapture(client, 'rep-1', {
+        requestId: 'request-1',
+        revealedItemNumber: 'NK12345',
+      }),
+    ).resolves.toMatchObject({
+      swapId: 'swap-existing',
+      requestId: 'request-1',
+      replacementListingId: 'replacement-listing-1',
+      replacementStatus: 'added_to_board',
+    })
+    expect(addListingMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects a lost-response retry when its variant details do not match the recorded signature', async () => {
+    approveTradeMock.mockRejectedValueOnce(errors.REQUEST_NOT_PENDING())
+    const { client } = makeResumeApproveSupabase({
+      swap: {
+        id: 'swap-existing',
+        input_signature: 'a'.repeat(64),
+        revealed_item_number: 'ER59000',
+        revealed_material: 'Lab-Created Ruby',
+        revealed_ring_size: null,
+        revealed_design_id: 'design-ruby',
+        replacement_listing_id: 'replacement-listing-1',
+        replacement_status: 'added_to_board',
+        rep_notes: 'Ruby pair',
+      },
+    })
+
+    await expect(
+      approveTradeWithRevealedItemCapture(client, 'rep-1', {
+        requestId: 'request-1',
+        revealedItemNumber: 'ER59000',
+        revealedMaterial: 'Rose Quartz Cubic Zirconia',
+        repNotes: 'Rose quartz pair',
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT' })
+    expect(addListingMock).not.toHaveBeenCalled()
+  })
+
+  it('resumes an approved request and replays the stable replacement add before recording the swap', async () => {
+    approveTradeMock.mockRejectedValueOnce(errors.REQUEST_NOT_PENDING())
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'replacement-listing-1',
+      designId: 'design-1',
+      itemNumber: 'NK12345',
+      designName: 'Moonlit Pendant',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+    const { client, spies } = makeResumeApproveSupabase({ swap: null })
+
+    const result = await approveTradeWithRevealedItemCapture(client, 'rep-1', {
+      requestId: 'request-1',
+      revealedItemNumber: 'NK12345',
+    })
+
+    expect(addListingMock).toHaveBeenCalledWith(
+      client,
+      'rep-1',
+      expect.objectContaining({
+        idempotencyKey: 'trade-swap-replacement:request-1',
+        inputSignature: expect.any(String),
+      }),
+    )
+    expect(spies.insert).toHaveBeenCalledTimes(1)
+    expect(result.replacementListingId).toBe('replacement-listing-1')
+  })
+
+  it('reads back the committed swap when concurrent resumes race the unique request constraint', async () => {
+    approveTradeMock.mockResolvedValueOnce({
+      requestId: 'request-1',
+      fulfillmentId: 'fulfillment-1',
+      listingId: 'outgoing-listing-1',
+      customerName: 'Jamie',
+    })
+    addListingMock.mockResolvedValueOnce({
+      listingId: 'replacement-listing-1',
+      designId: 'design-1',
+      itemNumber: 'NK12345',
+      designName: 'Moonlit Pendant',
+      status: 'available',
+      usesCanonicalPhoto: true,
+    })
+    const { client } = makeResumeApproveSupabase({
+      insertError: { code: '23505', message: 'duplicate key value' },
+      swap: {
+        id: 'swap-winner',
+        input_signature: null,
+        revealed_item_number: 'NK12345',
+        revealed_material: null,
+        revealed_ring_size: null,
+        revealed_design_id: 'design-1',
+        replacement_listing_id: 'replacement-listing-1',
+        replacement_status: 'added_to_board',
+        rep_notes: null,
+      },
+    })
+
+    await expect(
+      approveTradeWithRevealedItemCapture(client, 'rep-1', {
+        requestId: 'request-1',
+        revealedItemNumber: 'NK12345',
+      }),
+    ).resolves.toMatchObject({
+      swapId: 'swap-winner',
+      replacementListingId: 'replacement-listing-1',
+      replacementStatus: 'added_to_board',
+    })
+  })
+
   it('approves the trade and auto-adds the revealed piece when the item number exists', async () => {
     approveTradeMock.mockResolvedValueOnce({
       requestId: 'request-1',
@@ -183,12 +372,14 @@ describe('approveTradeWithRevealedItemCapture', () => {
       'request-1',
       undefined,
     )
-    expect(addListingMock).toHaveBeenCalledWith(client, 'rep-1', {
+    expect(addListingMock).toHaveBeenCalledWith(client, 'rep-1', expect.objectContaining({
       itemNumber: 'NK12345',
       material: undefined,
       ringSize: undefined,
       repNotes: 'Added from approved trade swap for Jamie.',
-    })
+      idempotencyKey: 'trade-swap-replacement:request-1',
+      inputSignature: expect.any(String),
+    }))
     expect(spies.designEq).toHaveBeenCalledWith('item_number', 'NK12345')
     expect(spies.insert.mock.calls[0][0]).toMatchObject({
       request_id: 'request-1',
@@ -303,12 +494,14 @@ describe('approveTradeWithRevealedItemCapture', () => {
       revealedRingSize: ' 8 ',
     })
 
-    expect(addListingMock).toHaveBeenCalledWith(client, 'rep-1', {
+    expect(addListingMock).toHaveBeenCalledWith(client, 'rep-1', expect.objectContaining({
       itemNumber: 'RG99999',
       material: undefined,
       ringSize: '8',
       repNotes: 'Added from approved trade swap for Jamie.',
-    })
+      idempotencyKey: 'trade-swap-replacement:request-1',
+      inputSignature: expect.any(String),
+    }))
     expect(spies.insert.mock.calls[0][0]).toMatchObject({
       revealed_ring_size: '8',
       replacement_status: 'added_to_board',
@@ -366,12 +559,14 @@ describe('approveTradeWithRevealedItemCapture', () => {
       revealedMaterial: 'hematite plating',
     })
 
-    expect(addListingMock).toHaveBeenCalledWith(client, 'rep-1', {
+    expect(addListingMock).toHaveBeenCalledWith(client, 'rep-1', expect.objectContaining({
       itemNumber: 'NK12032',
       material: 'hematite plating',
       ringSize: undefined,
       repNotes: 'Added from approved trade swap for Jamie.',
-    })
+      idempotencyKey: 'trade-swap-replacement:request-1',
+      inputSignature: expect.any(String),
+    }))
     expect(spies.insert.mock.calls[0][0]).toMatchObject({
       revealed_design_id: 'design-hematite',
       replacement_status: 'added_to_board',

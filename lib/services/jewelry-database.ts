@@ -389,24 +389,52 @@ function mapResolvedDesign(row: ResolveDesignRow): Extract<ResolveItemNumberResu
 export async function resolveItemNumber(
   supabase: SupabaseClient,
   itemNumber: string,
-  options: { material?: string | null; mainStone?: string | null } = {},
+  options: {
+    designId?: string | null
+    material?: string | null
+    mainStone?: string | null
+  } = {},
 ): Promise<ResolveItemNumberResult> {
   const normalizedItemNumber = normalizeItemNumber(itemNumber)
   if (!normalizedItemNumber) throw errors.MISSING_ITEM_INPUT()
 
-  const { data, error } = await supabase
+  const requestedDesignId = options.designId?.trim() || null
+  let request = supabase
     .from('jewelry_designs')
     .select(
       'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, collection_id, search_tags, collection:collections(name, collection_year)'
     )
     .eq('item_number', normalizedItemNumber)
-    .limit(20)
+  if (requestedDesignId) request = request.eq('id', requestedDesignId)
+
+  const { data, error } = await request.limit(requestedDesignId ? 2 : 20)
   if (error) throw error
   const rows = (data ?? []) as unknown as ResolveDesignRow[]
   if (rows.length === 0) return { found: false, itemNumber: normalizedItemNumber }
 
   const requestedMaterialKey = normalizeJewelryMaterialKey(options.material)
   const requestedMainStoneKey = normalizeJewelryMainStoneKey(options.mainStone)
+  if (requestedDesignId) {
+    const exactVariant = rows.find((row) => row.id === requestedDesignId)
+    if (
+      !exactVariant ||
+      (requestedMaterialKey &&
+        normalizeJewelryMaterialKey(exactVariant.material) !== requestedMaterialKey) ||
+      (requestedMainStoneKey &&
+        normalizeJewelryMainStoneKey(exactVariant.main_stone) !==
+          requestedMainStoneKey)
+    ) {
+      return {
+        found: false,
+        itemNumber: normalizedItemNumber,
+        requestedMaterial: options.material?.trim() || null,
+        requestedMainStone: options.mainStone?.trim() || null,
+        variantCandidates: rows.map(mapResolveVariantCandidate),
+      }
+    }
+    return mapResolvedDesign(exactVariant)
+  }
+
   if (requestedMaterialKey || requestedMainStoneKey) {
     const variantMatches = rows.filter(
       (row) =>
@@ -672,6 +700,7 @@ export async function createDesign(
   const { data: design, error: designErr } = await supabase
     .from('jewelry_designs')
     .insert({
+      ...(input.designId ? { id: input.designId } : {}),
       item_number: normalizedItemNumber,
       design_name: input.designName,
       type_prefix: typePrefix,

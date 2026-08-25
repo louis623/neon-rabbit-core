@@ -11,6 +11,7 @@
 
 import { z } from 'zod'
 import { tool } from 'ai'
+import { createHash, randomUUID } from 'crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   addListing,
@@ -31,12 +32,16 @@ import { decideCanonicalEnhancedPhoto } from '@/lib/services/photo-enhancement-q
 import { analyzeServerImageQuality } from '@/lib/services/server-image-quality'
 import { processRepListingPhotoUrl } from '@/lib/services/listing-photo-processing'
 import { ServiceError } from '@/lib/services/errors'
-import { publishApprovedPhoto } from '@/lib/services/storage'
+import {
+  publishApprovedPhoto,
+  removeCatalogDesignPhotoAssets,
+} from '@/lib/services/storage'
 import { getPhotoroomConfig } from '@/lib/photoroom/config'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { writeTradeActionAudit } from '@/lib/nic-nac/audit'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
+import { NicNacMutationFailure } from '@/lib/nic-nac/tool-failure-classification'
 import {
   computeTradeBoardAddAttemptReadiness,
   transitionTradeBoardIntake,
@@ -236,6 +241,111 @@ async function resolvePhotoFromConversation(ctx: {
     }
   }
   return null
+}
+
+function throwMutationFailure(
+  err: unknown,
+  args: {
+    code: string
+    stage: 'catalog_photo_storage' | 'database_write' | 'listing_write'
+    retryable: boolean
+  },
+): never {
+  if (err instanceof ServiceError) explainServiceError(err)
+  throw new NicNacMutationFailure({ ...args, cause: err })
+}
+
+function addAttemptInputSummary(input: ToolInput) {
+  const hashOptionalSource = (value: string | undefined) =>
+    value
+      ? createHash('sha256').update(value).digest('hex')
+      : null
+  return {
+    mode: input.mode,
+    catalogMode: input.catalogMode ?? 'item_number',
+    itemNumber: input.itemNumber?.trim().toUpperCase() ?? null,
+    designName: input.designName?.trim() ?? null,
+    collectionName: input.collectionName?.trim() ?? null,
+    collectionYear: input.collectionYear ?? null,
+    material: input.material?.trim() ?? null,
+    mainStone: input.mainStone?.trim() ?? null,
+    ringSize: input.ringSize?.trim() ?? null,
+    repNotes: input.repNotes?.trim() ?? null,
+    tradePreferences: input.tradePreferences?.trim() ?? null,
+    listingPhotoSource: hashOptionalSource(input.listingPhotoUrl),
+    piecePhotoSource: hashOptionalSource(input.piecePhotoUrl),
+    listingPhotoIndex: input.listingPhotoIndex ?? null,
+    piecePhotoIndex: input.piecePhotoIndex ?? null,
+    bpMsrp: input.bpMsrp ?? null,
+    searchTags: input.searchTags ?? [],
+    specialFeatures: input.specialFeatures?.trim() ?? null,
+    lengthInfo: input.lengthInfo?.trim() ?? null,
+  }
+}
+
+function catalogMutationIdentity(input: {
+  toolInput: ToolInput
+  workflow?: ToolContext['activeTradeBoardWorkflow']
+  runId: string
+  suffix?: string
+}) {
+  const inputSignature = createHash('sha256')
+    .update(JSON.stringify(addAttemptInputSummary(input.toolInput)))
+    .digest('hex')
+  const scope = input.workflow?.id ?? `run:${input.runId}`
+  return {
+    idempotencyKey: `trade-board-add:${scope}:${input.suffix ?? 'single'}:${inputSignature}`,
+    inputSignature,
+  }
+}
+
+async function markActiveTradeBoardWorkflowAdding(input: {
+  workflow?: ToolContext['activeTradeBoardWorkflow']
+  admin: SupabaseClient
+  toolInput: ToolInput
+  runId: string
+}) {
+  if (input.workflow?.status !== 'active') return
+  const acceptedInputs = addAttemptInputSummary(input.toolInput)
+  const inputSignature = createHash('sha256')
+    .update(JSON.stringify(acceptedInputs))
+    .digest('hex')
+  await updateTradeBoardIntakeSession(input.admin, {
+    sessionId: input.workflow.id,
+    patch: {
+      current_phase: 'adding',
+      metadata: {
+        ...input.workflow.metadata,
+        addAttempt: {
+          ...((input.workflow.metadata.addAttempt as
+            | Record<string, unknown>
+            | undefined) ?? {}),
+          toolName: 'add_listing',
+          stage: 'mutation_authorized',
+          lastAuthorizedRunId: input.runId,
+          inputSignature,
+          acceptedInputs,
+        },
+      },
+    },
+  })
+}
+
+async function addCatalogListingMutation(
+  admin: SupabaseClient,
+  repId: string,
+  input: Parameters<typeof addListing>[2],
+) {
+  try {
+    return await addListing(admin, repId, input)
+  } catch (error) {
+    if (error instanceof ServiceError) throw error
+    throwMutationFailure(error, {
+      code: 'CATALOG_LISTING_WRITE_FAILED',
+      stage: 'listing_write',
+      retryable: true,
+    })
+  }
 }
 
 function batchRepeatsOneItem(input: ToolInput) {
@@ -512,6 +622,7 @@ async function processListingPhotoForAdd(input: {
   conversationId: string
   photoIndex?: number
   allowImplicitConversationPhoto?: boolean
+  mutationAssetKey?: string
 }): Promise<string | undefined> {
   const itemNumber = input.itemNumber ?? 'listing'
   const photoIndex = input.photoIndex ?? input.listingPhotoIndex
@@ -525,6 +636,7 @@ async function processListingPhotoForAdd(input: {
         repId: input.repId,
         sourceImageUrl: input.listingPhotoUrl,
         filenameStem: `${itemNumber}-listing-photo`,
+        mutationAssetKey: input.mutationAssetKey,
       }
       const processed =
         workflowPhotoUrl === input.listingPhotoUrl
@@ -546,6 +658,7 @@ async function processListingPhotoForAdd(input: {
             repId: input.repId,
             sourceImageUrl: workflowPhotoUrl,
             filenameStem: `${itemNumber}-listing-photo`,
+            mutationAssetKey: input.mutationAssetKey,
           },
           { confirmedJewelryFront: true },
         )
@@ -571,6 +684,7 @@ async function processListingPhotoForAdd(input: {
       repId: input.repId,
       sourceImageUrl: resolvedListingPhoto.imageDataUrl,
       filenameStem: `${itemNumber}-listing-photo`,
+      mutationAssetKey: input.mutationAssetKey,
     }
     const isWorkflowConfirmed = workflowConfirmsJewelryFrontPhoto(
       input.activeTradeBoardWorkflow,
@@ -616,6 +730,17 @@ async function markActiveTradeBoardWorkflowCompleted(input: {
         missing_fields: [],
         hard_blockers: [],
         soft_warnings: [],
+        metadata: {
+          ...workflow.metadata,
+          addAttempt: {
+            ...((workflow.metadata.addAttempt as Record<string, unknown> | undefined) ?? {}),
+            toolName: 'add_listing',
+            stage: 'completed',
+            failureCount: 0,
+            lastRunId: input.runId,
+            completedAt: new Date().toISOString(),
+          },
+        },
       },
     })
   } catch (error) {
@@ -782,6 +907,7 @@ async function runNonItemNumberSingle(
     supabase: SupabaseClient
     activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
     activeTradeWorkflow?: ToolContext['activeTradeWorkflow']
+    mutationSuffix?: string
   },
   admin: SupabaseClient,
 ) {
@@ -932,11 +1058,18 @@ async function runSingle(
     supabase: SupabaseClient
     activeTradeBoardWorkflow?: ToolContext['activeTradeBoardWorkflow']
     activeTradeWorkflow?: ToolContext['activeTradeWorkflow']
+    mutationSuffix?: string
   },
   admin: SupabaseClient,
 ) {
   const { itemNumber, designName, piecePhotoUrl, collectionName } = input
   const activeWorkflow = ctx.activeTradeBoardWorkflow
+  const mutationIdentity = catalogMutationIdentity({
+    toolInput: input,
+    workflow: activeWorkflow,
+    runId: ctx.runId,
+    suffix: ctx.mutationSuffix,
+  })
 
   if (
     input.catalogMode === 'non_item_number' ||
@@ -1053,6 +1186,12 @@ async function runSingle(
           designId: existingDesign.design.id,
           activeTradeBoardWorkflow: activeWorkflow,
         })
+        await markActiveTradeBoardWorkflowAdding({
+          workflow: activeWorkflow,
+          admin,
+          toolInput: input,
+          runId: ctx.runId,
+        })
         const useExistingCatalogCanonicalPhoto =
           !input.listingPhotoUrl &&
           existingDesign.hasCollection &&
@@ -1068,8 +1207,9 @@ async function runSingle(
               supabase: ctx.supabase,
               conversationId: ctx.conversationId,
               photoIndex: input.listingPhotoIndex ?? input.piecePhotoIndex,
+              mutationAssetKey: mutationIdentity.inputSignature,
             })
-        const existingResult = await addListing(admin, ctx.repId, {
+        const existingResult = await addCatalogListingMutation(admin, ctx.repId, {
           itemNumber,
           material: input.material,
           mainStone: input.mainStone,
@@ -1078,6 +1218,7 @@ async function runSingle(
           repNotes: input.repNotes,
           tradePreferences: input.tradePreferences,
           listingPhotoUrl: existingListingPhotoUrl,
+          ...mutationIdentity,
         })
         await markActiveTradeBoardWorkflowCompleted({
           workflow: activeWorkflow,
@@ -1130,7 +1271,19 @@ async function runSingle(
       explainServiceError(err)
     }
 
+    await markActiveTradeBoardWorkflowAdding({
+      workflow: activeWorkflow,
+      admin,
+      toolInput: input,
+      runId: ctx.runId,
+    })
+
+    // Reserve the internal catalog variant identity before uploading photos.
+    // The vendor item number stays unchanged and may be shared by multiple
+    // stone/material variants; this UUID owns assets for one design row.
+    const newDesignId = randomUUID()
     let resolvedPhotoUrl: string | null = piecePhotoUrl?.trim() || null
+    let publicPhotoObjectPath: string | null = null
     const designSourcePhotoIndex = input.piecePhotoIndex ?? input.listingPhotoIndex
     const workflowConfirmedDesignPhoto = workflowConfirmsJewelryFrontPhoto(
       activeWorkflow,
@@ -1152,6 +1305,7 @@ async function runSingle(
         preparedSource = await prepareDesignSourcePhoto(
           {
             repId: ctx.repId,
+            designId: newDesignId,
             sourceImageUrl: resolvedPhotoUrl,
             filenameStem: itemNumber,
           },
@@ -1162,9 +1316,14 @@ async function runSingle(
           },
         )
       } catch (err) {
-        explainServiceError(err)
+        throwMutationFailure(err, {
+          code: 'CATALOG_PHOTO_STORAGE_FAILED',
+          stage: 'catalog_photo_storage',
+          retryable: true,
+        })
       }
       resolvedPhotoUrl = preparedSource.publicPhotoUrl
+      publicPhotoObjectPath = preparedSource.publicObjectPath
       stagedOriginal = preparedSource.stagedOriginal
       photoPreflight = preparedSource.preflight
       sourcePhotoWidth = preparedSource.analysis.width
@@ -1184,16 +1343,22 @@ async function runSingle(
         preparedSource = await prepareDesignSourcePhoto(
           {
             repId: ctx.repId,
+            designId: newDesignId,
             sourceImageUrl: workflowConfirmedPhotoUrl,
             filenameStem: itemNumber,
           },
           { confirmedJewelryFront: true },
         )
       } catch (err) {
-        explainServiceError(err)
+        throwMutationFailure(err, {
+          code: 'CATALOG_PHOTO_STORAGE_FAILED',
+          stage: 'catalog_photo_storage',
+          retryable: true,
+        })
       }
       stagedOriginal = preparedSource.stagedOriginal
       resolvedPhotoUrl = preparedSource.publicPhotoUrl
+      publicPhotoObjectPath = preparedSource.publicObjectPath
       photoPreflight = preparedSource.preflight
       sourcePhotoWidth = preparedSource.analysis.width
       sourcePhotoHeight = preparedSource.analysis.height
@@ -1224,6 +1389,7 @@ async function runSingle(
         preparedSource = await prepareDesignSourcePhoto(
           {
             repId: ctx.repId,
+            designId: newDesignId,
             sourceImageDataUrl: resolvedPhoto.imageDataUrl,
             filenameStem: itemNumber,
           },
@@ -1232,10 +1398,15 @@ async function runSingle(
           },
         )
       } catch (err) {
-        explainServiceError(err)
+        throwMutationFailure(err, {
+          code: 'CATALOG_PHOTO_STORAGE_FAILED',
+          stage: 'catalog_photo_storage',
+          retryable: true,
+        })
       }
       stagedOriginal = preparedSource.stagedOriginal
       resolvedPhotoUrl = preparedSource.publicPhotoUrl
+      publicPhotoObjectPath = preparedSource.publicObjectPath
       photoPreflight = preparedSource.preflight
       sourcePhotoWidth = preparedSource.analysis.width
       sourcePhotoHeight = preparedSource.analysis.height
@@ -1253,6 +1424,7 @@ async function runSingle(
     let createResult: Awaited<ReturnType<typeof createDesign>>
     try {
       createResult = await createDesign(admin, {
+        designId: newDesignId,
         itemNumber,
         designName,
         piecePhotoUrl: resolvedPhotoUrl,
@@ -1277,7 +1449,94 @@ async function runSingle(
           : undefined,
       })
     } catch (err) {
-      explainServiceError(err)
+      // A lost database response can hide a committed insert. The UUID was
+      // reserved before upload, so read it back before compensating; deleting
+      // the assets of a committed design would break the customer photo.
+      const { data: committedDesign, error: readbackError } = await admin
+        .from('jewelry_designs')
+        .select(
+          'id,item_number,design_name,type_prefix,collection_id,search_tags,material,main_stone,canonical_photo_url',
+        )
+        .eq('id', newDesignId)
+        .maybeSingle()
+
+      if (readbackError) {
+        throwMutationFailure(readbackError, {
+          code: 'CATALOG_DESIGN_COMMIT_UNCERTAIN',
+          stage: 'database_write',
+          retryable: true,
+        })
+      }
+
+      const normalizeCatalogValue = (value: unknown) =>
+        typeof value === 'string' && value.trim()
+          ? value.trim().toLocaleLowerCase()
+          : null
+      const committedDesignMatches =
+        committedDesign &&
+        String(committedDesign.item_number).trim().toUpperCase() ===
+          itemNumber.trim().toUpperCase() &&
+        normalizeCatalogValue(committedDesign.design_name) ===
+          normalizeCatalogValue(designName) &&
+        normalizeCatalogValue(committedDesign.material) ===
+          normalizeCatalogValue(input.material) &&
+        normalizeCatalogValue(committedDesign.main_stone) ===
+          normalizeCatalogValue(input.mainStone) &&
+        String(committedDesign.canonical_photo_url) === resolvedPhotoUrl
+
+      if (committedDesign && !committedDesignMatches) {
+        throwMutationFailure(err, {
+          code: 'CATALOG_DESIGN_COMMIT_MISMATCH',
+          stage: 'database_write',
+          retryable: false,
+        })
+      }
+
+      if (committedDesignMatches) {
+        createResult = {
+          designId: String(committedDesign.id),
+          itemNumber: String(committedDesign.item_number),
+          collectionId:
+            typeof committedDesign.collection_id === 'string'
+              ? committedDesign.collection_id
+              : null,
+          collectionName: collectionName.trim(),
+          collectionYear: input.collectionYear ?? null,
+          searchTags: Array.isArray(committedDesign.search_tags)
+            ? committedDesign.search_tags.map(String)
+            : [],
+          typePrefix: committedDesign.type_prefix as
+            Awaited<ReturnType<typeof createDesign>>['typePrefix'],
+        }
+      } else {
+        try {
+          await removeCatalogDesignPhotoAssets({
+            publicObjectPath: publicPhotoObjectPath,
+            stagedObjectPath: stagedOriginal?.objectPath,
+          })
+        } catch (cleanupError) {
+          // Keep the catalog write failure as the user-facing cause. Cleanup is
+          // compensating best effort and never overwrites another variant.
+          await logIncident({
+            errorType: 'catalog_design_asset_cleanup_failed',
+            repId: ctx.repId,
+            conversationId: ctx.conversationId,
+            severity: 'warn',
+            details: {
+              toolName: 'add_listing',
+              runId: ctx.runId,
+              itemNumber,
+              designId: newDesignId,
+              message: (cleanupError as Error)?.message,
+            },
+          })
+        }
+        throwMutationFailure(err, {
+          code: 'CATALOG_DESIGN_WRITE_FAILED',
+          stage: 'database_write',
+          retryable: true,
+        })
+      }
     }
     createdNewDesign = true
     if (workflowConfirmedDesignPhoto && resolvedPhotoUrl) {
@@ -1472,6 +1731,14 @@ async function runSingle(
     resolvedCatalogDesign?.found &&
     Boolean(resolvedCatalogDesign.design.canonicalPhotoUrl) &&
     resolvedCatalogDesign.hasCollection
+  if (!createdNewDesign) {
+    await markActiveTradeBoardWorkflowAdding({
+      workflow: activeWorkflow,
+      admin,
+      toolInput: input,
+      runId: ctx.runId,
+    })
+  }
   if (input.listingPhotoUrl || (!designName && !shouldUseCatalogCanonicalPhoto)) {
     processedListingPhotoUrl =
       (await processListingPhotoForAdd({
@@ -1485,10 +1752,11 @@ async function runSingle(
         photoIndex: input.listingPhotoIndex ?? input.piecePhotoIndex,
         allowImplicitConversationPhoto:
           !designName && !useCatalogCanonicalFallback,
+        mutationAssetKey: mutationIdentity.inputSignature,
       })) ?? processedListingPhotoUrl
   }
   try {
-    result = await addListing(admin, ctx.repId, {
+    result = await addCatalogListingMutation(admin, ctx.repId, {
       itemNumber,
       material: input.material,
       mainStone: input.mainStone,
@@ -1497,6 +1765,7 @@ async function runSingle(
       repNotes: input.repNotes,
       tradePreferences: input.tradePreferences,
       listingPhotoUrl: processedListingPhotoUrl,
+      ...mutationIdentity,
     })
   } catch (err) {
     if (err instanceof ServiceError) {
@@ -1602,8 +1871,17 @@ async function runBatch(
     })
   }
 
-  const processedItems = []
-  for (const item of items) {
+  const processedItems: Parameters<typeof addListingBatch>[2]['items'] = []
+  for (const [itemIndex, item] of items.entries()) {
+    const mutationIdentity = catalogMutationIdentity({
+      toolInput: {
+        mode: 'single',
+        ...item,
+      },
+      workflow: ctx.activeTradeBoardWorkflow,
+      runId: ctx.runId,
+      suffix: `batch:${itemIndex}`,
+    })
     let listingPhotoUrl: string | undefined
     if (item.listingPhotoUrl) {
       try {
@@ -1612,6 +1890,7 @@ async function runBatch(
             repId: ctx.repId,
             sourceImageUrl: item.listingPhotoUrl,
             filenameStem: `${item.itemNumber}-listing-photo`,
+            mutationAssetKey: mutationIdentity.inputSignature,
           })
         ).photoUrl
       } catch (err) {
@@ -1621,10 +1900,13 @@ async function runBatch(
 
     processedItems.push({
       itemNumber: item.itemNumber,
+      material: item.material,
+      mainStone: item.mainStone,
       ringSize: item.ringSize,
       repNotes: item.repNotes,
       tradePreferences: item.tradePreferences,
       listingPhotoUrl,
+      ...mutationIdentity,
     })
   }
 
@@ -1678,7 +1960,10 @@ async function runBatch(
           specialFeatures: recoveryItem.specialFeatures,
           lengthInfo: recoveryItem.lengthInfo,
         },
-        ctx,
+        {
+          ...ctx,
+          mutationSuffix: `batch:${items.indexOf(recoveryItem)}`,
+        },
         admin,
       )
 
@@ -1696,10 +1981,18 @@ async function runBatch(
         retryItems.push(
           ...candidates.slice(1).map((item) => ({
             itemNumber: item.itemNumber,
+            material: item.material,
+            mainStone: item.mainStone,
             ringSize: item.ringSize,
             repNotes: item.repNotes,
             tradePreferences: item.tradePreferences,
             listingPhotoUrl: undefined,
+            ...catalogMutationIdentity({
+              toolInput: { mode: 'single', ...item },
+              workflow: ctx.activeTradeBoardWorkflow,
+              runId: ctx.runId,
+              suffix: `batch:${items.indexOf(item)}`,
+            }),
           })),
         )
       }

@@ -1,13 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import sharp from 'sharp'
 
-const uploadJewelryPhotoMock = vi.fn()
+const uploadCatalogDesignSourcePhotoMock = vi.fn()
 const uploadStagedOriginalPhotoMock = vi.fn()
+const removeCatalogDesignPhotoAssetsMock = vi.fn()
 
 vi.mock('@/lib/services/storage', () => ({
-  uploadJewelryPhoto: (...args: unknown[]) => uploadJewelryPhotoMock(...args),
+  uploadCatalogDesignSourcePhoto: (...args: unknown[]) =>
+    uploadCatalogDesignSourcePhotoMock(...args),
   uploadStagedOriginalPhoto: (...args: unknown[]) =>
     uploadStagedOriginalPhotoMock(...args),
+  removeCatalogDesignPhotoAssets: (...args: unknown[]) =>
+    removeCatalogDesignPhotoAssetsMock(...args),
 }))
 
 import { ServiceError } from '@/lib/services/errors'
@@ -105,8 +109,9 @@ function makeImageResponse(bytes: Uint8Array, contentType = 'image/png', status 
 
 describe('prepareDesignSourcePhoto', () => {
   beforeEach(() => {
-    uploadJewelryPhotoMock.mockReset()
+    uploadCatalogDesignSourcePhotoMock.mockReset()
     uploadStagedOriginalPhotoMock.mockReset()
+    removeCatalogDesignPhotoAssetsMock.mockReset()
   })
 
   it('normalizes, stages, and scores a clean chat-upload data URL', async () => {
@@ -115,12 +120,14 @@ describe('prepareDesignSourcePhoto', () => {
       objectPath: 'rep-1/originals/ring-original.png',
       signedUrl: 'https://signed.example.com/ring-original',
     })
-    uploadJewelryPhotoMock.mockResolvedValueOnce(
-      'https://cdn.example.com/jewelry-photos/rep-1/ring-source.png',
-    )
+    uploadCatalogDesignSourcePhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/designs/design-1/ring-source.png',
+      publicUrl: 'https://cdn.example.com/jewelry-photos/rep-1/ring-source.png',
+    })
 
     const result = await prepareDesignSourcePhoto({
       repId: 'rep-1',
+      designId: 'design-1',
       filenameStem: 'ring',
       sourceImageDataUrl: toDataUrl('image/png', bytes),
     })
@@ -147,6 +154,7 @@ describe('prepareDesignSourcePhoto', () => {
     await expect(
       prepareDesignSourcePhoto({
         repId: 'rep-1',
+        designId: 'design-1',
         filenameStem: 'ring',
         sourceImageDataUrl: toDataUrl('image/png', bytes),
       }),
@@ -156,7 +164,7 @@ describe('prepareDesignSourcePhoto', () => {
     })
 
     expect(uploadStagedOriginalPhotoMock).not.toHaveBeenCalled()
-    expect(uploadJewelryPhotoMock).not.toHaveBeenCalled()
+    expect(uploadCatalogDesignSourcePhotoMock).not.toHaveBeenCalled()
   })
 
   it('fetches and normalizes a volunteered remote URL through the same prep path', async () => {
@@ -167,13 +175,15 @@ describe('prepareDesignSourcePhoto', () => {
       objectPath: 'rep-1/originals/ring-remote.png',
       signedUrl: 'https://signed.example.com/ring-remote',
     })
-    uploadJewelryPhotoMock.mockResolvedValueOnce(
-      'https://cdn.example.com/jewelry-photos/rep-1/ring-remote.png',
-    )
+    uploadCatalogDesignSourcePhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/designs/design-1/ring-remote.png',
+      publicUrl: 'https://cdn.example.com/jewelry-photos/rep-1/ring-remote.png',
+    })
 
     const result = await prepareDesignSourcePhoto(
       {
         repId: 'rep-1',
+        designId: 'design-1',
         filenameStem: 'ring',
         sourceImageUrl: 'https://dropbox.example.com/ring.png',
       },
@@ -187,6 +197,30 @@ describe('prepareDesignSourcePhoto', () => {
     )
   })
 
+  it('removes the staged variant asset when the public source upload fails', async () => {
+    const bytes = await makePngBytes(1800, 1800, 'cleanLightBox')
+    uploadStagedOriginalPhotoMock.mockResolvedValueOnce({
+      objectPath: 'rep-1/designs/design-ruby/ER59000-original.png',
+      signedUrl: 'https://signed.example.com/ER59000-original',
+    })
+    uploadCatalogDesignSourcePhotoMock.mockRejectedValueOnce(
+      new Error('public upload failed'),
+    )
+
+    await expect(
+      prepareDesignSourcePhoto({
+        repId: 'rep-1',
+        designId: 'design-ruby',
+        filenameStem: 'ER59000',
+        sourceImageDataUrl: toDataUrl('image/png', bytes),
+      }),
+    ).rejects.toThrow('public upload failed')
+
+    expect(removeCatalogDesignPhotoAssetsMock).toHaveBeenCalledWith({
+      stagedObjectPath: 'rep-1/designs/design-ruby/ER59000-original.png',
+    })
+  })
+
   it('returns a rewrite-friendly error when a remote source URL cannot be fetched', async () => {
     const fetchMock = vi
       .fn()
@@ -195,6 +229,7 @@ describe('prepareDesignSourcePhoto', () => {
     const failingCall = prepareDesignSourcePhoto(
       {
         repId: 'rep-1',
+        designId: 'design-1',
         filenameStem: 'ring',
         sourceImageUrl: 'https://dropbox.example.com/missing.png',
       },

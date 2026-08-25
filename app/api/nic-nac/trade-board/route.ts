@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { createHash } from 'node:crypto'
 import {
   getPaidNicNacContext,
   AuthError,
@@ -8,6 +9,7 @@ import { ServiceError } from '@/lib/services/errors'
 import { processRepCustomListingPhotoUrl } from '@/lib/services/listing-photo-processing'
 import {
   addListing,
+  getCatalogListingMutationReceipt,
   getMyBoard,
   removeListing,
   restoreListing,
@@ -149,24 +151,63 @@ export async function POST(request: Request) {
     const { repId } = await getPaidNicNacContext()
     const itemNumber =
       typeof body?.itemNumber === 'string' ? body.itemNumber.trim() : ''
+    const mutationKey =
+      typeof body?.mutationKey === 'string' ? body.mutationKey.trim() : ''
+    if (!mutationKey) {
+      return NextResponse.json(
+        { error: 'mutationKey is required.' },
+        { status: 400 },
+      )
+    }
+    const ringSize =
+      typeof body?.ringSize === 'string' ? body.ringSize.trim() : undefined
+    const repNotes =
+      typeof body?.repNotes === 'string' ? body.repNotes.trim() : undefined
+    const tradePreferences =
+      typeof body?.tradePreferences === 'string'
+        ? body.tradePreferences.trim()
+        : undefined
     const listingPhotoUrl =
       typeof body?.listingPhotoUrl === 'string' ? body.listingPhotoUrl : undefined
+    const idempotencyKey = `trade-board-api:${mutationKey}`
+    const inputSignature = createHash('sha256')
+      .update(
+        JSON.stringify({
+          itemNumber: itemNumber.toUpperCase(),
+          ringSize: ringSize || null,
+          repNotes: repNotes || null,
+          tradePreferences: tradePreferences || null,
+          listingPhotoSource: listingPhotoUrl || null,
+        }),
+      )
+      .digest('hex')
+    const admin = createAdminClient()
+    const replay = await getCatalogListingMutationReceipt(admin, {
+      repId,
+      idempotencyKey,
+      inputSignature,
+    })
+    if (replay) {
+      return NextResponse.json({ ok: true, result: replay })
+    }
     const processedListingPhotoUrl = listingPhotoUrl
       ? (
           await processRepCustomListingPhotoUrl({
             repId,
             sourceImageUrl: listingPhotoUrl,
             filenameStem: `${itemNumber || 'listing'}-listing-photo`,
+            mutationAssetKey: inputSignature,
           })
         ).photoUrl
       : undefined
-    const result = await addListing(createAdminClient(), repId, {
+    const result = await addListing(admin, repId, {
       itemNumber,
-      ringSize: typeof body?.ringSize === 'string' ? body.ringSize : undefined,
-      repNotes: typeof body?.repNotes === 'string' ? body.repNotes : undefined,
-      tradePreferences:
-        typeof body?.tradePreferences === 'string' ? body.tradePreferences : undefined,
+      ringSize,
+      repNotes,
+      tradePreferences,
       listingPhotoUrl: processedListingPhotoUrl,
+      idempotencyKey,
+      inputSignature,
     })
 
     return NextResponse.json({ ok: true, result })
