@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 export type MessageConsoleRecipient = {
   id: string
@@ -181,6 +181,7 @@ export function CommunicationsConsole() {
   const [preview, setPreview] = useState<Preview | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
+  const publishPreviewRef = useRef<HTMLElement>(null)
 
   const loadSnapshot = useCallback(async () => {
     setLoading(true)
@@ -212,6 +213,16 @@ export function CommunicationsConsole() {
   useEffect(() => {
     void loadSnapshot()
   }, [loadSnapshot])
+
+  useEffect(() => {
+    if (!preview) return
+    window.requestAnimationFrame(() => {
+      publishPreviewRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    })
+  }, [preview])
 
   const audience: Audience =
     audienceKind === 'all_active'
@@ -622,13 +633,17 @@ export function CommunicationsConsole() {
                   {busy === 'draft' ? 'Saving…' : 'Save draft'}
                 </button>
                 <button
+                  aria-describedby="publish-next-step"
                   className="rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-800 disabled:opacity-50"
                   disabled={busy !== null}
                   onClick={() => void preparePreview()}
                   type="button"
                 >
-                  {busy === 'preview' ? 'Preparing…' : 'Preview audience'}
+                  {busy === 'preview' ? 'Preparing…' : 'Review & publish'}
                 </button>
+                <p className="basis-full text-xs text-slate-500" id="publish-next-step">
+                  Review the frozen audience, then use <strong>Publish now</strong> in the final review.
+                </p>
               </div>
             </div>
           </section>
@@ -652,7 +667,7 @@ export function CommunicationsConsole() {
         </div>
 
         {preview ? (
-          <section aria-labelledby="publish-preview-heading" className="rounded-2xl border-2 border-violet-200 bg-violet-50/40 p-5 shadow-sm md:p-7">
+          <section aria-labelledby="publish-preview-heading" className="rounded-2xl border-2 border-violet-200 bg-violet-50/40 p-5 shadow-sm md:p-7" ref={publishPreviewRef} tabIndex={-1}>
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wide text-violet-700">Audience checked</p>
