@@ -306,6 +306,20 @@ describe('unified Workspace Message Center UI', () => {
     )
   })
 
+  it('quietly refreshes Message Center every minute and when the Workspace becomes active', () => {
+    const dashboardSource = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(dashboardSource).toContain('const MESSAGE_CENTER_REFRESH_MS = 60_000')
+    expect(dashboardSource).toContain('messagesRefreshInFlightRef')
+    expect(dashboardSource).toContain("document.addEventListener('visibilitychange', refreshWhenVisible)")
+    expect(dashboardSource).toContain("window.addEventListener('focus', refreshMessagesInBackground)")
+    expect(dashboardSource).toContain('MESSAGE_CENTER_REFRESH_MS')
+    expect(dashboardSource).toContain('.catch(() => undefined)')
+  })
+
   it('uses one-surface-at-a-time phone layout, 44px controls, and reduced motion', () => {
     const css = readFileSync(
       resolve(

@@ -222,6 +222,7 @@ const SECONDARY_WORKSPACE_SECTIONS = [
 ] as const satisfies readonly WorkspaceSectionTab<string>[]
 
 const TRADE_WORKSPACE_REFRESH_MS = 15_000
+const MESSAGE_CENTER_REFRESH_MS = 60_000
 const TRADE_BOARD_PAGE_SIZE = 12
 export function buildTradeBoardFetchUrl(options: { offset?: number } = {}) {
   const params = new URLSearchParams({
@@ -2825,6 +2826,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       error: null,
       helperMessage: null,
     })
+  const messagesRefreshInFlightRef = useRef(false)
   const [teamManagementState, setTeamManagementState] =
     useState<TeamManagementState>(() =>
       reviewWorkspaceMode
@@ -4531,6 +4533,46 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     void loadPaidWorkspaceData(controller.signal)
 
     return () => controller.abort()
+  }, [reviewWorkspaceMode])
+
+  useEffect(() => {
+    if (reviewWorkspaceMode) return
+
+    const refreshMessagesInBackground = () => {
+      if (
+        document.visibilityState !== 'visible' ||
+        messagesRefreshInFlightRef.current
+      ) {
+        return
+      }
+      messagesRefreshInFlightRef.current = true
+      void loadMessages()
+        // A quiet refresh should never replace an open Message Center with an
+        // error state. The existing inbox stays available until the next check.
+        .catch(() => undefined)
+        .finally(() => {
+          messagesRefreshInFlightRef.current = false
+        })
+    }
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') {
+        refreshMessagesInBackground()
+      }
+    }
+
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+    window.addEventListener('focus', refreshMessagesInBackground)
+    const intervalId = window.setInterval(
+      refreshMessagesInBackground,
+      MESSAGE_CENTER_REFRESH_MS,
+    )
+
+    return () => {
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
+      window.removeEventListener('focus', refreshMessagesInBackground)
+      window.clearInterval(intervalId)
+    }
   }, [reviewWorkspaceMode])
 
   useEffect(() => {
