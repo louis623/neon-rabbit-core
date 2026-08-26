@@ -4526,3 +4526,12 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Applied migration `20260826110000_sparkle_finder_brand_settings.sql`; focused Suite tests, 762 Finder tests, lint, Suite typecheck, local builds, strict Suite contract, 20 Finder browser smoke tests, and the Nic-Nac missing-model guard passed.
 - Released application commit `4a60590a`: Suite `dpl_G25cvspzdQBPWBs6s5SydGbwrKKP`; Finder `dpl_AJm8zgU8jkXwhpSgmEHAdErJFJvX`. Both Suite domains resolve to the Suite deployment and `yoursparklefinder.com` resolves to the Finder deployment.
 - Live Finder browser inspection confirmed Amethyst tokens and appearance. The authenticated Control Center picker remains for an operator-session visual click-through; no credentials or account state were changed to bypass the login boundary.
+
+---
+
+# August 26, 2026 - Finder outbound links open separately
+
+- Louis requested that View Rep, Dance Floor, and every other link leaving Sparkle Finder open in a new tab so customers can compare multiple reps without losing their Finder place.
+- Added a shared external-aware Finder link component and applied it to all dynamic outbound discovery surfaces. External HTTP(S) destinations receive `target="_blank"` and `rel="noopener noreferrer"`; local Finder routes remain same-tab.
+- Commit `15f60885` passed 765 tests, lint, local/Vercel builds, and signed-in local browser QA with no console warnings. Production deployment `dpl_EEA1gzkRrdMwJk35KHnF1DzZat3s` is Ready and owns `https://yoursparklefinder.com`.
+- Production Reps remains correctly login-gated. No real customer or Louis account was used to bypass that boundary.

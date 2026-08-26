@@ -307,3 +307,9 @@
 - Added Finder's dynamic appearance loader and root semantic CSS tokens. The source contract is the Sparkle Suite public Finder appearance endpoint, with 30-second revalidation and an Amethyst fallback.
 - The shared Control Center now exposes all 11 customer-site appearance presets under a Sparkle Finder product view. The persisted production setting is Amethyst.
 - Application commit `4a60590a` passed the full Finder suite (762 tests), lint, production build, strict Suite contract, 20 browser smoke tests, and Nic-Nac guard. Finder deployment `dpl_AJm8zgU8jkXwhpSgmEHAdErJFJvX` is live on `https://yoursparklefinder.com` and visually verified.
+
+## 2026-08-26 later
+
+- Added one external-aware link component and routed dynamic rep, Dance Floor, show, availability, Showcase, and Nic-Nac destinations through it.
+- External HTTP(S) links now render `target="_blank"` plus `rel="noopener noreferrer"`; internal and fixture-preview Finder links remain same-tab.
+- Commit `15f60885` passed 59 test files / 765 tests, lint, production build, and local signed-in browser QA. Deployment `dpl_EEA1gzkRrdMwJk35KHnF1DzZat3s` is live on `https://yoursparklefinder.com`.

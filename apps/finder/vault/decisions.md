@@ -124,3 +124,9 @@ Reason: Sparkle Finder and Sparkle Suite need one clear, approved vocabulary wit
 Decision: Sparkle Finder uses the same named appearance preset catalog as Sparkle Suite customer sites, selected from a Sparkle Finder view inside the existing Suite Control Center. Finder consumes only the published semantic appearance contract; customer auth, application data, and deployments remain separate.
 
 Reason: This gives Louis one place to operate both products and consistent visual choices without merging their security or runtime boundaries.
+
+## 2026-08-26 - Outbound discovery links open in new tabs
+
+Decision: Real HTTP(S) destinations outside Sparkle Finder open in a new tab with `noopener noreferrer`. Finder-local routes, including fixture-backed preview routes, remain in the current tab.
+
+Reason: Customers use Finder as a stable comparison workspace while visiting multiple reps, Dance Floors, and shows. The browser should preserve their Finder search context by default.

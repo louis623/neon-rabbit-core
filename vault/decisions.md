@@ -1531,3 +1531,9 @@ Team Management has two related but separate workflows: Start Strong onboarding 
 Decision: Sparkle Suite remains the owner of operator-facing appearance controls. The Control Center switches between Sparkle Suite and Sparkle Finder views, while Finder consumes a narrow public appearance contract and keeps its own application, authentication, database, and Vercel project boundaries.
 
 Reason: Louis wants one operational home and the same visual preset choices without coupling the products' customer auth or runtime state. A shared semantic contract gives Finder centrally controlled styling while preserving the established deployment and security boundaries.
+
+## 2026-08-26 - Finder keeps its place when customers visit outside sites
+
+Decision: Any HTTP(S) link that leaves Sparkle Finder opens in a new browser tab with opener protection. Internal Finder routes and local fixture-preview routes continue in the current tab.
+
+Reason: Finder is the customer's comparison and discovery workspace. Keeping it open makes it practical to inspect several reps, Dance Floors, and live-show destinations without repeatedly reconstructing the search.

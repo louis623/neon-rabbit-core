@@ -1615,3 +1615,10 @@ Verification passed:
 - Finder reads its public appearance contract from Sparkle Suite and applies semantic theme tokens at the root layout. The persisted default is Amethyst; the public fallback is also Amethyst.
 - Application commit `4a60590a feat: control Sparkle Finder appearance from Control Center` was pushed and manually released. Suite deployment `dpl_G25cvspzdQBPWBs6s5SydGbwrKKP` owns both Suite aliases. Finder deployment `dpl_AJm8zgU8jkXwhpSgmEHAdErJFJvX` owns `https://yoursparklefinder.com`.
 - Migration `20260826110000_sparkle_finder_brand_settings.sql` is applied and the live row is `appearance_preset=amethyst`. Live browser verification confirmed `data-finder-theme=amethyst` and the expected violet, pink, and Italiana visual system.
+
+### August 26, 2026 Sparkle Finder outbound-link behavior
+
+- Customer-facing links that leave Sparkle Finder now open in a protected new tab so shoppers can keep Finder open while comparing reps, Dance Floors, and shows.
+- One external-aware Finder link component now covers rep cards, favorite reps, Dance Floor leads, live shows, library availability, Showcase leads, and Nic-Nac lead actions. Local Finder and fixture-preview routes stay in the current tab.
+- Application commit `15f60885 feat: open Finder outbound links in new tabs` was manually released as Finder deployment `dpl_EEA1gzkRrdMwJk35KHnF1DzZat3s` on `https://yoursparklefinder.com`.
+- Verification passed: 59 test files / 765 tests, lint, local and Vercel production builds, local signed-in browser inspection, clean console, and exact customer-domain provenance.
