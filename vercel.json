@@ -18,7 +18,7 @@
     },
     {
       "path": "/api/internal/support-followups/process",
-      "schedule": "*/15 * * * *"
+      "schedule": "15 18 * * *"
     }
   ]
 }

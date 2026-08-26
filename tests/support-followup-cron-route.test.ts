@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import vercelConfig from '../vercel.json'
 
 const createAdminClientMock = vi.fn()
 const processPendingMock = vi.fn()
@@ -46,5 +47,12 @@ describe('support follow-up cron route', () => {
     expect(response.status).toBe(200)
     expect(processPendingMock).toHaveBeenCalledWith({ kind: 'admin' }, { limit: 10 })
     await expect(response.json()).resolves.toMatchObject({ ok: true })
+  })
+
+  it('uses the daily recovery cadence supported by the production Vercel plan', () => {
+    expect(vercelConfig.crons).toContainEqual({
+      path: '/api/internal/support-followups/process',
+      schedule: '15 18 * * *',
+    })
   })
 })
