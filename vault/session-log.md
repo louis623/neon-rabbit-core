@@ -4549,3 +4549,18 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Production-schema smoke passed Team, Support, and Rep Network with only `sparkle-reviewer+communications-*` identities and non-live subscriptions. No Stripe charge, email, SMS, Google Chat alert, real account, or customer data was used. Cleanup removed all synthetic users, conversations, reports, attachment objects, and Task List items; final reset was empty.
 - Vercel Hobby rejected the initial 15-minute Support recovery schedule during release. The durable recovery endpoint remains protected and bounded, and its production schedule was changed to the supported daily cadence at 18:15 UTC with a regression assertion in the cron route suite.
 - Fixture-backed desktop and 390px browser QA covered the six-stream inbox, Team thread, mobile back navigation, new-message chooser, and guided Support handoff without using a real account. That pass found and fixed a stale top-header unread badge; opening or archiving a conversation now synchronizes the shared Workspace count immediately.
+
+---
+
+# August 26, 2026 - Message Center help, broadcast clarity, and quiet refresh
+
+- Added **Using the Message Center** to **Tools > Resources & Help > Help** so reps can find a plain-language explanation of All, Team, Rep Network, Support, Sparkle Suite, and Archived views, plus replies, New Message, and Support. Released in `959552c6`.
+- Inspected the live Control Center Broadcasts composer after Louis could not find how to publish his saved update. The draft was confirmed safe and unpublished. The underlying final action was intentionally below the fold after audience preview, so the UI now labels the first action **Review & publish**, names **Publish now** as the next step, and scrolls to the final review. The mass-publication checkbox/final confirmation remains required. Released in `4a96e279`; no broadcast was sent.
+- Added built-in Message Center polling in `c5355136`: one quiet fetch per minute while the Workspace is visible, plus a refresh on focus/visibility return. It updates the inbox and header unread badge without reloading the page, does not interfere with in-progress reply/support drafts, prevents concurrent refreshes, and keeps the last good inbox on a transient background failure. It uses existing app/database requests—no agent, credits, AI generation, email, SMS, or push provider.
+- Focused verification: `tests/nic-nac-unified-message-center-ui.test.tsx`, `tests/nic-nac-dashboard-placeholder.test.ts`, and `tests/nic-nac-workspace-refresh-events.test.ts` passed 139 tests; the final local production build passed. The exact production commit `c53551365ddb4c6d088b95e7d6e01503c1af84ef` was pushed and manually released as Vercel deployment `dpl_AyfCaYp4bvEJDCmjoqcwS7Ko9Q9V`; both Suite domains resolve to it. Untracked `artifacts/` and `test-results/` were preserved.
+
+Lessons retained:
+
+- A safety-critical multi-step action must make the next step visible at the moment of intent; a correct control below the fold is functionally hidden.
+- Refresh only the narrow data surface that needs freshness. Do not reload the full Workspace or overwrite a conversation/composer while a rep is working.
+- Background polling failures should be silent and preserve the last known-good inbox; explicit user refresh/retry remains the visible recovery path.

@@ -1555,3 +1555,15 @@ Reason: This removes duplicate response locations while keeping operator triage,
 Decision: Rep Network begins with eligible subscriber-to-subscriber message requests. Operators can inspect only actively reported conversations. Team, Support, and Rep Network composing can each be disabled independently without hiding existing history.
 
 Reason: Controlled consent, report-only operator access, rate limits, blocks, and reversible operational stops provide useful collaboration without turning Sparkle Suite into an unrestricted chat network.
+
+## 2026-08-26 - Broadcasts require a preview and a final explicit publish action
+
+Decision: Official Sparkle Suite broadcasts remain a deliberate two-step workflow: **Review & publish** freezes and previews the audience; the separate final **Publish now** action requires the mass-publication acknowledgement for multi-rep audiences.
+
+Reason: Broadcasting represents Sparkle Suite to multiple reps. Draft saving must remain harmless, and the operator must be able to review both content and the frozen audience immediately before delivery. The UI should guide to the final step rather than hiding it below the composer, but it must never collapse that confirmation barrier.
+
+## 2026-08-26 - Quiet Message Center refresh, not whole-Workspace reload
+
+Decision: The Message Center polls its existing inbox endpoint every 60 seconds only while the Workspace is visible and refreshes again when focus/visibility returns. It updates data and unread counts without a full page reload, avoids concurrent requests, and preserves the last good inbox on an automatic-refresh failure.
+
+Reason: Reps need timely awareness of Team, Support, Rep Network, and official updates, but an automatic page reload can disrupt a reply, Support form, or other Workspace work. This is ordinary application/database traffic; it does not invoke Nic-Nac, an agent, or any paid messaging/AI provider.
