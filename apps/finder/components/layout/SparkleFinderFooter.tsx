@@ -36,7 +36,7 @@ export function SparkleFinderFooter() {
                 className="sparkle-finder-site-footer__social-bubble"
                 href={link.href}
                 key={link.href}
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 target="_blank"
               >
                 <SparkleFinderSocialIcon platform={link.platform} />
@@ -52,7 +52,7 @@ export function SparkleFinderFooter() {
                 <a
                   href={link.href}
                   key={link.href}
-                  rel={link.href.startsWith("https://") ? "noreferrer" : undefined}
+                  rel={link.href.startsWith("https://") ? "noopener noreferrer" : undefined}
                   target={link.href.startsWith("https://") ? "_blank" : undefined}
                 >
                   {link.label}
@@ -64,7 +64,7 @@ export function SparkleFinderFooter() {
         <p>
           Sparkle Finder is a discovery hub by Sparkle Suite. We are not affiliated with, endorsed by, sponsored by, or
           officially connected to Bomb Party. Sparkle Finder is powered by Neon Rabbit Digital Services. Visit{" "}
-          <a href="https://neonrabbit.net" rel="noreferrer" target="_blank">
+          <a href="https://neonrabbit.net" rel="noopener noreferrer" target="_blank">
             neonrabbit.net
           </a>
           .

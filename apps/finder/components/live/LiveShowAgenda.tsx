@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Bell, CalendarDays, PlayCircle } from "lucide-react";
+import { FinderLink } from "@/components/navigation/FinderLink";
 import type { LiveShow, RepSummary } from "@/lib/sparkle-finder/types";
 
 type LiveShowAgendaProps = {
@@ -65,7 +66,7 @@ export function LiveShowAgenda({ liveShows, reps }: LiveShowAgendaProps) {
                   </h3>
                   <p className="truncate text-xs leading-5 text-[var(--sparkle-ink-muted)]">{show.title}</p>
                 </div>
-                <Link
+                <FinderLink
                   className="col-span-3 inline-flex min-h-9 items-center justify-center gap-2 rounded-[var(--sparkle-radius-sm)] border border-[var(--sparkle-rose)] px-3 text-xs font-bold text-[var(--sparkle-rose)] transition hover:bg-[var(--sparkle-blush)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sparkle-rose)] sm:col-span-1"
                   href={show.showUrl}
                 >
@@ -80,7 +81,7 @@ export function LiveShowAgenda({ liveShows, reps }: LiveShowAgendaProps) {
                       Set Reminder
                     </>
                   )}
-                </Link>
+                </FinderLink>
               </article>
             );
           })}

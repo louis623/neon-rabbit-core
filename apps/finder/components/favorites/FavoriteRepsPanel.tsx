@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CalendarDays, NotebookPen, Search, Sparkles, UsersRound } from "lucide-react";
 import { FavoriteRepHeartButton } from "@/components/favorites/FavoriteRepHeartButton";
 import { FavoriteRepNotesForm } from "@/components/favorites/FavoriteRepNotesForm";
+import { FinderLink } from "@/components/navigation/FinderLink";
 import { getLocalRepBoardHref, getLocalRepHref } from "@/lib/sparkle-finder/route-hrefs";
 import type { FavoriteRepCard } from "@/lib/sparkle-finder/social-types";
 
@@ -60,14 +61,14 @@ export function FavoriteRepsPanel({ cards, isSilver }: FavoriteRepsPanelProps) {
                   </div>
                   <div className="mt-4 flex flex-wrap gap-3">
                     {card.repSiteUrl ? (
-                      <a className="text-sm font-bold text-[var(--sparkle-rose)] hover:underline" href={getLocalRepHref(card.repSiteUrl)}>
+                      <FinderLink className="text-sm font-bold text-[var(--sparkle-rose)] hover:underline" href={getLocalRepHref(card.repSiteUrl)}>
                         Visit Rep Site
-                      </a>
+                      </FinderLink>
                     ) : null}
                     {card.repBoardUrl ? (
-                      <a className="text-sm font-bold text-[var(--sparkle-plum)] hover:underline" href={getLocalRepBoardHref(card.repBoardUrl)}>
+                      <FinderLink className="text-sm font-bold text-[var(--sparkle-plum)] hover:underline" href={getLocalRepBoardHref(card.repBoardUrl)}>
                         Dance Floor
-                      </a>
+                      </FinderLink>
                     ) : (
                       <span className="text-sm font-bold text-[var(--sparkle-ink-muted)]">Dance Floor: watching</span>
                     )}

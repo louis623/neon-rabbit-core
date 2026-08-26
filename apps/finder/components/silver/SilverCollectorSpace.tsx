@@ -221,7 +221,7 @@ function TikTokHandleLink({ value }: { value: string }) {
       aria-label={`${profile.handle} on TikTok`}
       className="mt-1 inline-flex max-w-full items-center gap-1.5 text-sm font-semibold text-[var(--sparkle-ink-muted)] transition hover:text-[var(--sparkle-plum)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--sparkle-rose)]"
       href={profile.href}
-      rel="noreferrer"
+      rel="noopener noreferrer"
       target="_blank"
     >
       <TikTokIcon aria-hidden="true" className="size-4 shrink-0" />

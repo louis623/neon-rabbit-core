@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, ExternalLink, Search } from "lucide-react";
+import { FinderLink } from "@/components/navigation/FinderLink";
 import { getLocalRepBoardHref } from "@/lib/sparkle-finder/route-hrefs";
 import { getJewelryItemById, getRepById } from "@/lib/sparkle-finder/service";
 import { getShowcasePieceRepLeads } from "@/lib/sparkle-finder/showcase-service";
@@ -72,13 +73,13 @@ export function RepLeadPanel({ piece }: { piece: SparkleShowcasePiece }) {
                     {[matchedItem.mainStone, matchedItem.material].filter(Boolean).join(" · ")}
                   </p>
                 ) : null}
-                <Link
+                <FinderLink
                   className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
                   href={getLocalRepBoardHref(lead.boardUrl)}
                 >
                   Open Dance Floor
                   <ExternalLink aria-hidden="true" className="size-4" />
-                </Link>
+                </FinderLink>
               </article>
             );
           })

@@ -1,9 +1,9 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useRef, useState } from "react";
-import Link from "next/link";
 import { CalendarClock } from "lucide-react";
 import { useClientFormattedTime } from "@/components/live/useClientFormattedTime";
+import { FinderLink } from "@/components/navigation/FinderLink";
 import { NicNacMark } from "@/components/nic-nac/NicNacMark";
 
 type ChatMessage = {
@@ -194,8 +194,8 @@ function NicNacLeadCard({ lead }: { lead: FinderNicNacLead }) {
         <strong>Lead expires:</strong> after 48 hours or when the show ends.
       </p>
       <div className="finder-nic-nac-chatbot__lead-actions">
-        <Link href={lead.primaryHref}>{lead.primaryLabel}</Link>
-        {lead.secondaryHref && lead.secondaryLabel ? <Link href={lead.secondaryHref}>{lead.secondaryLabel}</Link> : null}
+        <FinderLink href={lead.primaryHref}>{lead.primaryLabel}</FinderLink>
+        {lead.secondaryHref && lead.secondaryLabel ? <FinderLink href={lead.secondaryHref}>{lead.secondaryLabel}</FinderLink> : null}
       </div>
     </section>
   );

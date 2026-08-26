@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Heart, Sparkles } from "lucide-react";
 import { JewelryImageFrame } from "@/components/library/JewelryImageFrame";
 import { CustomerShowTime } from "@/components/live/CustomerShowTime";
+import { FinderLink } from "@/components/navigation/FinderLink";
 import { FindThisForMe } from "@/components/nic-nac/FindThisForMe";
 import {
   getCatalogJewelryItemById,
@@ -202,12 +203,12 @@ export function renderItemDetailPageContent(
                       {formatMatchType(match.matchType)}
                     </p>
                     <p className="mt-2 text-sm font-black text-[var(--sparkle-plum-deep)]">1 dancer available</p>
-                    <a
+                    <FinderLink
                       className="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
                       href={getLocalRepBoardHref(match.boardUrl)}
                     >
                       Open Dance Floor
-                    </a>
+                    </FinderLink>
                   </article>
                 );
               })}
@@ -381,12 +382,12 @@ function AvailabilityLeadCard({
             </>
           )}
         </p>
-        <a
+        <FinderLink
           className="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
           href={match.customerSiteUrl}
         >
           Visit Rep Site
-        </a>
+        </FinderLink>
       </div>
     </article>
   );

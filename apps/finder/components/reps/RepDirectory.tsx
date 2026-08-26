@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CalendarDays, ExternalLink, Search } from "lucide-react";
 import { FavoriteRepHeartButton } from "@/components/favorites/FavoriteRepHeartButton";
 import { CustomerShowTime } from "@/components/live/CustomerShowTime";
+import { FinderLink } from "@/components/navigation/FinderLink";
 import { getLocalRepBoardHref, getLocalRepHref } from "@/lib/sparkle-finder/route-hrefs";
 import type { RepDirectoryCard, RepDirectoryView } from "@/lib/sparkle-finder/rep-directory";
 import type { FinderRepDirectoryStatus } from "@/lib/sparkle-finder/catalog-service";
@@ -185,14 +186,14 @@ function RepDirectoryListCard({
           </div>
           <div className="mt-4 flex flex-wrap gap-3">
             {repHref ? (
-              <Link className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline" href={repHref}>
+              <FinderLink className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[var(--sparkle-rose)] hover:underline" href={repHref}>
                 View Rep <ExternalLink aria-hidden="true" className="size-3.5" />
-              </Link>
+              </FinderLink>
             ) : null}
             {boardHref ? (
-              <Link className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[var(--sparkle-plum)] hover:underline" href={boardHref}>
+              <FinderLink className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[var(--sparkle-plum)] hover:underline" href={boardHref}>
                 Dance Floor <ExternalLink aria-hidden="true" className="size-3.5" />
-              </Link>
+              </FinderLink>
             ) : null}
           </div>
         </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Heart, Radio } from "lucide-react";
 import { FavoriteRepHeartButton } from "@/components/favorites/FavoriteRepHeartButton";
 import { CustomerShowTime } from "@/components/live/CustomerShowTime";
+import { FinderLink } from "@/components/navigation/FinderLink";
 import {
   getFinderLiveShows,
   shouldUseCatalogFixtureFallback,
@@ -64,12 +65,12 @@ export function renderLiveShowsPageContent(shows: FinderLiveShow[] = []) {
                   </span>
                 </div>
               </div>
-              <Link
+              <FinderLink
                 className="mt-4 inline-flex text-sm font-bold text-[var(--sparkle-rose)] hover:underline"
                 href={show.customerSiteUrl}
               >
                 Visit Rep Site
-              </Link>
+              </FinderLink>
             </article>
           ))}
         </div>

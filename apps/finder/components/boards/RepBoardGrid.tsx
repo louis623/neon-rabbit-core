@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CalendarDays, ExternalLink } from "lucide-react";
 import { FavoriteRepHeartButton } from "@/components/favorites/FavoriteRepHeartButton";
+import { FinderLink } from "@/components/navigation/FinderLink";
 import { getLocalRepBoardHref } from "@/lib/sparkle-finder/route-hrefs";
 import type { JewelryItem, LiveShow, RepBoardListing, RepSummary } from "@/lib/sparkle-finder/types";
 
@@ -64,12 +65,12 @@ export function RepBoardGrid({ listings, jewelryItems, reps, liveShows }: RepBoa
               <Link className="text-sm font-bold text-[var(--sparkle-rose)] hover:underline" href={`/library/${item.id}`}>
                 View library record
               </Link>
-              <a
+              <FinderLink
                 className="inline-flex items-center gap-1 text-sm font-bold text-[var(--sparkle-plum)] hover:underline"
                 href={getLocalRepBoardHref(listing.boardUrl)}
               >
                 Open Dance Floor <ExternalLink aria-hidden="true" className="size-3.5" />
-              </a>
+              </FinderLink>
             </div>
           </article>
         );
