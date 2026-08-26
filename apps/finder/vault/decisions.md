@@ -118,3 +118,9 @@ Reason: This matches Louis's expectation that reps feel like they are talking to
 Decision: Customer- and rep-facing copy must call the product feature the `Dance Floor` and jewelry offered there `dancers`. `Dance Floor` is always capitalized, and a `trade` remains the exchange/process. Legacy database, API, route, field, component, stable ID, and tool names stay unchanged when compatibility requires them, but must not appear in visible copy or Nic-Nac responses.
 
 Reason: Sparkle Finder and Sparkle Suite need one clear, approved vocabulary without risking existing integrations or stored data.
+
+## 2026-08-26 - Finder appearance is operated from the shared Control Center
+
+Decision: Sparkle Finder uses the same named appearance preset catalog as Sparkle Suite customer sites, selected from a Sparkle Finder view inside the existing Suite Control Center. Finder consumes only the published semantic appearance contract; customer auth, application data, and deployments remain separate.
+
+Reason: This gives Louis one place to operate both products and consistent visual choices without merging their security or runtime boundaries.

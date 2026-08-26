@@ -301,3 +301,9 @@
 - Preserved durable binder docs, plans, handoffs, and top-level Markdown notes in repo-local `docs/`.
 - Added repo-local vault memory files so future Codex sessions can start from the implementation repo without needing the old binder.
 - Redirected future workspace expectations to `C:\Users\louis\sparkle-finder-repo`.
+
+## 2026-08-26
+
+- Added Finder's dynamic appearance loader and root semantic CSS tokens. The source contract is the Sparkle Suite public Finder appearance endpoint, with 30-second revalidation and an Amethyst fallback.
+- The shared Control Center now exposes all 11 customer-site appearance presets under a Sparkle Finder product view. The persisted production setting is Amethyst.
+- Application commit `4a60590a` passed the full Finder suite (762 tests), lint, production build, strict Suite contract, 20 browser smoke tests, and Nic-Nac guard. Finder deployment `dpl_AJm8zgU8jkXwhpSgmEHAdErJFJvX` is live on `https://yoursparklefinder.com` and visually verified.

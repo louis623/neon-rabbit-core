@@ -389,3 +389,7 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 ## Chrome Extension
 
 - [ ] **Web Store extension rebuild** — Live Reveal Queue exists as sideload — Phase 2 parallel track
+
+## Sparkle Finder Control Center
+
+- [ ] Run one signed-in operator visual click-through of the new Sparkle Suite / Sparkle Finder switcher and preset save flow when an authorized Control Center session is available. Do not use a customer or personal account as a substitute.

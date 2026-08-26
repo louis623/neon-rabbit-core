@@ -36,3 +36,4 @@
   - Runtime smoke command: `npm run smoke:finder-telemetry-runtime`.
   - Result: row counts `{"conversations":2,"messages":4,"runs":2}`, all checks true, cleanup `ok:true`, and residual counts `0`.
   - Security check: `/api/internal/finder/nic-nac-telemetry-smoke` returns `401` without the bearer token.
+- Run one signed-in Control Center operator visual pass of the Sparkle Finder preset selector and save action when an authorized operator session is available. The live Finder rendering and Amethyst contract are already verified; do not bypass Control Center authentication with a customer or personal account.

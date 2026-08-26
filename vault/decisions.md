@@ -1525,3 +1525,9 @@ Team Management has two related but separate workflows: Start Strong onboarding 
   must begin from separate apps, databases/auth, secrets, domains, and release
   lifecycles. Any proposal to combine one of those boundaries is a distinct
   decision requiring explicit approval and evidence.
+
+## 2026-08-26 - One Control Center, separate product appearance surfaces
+
+Decision: Sparkle Suite remains the owner of operator-facing appearance controls. The Control Center switches between Sparkle Suite and Sparkle Finder views, while Finder consumes a narrow public appearance contract and keeps its own application, authentication, database, and Vercel project boundaries.
+
+Reason: Louis wants one operational home and the same visual preset choices without coupling the products' customer auth or runtime state. A shared semantic contract gives Finder centrally controlled styling while preserving the established deployment and security boundaries.

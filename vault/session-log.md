@@ -4516,3 +4516,13 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Louis asked to locate Heather's source recipes for The Perfect Oatmeal Cookie, Cheesy Tortilla Soup, Soft and Fluffy Dinner Rolls, Mom's Apple Betty, and Banana Coffee Cake in `louis@neonrabbit.net`.
 - The connector profile instead identified `louischapman1@gmail.com`. A title search there found no matches, but that result does **not** answer the requested Neon Rabbit mailbox search and must not be used as recipe evidence.
 - Louis explicitly requested disconnecting the incorrect account and connecting `louis@neonrabbit.net`. The currently available Gmail connector API has mailbox search/read/write operations but no connection, disconnection, OAuth, or account-switch control. Reconnect the Gmail integration to the intended account before any further mailbox work; then repeat the exact-title and attachment-aware recipe search. No email was sent, altered, archived, or deleted.
+
+---
+
+# August 26, 2026 - Shared Control Center for Sparkle Finder appearance
+
+- Added a Sparkle Suite / Sparkle Finder switcher to the existing Control Center and a Finder appearance editor with all 11 customer-site presets.
+- Added the persisted Finder appearance contract, public read API, operator-only update API, and Finder-side dynamic theme loader. Amethyst is the seeded and fallback preset.
+- Applied migration `20260826110000_sparkle_finder_brand_settings.sql`; focused Suite tests, 762 Finder tests, lint, Suite typecheck, local builds, strict Suite contract, 20 Finder browser smoke tests, and the Nic-Nac missing-model guard passed.
+- Released application commit `4a60590a`: Suite `dpl_G25cvspzdQBPWBs6s5SydGbwrKKP`; Finder `dpl_AJm8zgU8jkXwhpSgmEHAdErJFJvX`. Both Suite domains resolve to the Suite deployment and `yoursparklefinder.com` resolves to the Finder deployment.
+- Live Finder browser inspection confirmed Amethyst tokens and appearance. The authenticated Control Center picker remains for an operator-session visual click-through; no credentials or account state were changed to bypass the login boundary.
