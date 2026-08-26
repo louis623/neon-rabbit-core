@@ -28,6 +28,8 @@ export async function POST(
     const message = await sendTeamOnboardingMessage(createAdminClient(), token, {
       senderType: 'participant',
       body: body?.body,
+      clientRequestId:
+        typeof body?.clientRequestId === 'string' ? body.clientRequestId : undefined,
     })
     return NextResponse.json(
       { ok: true, message },

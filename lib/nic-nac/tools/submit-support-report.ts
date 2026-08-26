@@ -1,7 +1,5 @@
 import { tool } from 'ai'
 import { z } from 'zod'
-import { createSupportReport } from '@/lib/services/support-reports'
-import { createAdminClient } from '@/lib/supabase/admin'
 import type { ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -16,28 +14,21 @@ const inputSchema = z.object({
 
 export const submitSupportReportTool: ToolDefinition = {
   name: 'submit_support_report',
-  readOnly: false,
-  build: (ctx) =>
+  readOnly: true,
+  build: () =>
     tool({
       description:
-        'File a Sparkle Suite support report from Nic-Nac for bugs, site issues, suggested upgrades, or workflow ideas. Use only after the rep has given enough detail to title and describe the report.',
+        'Prepare an editable Sparkle Suite Support draft and direct the rep to Message Center. This never files or sends the report.',
       inputSchema,
       execute: async (input) => {
-        const result = await createSupportReport(createAdminClient(), {
-          source: 'nic_nac',
-          repId: ctx.repId,
-          conversationId: ctx.conversationId,
-          runId: ctx.runId,
-          ...input,
-        })
-        const delivered = result.notificationStatus === 'delivered'
-
         return {
-          ...result,
-          delivered,
-          message: delivered
-            ? 'Saved and notified Louis.'
-            : 'Saved the report, but Louis was not automatically notified. Use Help & Resources if this needs immediate backup.',
+          ok: true,
+          submitted: false,
+          action: 'open_support_composer',
+          href: '/nic-nac?section=messages&compose=support&source=nic-nac',
+          draft: input,
+          message:
+            'I prepared an editable Support draft. Review it in Messages, then choose Send when it looks right.',
         }
       },
     }),

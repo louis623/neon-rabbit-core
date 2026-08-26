@@ -4535,3 +4535,15 @@ Louis will finish the three stopped repo sessions one at a time and make sure co
 - Added a shared external-aware Finder link component and applied it to all dynamic outbound discovery surfaces. External HTTP(S) destinations receive `target="_blank"` and `rel="noopener noreferrer"`; local Finder routes remain same-tab.
 - Commit `15f60885` passed 765 tests, lint, local/Vercel builds, and signed-in local browser QA with no console warnings. Production deployment `dpl_EEA1gzkRrdMwJk35KHnF1DzZat3s` is Ready and owns `https://yoursparklefinder.com`.
 - Production Reps remains correctly login-gated. No real customer or Louis account was used to bypass that boundary.
+
+---
+
+# August 26, 2026 - Unified Workspace communications implementation
+
+- Implemented the approved one-inbox communications plan across Workspace, Control Center, canonical conversation services/APIs, Supabase, and synthetic smoke tooling.
+- Added friendly All, Team, Rep Network, Support, Sparkle Suite, and Archived views; guided new-message choices; thread-specific actions; Support progressive disclosure/screenshots; and safe deep links.
+- Preserved broadcasts as receive-only publications and isolated private conversation permissions. Rep Network operators can read only actively reported threads; arbitrary rep-authored context snapshots and unapproved external links are rejected.
+- Added historical Support reconciliation, onboarding compatibility, exact unread aggregation, stable cross-stream keyset pagination, concurrency locks, moderation write checks, operator requester identity/read state, five-minute signed screenshot reads, and a protected Support follow-up recovery cron.
+- Applied additive migrations `20260826150000` through `20260826157000`. Database smoke exposed and then verified fixes for nullable unread routing and ambiguous PL/pgSQL output-column conflict targets.
+- Verification: 25 focused files / 229 tests passed; targeted communications ESLint passed; final Next.js 16.2.1 production build and TypeScript passed with 30 generated pages. The repository's standard `npm test` remains 225/226 because the pre-existing Nic-Nac email registry expectation omits the unrelated existing `manage_customer_contact` tool.
+- Production-schema smoke passed Team, Support, and Rep Network with only `sparkle-reviewer+communications-*` identities and non-live subscriptions. No Stripe charge, email, SMS, Google Chat alert, real account, or customer data was used. Cleanup removed all synthetic users, conversations, reports, attachment objects, and Task List items; final reset was empty.

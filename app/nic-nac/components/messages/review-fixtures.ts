@@ -1,0 +1,222 @@
+import type {
+  RepDirectoryOption,
+  WorkspaceConversationDetail,
+  WorkspaceInboxItem,
+} from './types'
+
+export const REVIEW_TEAM_CONVERSATION_ID =
+  '11111111-1111-4111-8111-111111111111'
+
+export const REVIEW_INBOX_FIXTURES: WorkspaceInboxItem[] = [
+  {
+    kind: 'conversation',
+    id: REVIEW_TEAM_CONVERSATION_ID,
+    conversationId: REVIEW_TEAM_CONVERSATION_ID,
+    conversationType: 'team_onboarding',
+    state: 'open',
+    subject: "Questions from Taylor's New Rep Onboarding",
+    senderDisplayName: 'Taylor Brooks',
+    senderSubtitle: 'New Rep Onboarding',
+    latestMessagePreview: 'Could you help me choose the best first show date?',
+    lastMessageAt: '2026-08-26T13:45:00.000Z',
+    unreadCount: 1,
+    context: {
+      label: 'New Rep Onboarding',
+      value: '3 of 5 steps complete',
+      href: '/nic-nac?section=team-management',
+    },
+  },
+  {
+    kind: 'conversation',
+    id: '22222222-2222-4222-8222-222222222222',
+    conversationId: '22222222-2222-4222-8222-222222222222',
+    conversationType: 'support',
+    state: 'open',
+    subject: 'Dance Floor photo will not finish saving',
+    senderDisplayName: 'Sparkle Suite Support',
+    senderSubtitle: 'Support',
+    latestMessagePreview: 'Received by Sparkle Suite Support',
+    lastMessageAt: '2026-08-26T12:20:00.000Z',
+    unreadCount: 0,
+    context: {
+      label: 'Received',
+      value: 'Dance Floor',
+      href: '/nic-nac?section=trade-board',
+    },
+  },
+  {
+    kind: 'conversation',
+    id: '33333333-3333-4333-8333-333333333333',
+    conversationId: '33333333-3333-4333-8333-333333333333',
+    conversationType: 'support',
+    state: 'open',
+    subject: 'Idea: saved show checklists',
+    senderDisplayName: 'Sparkle Suite Support',
+    senderSubtitle: 'Support',
+    latestMessagePreview: 'Your idea is planned for a future update.',
+    lastMessageAt: '2026-08-25T18:10:00.000Z',
+    unreadCount: 1,
+    context: { label: 'Planned', value: 'Product idea' },
+  },
+  {
+    kind: 'conversation',
+    id: '44444444-4444-4444-8444-444444444444',
+    conversationId: '44444444-4444-4444-8444-444444444444',
+    conversationType: 'rep_direct',
+    state: 'pending',
+    subject: 'Question about dancer RG12345',
+    senderDisplayName: "Mia's Gem Room",
+    senderSubtitle: 'Rep Network',
+    latestMessagePreview: 'Would you be open to coordinating this trade?',
+    lastMessageAt: '2026-08-25T15:30:00.000Z',
+    unreadCount: 1,
+    requestDirection: 'incoming',
+    requestState: 'pending',
+    context: { label: 'Dance Floor dancer', value: 'RG12345' },
+  },
+  {
+    kind: 'conversation',
+    id: '55555555-5555-4555-8555-555555555555',
+    conversationId: '55555555-5555-4555-8555-555555555555',
+    conversationType: 'rep_direct',
+    state: 'open',
+    subject: 'Saturday show coverage',
+    senderDisplayName: 'Radiant Finds with Nia',
+    senderSubtitle: 'Rep Network',
+    latestMessagePreview: 'That timing works for me. I will send the details.',
+    lastMessageAt: '2026-08-24T20:05:00.000Z',
+    unreadCount: 0,
+    requestDirection: null,
+    requestState: 'accepted',
+  },
+  {
+    kind: 'publication',
+    id: 'review-message-customer-signup',
+    deliveryId: 'review-message-customer-signup',
+    publicationId: 'review-publication-customer-signup',
+    senderDisplayName: 'Sparkle Suite',
+    messageType: 'announcement',
+    direction: 'nr_to_rep',
+    subject: 'New customer joined your list',
+    title: 'New customer joined your list',
+    summary: 'Jamie signed up through your customer site.',
+    body: 'Their contact preferences are ready in your Customer List.',
+    category: 'customer_activity',
+    priority: 'normal',
+    actionLabel: 'Open customer list',
+    actionUrl: '/nic-nac?section=customer-list',
+    isRead: false,
+    readAt: null,
+    archivedAt: null,
+    createdAt: '2026-08-24T14:30:00.000Z',
+  },
+  {
+    kind: 'publication',
+    id: 'review-message-monthly-report',
+    deliveryId: 'review-message-monthly-report',
+    publicationId: 'review-publication-monthly-report',
+    senderDisplayName: 'Sparkle Suite',
+    messageType: 'monthly_report',
+    direction: 'nr_to_rep',
+    subject: 'Your July business report is ready',
+    title: 'Your July business report is ready',
+    summary: 'Last month at a glance, plus August customer birthdays.',
+    body: [
+      { type: 'heading', text: 'Last month at a glance' },
+      { type: 'metric', label: 'New customers', value: 8 },
+      { type: 'metric', label: 'Trade requests', value: 4 },
+    ],
+    category: 'monthly_report',
+    priority: 'important',
+    actionLabel: 'View birthday customers',
+    actionUrl: '/nic-nac?section=customer-list&filter=birthdays',
+    isRead: true,
+    readAt: '2026-08-23T13:00:00.000Z',
+    archivedAt: '2026-08-25T13:00:00.000Z',
+    createdAt: '2026-08-23T13:00:00.000Z',
+  },
+]
+
+export const REVIEW_CONVERSATION_DETAILS: Record<
+  string,
+  WorkspaceConversationDetail
+> = Object.fromEntries(
+  REVIEW_INBOX_FIXTURES.filter((item) => item.kind === 'conversation').map(
+    (item) => [
+      item.id,
+      {
+        ...item,
+        canReply: item.state === 'open',
+        canArchive: true,
+        canMute: item.conversationType === 'rep_direct',
+        canReport: item.conversationType === 'rep_direct',
+        attachments: [],
+        messages:
+          item.conversationType === 'team_onboarding'
+            ? [
+                {
+                  id: `${item.id}-1`,
+                  body: 'I finished my profile and team introduction.',
+                  kind: 'message',
+                  senderType: 'onboarding_guest',
+                  senderDisplayName: item.senderDisplayName,
+                  createdAt: '2026-08-26T13:35:00.000Z',
+                },
+                {
+                  id: `${item.id}-2`,
+                  body: item.latestMessagePreview ?? '',
+                  kind: 'message',
+                  senderType: 'onboarding_guest',
+                  senderDisplayName: item.senderDisplayName,
+                  createdAt: item.lastMessageAt ?? '2026-08-26T13:45:00.000Z',
+                },
+              ]
+            : item.conversationType === 'support'
+              ? [
+                  {
+                    id: `${item.id}-1`,
+                    body: item.subject,
+                    kind: 'message',
+                    senderType: 'rep',
+                    senderDisplayName: 'You',
+                    isOwn: true,
+                    createdAt: '2026-08-25T18:00:00.000Z',
+                  },
+                  {
+                    id: `${item.id}-2`,
+                    body: item.latestMessagePreview ?? '',
+                    kind: 'system_status',
+                    senderType: 'system',
+                    senderDisplayName: 'Sparkle Suite Support',
+                    createdAt: item.lastMessageAt ?? '2026-08-25T18:10:00.000Z',
+                  },
+                ]
+              : [
+                  {
+                    id: `${item.id}-1`,
+                    body: item.latestMessagePreview ?? '',
+                    kind: 'message',
+                    senderType: 'rep',
+                    senderDisplayName: item.senderDisplayName,
+                    createdAt: item.lastMessageAt ?? '2026-08-24T20:05:00.000Z',
+                  },
+                ],
+      },
+    ],
+  ),
+)
+
+export const REVIEW_REP_DIRECTORY: RepDirectoryOption[] = [
+  {
+    repId: 'review-rep-mia',
+    displayName: 'Mia',
+    businessName: "Mia's Gem Room",
+    contextLabel: 'Active Sparkle Suite rep',
+  },
+  {
+    repId: 'review-rep-nia',
+    displayName: 'Nia',
+    businessName: 'Radiant Finds with Nia',
+    contextLabel: 'Active Sparkle Suite rep',
+  },
+]

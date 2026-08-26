@@ -7,6 +7,11 @@ const listTeamOnboardingParticipantsMock = vi.fn()
 const createTeamOnboardingParticipantMock = vi.fn()
 const archiveTeamOnboardingParticipantMock = vi.fn()
 const sendTeamOnboardingMessageMock = vi.fn()
+const adminClient = { marker: 'admin-supabase' }
+
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => adminClient,
+}))
 
 vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
@@ -139,7 +144,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
     )
 
     expect(createTeamOnboardingParticipantMock).toHaveBeenCalledWith(
-      { marker: 'supabase' },
+      adminClient,
       'rep-britt',
       expect.objectContaining({
         displayName: 'Lindsey',
@@ -207,12 +212,12 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
     )
 
     expect(archiveTeamOnboardingParticipantMock).toHaveBeenCalledWith(
-      { marker: 'supabase' },
+      adminClient,
       'rep-britt',
       'participant-1',
     )
     expect(sendTeamOnboardingMessageMock).toHaveBeenCalledWith(
-      { marker: 'supabase' },
+      adminClient,
       'participant-1',
       expect.objectContaining({
         ownerRepId: 'rep-britt',

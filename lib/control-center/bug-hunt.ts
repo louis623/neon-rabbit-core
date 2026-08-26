@@ -19,6 +19,7 @@ export type BugHuntItem = {
   createdAt: string
   updatedAt: string
   completedAt: string | null
+  sourceSupportReportId: string | null
 }
 
 type BugHuntRow = {
@@ -32,9 +33,10 @@ type BugHuntRow = {
   created_at: string
   updated_at: string
   completed_at: string | null
+  source_support_report_id: string | null
 }
 
-export const BUG_HUNT_SELECT = 'id, title, details, item_type, status, owner, source, created_at, updated_at, completed_at'
+export const BUG_HUNT_SELECT = 'id, title, details, item_type, status, owner, source, created_at, updated_at, completed_at, source_support_report_id'
 
 export function normalizeBugHuntItem(row: BugHuntRow): BugHuntItem {
   return {
@@ -48,6 +50,7 @@ export function normalizeBugHuntItem(row: BugHuntRow): BugHuntItem {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     completedAt: row.completed_at,
+    sourceSupportReportId: row.source_support_report_id,
   }
 }
 

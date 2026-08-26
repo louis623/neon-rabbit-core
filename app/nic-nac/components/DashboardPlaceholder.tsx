@@ -82,7 +82,21 @@ import { WorkspaceShell } from './WorkspaceShell'
 import type { WorkspaceSectionTab } from './WorkspaceSectionTabs'
 import { NicNacHomeWorkspaceCard } from './NicNacHomeWorkspaceCard'
 import { TradeBoardWorkspaceCard } from './TradeBoardWorkspaceCard'
+import { MessageCenter as UnifiedMessageCenter } from './messages/MessageCenter'
+import {
+  REVIEW_INBOX_FIXTURES,
+  REVIEW_TEAM_CONVERSATION_ID,
+} from './messages/review-fixtures'
+import type {
+  MessageCenterActionState as UnifiedMessageCenterActionState,
+  MessageCenterState as UnifiedMessageCenterState,
+  WorkspaceInboxItem,
+  WorkspacePublicationSummary,
+} from './messages/types'
+import { isConversationItem } from './messages/types'
 import styles from './DashboardPlaceholder.module.css'
+
+export const MessagesCenterCard = UnifiedMessageCenter
 
 const CollectionIntakeTool = dynamic(() =>
   import('./CollectionIntakeTool').then((module) => module.CollectionIntakeTool),
@@ -388,6 +402,7 @@ export function shouldShowWorkspaceAccessNotice(
   return (
     !isAccessLoading &&
     !hasPaidWorkspace &&
+    section !== 'messages' &&
     section !== 'help-resources' &&
     section !== 'account'
   )
@@ -399,6 +414,7 @@ export function shouldShowWorkspaceLoadingSkeleton(
 ) {
   return (
     isAccessLoading &&
+    section !== 'messages' &&
     section !== 'help-resources' &&
     section !== 'account'
   )
@@ -601,40 +617,12 @@ type JewelryLibraryState = {
   facets?: JewelryLibraryFacets
 }
 
-export type WorkspaceMessageBodyBlock = {
-  type: 'paragraph' | 'heading' | 'metric' | 'list'
-  text?: string
-  label?: string
-  value?: string | number
-  items?: string[]
-}
-
-export type WorkspaceMessageSummary = {
-  id: string
-  deliveryId?: string
-  publicationId?: string
-  senderDisplayName?: string
-  title?: string | null
-  subject?: string | null
-  summary?: string | null
-  body: string | WorkspaceMessageBodyBlock[]
-  category?: string | null
-  priority?: string | null
-  actionLabel?: string | null
-  actionUrl?: string | null
-  deliveredAt?: string
-  createdAt?: string
-  messageType?: string
-  direction?: string
-  isRead: boolean
-  readAt: string | null
-  archivedAt?: string | null
-  isArchived?: boolean
-}
+export type WorkspaceMessageSummary = WorkspacePublicationSummary
 
 type MessagesInbox = {
   unreadCount: number
-  messages: WorkspaceMessageSummary[]
+  messages: WorkspaceInboxItem[]
+  items?: WorkspaceInboxItem[]
   nextCursor?: string | null
 }
 
@@ -643,110 +631,7 @@ type MessagesState = {
   inbox?: MessagesInbox
 }
 
-type MessagesActionState = {
-  pendingKey: string | null
-  error: string | null
-  helperMessage: string | null
-}
-
-const REVIEW_MESSAGE_FIXTURES: WorkspaceMessageSummary[] = [
-  {
-    id: 'review-message-customer-signup',
-    deliveryId: 'review-message-customer-signup',
-    messageType: 'announcement',
-    direction: 'nr_to_rep',
-    subject: 'New customer joined your list',
-    title: 'New customer joined your list',
-    summary: 'Jamie signed up through your customer site.',
-    body: 'Their contact preferences are ready in your Customer List.',
-    category: 'customer_activity',
-    priority: 'normal',
-    actionLabel: 'Open customer list',
-    actionUrl: '/nic-nac?section=customer-list',
-    isRead: false,
-    readAt: null,
-    archivedAt: null,
-    createdAt: '2026-08-17T14:30:00.000Z',
-  },
-  {
-    id: 'review-message-monthly-report',
-    deliveryId: 'review-message-monthly-report',
-    messageType: 'monthly_report',
-    direction: 'nr_to_rep',
-    subject: 'Your July business report is ready',
-    title: 'Your July business report is ready',
-    summary: 'Last month at a glance, plus customer birthdays coming up in August.',
-    body: [
-      { type: 'heading', text: 'Last month at a glance' },
-      { type: 'metric', label: 'New customers', value: 8 },
-      { type: 'metric', label: 'Trade requests', value: 4 },
-      { type: 'heading', text: 'Birthdays this month' },
-      { type: 'list', items: ['Jamie — August 12', 'Morgan — August 28'] },
-    ],
-    category: 'monthly_report',
-    priority: 'important',
-    actionLabel: 'View birthday customers',
-    actionUrl: '/nic-nac?section=customer-list&filter=birthdays',
-    isRead: false,
-    readAt: null,
-    archivedAt: null,
-    createdAt: '2026-08-01T13:00:00.000Z',
-  },
-  {
-    id: 'review-message-help-update',
-    deliveryId: 'review-message-help-update',
-    messageType: 'announcement',
-    direction: 'nr_to_rep',
-    subject: 'Dance Floor help was updated',
-    title: 'Dance Floor help was updated',
-    summary: 'The request and fulfillment steps now include clearer follow-up guidance.',
-    body: 'Open Help & Resources to see what changed.',
-    category: 'help_update',
-    priority: 'action_required',
-    actionLabel: 'Read the updated guide',
-    actionUrl: '/nic-nac?section=help-resources',
-    isRead: false,
-    readAt: null,
-    archivedAt: null,
-    createdAt: '2026-07-29T15:00:00.000Z',
-  },
-  {
-    id: 'review-message-blog',
-    deliveryId: 'review-message-blog',
-    messageType: 'newsletter',
-    direction: 'nr_to_rep',
-    subject: 'New blog: Five thoughtful customer follow-ups',
-    title: 'New blog: Five thoughtful customer follow-ups',
-    summary: 'Practical ways to stay helpful after a live show.',
-    body: 'This resource is now available from Workspace Tools.',
-    category: 'blog',
-    priority: 'normal',
-    actionLabel: 'Read the blog',
-    actionUrl: '/nic-nac?section=resources',
-    isRead: true,
-    readAt: '2026-07-25T16:00:00.000Z',
-    archivedAt: null,
-    createdAt: '2026-07-25T15:00:00.000Z',
-  },
-  {
-    id: 'review-message-video',
-    deliveryId: 'review-message-video',
-    messageType: 'announcement',
-    direction: 'nr_to_rep',
-    subject: 'New video: Prepare your next show',
-    title: 'New video: Prepare your next show',
-    summary: 'A quick walkthrough for planning a smooth live show.',
-    body: 'The video remains available in your Resource Library.',
-    category: 'video',
-    priority: 'normal',
-    actionLabel: 'Watch the video',
-    actionUrl: '/nic-nac?section=resources',
-    isRead: true,
-    readAt: '2026-07-22T16:00:00.000Z',
-    archivedAt: '2026-07-24T16:00:00.000Z',
-    createdAt: '2026-07-22T15:00:00.000Z',
-  },
-]
+type MessagesActionState = UnifiedMessageCenterActionState
 
 const REVIEW_RESOURCE_FIXTURES: WorkspaceResource[] = [
   {
@@ -791,8 +676,12 @@ const REVIEW_RESOURCE_FIXTURES: WorkspaceResource[] = [
   },
 ]
 
-function getActiveUnreadMessageCount(messages: WorkspaceMessageSummary[]) {
-  return messages.filter((message) => !message.isRead && !message.archivedAt).length
+function getActiveUnreadMessageCount(messages: WorkspaceInboxItem[]) {
+  return messages.reduce((count, message) => {
+    if (message.archivedAt) return count
+    if (isConversationItem(message)) return count + message.unreadCount
+    return count + (message.isRead ? 0 : 1)
+  }, 0)
 }
 
 type TeamManagementAccess = {
@@ -815,6 +704,9 @@ type TeamOnboardingParticipant = {
   unreadMessageCount: number
   lastActivityAt: string | null
   createdAt: string | null
+  workspaceConversationId?: string | null
+  workspace_conversation_id?: string | null
+  latestMessagePreview?: string | null
 }
 
 type TeamManagementState =
@@ -2921,8 +2813,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     status: reviewWorkspaceMode ? 'ready' : 'loading',
     inbox: reviewWorkspaceMode
       ? {
-          unreadCount: getActiveUnreadMessageCount(REVIEW_MESSAGE_FIXTURES),
-          messages: REVIEW_MESSAGE_FIXTURES,
+          unreadCount: getActiveUnreadMessageCount(REVIEW_INBOX_FIXTURES),
+          messages: REVIEW_INBOX_FIXTURES,
         }
       : undefined,
   })
@@ -2957,7 +2849,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   const [publicTeamDraft, setPublicTeamDraft] = useState<JoinTeamRosterDraft>(
     () => getJoinTeamRosterDraft(),
   )
-  const [teamReplyDraft, setTeamReplyDraft] = useState('')
   const [resourcesState, setResourcesState] = useState<ResourcesState>({
     status: reviewWorkspaceMode ? 'ready' : 'loading',
     resources: reviewWorkspaceMode ? [] : undefined,
@@ -3229,9 +3120,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       loadInbox(false),
       loadInbox(true),
     ])
-    const messagesByDelivery = new Map<string, WorkspaceMessageSummary>()
-    for (const message of [...activeInbox.messages, ...archivedInbox.messages]) {
-      messagesByDelivery.set(message.deliveryId || message.id, message)
+    const activeItems = activeInbox.items ?? activeInbox.messages ?? []
+    const archivedItems = archivedInbox.items ?? archivedInbox.messages ?? []
+    const messagesByDelivery = new Map<string, WorkspaceInboxItem>()
+    for (const message of [...activeItems, ...archivedItems]) {
+      messagesByDelivery.set(
+        isConversationItem(message) ? message.id : message.deliveryId || message.id,
+        message,
+      )
     }
     setMessagesState({
       status: 'ready',
@@ -5090,9 +4986,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function handleUpdateMessage(
-    message: WorkspaceMessageSummary,
+    message: WorkspaceInboxItem,
     patch: { read?: boolean; archived?: boolean },
   ) {
+    if (isConversationItem(message)) return
     const deliveryId = message.deliveryId || message.id
     const action =
       patch.archived === true
@@ -5112,6 +5009,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       const now = new Date().toISOString()
       setMessagesState((current) => {
         const messages = (current.inbox?.messages ?? []).map((currentMessage) =>
+          !isConversationItem(currentMessage) &&
           (currentMessage.deliveryId || currentMessage.id) === deliveryId
             ? {
                 ...currentMessage,
@@ -5186,7 +5084,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
 
   async function handleMarkAllMessagesRead() {
     const unreadMessages = (messagesState.inbox?.messages ?? []).filter(
-      (message) => !message.isRead && !message.archivedAt,
+      (message): message is WorkspacePublicationSummary =>
+        !isConversationItem(message) && !message.isRead && !message.archivedAt,
     )
     if (unreadMessages.length === 0) return
 
@@ -5200,7 +5099,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       const now = new Date().toISOString()
       setMessagesState((current) => {
         const messages = (current.inbox?.messages ?? []).map((message) =>
-          message.archivedAt || message.isRead
+          isConversationItem(message) || message.archivedAt || message.isRead
             ? message
             : { ...message, isRead: true, readAt: now },
         )
@@ -5636,56 +5535,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  async function handleSendTeamOnboardingReply(participantId: string) {
-    if (!teamReplyDraft.trim()) {
-      setTeamManagementActionState({
-        pendingKey: null,
-        error: 'Write a reply first.',
-        helperMessage: null,
-      })
-      return
-    }
-
-    setTeamManagementActionState({
-      pendingKey: `reply:${participantId}`,
-      error: null,
-      helperMessage: null,
-    })
-
-    try {
-      const response = await fetch(
-        `/api/nic-nac/team-onboarding/participants/${participantId}/messages`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ body: teamReplyDraft }),
-        },
-      )
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null
-      if (!response.ok) {
-        throw new Error(payload?.error || 'Unable to send that reply right now.')
-      }
-
-      setTeamReplyDraft('')
-      setTeamManagementActionState({
-        pendingKey: null,
-        error: null,
-        helperMessage: 'Reply saved to the onboarding thread.',
-      })
-      void loadTeamManagement().catch(() => {})
-    } catch (error) {
-      setTeamManagementActionState({
-        pendingKey: null,
-        error:
-          error instanceof Error ? error.message : 'Unable to send that reply right now.',
-        helperMessage: null,
-      })
-    }
-  }
-
   const currentPublicSiteSlug =
     publicSiteSlugOverride ?? repProfileState.publicSiteSlug
   const currentRepId = repIdOverride ?? repProfileState.repId
@@ -5795,6 +5644,38 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
     ? (activeSection as (typeof WORKSPACE_SECTIONS)[number]['key'])
     : 'more'
+  function openMessageCenter(options: {
+    view?: 'all' | 'team' | 'rep-network' | 'support' | 'sparkle-suite' | 'archived'
+    conversationId?: string | null
+    composeSupport?: boolean
+    source?: string | null
+  } = {}) {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+      url.searchParams.set('section', 'messages')
+      if (options.view && options.view !== 'all') {
+        url.searchParams.set('view', options.view)
+      } else {
+        url.searchParams.delete('view')
+      }
+      if (options.conversationId) {
+        url.searchParams.set('conversationId', options.conversationId)
+      } else {
+        url.searchParams.delete('conversationId')
+      }
+      if (options.composeSupport) {
+        url.searchParams.set('compose', 'support')
+        if (options.source) url.searchParams.set('source', options.source)
+      } else {
+        url.searchParams.delete('compose')
+        url.searchParams.delete('source')
+      }
+      window.history.replaceState(window.history.state, '', url)
+    }
+    setWorkspacePreview({ mode: 'workspace' })
+    setPreviewUnavailableMessage(null)
+    setActiveSection('messages')
+  }
   const workspaceHeader = !isLiveSitePreview ? (
     <WorkspaceAppHeader
       repName={headerRepName}
@@ -5807,11 +5688,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       messagesLoading={messagesState.status === 'loading'}
       messagesActive={activeSection === 'messages'}
       onOpenPublicSite={handleOpenCustomerSitePreview}
-      onOpenMessages={() => {
-        setWorkspacePreview({ mode: 'workspace' })
-        setPreviewUnavailableMessage(null)
-        setActiveSection('messages')
-      }}
+      onOpenMessages={() => openMessageCenter()}
       onGoHome={() => {
         setWorkspacePreview({ mode: 'workspace' })
         setPreviewUnavailableMessage(null)
@@ -5960,7 +5837,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             actionState={teamManagementActionState}
             createDraft={teamCreateDraft}
             publicTeamDraft={publicTeamDraft}
-            replyDraft={teamReplyDraft}
             teamName={managedTeamName}
             joinTeamPreviewHref={customerJoinTeamHref}
             onCreateDraftChange={handleTeamCreateDraftChange}
@@ -5975,21 +5851,24 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             onTogglePublicTeamMember={handleTogglePublicTeamMember}
             onMovePublicTeamMember={handleMovePublicTeamMember}
             onRemovePublicTeamMember={handleRemovePublicTeamMember}
-            onReplyDraftChange={setTeamReplyDraft}
-            onSendReply={handleSendTeamOnboardingReply}
+            onOpenMessages={(conversationId) =>
+              openMessageCenter({ view: 'team', conversationId })
+            }
           />
         </div>
       )
     }
 
-    if (canRenderWorkspaceSections && activeSection === 'messages') {
+    if (activeSection === 'messages') {
       return (
         <div className={styles.workspaceSectionStack}>
-          <MessagesCenterCard
-            state={messagesState}
+          <UnifiedMessageCenter
+            state={messagesState as UnifiedMessageCenterState}
             actionState={messagesActionState}
-            onUpdateMessage={handleUpdateMessage}
-            onMarkAllRead={handleMarkAllMessagesRead}
+            reviewMode={reviewWorkspaceMode}
+            supportOnly={!hasPaidWorkspace}
+            draftScope={currentRepId ?? (reviewWorkspaceMode ? 'review-rep' : null)}
+            onUpdatePublication={handleUpdateMessage}
             onRetry={() => void loadMessages()}
           />
         </div>
@@ -6013,6 +5892,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                   ? <WorkspaceResourceLibraryView resources={REVIEW_RESOURCE_FIXTURES} />
                   : <WorkspaceResourceLibrary />
                 : undefined
+            }
+            onContactSupport={() =>
+              openMessageCenter({
+                view: 'support',
+                composeSupport: true,
+                source: 'help',
+              })
             }
           />
         </div>
@@ -7549,7 +7435,7 @@ function MessageBodyContent({
   )
 }
 
-export function MessagesCenterCard({
+function LegacyMessagesCenterCard({
   state,
   actionState,
   onUpdateMessage,
@@ -7566,7 +7452,10 @@ export function MessagesCenterCard({
   onRetry: () => void
 }) {
   const [filter, setFilter] = useState<MessageCenterFilter>('all')
-  const messages = state.inbox?.messages ?? []
+  const messages = (state.inbox?.messages ?? []).filter(
+    (message): message is WorkspacePublicationSummary =>
+      !isConversationItem(message),
+  )
   const visibleMessages = filterMessageCenterMessages(messages, filter)
   const unreadCount = state.inbox?.unreadCount ?? 0
 
@@ -7799,21 +7688,14 @@ export function HelpResourcesCard({
   hasPaidWorkspace: _hasPaidWorkspace,
   initialTab = 'help',
   learningContent,
+  onContactSupport,
 }: {
   state: ResourcesState
   hasPaidWorkspace: boolean
   initialTab?: 'learn' | 'help'
   learningContent?: ReactNode
+  onContactSupport?: () => void
 }) {
-  const [reportForm, setReportForm] = useState<HelpSupportReportForm>(
-    DEFAULT_SUPPORT_REPORT_FORM,
-  )
-  const [reportSubmitState, setReportSubmitState] = useState<{
-    pending: boolean
-    error: string | null
-    message: string | null
-  }>({ pending: false, error: null, message: null })
-  const supportReportDetailsRef = useRef<HTMLTextAreaElement | null>(null)
   const [activeResourceTab, setActiveResourceTab] = useState<'learn' | 'help'>(
     learningContent && initialTab === 'learn' ? 'learn' : 'help',
   )
@@ -7821,110 +7703,6 @@ export function HelpResourcesCard({
   const workflowGroups = getWorkflowResourcesByGroup(state.resources)
   const featureReferences = getResourcesByType(state.resources, 'feature_reference')
     .filter((resource) => resource.group === 'Feature Index')
-  async function submitSupportReport(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setReportSubmitState({ pending: true, error: null, message: null })
-
-    try {
-      const response = await fetch('/api/nic-nac/support-reports', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildSupportReportPayload(reportForm.details)),
-      })
-      const result = await response.json().catch(() => ({})) as {
-        notificationStatus?: 'delivered' | 'not_configured' | 'failed'
-        error?: string
-      }
-
-      if (!response.ok) {
-        throw new Error(result.error ?? 'Support report could not be saved right now.')
-      }
-
-      const notificationStatus = result.notificationStatus
-      const message =
-        notificationStatus === 'not_configured' || notificationStatus === 'failed'
-          ? 'Report saved. The automatic Google Chat notification needs attention, so support may need to review the saved report manually.'
-          : 'Report saved. Support has the details.'
-
-      setReportSubmitState({ pending: false, error: null, message })
-      setReportForm(DEFAULT_SUPPORT_REPORT_FORM)
-    } catch (error) {
-      setReportSubmitState({
-        pending: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Support report could not be saved right now.',
-        message: null,
-      })
-    }
-  }
-
-  function focusSupportReportForm() {
-    supportReportDetailsRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-    })
-    supportReportDetailsRef.current?.focus()
-  }
-
-  function updateReportForm<Field extends keyof HelpSupportReportForm>(
-    field: Field,
-    value: HelpSupportReportForm[Field],
-  ) {
-    setReportForm((current) => ({ ...current, [field]: value }))
-  }
-
-  const supportReportForm = (
-    <form
-      className={styles.supportReportForm}
-      onSubmit={submitSupportReport}
-    >
-      <div>
-        <div className={styles.walletSettingsTitle}>
-          Send a quick report
-        </div>
-        <div className={styles.helperNote}>
-          Type what happened, what is confusing, or what would make Sparkle
-          Suite better. Support will sort out the category and follow-up.
-        </div>
-      </div>
-      <label className={styles.searchField}>
-        <span className={styles.searchLabel}>Tell us what happened</span>
-        <textarea
-          ref={supportReportDetailsRef}
-          className={styles.supportReportTextarea}
-          value={reportForm.details}
-          required
-          minLength={10}
-          maxLength={3000}
-          onChange={(event) =>
-            updateReportForm('details', event.target.value)
-          }
-          placeholder="Example: Dance Floor froze when I tried to add ER13229, or I have an idea for show reminders."
-        />
-      </label>
-      {reportSubmitState.error ? (
-        <div className={styles.actionError}>
-          {reportSubmitState.error}
-        </div>
-      ) : null}
-      {reportSubmitState.message ? (
-        <div className={styles.helperMessage}>
-          {reportSubmitState.message}
-        </div>
-      ) : null}
-      <div className={styles.actionRow}>
-        <button
-          type="submit"
-          className={styles.actionButton}
-          disabled={reportSubmitState.pending}
-        >
-          {reportSubmitState.pending ? 'Saving...' : 'Send report'}
-        </button>
-      </div>
-    </form>
-  )
 
   return (
     <div className={styles.workspacePanel}>
@@ -8094,8 +7872,8 @@ export function HelpResourcesCard({
                     <div className={styles.walletSettingsTitle}>Support Path</div>
                     <div className={styles.helperNote}>
                       Use the guides when you want a walkthrough. If something
-                      feels broken, confusing, or worth improving, send a quick
-                      report.
+                      feels broken, confusing, or worth improving, contact
+                      Sparkle Suite Support in Messages.
                     </div>
                   </div>
                   <span className={styles.rosterTag}>Open section</span>
@@ -8103,22 +7881,21 @@ export function HelpResourcesCard({
                 <div className={styles.supportReportCallout}>
                   <div>
                     <div className={styles.walletSettingsTitle}>
-                      Send a quick report
+                      Still need help?
                     </div>
                     <div className={styles.helperNote}>
-                      A short description is enough. Sparkle Suite will attach
-                      your account context for support.
+                      Ask a question, report a problem, or share an idea in the
+                      Message Center. Your reply and its status stay together.
                     </div>
                   </div>
                   <button
                     type="button"
                     className={styles.actionButton}
-                    onClick={focusSupportReportForm}
+                    onClick={onContactSupport}
                   >
-                    Start report
+                    Contact Sparkle Suite Support
                   </button>
                 </div>
-                {supportReportForm}
               </details>
             </div>
           ) : state.status === 'error' ? (
@@ -8126,7 +7903,21 @@ export function HelpResourcesCard({
               <div className={styles.emptyState}>
                 Help resources are temporarily unavailable.
               </div>
-              {supportReportForm}
+              <div className={styles.supportReportCallout}>
+                <div>
+                  <div className={styles.walletSettingsTitle}>Still need help?</div>
+                  <div className={styles.helperNote}>
+                    Message Sparkle Suite Support even while the guides are unavailable.
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className={styles.actionButton}
+                  onClick={onContactSupport}
+                >
+                  Contact Sparkle Suite Support
+                </button>
+              </div>
             </div>
           ) : (
             <div className={styles.cardFill}>
@@ -10003,7 +9794,6 @@ export function TeamManagementCard({
   actionState,
   createDraft = { displayName: '', contactEmail: '' },
   publicTeamDraft = getJoinTeamRosterDraft(),
-  replyDraft = '',
   teamName = '',
   joinTeamPreviewHref = '/amethyst/Join.html',
   onCreateDraftChange,
@@ -10018,14 +9808,12 @@ export function TeamManagementCard({
   onTogglePublicTeamMember,
   onMovePublicTeamMember,
   onRemovePublicTeamMember,
-  onReplyDraftChange,
-  onSendReply,
+  onOpenMessages,
 }: {
   state?: TeamManagementState
   actionState?: TeamManagementActionState
   createDraft?: TeamManagementCreateDraft
   publicTeamDraft?: JoinTeamRosterDraft
-  replyDraft?: string
   teamName?: string
   joinTeamPreviewHref?: string
   onCreateDraftChange?: (patch: Partial<TeamManagementCreateDraft>) => void
@@ -10040,15 +9828,13 @@ export function TeamManagementCard({
   onTogglePublicTeamMember?: (member: JoinTeamMember) => void
   onMovePublicTeamMember?: (memberId: string, direction: 'up' | 'down') => void
   onRemovePublicTeamMember?: (memberId: string) => void
-  onReplyDraftChange?: (value: string) => void
-  onSendReply?: (participantId: string) => void
+  onOpenMessages?: (conversationId: string) => void
 }) {
   const participants = state.participants ?? []
   const publicTeamRoster = state.publicTeamRoster ?? []
   const activeParticipants = participants.filter(
     (participant) => participant.status !== 'archived',
   )
-  const selectedParticipant = activeParticipants[0]
   const isLocked = state.status === 'locked' || state.access?.enabled === false
   const isLoading = state.status === 'loading'
 
@@ -10113,8 +9899,8 @@ export function TeamManagementCard({
           <section className={styles.teamManagementPanel}>
             <div className={styles.walletSettingsTitle}>Onboarding messages</div>
             <div className={styles.emptyState}>
-              Questions from onboarding sites appear here for the team lead to
-              answer from the workspace.
+              Questions from onboarding sites appear in the Message Center so
+              every conversation stays in one inbox.
             </div>
           </section>
         </div>
@@ -10129,7 +9915,7 @@ export function TeamManagementCard({
           <div className={styles.cardTitle}>Team Management</div>
           <div className={styles.cardSubtitle}>
             Create private New Rep Onboarding links, track onboarding progress, and
-            answer new-rep questions from this workspace.
+            open new-rep questions in the Message Center.
           </div>
         </div>
         <span className={styles.rosterTag}>
@@ -10258,7 +10044,39 @@ export function TeamManagementCard({
                 {participant.progress.needsHelp > 0 ? (
                   <div className={styles.helperNote}>Needs help</div>
                 ) : null}
+                <div className={styles.helperNote}>
+                  {participant.latestMessagePreview
+                    ? `Latest: ${participant.latestMessagePreview}`
+                    : participant.unreadMessageCount > 0
+                      ? 'A new onboarding question is waiting in Messages.'
+                      : 'No onboarding questions yet.'}
+                </div>
+                {participant.lastActivityAt ? (
+                  <div className={styles.helperNote}>
+                    Last activity {formatCompactDateTime(participant.lastActivityAt)}
+                  </div>
+                ) : null}
                 <div className={styles.workspaceInlineActions}>
+                  {participant.workspaceConversationId ||
+                  participant.workspace_conversation_id ? (
+                    <button
+                      type="button"
+                      className={styles.actionButton}
+                      onClick={() =>
+                        onOpenMessages?.(
+                          participant.workspaceConversationId ||
+                            participant.workspace_conversation_id ||
+                            REVIEW_TEAM_CONVERSATION_ID,
+                        )
+                      }
+                    >
+                      Open in Messages
+                    </button>
+                  ) : (
+                    <span className={styles.helperNote}>
+                      The conversation will open after this rep sends their first question.
+                    </span>
+                  )}
                   <button
                     type="button"
                     className={styles.helperButton}
@@ -10277,51 +10095,6 @@ export function TeamManagementCard({
                 </div>
               </div>
             ))
-          )}
-        </section>
-
-        <section className={styles.teamManagementPanel}>
-          <div className={styles.workspaceSectionHeader}>
-            <div className={styles.walletSettingsTitle}>
-              {selectedParticipant
-                ? `Reply to ${selectedParticipant.displayName}`
-                : 'Onboarding messages'}
-            </div>
-            <span className={styles.rosterTag}>Workspace thread</span>
-          </div>
-          {selectedParticipant ? (
-            <>
-              <div className={styles.teamMessagePreview}>
-                Questions from {selectedParticipant.displayName}&apos;s New Rep
-                Onboarding site appear in this thread. Replies are saved back to
-                the onboarding site.
-              </div>
-              <label className={styles.searchField}>
-                <span className={styles.searchLabel}>Reply composer</span>
-                <textarea
-                  className={`${styles.siteSettingsTextarea} ph-no-capture`}
-                  placeholder="Write a reply for the onboarding thread"
-                  value={replyDraft}
-                  onChange={(event) => onReplyDraftChange?.(event.target.value)}
-                />
-              </label>
-              <button
-                type="button"
-                className={styles.actionButton}
-                disabled={
-                  actionState?.pendingKey === `reply:${selectedParticipant.id}`
-                }
-                onClick={() => onSendReply?.(selectedParticipant.id)}
-              >
-                {actionState?.pendingKey === `reply:${selectedParticipant.id}`
-                  ? 'Saving reply...'
-                  : 'Send reply'}
-              </button>
-            </>
-          ) : (
-            <div className={styles.emptyState}>
-              Create a rep onboarding link to open the message thread.
-            </div>
           )}
         </section>
       </div>

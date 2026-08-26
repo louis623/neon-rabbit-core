@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const getAuthenticatedOperatorMock = vi.fn()
+const getControlCenterAccessMock = vi.fn()
 const createAdminClientMock = vi.fn()
 const listOperatorSupportReportsMock = vi.fn()
 const updateOperatorSupportReportStatusMock = vi.fn()
@@ -14,8 +14,8 @@ const { MockAuthError, MockOperatorAuthError } = vi.hoisted(() => ({
 vi.mock('@/lib/supabase/operator-auth', () => ({
   AuthError: MockAuthError,
   OperatorAuthError: MockOperatorAuthError,
-  getAuthenticatedOperator: (...args: unknown[]) =>
-    getAuthenticatedOperatorMock(...args),
+  getControlCenterAccess: (...args: unknown[]) =>
+    getControlCenterAccessMock(...args),
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -40,14 +40,13 @@ import {
 
 describe('/api/control-center/support-reports', () => {
   beforeEach(() => {
-    getAuthenticatedOperatorMock.mockReset()
+    getControlCenterAccessMock.mockReset()
     createAdminClientMock.mockReset()
     listOperatorSupportReportsMock.mockReset()
     updateOperatorSupportReportStatusMock.mockReset()
     resolveSupportReportMock.mockReset()
-    getAuthenticatedOperatorMock.mockResolvedValue({
-      repId: 'operator-1',
-      rep: { email: 'louis@neonrabbit.net' },
+    getControlCenterAccessMock.mockResolvedValue({
+      operator: { repId: 'operator-1', email: 'louis@neonrabbit.net' },
     })
     createAdminClientMock.mockReturnValue({ from: vi.fn() })
   })
@@ -181,7 +180,7 @@ describe('/api/control-center/support-reports', () => {
   })
 
   it('returns 401 for unauthenticated operators', async () => {
-    getAuthenticatedOperatorMock.mockRejectedValueOnce(
+    getControlCenterAccessMock.mockRejectedValueOnce(
       new MockAuthError('missing session'),
     )
 
@@ -195,7 +194,7 @@ describe('/api/control-center/support-reports', () => {
   })
 
   it('returns 403 for authenticated non-operators', async () => {
-    getAuthenticatedOperatorMock.mockRejectedValueOnce(
+    getControlCenterAccessMock.mockRejectedValueOnce(
       new MockOperatorAuthError('not operator'),
     )
 

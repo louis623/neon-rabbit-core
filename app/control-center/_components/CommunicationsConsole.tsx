@@ -402,10 +402,11 @@ export function CommunicationsConsole() {
             <p className="text-xs font-bold uppercase tracking-wide text-violet-600">
               Sparkle Suite Control Center
             </p>
-            <h1 className="mt-1 text-3xl font-semibold">Communications Console</h1>
+            <h1 className="mt-1 text-3xl font-semibold">Broadcasts</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Create standalone workspace messages for reps. Reps can receive and
-              read these messages, but they cannot reply or send messages.
+              Create official Sparkle Suite updates for one or more reps.
+              Broadcasts are read-only so they remain distinct from Support and
+              Rep Network conversations.
             </p>
           </div>
           <Link

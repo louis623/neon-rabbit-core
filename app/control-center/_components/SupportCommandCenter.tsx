@@ -102,15 +102,6 @@ function isCustomerDatabaseAccount(customer: OperatorCustomerRecord) {
   )
 }
 
-function snapshotText(
-  snapshot: Record<string, unknown> | null | undefined,
-  key: string,
-  fallback = 'Not provided',
-) {
-  const value = snapshot?.[key]
-  return typeof value === 'string' && value.trim() ? value.trim() : fallback
-}
-
 function objectEntries(value: Record<string, unknown> | null | undefined) {
   return Object.entries(value ?? {}).filter(([, entry]) => {
     if (typeof entry !== 'string') return false
@@ -378,16 +369,6 @@ export function SupportCommandCenter({
   waitlist,
   bugHuntItems,
 }: SupportCommandCenterProps) {
-  const activeReport = reports[0] ?? null
-  const activeSnapshot = activeReport?.client_snapshot ?? null
-  const activeAudit = activeReport?.support_audits?.[0] ?? null
-  const findings = Array.isArray(activeAudit?.findings)
-    ? activeAudit.findings
-    : []
-  const recommendedAction =
-    typeof activeAudit?.recommended_first_action === 'string'
-      ? activeAudit.recommended_first_action
-      : 'Review the submitted details and account profile, then move the report into reviewing.'
   const openReports = reports.filter((report) => report.status !== 'closed')
   const customerAccounts = customers.filter(isCustomerDatabaseAccount)
   const demoAccounts = customers.filter(
@@ -536,169 +517,30 @@ export function SupportCommandCenter({
               </div>
             </section>
 
-            <details className="group/support control-center-panel scroll-mt-6 rounded-lg border border-slate-200 bg-white shadow-sm" id="support-tickets">
-              <summary aria-label="Expand Trouble Tickets" className="control-center-summary flex cursor-pointer list-none flex-col gap-3 px-4 py-4 marker:hidden md:flex-row md:items-end md:justify-between">
+            <section
+              className="control-center-panel scroll-mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+              id="support-tickets"
+            >
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-semibold">Trouble Tickets</h2>
-                    <ChevronDown aria-hidden="true" className="h-5 w-5 text-slate-500 transition group-open/support:rotate-180" />
-                  </div>
-                  <p className="mt-1 text-sm text-slate-600">Review reported issues, account details, and audit guidance.</p>
+                  <h2 className="text-lg font-semibold">Support conversations</h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+                    Rep questions, problems, ideas, replies, Support Auditor
+                    context, and Task List promotion now live together in the
+                    Communications area.
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-slate-800">
+                    {countLabel(openReports.length, 'active conversation')}
+                  </p>
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{openReports.length} open</p>
-              </summary>
-              <div className="grid gap-5 border-t border-slate-200 p-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)]">
-                <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-                  <div className="border-b border-slate-200 px-4 py-3">
-                    <h2 className="text-lg font-semibold">Support Inbox</h2>
-                  </div>
-                  <div className="divide-y divide-slate-100">
-                    {reports.length === 0 ? (
-                      <p className="px-4 py-8 text-sm text-slate-500">
-                        No support reports are waiting.
-                      </p>
-                    ) : (
-                      reports.map((report) => (
-                        <article className="px-4 py-4" key={report.id}>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <Pill value={report.urgency} />
-                            <Pill value={report.audit_status} />
-                            <Pill value={report.status} />
-                          </div>
-                          <h3 className="mt-3 text-base font-semibold">
-                            {report.title}
-                          </h3>
-                          <p className="mt-1 text-sm text-slate-600">
-                            {snapshotText(report.client_snapshot, 'clientName')}{' '}
-                            / {snapshotText(report.client_snapshot, 'showName')}
-                          </p>
-                          <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                            {label(report.report_type)} / {label(report.source)} /{' '}
-                            {formatDate(report.created_at)}
-                          </p>
-                        </article>
-                      ))
-                    )}
-                  </div>
-                </section>
-
-                <section className="flex flex-col gap-5">
-                  <article className="rounded-lg border border-slate-200 bg-white shadow-sm">
-                    <div className="border-b border-slate-200 px-4 py-3">
-                      <h2 className="text-lg font-semibold">Report Detail</h2>
-                    </div>
-                    {activeReport ? (
-                      <div className="space-y-5 p-4">
-                        <div>
-                          <div className="flex flex-wrap gap-2">
-                            <Pill value={activeReport.urgency} />
-                            <Pill value={activeReport.audit_status} />
-                            <Pill value={activeReport.status} />
-                          </div>
-                          <h3 className="mt-3 text-xl font-semibold">
-                            {activeReport.title}
-                          </h3>
-                          <p className="mt-2 text-sm leading-6 text-slate-700">
-                            {activeReport.details}
-                          </p>
-                        </div>
-
-                        <div className="grid gap-3 md:grid-cols-2">
-                          <div className="rounded-md border border-slate-200 p-3">
-                            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                              Workflow
-                            </p>
-                            <p className="mt-1 text-sm font-semibold">
-                              {activeReport.page_or_workflow ?? 'Not provided'}
-                            </p>
-                          </div>
-                          <div className="rounded-md border border-slate-200 p-3">
-                            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                              Submitted
-                            </p>
-                            <p className="mt-1 text-sm font-semibold">
-                              {formatDate(activeReport.created_at)}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="rounded-md border border-slate-200 p-3">
-                          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                            Support Auditor summary
-                          </p>
-                          <p className="mt-2 text-sm leading-6 text-slate-700">
-                            {typeof activeAudit?.ai_summary === 'string'
-                              ? activeAudit.ai_summary
-                              : typeof activeAudit?.template_summary === 'string'
-                                ? activeAudit.template_summary
-                                : 'Audit details will appear here after Support Auditor finishes.'}
-                          </p>
-                        </div>
-
-                        <div className="rounded-md border border-slate-200 p-3">
-                          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                            Key findings
-                          </p>
-                          {findings.length > 0 ? (
-                            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                              {findings.slice(0, 5).map((finding, index) => (
-                                <li key={`${activeReport.id}-finding-${index}`}>
-                                  {String(finding)}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="mt-2 text-sm text-slate-600">
-                              No findings recorded yet.
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
-                          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                            Recommended first action
-                          </p>
-                          <p className="mt-2 text-sm font-medium leading-6 text-slate-800">
-                            {recommendedAction}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="p-4 text-sm text-slate-500">
-                        Select a report to view details.
-                      </p>
-                    )}
-                  </article>
-
-                  <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                    <h2 className="text-lg font-semibold">Rep Profile</h2>
-                    <dl className="mt-4 grid gap-3 md:grid-cols-2">
-                      {[
-                        ['Client', snapshotText(activeSnapshot, 'clientName')],
-                        ['Show', snapshotText(activeSnapshot, 'showName')],
-                        ['Phone', snapshotText(activeSnapshot, 'phone')],
-                        ['Email', snapshotText(activeSnapshot, 'email')],
-                      ].map(([term, value]) => (
-                        <InfoBlock key={term} term={term} value={value} />
-                      ))}
-                    </dl>
-                  </article>
-
-                  <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                    <h2 className="text-lg font-semibold">Resolution / Lesson</h2>
-                    <dl className="mt-4 grid gap-3">
-                      {[
-                        ['Root cause', 'Waiting on resolution review'],
-                        ['Fix or workaround', 'Waiting on resolution review'],
-                        ['Reusable lesson', 'Not approved yet'],
-                      ].map(([term, value]) => (
-                        <InfoBlock key={term} term={term} value={value} />
-                      ))}
-                    </dl>
-                  </article>
-                </section>
+                <Link
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg bg-violet-700 px-4 text-sm font-semibold text-white"
+                  href="/control-center/messages?view=support"
+                >
+                  Open Support Inbox
+                </Link>
               </div>
-            </details>
+            </section>
 
             <CustomerWaitlistPanel initialLeads={waitlist} />
 

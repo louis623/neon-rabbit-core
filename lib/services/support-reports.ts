@@ -10,8 +10,9 @@ import {
 } from '@/lib/services/client-account-profiles'
 import { runSupportAuditForReport } from '@/lib/services/support-auditor'
 
-export type SupportReportSource = 'help_form' | 'nic_nac'
+export type SupportReportSource = 'help_form' | 'nic_nac' | 'message_center'
 export type SupportReportType =
+  | 'help_question'
   | 'site_issue'
   | 'bug'
   | 'suggested_upgrade'
@@ -83,8 +84,8 @@ const SUPPORT_REPORT_SELECT = [
 const createSupportReportSchema = z.object({
   repId: z.string().trim().min(1),
   repEmail: z.string().trim().email().optional(),
-  source: z.enum(['help_form', 'nic_nac']),
-  reportType: z.enum(['site_issue', 'bug', 'suggested_upgrade', 'workflow_idea']),
+  source: z.enum(['help_form', 'nic_nac', 'message_center']),
+  reportType: z.enum(['help_question', 'site_issue', 'bug', 'suggested_upgrade', 'workflow_idea']),
   urgency: z.enum(['normal', 'blocking', 'showtime_urgent']).default('normal'),
   pageOrWorkflow: z.string().trim().max(180).optional(),
   title: z.string().trim().min(3).max(160),
@@ -107,6 +108,7 @@ function emptyToNull(value: string | undefined) {
 }
 
 function reportTypeLabel(reportType: SupportReportType) {
+  if (reportType === 'help_question') return 'Help question'
   if (reportType === 'site_issue') return 'Site issue'
   if (reportType === 'suggested_upgrade') return 'Suggested upgrade'
   if (reportType === 'workflow_idea') return 'Workflow idea'
@@ -114,7 +116,9 @@ function reportTypeLabel(reportType: SupportReportType) {
 }
 
 function sourceLabel(source: SupportReportSource) {
-  return source === 'help_form' ? 'Help form' : 'Nic-Nac'
+  if (source === 'help_form') return 'Help form'
+  if (source === 'message_center') return 'Message Center'
+  return 'Nic-Nac'
 }
 
 function notificationErrorMessage(error: unknown) {

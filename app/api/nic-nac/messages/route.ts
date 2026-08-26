@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
-import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
+import { getAuthenticatedNicNacContext, AuthError } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
 import {
-  listRepWorkspaceMessages,
   updateRepWorkspaceMessageDelivery,
 } from '@/lib/services/workspace-messages'
+import { listRepWorkspaceInbox } from '@/lib/services/workspace-inbox'
+import { createAdminClient } from '@/lib/supabase/admin'
 import {
   WORKSPACE_MESSAGE_CATEGORIES,
   type WorkspaceMessageCategory,
@@ -77,13 +78,19 @@ export async function GET(request: Request) {
       )
     }
 
-    const { repId, supabase } = await getPaidNicNacContext()
-    const result = await listRepWorkspaceMessages(supabase, repId, {
+    const viewValue = url.searchParams.get('view')
+    const view = viewValue && ['all', 'team', 'rep_network', 'support', 'sparkle_suite', 'archived'].includes(viewValue)
+      ? viewValue as 'all' | 'team' | 'rep_network' | 'support' | 'sparkle_suite' | 'archived'
+      : viewValue ? null : 'all'
+    if (view === null) return NextResponse.json({ error: 'view is invalid.' }, { status: 400 })
+    const { repId } = await getAuthenticatedNicNacContext()
+    const result = await listRepWorkspaceInbox(createAdminClient(), repId, {
       limit,
       cursor,
       category,
       unreadOnly,
       archived,
+      view,
     })
     return NextResponse.json(result)
   } catch (error) {
@@ -120,7 +127,7 @@ export async function PATCH(request: Request) {
       )
     }
 
-    const { repId, supabase } = await getPaidNicNacContext()
+    const { repId, supabase } = await getAuthenticatedNicNacContext()
     const result = await updateRepWorkspaceMessageDelivery(supabase, repId, {
       deliveryId,
       read,

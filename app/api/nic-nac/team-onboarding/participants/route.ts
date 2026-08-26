@@ -6,6 +6,7 @@ import {
   getTeamOnboardingAccess,
   listTeamOnboardingParticipants,
 } from '@/lib/services/team-onboarding'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
     const access = await getTeamOnboardingAccess(supabase, repId)
     if (!access.enabled) return addonRequiredResponse(access)
 
-    const result = await createTeamOnboardingParticipant(supabase, repId, {
+    const result = await createTeamOnboardingParticipant(createAdminClient(), repId, {
       displayName: body?.displayName,
       contactEmail: body?.contactEmail,
       baseUrl:

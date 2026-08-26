@@ -5,6 +5,7 @@ import {
   getTeamOnboardingAccess,
   sendTeamOnboardingMessage,
 } from '@/lib/services/team-onboarding'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -37,10 +38,12 @@ export async function POST(
       )
     }
 
-    const message = await sendTeamOnboardingMessage(supabase, participantId, {
+    const message = await sendTeamOnboardingMessage(createAdminClient(), participantId, {
       ownerRepId: repId,
       senderType: 'team_lead',
       body: body?.body,
+      clientRequestId:
+        typeof body?.clientRequestId === 'string' ? body.clientRequestId : undefined,
     })
 
     return NextResponse.json({ ok: true, message })

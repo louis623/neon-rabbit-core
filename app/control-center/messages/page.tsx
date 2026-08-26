@@ -1,6 +1,10 @@
 import { redirect } from 'next/navigation'
 
 import { CommunicationsConsole } from '@/app/control-center/_components/CommunicationsConsole'
+import { ControlCenterCommunicationsNav } from '@/app/control-center/_components/ControlCenterCommunicationsNav'
+import { ControlCenterConversationInbox } from '@/app/control-center/_components/ControlCenterConversationInbox'
+import { RepNetworkModerationPanel } from '@/app/control-center/_components/RepNetworkModerationPanel'
+import type { ControlCenterCommunicationView } from '@/app/control-center/_components/control-center-communications'
 import {
   AuthError,
   getControlCenterAccess,
@@ -10,7 +14,23 @@ import {
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export default async function ControlCenterMessagesPage() {
+function communicationView(value: string | string[] | undefined) {
+  const requested = Array.isArray(value) ? value[0] : value
+  return (['support', 'broadcasts', 'safety'] as const).includes(
+    requested as ControlCenterCommunicationView,
+  )
+    ? (requested as ControlCenterCommunicationView)
+    : 'support'
+}
+
+export default async function ControlCenterMessagesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    view?: string | string[]
+    conversationId?: string | string[]
+  }>
+} = {}) {
   try {
     await getControlCenterAccess()
   } catch (error) {
@@ -35,5 +55,23 @@ export default async function ControlCenterMessagesPage() {
     throw error
   }
 
-  return <CommunicationsConsole />
+  const resolvedSearchParams = await searchParams
+  const view = communicationView(resolvedSearchParams?.view)
+  const requestedConversationId = resolvedSearchParams?.conversationId
+  const initialConversationId = Array.isArray(requestedConversationId)
+    ? requestedConversationId[0]
+    : requestedConversationId
+
+  return (
+    <>
+      <ControlCenterCommunicationsNav active={view} />
+      {view === 'broadcasts' ? <CommunicationsConsole /> : null}
+      {view === 'support' ? (
+        <ControlCenterConversationInbox
+          initialConversationId={initialConversationId}
+        />
+      ) : null}
+      {view === 'safety' ? <RepNetworkModerationPanel /> : null}
+    </>
+  )
 }

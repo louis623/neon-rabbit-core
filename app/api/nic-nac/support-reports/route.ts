@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createSupportReport } from '@/lib/services/support-reports'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { AuthError, getAuthenticatedRep } from '@/lib/supabase/auth'
 
 const requestSchema = z.object({
@@ -46,26 +44,28 @@ function buildSupportReportTitle(details: string): string {
 
 export async function POST(request: Request) {
   try {
-    const auth = await getAuthenticatedRep()
+    await getAuthenticatedRep()
     const body = requestSchema.parse(await request.json())
     const reportType = body.reportType ?? inferSupportReportType(body.details)
     const urgency = body.urgency ?? inferSupportReportUrgency(body.details)
     const title = body.title ?? buildSupportReportTitle(body.details)
-    const result = await createSupportReport(createAdminClient(), {
-      repId: auth.repId,
-      repEmail: auth.rep.email,
-      source: 'help_form',
-      reportType,
-      urgency,
-      pageOrWorkflow: body.pageOrWorkflow,
-      title,
-      details: body.details,
-      expectedResult: body.expectedResult,
-      actualResult: body.actualResult,
-      contactOk: body.contactOk ?? true,
+    console.warn('[support-reports] legacy Help submission redirected to Message Center draft')
+    return NextResponse.json({
+      ok: true,
+      submitted: false,
+      action: 'open_support_composer',
+      href: '/nic-nac?section=messages&compose=support&source=help',
+      draft: {
+        type: reportType,
+        urgency,
+        source: body.pageOrWorkflow ?? 'help',
+        summary: title,
+        details: body.details,
+        expectedResult: body.expectedResult,
+        actualResult: body.actualResult,
+        contactOk: body.contactOk ?? true,
+      },
     })
-
-    return NextResponse.json(result, { status: 201 })
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 })

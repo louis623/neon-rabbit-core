@@ -1,6 +1,11 @@
 import { createHash, randomBytes } from 'node:crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { ServiceError, errors } from '@/lib/services/errors'
+import {
+  ensureTeamOnboardingConversation,
+  listTeamOnboardingConversationMessages,
+  sendTeamOnboardingConversationMessage,
+} from '@/lib/services/workspace-team-conversations'
 
 export type TeamManagementEntitlementStatus =
   | 'not_enabled'
@@ -45,6 +50,7 @@ export interface TeamOnboardingParticipantSummary {
   createdAt: string | null
   updatedAt: string | null
   archivedAt: string | null
+  workspaceConversationId: string | null
 }
 
 export interface TeamOnboardingProgressItem {
@@ -91,6 +97,7 @@ type ParticipantRow = {
   updated_at: string | null
   last_activity_at: string | null
   archived_at: string | null
+  workspace_conversation_id: string | null
 }
 
 type EntitlementRow = {
@@ -116,7 +123,7 @@ type MessageRow = {
 }
 
 const PARTICIPANT_SELECT =
-  'id, owner_rep_id, display_name, contact_email, status, access_slug, created_at, updated_at, last_activity_at, archived_at'
+  'id, owner_rep_id, display_name, contact_email, status, access_slug, created_at, updated_at, last_activity_at, archived_at, workspace_conversation_id'
 const PRIVATE_PARTICIPANT_SELECT = `${PARTICIPANT_SELECT}, access_token_hash`
 const PROGRESS_SELECT = 'participant_id, step_id, status, completed_at, updated_at'
 const MESSAGE_SELECT = 'id, participant_id, sender_type, body, read_at, created_at'
@@ -156,6 +163,7 @@ function mapParticipantRow(row: ParticipantRow): TeamOnboardingParticipantSummar
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     archivedAt: row.archived_at,
+    workspaceConversationId: row.workspace_conversation_id,
   }
 }
 
@@ -285,6 +293,11 @@ export async function createTeamOnboardingParticipant(
     )
   }
 
+  if ((data as ParticipantRow).workspace_conversation_id !== undefined) {
+    const conversationId = await ensureTeamOnboardingConversation(supabase, (data as ParticipantRow).id)
+    ;(data as ParticipantRow).workspace_conversation_id = conversationId
+  }
+
   return {
     participant: mapParticipantRow(data as ParticipantRow),
     accessUrl: buildAccessUrl(input.baseUrl, token),
@@ -329,17 +342,50 @@ export async function listTeamOnboardingParticipants(
     )
   }
 
-  const { data: messageData, error: messageError } = await supabase
-    .from('team_onboarding_messages')
-    .select('participant_id, sender_type, read_at')
-    .in('participant_id', participantIds)
+  const conversationToParticipant = new Map<string, string>()
+  const legacyParticipantIds: string[] = []
+  for (const participant of participants) {
+    if (participant.workspaceConversationId) {
+      conversationToParticipant.set(participant.workspaceConversationId, participant.id)
+    } else {
+      legacyParticipantIds.push(participant.id)
+    }
+  }
 
-  if (messageError) {
+  const canonicalUnreadResult = conversationToParticipant.size
+    ? await supabase
+        .from('workspace_conversation_participants')
+        .select('conversation_id, unread_count')
+        .in('conversation_id', Array.from(conversationToParticipant.keys()))
+        .eq('principal_type', 'rep')
+        .eq('rep_id', ownerRepId)
+    : { data: [], error: null }
+
+  if (canonicalUnreadResult.error) {
+    throw toServiceError(
+      'TEAM_ONBOARDING_UNREAD_LOOKUP_FAILED',
+      'failed to load canonical team conversation unread counts',
+      'Unable to load Team Management right now.',
+      canonicalUnreadResult.error,
+    )
+  }
+
+  // Legacy rows are consulted only for an unlinked participant during rollout.
+  // Once a participant has a canonical conversation, its participant row is the
+  // sole unread source so new messages cannot disappear from Team Management.
+  const legacyMessageResult = legacyParticipantIds.length
+    ? await supabase
+        .from('team_onboarding_messages')
+        .select('participant_id, sender_type, read_at')
+        .in('participant_id', legacyParticipantIds)
+    : { data: [], error: null }
+
+  if (legacyMessageResult.error) {
     throw toServiceError(
       'TEAM_ONBOARDING_MESSAGES_LOOKUP_FAILED',
-      'failed to load team onboarding messages',
+      'failed to load legacy team onboarding unread messages',
       'Unable to load Team Management right now.',
-      messageError,
+      legacyMessageResult.error,
     )
   }
 
@@ -351,7 +397,14 @@ export async function listTeamOnboardingParticipants(
   }
 
   const unreadByParticipant = new Map<string, number>()
-  for (const row of (messageData ?? []) as Array<{
+  for (const row of (canonicalUnreadResult.data ?? []) as Array<{
+    conversation_id: string
+    unread_count: number
+  }>) {
+    const participantId = conversationToParticipant.get(row.conversation_id)
+    if (participantId) unreadByParticipant.set(participantId, row.unread_count)
+  }
+  for (const row of (legacyMessageResult.data ?? []) as Array<{
     participant_id: string
     sender_type: TeamOnboardingMessageSender
     read_at: string | null
@@ -477,6 +530,7 @@ export async function sendTeamOnboardingMessage(
     senderType: TeamOnboardingMessageSender
     body?: unknown
     tokenVerifier?: (token: string, hash: string) => boolean
+    clientRequestId?: string
   },
 ): Promise<TeamOnboardingMessage> {
   const body = normalizeText(input.body)
@@ -485,6 +539,7 @@ export async function sendTeamOnboardingMessage(
   }
 
   let participantId = normalizeText(participantIdOrToken)
+  let canonicalAvailable = true
   if (input.senderType === 'participant') {
     const participant = await getParticipantByToken(
       supabase,
@@ -492,6 +547,7 @@ export async function sendTeamOnboardingMessage(
       input.tokenVerifier,
     )
     participantId = participant.id
+    canonicalAvailable = participant.workspace_conversation_id !== undefined
   }
 
   if (!participantId) {
@@ -501,7 +557,7 @@ export async function sendTeamOnboardingMessage(
   if (input.senderType === 'team_lead' && input.ownerRepId) {
     const { data: participant, error: participantError } = await supabase
       .from('team_onboarding_participants')
-      .select('id')
+      .select('id, workspace_conversation_id')
       .eq('id', participantId)
       .eq('owner_rep_id', input.ownerRepId)
       .maybeSingle()
@@ -518,30 +574,27 @@ export async function sendTeamOnboardingMessage(
     if (!participant) {
       throw errors.UNAUTHORIZED('participant is not owned by rep')
     }
+    canonicalAvailable = (participant as { workspace_conversation_id?: unknown }).workspace_conversation_id !== undefined
   }
 
-  const query = supabase
-    .from('team_onboarding_messages')
-    .insert({
-      participant_id: participantId,
-      sender_type: input.senderType,
-      body,
-    })
-    .select(MESSAGE_SELECT)
-
-  const { data, error } = await query.single()
-
-  if (error || !data) {
-    throw toServiceError(
-      'TEAM_ONBOARDING_MESSAGE_SAVE_FAILED',
-      'failed to save team onboarding message',
-      "I couldn't send that onboarding reply right now.",
-      error ?? new Error('message save returned no row'),
-    )
+  if (!canonicalAvailable) {
+    const { data, error } = await supabase
+      .from('team_onboarding_messages')
+      .insert({ participant_id: participantId, sender_type: input.senderType, body })
+      .select(MESSAGE_SELECT)
+      .single()
+    if (error || !data) {
+      throw toServiceError('TEAM_ONBOARDING_MESSAGE_SAVE_FAILED', 'failed to save legacy-compatible onboarding message', "I couldn't send that onboarding reply right now.", error ?? new Error('message save returned no row'))
+    }
+    await touchParticipantActivity(supabase, participantId)
+    return mapMessageRow(data as MessageRow)
   }
-
-  await touchParticipantActivity(supabase, participantId)
-  return mapMessageRow(data as MessageRow)
+  return sendTeamOnboardingConversationMessage(supabase, {
+    participantId,
+    senderType: input.senderType,
+    body,
+    clientRequestId: input.clientRequestId,
+  })
 }
 
 export async function archiveTeamOnboardingParticipant(
@@ -560,7 +613,7 @@ export async function archiveTeamOnboardingParticipant(
     .update({ status: 'archived', archived_at: now, updated_at: now })
     .eq('owner_rep_id', ownerRepId)
     .eq('id', normalizedId)
-    .select('id, status')
+    .select('id, status, workspace_conversation_id')
     .single()
 
   if (error || !data) {
@@ -572,9 +625,16 @@ export async function archiveTeamOnboardingParticipant(
     )
   }
 
+  const archived = data as { id: string; status: TeamOnboardingParticipantStatus; workspace_conversation_id: string | null }
+  if (archived.workspace_conversation_id) {
+    await Promise.all([
+      supabase.from('workspace_conversations').update({ state: 'closed', closed_at: now, closed_by_actor: `rep:${ownerRepId}`, updated_at: now }).eq('id', archived.workspace_conversation_id),
+      supabase.from('workspace_conversation_participants').update({ membership_state: 'left', left_at: now, updated_at: now }).eq('conversation_id', archived.workspace_conversation_id),
+    ])
+  }
   return {
-    participantId: (data as { id: string }).id,
-    status: (data as { status: TeamOnboardingParticipantStatus }).status,
+    participantId: archived.id,
+    status: archived.status,
   }
 }
 
@@ -650,6 +710,8 @@ export async function getTeamOnboardingParticipantByToken(
         'Your team',
     },
     progress: ((progressResult.data ?? []) as ProgressRow[]).map(mapProgressRow),
-    messages: ((messagesResult.data ?? []) as MessageRow[]).map(mapMessageRow),
+    messages:
+      (await listTeamOnboardingConversationMessages(supabase, participant.id)) ??
+      ((messagesResult.data ?? []) as MessageRow[]).map(mapMessageRow),
   }
 }

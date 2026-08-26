@@ -15,6 +15,7 @@ describe('Control Center Task List', () => {
       created_at: '2026-08-09T12:00:00.000Z',
       updated_at: '2026-08-09T12:00:00.000Z',
       completed_at: null,
-    })).toMatchObject({ itemType: 'bug', status: 'open', details: '', owner: 'Louis' })
+      source_support_report_id: 'report-1',
+    })).toMatchObject({ itemType: 'bug', status: 'open', details: '', owner: 'Louis', sourceSupportReportId: 'report-1' })
   })
 })

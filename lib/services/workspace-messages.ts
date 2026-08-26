@@ -105,6 +105,9 @@ export interface RepWorkspaceMessagesResult {
 export interface ListRepWorkspaceMessageFilters {
   limit?: number
   cursor?: string
+  beforeDeliveredAt?: string
+  beforeId?: string
+  equalTimestampMode?: 'include_all' | 'same_kind' | 'exclude_all'
   category?: WorkspaceMessageCategory
   unreadOnly?: boolean
   archived?: boolean
@@ -914,8 +917,11 @@ export async function listRepWorkspaceMessages(
       403,
     )
   }
-  const limit = Math.min(Math.max(filters.limit ?? 25, 1), 100)
-  const offset = decodeCursor(filters.cursor)
+  // The route still caps the user-visible page at 100. Inbox merging may need
+  // a larger internal prefix to paginate accurately across both source types.
+  const limit = Math.min(Math.max(filters.limit ?? 25, 1), 1000)
+  const usesKeyset = Boolean(filters.beforeDeliveredAt)
+  const offset = usesKeyset ? 0 : decodeCursor(filters.cursor)
   let query = supabase
     .from('workspace_message_deliveries')
     .select(
@@ -931,6 +937,23 @@ export async function listRepWorkspaceMessages(
     query = query.eq('workspace_message_publications.category', filters.category)
   }
   if (filters.unreadOnly) query = query.is('read_at', null)
+  if (filters.beforeDeliveredAt) {
+    if (filters.equalTimestampMode === 'include_all') {
+      query = query.lte('delivered_at', filters.beforeDeliveredAt)
+    } else if (filters.equalTimestampMode === 'same_kind') {
+      if (!filters.beforeId) {
+        throw workspaceMessageError(
+          'WORKSPACE_MESSAGE_INVALID_CURSOR',
+          'Message cursor is invalid.',
+        )
+      }
+      query = query.or(
+        `delivered_at.lt.${filters.beforeDeliveredAt},and(delivered_at.eq.${filters.beforeDeliveredAt},id.lt.${filters.beforeId})`,
+      )
+    } else {
+      query = query.lt('delivered_at', filters.beforeDeliveredAt)
+    }
+  }
   query = filters.archived
     ? query.not('archived_at', 'is', null)
     : query.is('archived_at', null)

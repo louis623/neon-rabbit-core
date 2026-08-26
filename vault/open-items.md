@@ -393,3 +393,7 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 ## Sparkle Finder Control Center
 
 - [ ] Run one signed-in operator visual click-through of the new Sparkle Suite / Sparkle Finder switcher and preset save flow when an authorized Control Center session is available. Do not use a customer or personal account as a substitute.
+
+## Unified Workspace communications
+
+- [ ] Run the seven-task friendly-interface acceptance walkthrough with an isolated authenticated reviewer browser session when the supported reviewer token is available: Team reply, inbox return position, Support problem, Support idea/status, official-update distinction, Rep Network accept/decline, and archive/mute reversal. Automated UI contracts and production-schema smoke are complete; do not substitute Louis's or a customer's account for this remaining visual acceptance.

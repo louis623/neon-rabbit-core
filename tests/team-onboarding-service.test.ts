@@ -124,6 +124,45 @@ describe('team onboarding service', () => {
     ])
   })
 
+  it('uses canonical participant unread counts after an onboarding thread is linked', async () => {
+    const participantQuery = createQueryResult([
+      {
+        id: 'participant-1',
+        owner_rep_id: 'rep-britt',
+        display_name: 'Lindsey',
+        contact_email: null,
+        status: 'started',
+        access_slug: 'lindsey-4f3a2b',
+        created_at: '2026-07-02T12:00:00.000Z',
+        updated_at: '2026-07-02T12:00:00.000Z',
+        last_activity_at: '2026-07-02T12:20:00.000Z',
+        archived_at: null,
+        workspace_conversation_id: 'conversation-1',
+      },
+    ])
+    const progressQuery = createQueryResult([])
+    const canonicalUnreadQuery = createQueryResult([
+      { conversation_id: 'conversation-1', unread_count: 3 },
+    ])
+    const queries = [participantQuery, progressQuery, canonicalUnreadQuery]
+    const supabase = {
+      from: vi.fn(() => queries.shift()),
+    } as never
+
+    const result = await listTeamOnboardingParticipants(supabase, 'rep-britt')
+
+    expect(result[0].unreadMessageCount).toBe(3)
+    expect(supabase.from).toHaveBeenCalledTimes(3)
+    expect(supabase.from).toHaveBeenLastCalledWith(
+      'workspace_conversation_participants',
+    )
+    expect(canonicalUnreadQuery.in).toHaveBeenCalledWith('conversation_id', [
+      'conversation-1',
+    ])
+    expect(canonicalUnreadQuery.eq).toHaveBeenCalledWith('principal_type', 'rep')
+    expect(canonicalUnreadQuery.eq).toHaveBeenCalledWith('rep_id', 'rep-britt')
+  })
+
   it('summarizes a 30-rep onboarding roster without creating Sparkle Suite rep accounts', async () => {
     const participantRows = Array.from({ length: 30 }, (_, index) => ({
       id: `participant-${index + 1}`,

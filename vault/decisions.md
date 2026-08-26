@@ -1537,3 +1537,21 @@ Reason: Louis wants one operational home and the same visual preset choices with
 Decision: Any HTTP(S) link that leaves Sparkle Finder opens in a new browser tab with opener protection. Internal Finder routes and local fixture-preview routes continue in the current tab.
 
 Reason: Finder is the customer's comparison and discovery workspace. Keeping it open makes it practical to inspect several reps, Dance Floors, and live-show destinations without repeatedly reconstructing the search.
+
+## 2026-08-26 - One friendly Message Center, separate permissioned records
+
+Decision: Workspace presents one Message Center, while official broadcasts remain receive-only publication records and Team, Support, and Rep Network use canonical private conversations with type-specific permissions and lifecycle rules.
+
+Reason: Reps should have one obvious place to check without weakening sender trust, guest-token isolation, Support privacy, or Rep Network consent and safety controls.
+
+## 2026-08-26 - Support is the communication path; Help is self-service
+
+Decision: Help remains the Workflow Playbook and links unresolved needs into the Message Center Support composer. Support replies come from **Sparkle Suite Support** through Control Center, and a report becomes a Task List item only after a deliberate operator promotion.
+
+Reason: This removes duplicate response locations while keeping operator triage, internal audit findings, and product planning distinct from the rep-visible conversation.
+
+## 2026-08-26 - Rep Network privacy and rollback boundaries
+
+Decision: Rep Network begins with eligible subscriber-to-subscriber message requests. Operators can inspect only actively reported conversations. Team, Support, and Rep Network composing can each be disabled independently without hiding existing history.
+
+Reason: Controlled consent, report-only operator access, rate limits, blocks, and reversible operational stops provide useful collaboration without turning Sparkle Suite into an unrestricted chat network.

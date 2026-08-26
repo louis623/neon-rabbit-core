@@ -2,11 +2,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const getPaidNicNacContextMock = vi.fn()
 const listRepWorkspaceMessagesMock = vi.fn()
+const listRepWorkspaceInboxMock = vi.fn()
 const updateRepWorkspaceMessageDeliveryMock = vi.fn()
 
 vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
   getPaidNicNacContext: (...args: unknown[]) => getPaidNicNacContextMock(...args),
+  getAuthenticatedNicNacContext: (...args: unknown[]) => getPaidNicNacContextMock(...args),
+}))
+
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => ({ marker: 'admin-supabase' }),
+}))
+
+vi.mock('@/lib/services/workspace-inbox', () => ({
+  listRepWorkspaceInbox: (...args: unknown[]) => listRepWorkspaceInboxMock(...args),
 }))
 
 vi.mock('@/lib/services/workspace-messages', () => ({
@@ -22,6 +32,7 @@ describe('receive-only rep Message Center route', () => {
   beforeEach(() => {
     getPaidNicNacContextMock.mockReset()
     listRepWorkspaceMessagesMock.mockReset()
+    listRepWorkspaceInboxMock.mockReset()
     updateRepWorkspaceMessageDeliveryMock.mockReset()
   })
 
@@ -30,7 +41,7 @@ describe('receive-only rep Message Center route', () => {
       repId: 'rep-1',
       supabase: { marker: 'authed-supabase' },
     })
-    listRepWorkspaceMessagesMock.mockResolvedValueOnce({
+    listRepWorkspaceInboxMock.mockResolvedValueOnce({
       unreadCount: 1,
       nextCursor: 'next',
       messages: [{ id: 'delivery-1', deliveryId: 'delivery-1' }],
@@ -42,8 +53,8 @@ describe('receive-only rep Message Center route', () => {
       ),
     )
 
-    expect(listRepWorkspaceMessagesMock).toHaveBeenCalledWith(
-      { marker: 'authed-supabase' },
+    expect(listRepWorkspaceInboxMock).toHaveBeenCalledWith(
+      { marker: 'admin-supabase' },
       'rep-1',
       {
         limit: 10,
@@ -51,6 +62,7 @@ describe('receive-only rep Message Center route', () => {
         category: 'announcement',
         unreadOnly: true,
         archived: false,
+        view: 'all',
       },
     )
     expect(response.status).toBe(200)

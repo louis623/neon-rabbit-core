@@ -1622,3 +1622,12 @@ Verification passed:
 - One external-aware Finder link component now covers rep cards, favorite reps, Dance Floor leads, live shows, library availability, Showcase leads, and Nic-Nac lead actions. Local Finder and fixture-preview routes stay in the current tab.
 - Application commit `15f60885 feat: open Finder outbound links in new tabs` was manually released as Finder deployment `dpl_EEA1gzkRrdMwJk35KHnF1DzZat3s` on `https://yoursparklefinder.com`.
 - Verification passed: 59 test files / 765 tests, lint, local and Vercel production builds, local signed-in browser inspection, clean console, and exact customer-domain provenance.
+
+### August 26, 2026 Unified Workspace communications
+
+- The Workspace **Message Center** is now the single rep-facing communication surface for Team/New Rep Onboarding threads, controlled Rep Network requests, Sparkle Suite Support, and verified official broadcasts.
+- Help now hands unresolved questions, problems, and ideas into the Support composer; Team Management links into the exact Team thread instead of maintaining a second reply box; Nic-Nac prepares an editable Support handoff and no longer silently files a report.
+- Control Center Communications now has Support Inbox, Broadcasts, and reported-only Network Safety views. Support includes replies, truthful status, private screenshots, Support Auditor context, and deliberate idempotent Task List promotion.
+- Canonical conversation migrations `20260826150000` through `20260826157000` are applied. Historical support and onboarding data are reconciled idempotently; stable merged keyset pagination and exact unread totals are active.
+- Production-schema synthetic smoke passed Team, Support, and Rep Network workflows, including retry idempotency, private signed screenshots, archive/mute, operator reply/status, Task List promotion, reports/blocks, and rate limits. Mandatory cleanup removed every synthetic identity and child record; the final reset found nothing remaining.
+- Team, Support, and Rep Network composing each have an independent server-side emergency flag. Existing history remains readable when composing is paused.

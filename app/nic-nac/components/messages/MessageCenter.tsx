@@ -1,0 +1,241 @@
+'use client'
+
+import { Mail, PenLine, RefreshCw } from 'lucide-react'
+import { useEffect, useMemo, useRef } from 'react'
+import { ConversationThread } from './ConversationThread'
+import { InboxItem } from './InboxItem'
+import { MessageCenterFilters } from './MessageCenterFilters'
+import { NewMessageDialog } from './NewMessageDialog'
+import { SupportComposer } from './SupportComposer'
+import type {
+  MessageCenterActionState,
+  MessageCenterState,
+  WorkspaceInboxItem,
+} from './types'
+import { isConversationItem } from './types'
+import { useMessageCenter } from './useMessageCenter'
+import styles from './MessageCenter.module.css'
+
+export function MessageCenter({
+  state,
+  actionState,
+  reviewMode = false,
+  supportOnly = false,
+  draftScope,
+  onUpdatePublication,
+  onRetry,
+}: {
+  state: MessageCenterState
+  actionState: MessageCenterActionState
+  reviewMode?: boolean
+  supportOnly?: boolean
+  draftScope?: string | null
+  onUpdatePublication: (
+    item: WorkspaceInboxItem,
+    patch: { read?: boolean; archived?: boolean },
+  ) => void
+  onRetry: () => void
+}) {
+  const controller = useMessageCenter({
+    state,
+    reviewMode,
+    supportOnly,
+    onRefresh: onRetry,
+    onUpdatePublication,
+  })
+  const threadHeadingRef = useRef<HTMLHeadingElement | null>(null)
+  const supportHeadingRef = useRef<HTMLHeadingElement | null>(null)
+
+  useEffect(() => {
+    if (controller.mode === 'thread') threadHeadingRef.current?.focus()
+    if (controller.mode === 'support') supportHeadingRef.current?.focus()
+  }, [controller.mode, controller.selectedItem?.id])
+
+  const unreadCount = useMemo(
+    () =>
+      controller.items.reduce((total, item) => {
+        if (item.archivedAt) return total
+        return (
+          total +
+          (isConversationItem(item) ? item.unreadCount : item.isRead ? 0 : 1)
+        )
+      }, 0),
+    [controller.items],
+  )
+  const visibleUnread = unreadCount > 99 ? '99+' : String(unreadCount)
+
+  return (
+    <section className={styles.messageCenter} aria-labelledby="message-center-title">
+      <header className={styles.centerHeader}>
+        <div>
+          <h1 id="message-center-title">Message Center</h1>
+          <p>
+            {supportOnly
+              ? 'Ask a question, report a problem, or share an idea with Sparkle Suite Support.'
+              : 'Team conversations, rep connections, Support, and Sparkle Suite updates—all in one inbox.'}
+          </p>
+        </div>
+        <div className={styles.headerActions}>
+          <span
+            className={styles.unreadSummary}
+            aria-label={`${unreadCount} unread message${unreadCount === 1 ? '' : 's'}`}
+          >
+            {visibleUnread} unread
+          </span>
+          <button
+            type="button"
+            className={styles.primaryButton}
+            onClick={controller.openNewMessage}
+          >
+            <PenLine aria-hidden="true" /> {supportOnly ? 'Contact Support' : 'New message'}
+          </button>
+        </div>
+      </header>
+
+      <MessageCenterFilters
+        view={controller.view}
+        sparkleSuiteFilter={controller.sparkleSuiteFilter}
+        counts={controller.counts}
+        supportOnly={supportOnly}
+        onViewChange={controller.setView}
+        onSparkleSuiteFilterChange={controller.setSparkleSuiteFilter}
+      />
+
+      {actionState.error || controller.actionError ? (
+        <div className={styles.errorMessage} role="alert">
+          {controller.actionError || actionState.error}
+        </div>
+      ) : null}
+      {actionState.helperMessage ? (
+        <div className={styles.successMessage} role="status" aria-live="polite">
+          {actionState.helperMessage}
+        </div>
+      ) : null}
+
+      {state.status === 'error' ? (
+        <div className={styles.emptyState} role="alert">
+          <Mail aria-hidden="true" />
+          <strong>Messages could not load</strong>
+          <span>Try again to reconnect to your inbox.</span>
+          <button type="button" className={styles.primaryButton} onClick={onRetry}>
+            <RefreshCw aria-hidden="true" /> Try again
+          </button>
+        </div>
+      ) : state.status === 'loading' ? (
+        <div className={styles.centerLoading} aria-label="Loading Message Center">
+          <span />
+          <span />
+          <span />
+        </div>
+      ) : (
+        <div
+          className={`${styles.centerLayout} ${
+            controller.mode !== 'inbox' ? styles.centerLayoutDetail : ''
+          }`}
+        >
+          <div className={styles.inboxPane} aria-label="Messages">
+            {controller.visibleItems.length ? (
+              <div className={styles.inboxList}>
+                {controller.visibleItems.map((item) => (
+                  <InboxItem
+                    key={`${item.kind ?? 'publication'}:${item.id}`}
+                    item={item}
+                    selected={controller.selectedItem?.id === item.id}
+                    onOpen={() => controller.openItem(item)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                <Mail aria-hidden="true" />
+                <strong>
+                  {controller.view === 'archived'
+                    ? 'Nothing is archived'
+                    : 'No messages here yet'}
+                </strong>
+                <span>
+                  {controller.view === 'team'
+                    ? 'Team and New Rep Onboarding conversations will appear here.'
+                    : controller.view === 'rep-network'
+                      ? 'Rep conversations and message requests will appear here.'
+                      : controller.view === 'support'
+                        ? 'Questions, problems, and ideas sent to Support will appear here.'
+                        : controller.view === 'archived'
+                          ? 'Archived messages remain available and can return to your inbox.'
+                          : 'New messages will appear here when they arrive.'}
+                </span>
+                {controller.view === 'support' ? (
+                  <button
+                    type="button"
+                    className={styles.primaryButton}
+                    onClick={() => controller.openSupportComposer('message_center')}
+                  >
+                    Contact Support
+                  </button>
+                ) : null}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.detailPane}>
+            {controller.mode === 'thread' && controller.selectedItem ? (
+              <ConversationThread
+                item={controller.selectedItem}
+                detail={controller.detail}
+                detailStatus={controller.detailStatus}
+                actionPending={controller.pendingKey !== null}
+                actionError={controller.actionError}
+                draftScope={draftScope}
+                headingRef={threadHeadingRef}
+                onBack={controller.backToInbox}
+                onSendReply={controller.sendReply}
+                onRequestDecision={controller.requestDecision}
+                onReport={controller.reportConversation}
+                onBlock={controller.blockConversation}
+                onArchive={controller.archiveSelected}
+                onMute={controller.muteSelected}
+                onRetry={controller.retryDetail}
+              />
+            ) : controller.mode === 'support' ? (
+              <SupportComposer
+                source={controller.initialSupportSource}
+                initialType={controller.initialSupportType}
+                headingRef={supportHeadingRef}
+                onCancel={controller.backToInbox}
+                onSubmit={controller.submitSupport}
+              />
+            ) : (
+              <div className={styles.welcomePane}>
+                <Mail aria-hidden="true" />
+                <h2>Select a message</h2>
+                <p>
+                  Open any message to read it. Reply controls appear only when
+                  that conversation allows a reply.
+                </p>
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  onClick={controller.openNewMessage}
+                >
+                  {supportOnly ? 'Contact Support' : 'Start a new message'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!supportOnly ? (
+        <NewMessageDialog
+          open={controller.newMessageOpen}
+          repDirectory={controller.repDirectory}
+          repDirectoryStatus={controller.repDirectoryStatus}
+          onClose={controller.closeNewMessage}
+          onOpenTeam={controller.openTeam}
+          onOpenSupport={() => controller.openSupportComposer('message_center')}
+          onSendRepRequest={controller.sendRepRequest}
+        />
+      ) : null}
+    </section>
+  )
+}

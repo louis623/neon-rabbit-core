@@ -25,7 +25,17 @@ vi.mock('@/lib/supabase/operator-auth', () => ({
 
 vi.mock('@/app/control-center/_components/CommunicationsConsole', () => ({
   CommunicationsConsole: () =>
-    createElement('div', null, 'Authenticated communications console'),
+    createElement('div', null, 'Authenticated broadcasts console'),
+}))
+
+vi.mock('@/app/control-center/_components/ControlCenterConversationInbox', () => ({
+  ControlCenterConversationInbox: ({ initialConversationId }: { initialConversationId?: string }) =>
+    createElement('div', null, `Authenticated support inbox ${initialConversationId ?? ''}`),
+}))
+
+vi.mock('@/app/control-center/_components/RepNetworkModerationPanel', () => ({
+  RepNetworkModerationPanel: () =>
+    createElement('div', null, 'Authenticated network safety'),
 }))
 
 import ControlCenterMessagesPage from '@/app/control-center/messages/page'
@@ -39,12 +49,41 @@ describe('ControlCenterMessagesPage', () => {
     })
   })
 
-  it('renders the console for an authenticated operator', async () => {
+  it('opens Support Inbox by default for an authenticated operator', async () => {
     const page = await ControlCenterMessagesPage()
     const html = renderToStaticMarkup(page)
 
     expect(getControlCenterAccessMock).toHaveBeenCalledOnce()
-    expect(html).toContain('Authenticated communications console')
+    expect(html).toContain('Authenticated support inbox')
+    expect(html).not.toContain('Authenticated broadcasts console')
+  })
+
+  it('opens Broadcasts and Network Safety from safe view parameters', async () => {
+    const broadcasts = await ControlCenterMessagesPage({
+      searchParams: Promise.resolve({ view: 'broadcasts' }),
+    })
+    expect(renderToStaticMarkup(broadcasts)).toContain(
+      'Authenticated broadcasts console',
+    )
+
+    const safety = await ControlCenterMessagesPage({
+      searchParams: Promise.resolve({ view: 'safety' }),
+    })
+    expect(renderToStaticMarkup(safety)).toContain(
+      'Authenticated network safety',
+    )
+  })
+
+  it('passes a support conversation deep link only to Support Inbox', async () => {
+    const page = await ControlCenterMessagesPage({
+      searchParams: Promise.resolve({
+        view: 'support',
+        conversationId: '00000000-0000-4000-8000-000000000001',
+      }),
+    })
+    expect(renderToStaticMarkup(page)).toContain(
+      'Authenticated support inbox 00000000-0000-4000-8000-000000000001',
+    )
   })
 
   it('preserves the destination when redirecting an unauthenticated visitor', async () => {
@@ -66,6 +105,6 @@ describe('ControlCenterMessagesPage', () => {
     const html = renderToStaticMarkup(page)
 
     expect(html).toContain('Operator access required')
-    expect(html).not.toContain('Authenticated communications console')
+    expect(html).not.toContain('Authenticated support inbox')
   })
 })

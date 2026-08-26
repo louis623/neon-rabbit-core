@@ -15,6 +15,10 @@
     {
       "path": "/api/internal/workspace-messages/process",
       "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/internal/support-followups/process",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

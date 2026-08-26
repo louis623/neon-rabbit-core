@@ -5,6 +5,7 @@ import {
   archiveTeamOnboardingParticipant,
   getTeamOnboardingAccess,
 } from '@/lib/services/team-onboarding'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -45,7 +46,7 @@ export async function PATCH(
     }
 
     const result = await archiveTeamOnboardingParticipant(
-      supabase,
+      createAdminClient(),
       repId,
       participantId,
     )

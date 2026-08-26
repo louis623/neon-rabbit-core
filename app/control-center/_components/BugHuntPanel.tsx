@@ -2,6 +2,7 @@
 
 import { type FormEvent, useMemo, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
+import Link from 'next/link'
 
 import {
   BUG_HUNT_ITEM_TYPES,
@@ -85,6 +86,14 @@ export function BugHuntPanel({ initialItems }: { initialItems: BugHuntItem[] }) 
                     <div className="flex flex-wrap gap-2"><span className="rounded-full bg-sky-50 px-2 py-1 text-xs font-semibold text-sky-700">{label(item.itemType)}</span><span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{label(item.status)}</span></div>
                     <h3 className="mt-2 text-base font-semibold text-slate-950">{item.title}</h3>
                     {item.source ? <p className="mt-1 text-xs text-slate-500">{item.source}</p> : null}
+                    {item.sourceSupportReportId ? (
+                      <Link
+                        className="mt-2 inline-flex text-xs font-semibold text-violet-700 underline underline-offset-4"
+                        href="/control-center/messages?view=support"
+                      >
+                        View linked Support report {item.sourceSupportReportId}
+                      </Link>
+                    ) : null}
                   </div>
                   <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Status<select className="mt-1 block rounded-md border border-slate-300 bg-white px-2 py-1 text-sm font-medium normal-case text-slate-900" onChange={async (event) => { try { await updateItem(item.id, { status: event.target.value }) } catch (error) { setMessage(error instanceof Error ? error.message : 'Unable to save.') } }} value={item.status}>{BUG_HUNT_STATUSES.map((status) => <option key={status} value={status}>{label(status)}</option>)}</select></label>
                 </div>

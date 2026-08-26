@@ -976,11 +976,13 @@ describe('DashboardPlaceholder', () => {
     expect(shouldShowWorkspaceAccessNotice('show-calendar', false)).toBe(true)
     expect(shouldShowWorkspaceAccessNotice('recipes', false)).toBe(true)
     expect(shouldShowWorkspaceAccessNotice('help-resources', false)).toBe(false)
+    expect(shouldShowWorkspaceAccessNotice('messages', false)).toBe(false)
     expect(shouldShowWorkspaceAccessNotice('account', false)).toBe(false)
     expect(shouldShowWorkspaceAccessNotice('trade-board', true)).toBe(false)
     expect(shouldShowWorkspaceLoadingSkeleton('trade-board', true)).toBe(true)
     expect(shouldShowWorkspaceLoadingSkeleton('account', true)).toBe(false)
     expect(shouldShowWorkspaceLoadingSkeleton('help-resources', true)).toBe(false)
+    expect(shouldShowWorkspaceLoadingSkeleton('messages', true)).toBe(false)
     expect(shouldShowWorkspaceLoadingSkeleton('trade-board', false)).toBe(false)
 
     const html = renderToStaticMarkup(
@@ -1096,18 +1098,18 @@ describe('DashboardPlaceholder', () => {
               unreadMessageCount: 1,
               lastActivityAt: '2026-07-02T12:20:00.000Z',
               createdAt: '2026-07-02T12:00:00.000Z',
+              workspaceConversationId: '11111111-1111-4111-8111-111111111111',
+              latestMessagePreview: 'Can you help me choose my first show date?',
             },
           ],
         },
         createDraft: { displayName: 'New Rep', contactEmail: '' },
         teamName: 'Moonstone Squad',
-        replyDraft: 'You are doing great.',
         onCreateDraftChange: () => {},
         onCreateParticipant: () => {},
         onCopyInvite: () => {},
         onArchiveParticipant: () => {},
-        onReplyDraftChange: () => {},
-        onSendReply: () => {},
+        onOpenMessages: () => {},
       }),
     )
 
@@ -1123,7 +1125,10 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('3 of 8')
     expect(html).toContain('Needs help')
     expect(html).toContain('1 new')
-    expect(html).toContain('Reply to Lindsey')
+    expect(html).toContain('Open in Messages')
+    expect(html).toContain('Latest: Can you help me choose my first show date?')
+    expect(html).not.toContain('Reply composer')
+    expect(html).not.toContain('Send reply')
     expect(html).toContain('Archive')
     expect(html).not.toContain('Send text')
     expect(html).not.toContain('Sparkle Suite SMS')
@@ -1404,7 +1409,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('aria-label="Copy public site address"')
     expect(html).toContain('Live Queue code')
     expect(html).toContain('MHF-7342')
-    expect(html).toContain('aria-label="Open Message Center, 3 unread messages"')
+    expect(html).toContain('aria-label="Open Message Center, 4 unread messages"')
     expect(html).toContain('title="Message Center"')
     expect(html).not.toContain('Secret Rep ID Number')
     expect(html).not.toContain('>Rep<')
@@ -1425,7 +1430,7 @@ describe('DashboardPlaceholder', () => {
     expect(css).not.toContain('grid-template-columns: minmax(180px, 0.8fr) minmax(280px, 1.35fr) minmax(220px, 0.9fr);')
   })
 
-  it('renders a receive-only Message Center with filters and delivery-state controls', () => {
+  it('renders one friendly Message Center with unified category views', () => {
     const source = readFileSync(
       resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
       'utf8',
@@ -1474,35 +1479,26 @@ describe('DashboardPlaceholder', () => {
           inbox: { unreadCount: 1, messages },
         },
         actionState: { pendingKey: null, error: null, helperMessage: null },
-        onUpdateMessage: vi.fn(),
-        onMarkAllRead: vi.fn(),
+        onUpdatePublication: vi.fn(),
         onRetry: vi.fn(),
       }),
     )
 
-    expect(html).toContain('Receive-only inbox')
     expect(html).toContain('Message Center')
-    expect(html).toContain('Business reports, customer activity, resources')
-    expect(html).toContain('aria-label="Filter messages"')
+    expect(html).toContain('Team conversations, rep connections, Support, and Sparkle Suite updates')
+    expect(html).toContain('aria-label="Message Center views"')
     expect(html).toContain('>All<')
-    expect(html).toContain('>Unread<span')
-    expect(html).toContain('>Reports<')
-    expect(html).toContain('>Updates<')
-    expect(html).toContain('>Resources<')
-    expect(html).toContain('>Archived<span')
+    expect(html).toContain('>Team<')
+    expect(html).toContain('>Rep Network<')
+    expect(html).toContain('>Support<')
+    expect(html).toContain('>Sparkle Suite<')
+    expect(html).toContain('>Archived<')
     expect(html).toContain('Your July report')
     expect(html).toContain('A quick look at last month and August birthdays.')
-    expect(html).toContain('Last month at a glance')
-    expect(html).toContain('New customers')
-    expect(html).toContain('Jamie — August 12')
-    expect(html).toContain('Important')
-    expect(html).toContain('Mark all read')
-    expect(html).toContain('Mark read')
-    expect(html).toContain('Archive')
-    expect(html).toContain('href="/nic-nac?section=customer-list"')
+    expect(html).toContain('Official update')
+    expect(html).toContain('New message')
     expect(html).not.toContain('Backup support request')
     expect(html).not.toContain('Send support request')
-    expect(html).not.toContain('Reply')
     expect(source).not.toContain('create_support_request')
     expect(source).toContain("method: 'PATCH'")
     expect(source).toContain('body: JSON.stringify({ deliveryId, ...patch })')

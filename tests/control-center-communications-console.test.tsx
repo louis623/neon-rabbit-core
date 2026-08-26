@@ -5,11 +5,11 @@ import { describe, expect, it } from 'vitest'
 import { CommunicationsConsole } from '@/app/control-center/_components/CommunicationsConsole'
 
 describe('CommunicationsConsole', () => {
-  it('renders a receive-only compose and preview workflow', () => {
+  it('renders the read-only Broadcasts compose and preview workflow', () => {
     const html = renderToStaticMarkup(createElement(CommunicationsConsole))
 
-    expect(html).toContain('Communications Console')
-    expect(html).toContain('Reps can receive and read')
+    expect(html).toContain('Broadcasts')
+    expect(html).toContain('Broadcasts are read-only')
     expect(html).toContain('Save draft')
     expect(html).toContain('Preview audience')
     expect(html).toContain('Safe preview')

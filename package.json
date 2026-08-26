@@ -35,6 +35,10 @@
     "smoke:customer-flow": "tsx scripts/smoke-customer-flow.ts",
     "smoke:support-report": "tsx scripts/smoke-support-report.ts",
     "smoke:workspace-messages": "tsx scripts/smoke-workspace-message-center.ts",
+    "smoke:workspace-conversations": "tsx --conditions=react-server scripts/smoke-workspace-conversations.ts",
+    "smoke:support-conversation": "tsx --conditions=react-server scripts/smoke-support-conversation.ts",
+    "smoke:rep-network-messaging": "tsx --conditions=react-server scripts/smoke-rep-network-messaging.ts",
+    "smoke:workspace-communications:reset": "tsx --conditions=react-server scripts/smoke-workspace-conversations.ts --reset-only",
     "pressure:support-system": "tsx scripts/pressure-support-system.ts",
     "pressure:referral-system": "tsx scripts/pressure-referral-system.ts",
     "smoke:launch:preview-protected": "tsx scripts/smoke-demo-readiness.ts --launch --target preview --categories protected_preview_routes --json --write-report",
@@ -80,6 +84,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "read-excel-file": "^9.3.5",
+    "server-only": "^0.0.1",
     "sharp": "^0.34.5",
     "stripe": "^22.0.1",
     "zod": "^4.3.6"
