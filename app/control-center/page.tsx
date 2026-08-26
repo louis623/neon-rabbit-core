@@ -9,6 +9,8 @@ import { listOperatorCustomerProfiles } from '@/lib/services/client-account-prof
 import { listOperatorSupportReports } from '@/lib/services/support-reports'
 import { loadCustomerWaitlist } from '@/lib/prelaunch/customer-waitlist'
 import { loadBugHuntItems } from '@/lib/control-center/bug-hunt'
+import { FinderAppearanceControlCenter } from '@/app/control-center/_components/FinderAppearanceControlCenter'
+import { loadSparkleFinderAppearanceSetting } from '@/lib/sparkle-finder/appearance'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AuthError,
@@ -19,7 +21,11 @@ import {
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export default async function SparkleSuiteControlCenterPage() {
+export default async function SparkleSuiteControlCenterPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ product?: string | string[] }>
+} = {}) {
   try {
     await getControlCenterAccess()
   } catch (error) {
@@ -44,6 +50,12 @@ export default async function SparkleSuiteControlCenterPage() {
   }
 
   const admin = createAdminClient()
+  const requestedProduct = (await searchParams)?.product
+  if (requestedProduct === 'finder') {
+    const appearance = await loadSparkleFinderAppearanceSetting(admin)
+    return <FinderAppearanceControlCenter initialAppearance={appearance} />
+  }
+
   const [reports, customers, waitlist, bugHuntItems] = await Promise.all([
     listOperatorSupportReports(admin, {
       limit: 50,

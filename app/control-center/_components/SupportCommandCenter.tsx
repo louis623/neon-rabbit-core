@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ControlCenterThemeToggle } from '@/app/internal/prelaunch/intake/_components/ControlCenterThemeToggle'
 import { CustomerWaitlistPanel } from '@/app/control-center/_components/CustomerWaitlistPanel'
 import { BugHuntPanel } from '@/app/control-center/_components/BugHuntPanel'
+import { ControlCenterProductSwitcher } from '@/app/control-center/_components/ControlCenterProductSwitcher'
 import type { BugHuntItem } from '@/lib/control-center/bug-hunt'
 import type { CustomerWaitlistLead } from '@/lib/prelaunch/customer-waitlist'
 
@@ -411,6 +412,8 @@ export function SupportCommandCenter({
           </div>
           <ControlCenterThemeToggle />
         </header>
+
+        <ControlCenterProductSwitcher active="suite" />
 
         <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
           <aside className="lg:sticky lg:top-6 lg:self-start">

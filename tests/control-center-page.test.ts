@@ -8,6 +8,7 @@ const listOperatorSupportReportsMock = vi.fn()
 const listOperatorCustomerProfilesMock = vi.fn()
 const loadCustomerWaitlistMock = vi.fn()
 const loadBugHuntItemsMock = vi.fn()
+const loadSparkleFinderAppearanceSettingMock = vi.fn()
 const redirectMock = vi.fn((target: string) => {
   throw new Error(`redirect:${target}`)
 })
@@ -49,6 +50,12 @@ vi.mock('@/lib/prelaunch/customer-waitlist', () => ({
 vi.mock('@/lib/control-center/bug-hunt', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/control-center/bug-hunt')>()),
   loadBugHuntItems: (...args: unknown[]) => loadBugHuntItemsMock(...args),
+}))
+
+vi.mock('@/lib/sparkle-finder/appearance', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/sparkle-finder/appearance')>()),
+  loadSparkleFinderAppearanceSetting: (...args: unknown[]) =>
+    loadSparkleFinderAppearanceSettingMock(...args),
 }))
 
 vi.mock(
@@ -109,6 +116,7 @@ describe('SparkleSuiteControlCenterPage', () => {
     listOperatorCustomerProfilesMock.mockReset()
     loadCustomerWaitlistMock.mockReset()
     loadBugHuntItemsMock.mockReset()
+    loadSparkleFinderAppearanceSettingMock.mockReset()
     redirectMock.mockClear()
     getControlCenterAccessMock.mockResolvedValue({
       method: 'control_center_session',
@@ -117,6 +125,13 @@ describe('SparkleSuiteControlCenterPage', () => {
     createAdminClientMock.mockReturnValue({ from: vi.fn() })
     loadCustomerWaitlistMock.mockResolvedValue([])
     loadBugHuntItemsMock.mockResolvedValue([])
+    loadSparkleFinderAppearanceSettingMock.mockResolvedValue({
+      schemaVersion: 1,
+      preset: 'amethyst',
+      label: 'Amethyst',
+      description: 'The default high-sparkle Amethyst look.',
+      tokens: {},
+    })
     listOperatorSupportReportsMock.mockResolvedValue([
       {
         id: 'report-1',
@@ -187,6 +202,8 @@ describe('SparkleSuiteControlCenterPage', () => {
       { limit: 200 },
     )
     expect(html).toContain('Sparkle Suite Control Center')
+    expect(html).toContain('href="/control-center?product=suite"')
+    expect(html).toContain('href="/control-center?product=finder"')
     expect(html).not.toContain('Support Command Center')
     expect(html).toContain('Control Center Options')
     expect(html).toContain('href="/control-center/messages"')
@@ -212,6 +229,21 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('jane.example')
     expect(html).toContain('Prefers text for urgent billing questions.')
     expect(html).toContain('aria-label="Expand Jane Roberts profile"')
+  })
+
+  it('switches to Sparkle Finder controls with the shared skin options', async () => {
+    const page = await SparkleSuiteControlCenterPage({
+      searchParams: Promise.resolve({ product: 'finder' }),
+    })
+    const html = renderToStaticMarkup(page)
+
+    expect(html).toContain('Sparkle Finder Control Center')
+    expect(html).toContain('Sparkle Finder appearance')
+    expect(html).toContain('Amethyst')
+    expect(html).toContain('Moonstone')
+    expect(html).toContain('Rose Quartz')
+    expect(html).toContain('value="amethyst"')
+    expect(html).toContain('data-selected="true"')
   })
 
   it('separates active customer accounts from demo accounts', async () => {
