@@ -17,6 +17,12 @@ describe('HelpResourcesCard Message Center handoff', () => {
     )
 
     expect(html).toContain('Support Path')
+    expect(html).toContain('Using the Message Center')
+    expect(html).toContain('Where to find it')
+    expect(html).toContain('Choose the view you need')
+    expect(html).toContain('Rep Network')
+    expect(html).toContain('Those announcements are read-only.')
+    expect(html).toContain('Start or continue a conversation')
     expect(html).toContain('Still need help?')
     expect(html).toContain('Contact Sparkle Suite Support')
     expect(html).toContain('Message Center')

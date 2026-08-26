@@ -7790,6 +7790,54 @@ export function HelpResourcesCard({
                 <span className={styles.rosterTag}>Start here</span>
               </div>
 
+              <details className={styles.playbookGroup} open>
+                <summary className={styles.playbookGroupSummary}>
+                  <span className={styles.disclosureChevron} aria-hidden="true">&gt;</span>
+                  <span className={styles.playbookSummaryCopy}>
+                    <span className={styles.customerName}>Using the Message Center</span>
+                    <span className={styles.helperNote}>
+                      Your one place for team conversations, rep connections, Support, and official updates.
+                    </span>
+                  </span>
+                  <span className={styles.rosterTag}>Open guide</span>
+                </summary>
+                <div className={styles.playbookGuideBody}>
+                  <div className={styles.guideField}>
+                    <span className={styles.searchLabel}>Where to find it</span>
+                    <p>
+                      Select <strong>Messages</strong> at the top of your Workspace. You can also find
+                      Message Center in Tools.
+                    </p>
+                  </div>
+                  <div className={styles.guideField}>
+                    <span className={styles.searchLabel}>Choose the view you need</span>
+                    <ul>
+                      <li><strong>All</strong> keeps everything together in one inbox.</li>
+                      <li><strong>Team</strong> holds team and New Rep Onboarding conversations.</li>
+                      <li><strong>Rep Network</strong> holds approved rep connections and message requests.</li>
+                      <li><strong>Support</strong> keeps your questions, problems, ideas, replies, and status updates together.</li>
+                      <li><strong>Sparkle Suite</strong> holds verified official updates. Those announcements are read-only.</li>
+                      <li><strong>Archived</strong> keeps conversations you have set aside without losing them.</li>
+                    </ul>
+                  </div>
+                  <div className={styles.guideField}>
+                    <span className={styles.searchLabel}>Start or continue a conversation</span>
+                    <p>
+                      Open a message to read it. Reply controls appear only when that conversation allows a reply.
+                      Select <strong>New message</strong> to message your team, request a connection with another eligible
+                      Sparkle Suite rep, or contact Sparkle Suite Support.
+                    </p>
+                  </div>
+                  <div className={styles.guideField}>
+                    <span className={styles.searchLabel}>When you need Support</span>
+                    <p>
+                      Choose Support for a question, something that is not working, or an idea for Sparkle Suite.
+                      The conversation stays in one thread so you can see the reply and current status in the same place.
+                    </p>
+                  </div>
+                </div>
+              </details>
+
               {workflowGroups.map((section) => (
                 <details key={section.group} className={styles.playbookGroup}>
                   <summary className={styles.playbookGroupSummary}>
