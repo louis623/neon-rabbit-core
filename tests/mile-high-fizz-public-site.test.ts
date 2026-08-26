@@ -25,7 +25,7 @@ const mileHighFizzSettings: SiteSettingsDashboardResult = {
   tagline: 'Revealing something magical together.',
   heroImageUrl: '',
   heroAnimationType: 'sparkle_rise',
-  teamName: 'Mile High Fizz',
+  teamName: 'Diamond Peak Society',
   showJoinPage: true,
   customerSiteTemplate: 'amethyst',
   appearancePreset: 'alpine_opal',
@@ -96,6 +96,52 @@ describe('Mile High Fizz hybrid public site contract', () => {
     )
 
     expect(homepage.showcaseVideoUrl).toBe(videoUrl)
+  })
+
+  it('keeps future Site Settings changes across the Mile High Fizz public pages', () => {
+    const futureSettings: SiteSettingsDashboardResult = {
+      ...mileHighFizzSettings,
+      displayName: 'Lia Harper',
+      businessName: 'Summit Sparkle',
+      teamName: 'Summit Society',
+      tagline: 'Sparkle at the summit.',
+      showJoinPage: false,
+      aboutNarrative:
+        'First custom paragraph.\n\nSecond custom paragraph.\n\nThird custom paragraph.',
+      socialHandles: {
+        ...mileHighFizzSettings.socialHandles,
+        tiktok: '@liasparkles',
+      },
+    }
+    const futureExtras = {
+      ...mileHighFizzExtras,
+      streamingLinks: {
+        ...mileHighFizzExtras.streamingLinks,
+        tiktok: '',
+      },
+    }
+    const homepage = mapPreviewSettingsToHomepageTemplateData(futureSettings, futureExtras)
+    const trade = mapPreviewSettingsToTradeTemplateData(futureSettings, futureExtras)
+    const join = mapPreviewSettingsToJoinTemplateData(futureSettings, futureExtras)
+
+    expect(homepage.repName).toBe('Lia')
+    expect(homepage.businessName).toBe('Summit Sparkle')
+    expect(homepage.teamName).toBe('Summit Society')
+    expect(homepage.tagline).toBe('Sparkle at the summit.')
+    expect(homepage.aboutParagraphs).toEqual([
+      'First custom paragraph.',
+      'Second custom paragraph.',
+      'Third custom paragraph.',
+    ])
+    expect(homepage.showJoinPage).toBe(false)
+    expect(homepage.footerLinks.joinTeam).toBeUndefined()
+    expect(homepage.streamLinks.tiktok).toBe('https://www.tiktok.com/@liasparkles')
+    expect(trade.tradeHeroTitle).toBe('Summit Sparkle Dance Floor')
+    expect(trade.footerLinks.joinTeam).toBeUndefined()
+    expect(join.teamName).toBe('Summit Society')
+    expect(join.heroTitle).toBe('Welcome to the Summit Society')
+    expect(join.heroPitch).toContain('Summit Society')
+    expect(join.repSocialLinks.tiktok).toBe('https://www.tiktok.com/@liasparkles')
   })
 
   it('serializes the protected Mile High Fizz variant for static runtime branching', () => {

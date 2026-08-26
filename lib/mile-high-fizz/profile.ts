@@ -42,13 +42,15 @@ export function isMileHighFizzSettings(settings: SiteSettingsDashboardResult) {
 export function applyMileHighFizzHomepage(
   homepage: AmethystHomepageTemplateData,
 ): AmethystHomepageTemplateData {
+  const hasConfiguredAboutNarrative = !homepage.aboutParagraphs.some((paragraph) =>
+    /share how you got started|nic-nac can rewrite this|add a final paragraph/i.test(
+      paragraph,
+    ),
+  )
+
   return {
     ...homepage,
     publicSiteVariant: 'mile_high_fizz_hybrid',
-    repName: MILE_HIGH_FIZZ_PROFILE.publicName,
-    businessName: MILE_HIGH_FIZZ_PROFILE.businessName,
-    teamName: MILE_HIGH_FIZZ_PROFILE.teamName,
-    tagline: 'Revealing something magical together.',
     heroEyebrow: 'With Lindsey',
     heroHeadline: homepage.heroHeadlineOverride || 'Mile High Fizz',
     heroSub:
@@ -59,11 +61,13 @@ export function applyMileHighFizzHomepage(
     announcementHref: '#about',
     promoTickerText: MILE_HIGH_FIZZ_PROFILE.promoTickerText,
     aboutHeadline: 'What is a Bomb Party?',
-    aboutParagraphs: [
-      'Experience the thrilling, must-watch excitement of a Bomb Party jewelry reveal. Submit your order and watch live as Lindsey fizzes, opens, and reveals your beautiful, unique piece of handcrafted jewelry.',
-      'Join the live party to share in the fun of discovering your next favorite pieces, then keep an eye on the Sparkle Suite Dance Floor when a reveal is not quite your style.',
-      'Order your jewelry, watch Lindsey live on TikTok, and receive your handcrafted jewelry shipped directly to you, ready to enjoy.',
-    ],
+    aboutParagraphs: hasConfiguredAboutNarrative
+      ? homepage.aboutParagraphs
+      : [
+          'Experience the thrilling, must-watch excitement of a Bomb Party jewelry reveal. Submit your order and watch live as Lindsey fizzes, opens, and reveals your beautiful, unique piece of handcrafted jewelry.',
+          'Join the live party to share in the fun of discovering your next favorite pieces, then keep an eye on the Sparkle Suite Dance Floor when a reveal is not quite your style.',
+          'Order your jewelry, watch Lindsey live on TikTok, and receive your handcrafted jewelry shipped directly to you, ready to enjoy.',
+        ],
     signupTitle: 'Never Miss a Show!',
     signupSub:
       'Get email updates now and be first in line when SMS show reminders launch.',
@@ -82,19 +86,17 @@ export function applyMileHighFizzHomepage(
       homepage.showcaseVideoUrl.trim() && homepage.showcaseVideoUrl !== '#'
         ? homepage.showcaseVideoUrl
         : MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
-    showJoinPage: true,
+    showJoinPage: homepage.showJoinPage,
     streamLinks: {
       ...homepage.streamLinks,
       shop: MILE_HIGH_FIZZ_PROFILE.shopUrl,
-      watch: MILE_HIGH_FIZZ_PROFILE.watchUrl,
-      tiktok: MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
     },
     socialLinks: homepage.socialLinks,
     footerLinks: {
       ...homepage.footerLinks,
       home: '/amethyst/Homepage.html',
       tradeBoard: '/amethyst/Trade.html',
-      joinTeam: '/amethyst/Join.html',
+      joinTeam: homepage.footerLinks.joinTeam,
       catalog: MILE_HIGH_FIZZ_PROFILE.shopUrl,
       preOrders: MILE_HIGH_FIZZ_PROFILE.shopUrl,
       pastShows: '#events',
@@ -110,18 +112,16 @@ export function applyMileHighFizzTrade(
   return {
     ...trade,
     publicSiteVariant: 'mile_high_fizz_hybrid',
-    repName: MILE_HIGH_FIZZ_PROFILE.publicName,
-    businessName: MILE_HIGH_FIZZ_PROFILE.businessName,
-    tradeHeroTitle: 'Mile High Fizz Dance Floor',
+    tradeHeroTitle: `${trade.businessName} Dance Floor`,
     tradeHeroSub:
-      "Browse Lindsey's available trade pieces and request an item-for-item swap from a live reveal.",
+      `Browse ${trade.repName}'s available trade pieces and request an item-for-item swap from a live reveal.`,
     footerTagline:
-      'Real-time reveals, sparkling jewelry, and rep-reviewed trades with Mile High Fizz.',
+      `Real-time reveals, sparkling jewelry, and rep-reviewed trades with ${trade.businessName}.`,
     footerLinks: {
       ...trade.footerLinks,
       home: '/amethyst/Homepage.html',
       tradeBoard: '/amethyst/Trade.html',
-      joinTeam: '/amethyst/Join.html',
+      joinTeam: trade.footerLinks.joinTeam,
       catalog: trade.shopUrl,
       preOrders: trade.shopUrl,
       pastShows: '/amethyst/Homepage.html#events',
@@ -137,39 +137,35 @@ export function applyMileHighFizzJoin(
   return {
     ...join,
     publicSiteVariant: 'mile_high_fizz_hybrid',
-    repName: MILE_HIGH_FIZZ_PROFILE.publicName,
     repCity: 'Littleton',
     repState: 'Colorado',
-    businessName: MILE_HIGH_FIZZ_PROFILE.businessName,
-    teamName: MILE_HIGH_FIZZ_PROFILE.teamName,
-    heroTitle: 'Welcome to the Diamond Peak Society',
+    heroTitle: `Welcome to the ${join.teamName}`,
     promoText:
       '$599 Launch Pack includes a guaranteed Diamond reveal for the 10th Anniversary Special.',
     heroPitch:
-      'Turn Your Passion into Profit. Be part of something special. Build your own Bomb Party business with the support and energy of the Diamond Peak Society. For a limited time, start with a Diamond reveal in your launch pack.',
+      `Turn Your Passion into Profit. Be part of something special. Build your own Bomb Party business with the support and energy of the ${join.teamName}. For a limited time, start with a Diamond reveal in your launch pack.`,
     heroCtaText: 'Join the Team Now',
     finalPitch:
-      'Join the Diamond Peak Society today and turn your passion for jewelry into a thriving business.',
+      `Join the ${join.teamName} today and turn your passion for jewelry into a thriving business.`,
     bpReferralUrl: MILE_HIGH_FIZZ_PROFILE.joinPackUrl,
     tickerTopText:
-      'Join the Diamond Peak Society | Supportive community | Flexible income | Training and mentorship | Work from anywhere',
+      `Join the ${join.teamName} | Supportive community | Flexible income | Training and mentorship | Work from anywhere`,
     footerTagline:
-      'Build your own Bomb Party business with the support and energy of the Diamond Peak Society.',
+      `Build your own Bomb Party business with the support and energy of the ${join.teamName}.`,
     repSocialLinks: {
       ...join.repSocialLinks,
-      tiktok: MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
     },
     socialLinks: join.socialLinks,
     footerLinks: {
       ...join.footerLinks,
       home: '/amethyst/Homepage.html',
       tradeBoard: '/amethyst/Trade.html',
-      joinTeam: '/amethyst/Join.html',
+      joinTeam: join.footerLinks.joinTeam,
       catalog: join.shopUrl,
       preOrders: join.shopUrl,
       pastShows: '/amethyst/Homepage.html#events',
       faq: '#why',
-      contact: MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
+      contact: join.repSocialLinks.tiktok || MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
     },
     footerColumn: {
       title: '',
@@ -178,7 +174,7 @@ export function applyMileHighFizzJoin(
     teamMembers: [],
     faqAnswers: {
       whatIsTeam:
-        'The Diamond Peak Society is the community of independent Bomb Party Representatives led by Lindsey under the Mile High Fizz banner. Lindsey is part of The Virtuous Fizzers, and Diamond Peak Society is the team she leads. Supportive Community: join a team that celebrates your wins, supports your growth, and makes every day fun.',
+        `${join.teamName} is the community of independent Bomb Party Representatives led by ${join.repName} under the ${join.businessName} banner. ${join.repName} is part of The Virtuous Fizzers, and ${join.teamName} is the team they lead. Supportive Community: join a team that celebrates your wins, supports your growth, and makes every day fun.`,
       cost:
         'Starter pack details and current promotions are handled by Bomb Party. Use the join button to review the current options.',
       experience:
