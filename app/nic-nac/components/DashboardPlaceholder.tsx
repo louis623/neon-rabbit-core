@@ -90,6 +90,7 @@ import {
 import type {
   MessageCenterActionState as UnifiedMessageCenterActionState,
   MessageCenterState as UnifiedMessageCenterState,
+  WorkspaceConversationSummary,
   WorkspaceInboxItem,
   WorkspacePublicationSummary,
 } from './messages/types'
@@ -5082,6 +5083,28 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
+  function handleUpdateConversationSummary(
+    message: WorkspaceConversationSummary,
+    patch: Pick<WorkspaceConversationSummary, 'unreadCount'> &
+      Partial<Pick<WorkspaceConversationSummary, 'archivedAt' | 'mutedAt'>>,
+  ) {
+    setMessagesState((current) => {
+      const messages = (current.inbox?.messages ?? []).map((currentMessage) =>
+        isConversationItem(currentMessage) && currentMessage.id === message.id
+          ? { ...currentMessage, ...patch }
+          : currentMessage,
+      )
+      return {
+        ...current,
+        inbox: {
+          ...(current.inbox ?? { unreadCount: 0 }),
+          unreadCount: getActiveUnreadMessageCount(messages),
+          messages,
+        },
+      }
+    })
+  }
+
   async function handleMarkAllMessagesRead() {
     const unreadMessages = (messagesState.inbox?.messages ?? []).filter(
       (message): message is WorkspacePublicationSummary =>
@@ -5869,6 +5892,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             supportOnly={!hasPaidWorkspace}
             draftScope={currentRepId ?? (reviewWorkspaceMode ? 'review-rep' : null)}
             onUpdatePublication={handleUpdateMessage}
+            onUpdateConversation={handleUpdateConversationSummary}
             onRetry={() => void loadMessages()}
           />
         </div>

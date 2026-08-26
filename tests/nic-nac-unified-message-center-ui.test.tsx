@@ -285,6 +285,27 @@ describe('unified Workspace Message Center UI', () => {
     expect(source).toContain('/block`')
   })
 
+  it('synchronizes conversation read and archive changes with the workspace header badge', () => {
+    const controllerSource = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/nic-nac/components/messages/useMessageCenter.ts',
+      ),
+      'utf8',
+    )
+    const dashboardSource = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+
+    expect(controllerSource).toContain('onUpdateConversation?.(item, { unreadCount: 0 })')
+    expect(controllerSource).toContain('onUpdateConversation?.(selectedItem, {')
+    expect(dashboardSource).toContain('handleUpdateConversationSummary')
+    expect(dashboardSource).toContain(
+      'unreadCount: getActiveUnreadMessageCount(messages)',
+    )
+  })
+
   it('uses one-surface-at-a-time phone layout, 44px controls, and reduced motion', () => {
     const css = readFileSync(
       resolve(

@@ -375,6 +375,7 @@ export function useMessageCenter({
   supportOnly = false,
   onRefresh,
   onUpdatePublication,
+  onUpdateConversation,
 }: {
   state: MessageCenterState
   reviewMode: boolean
@@ -383,6 +384,11 @@ export function useMessageCenter({
   onUpdatePublication: (
     item: WorkspaceInboxItem,
     patch: { read?: boolean; archived?: boolean },
+  ) => void
+  onUpdateConversation?: (
+    item: WorkspaceConversationSummary,
+    patch: Pick<WorkspaceConversationSummary, 'unreadCount'> &
+      Partial<Pick<WorkspaceConversationSummary, 'archivedAt' | 'mutedAt'>>,
   ) => void
 }) {
   const [items, setItems] = useState<WorkspaceInboxItem[]>(() =>
@@ -517,6 +523,7 @@ export function useMessageCenter({
             : candidate,
         ),
       )
+      onUpdateConversation?.(item, { unreadCount: 0 })
       if (!reviewMode) {
         void fetch(`/api/nic-nac/conversations/${item.id}/state`, {
           method: 'PATCH',
@@ -529,7 +536,7 @@ export function useMessageCenter({
       onUpdatePublication(item, { read: true })
     }
     updateMessageCenterUrl({ view, conversationId: item.id })
-  }, [onUpdatePublication, reviewMode, view])
+  }, [onUpdateConversation, onUpdatePublication, reviewMode, view])
 
   const backToInbox = useCallback(() => {
     setMode('inbox')
@@ -1175,11 +1182,20 @@ export function useMessageCenter({
               : item,
           ),
         )
+        onUpdateConversation?.(selectedItem, {
+          unreadCount: selectedItem.unreadCount,
+          ...(patch.archived !== undefined
+            ? { archivedAt: patch.archived ? now : null }
+            : {}),
+          ...(patch.muted !== undefined
+            ? { mutedAt: patch.muted ? now : null }
+            : {}),
+        })
       } finally {
         setPendingKey(null)
       }
     },
-    [onUpdatePublication, reviewMode, selectedItem],
+    [onUpdateConversation, onUpdatePublication, reviewMode, selectedItem],
   )
 
   return {

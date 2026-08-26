@@ -10,6 +10,7 @@ import { SupportComposer } from './SupportComposer'
 import type {
   MessageCenterActionState,
   MessageCenterState,
+  WorkspaceConversationSummary,
   WorkspaceInboxItem,
 } from './types'
 import { isConversationItem } from './types'
@@ -23,6 +24,7 @@ export function MessageCenter({
   supportOnly = false,
   draftScope,
   onUpdatePublication,
+  onUpdateConversation,
   onRetry,
 }: {
   state: MessageCenterState
@@ -34,6 +36,11 @@ export function MessageCenter({
     item: WorkspaceInboxItem,
     patch: { read?: boolean; archived?: boolean },
   ) => void
+  onUpdateConversation?: (
+    item: WorkspaceConversationSummary,
+    patch: Pick<WorkspaceConversationSummary, 'unreadCount'> &
+      Partial<Pick<WorkspaceConversationSummary, 'archivedAt' | 'mutedAt'>>,
+  ) => void
   onRetry: () => void
 }) {
   const controller = useMessageCenter({
@@ -42,6 +49,7 @@ export function MessageCenter({
     supportOnly,
     onRefresh: onRetry,
     onUpdatePublication,
+    onUpdateConversation,
   })
   const threadHeadingRef = useRef<HTMLHeadingElement | null>(null)
   const supportHeadingRef = useRef<HTMLHeadingElement | null>(null)
