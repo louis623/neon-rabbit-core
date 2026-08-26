@@ -135,6 +135,174 @@ saved in one system but invisible in the new Message Center.
 
 ## Target rep experience
 
+### Friendly-interface contract
+
+The database has multiple communication streams, but the rep-facing interface
+must never describe or expose them as separate systems. The product promise is:
+
+> One inbox. Clear labels. The right actions appear when they are needed.
+
+Treat this contract as a release gate, not optional polish.
+
+#### One consistent inbox pattern
+
+Every inbox row uses the same readable anatomy regardless of its source:
+
+1. recognizable sender or conversation identity;
+2. one plain-language type label;
+3. one-line subject or context;
+4. latest-message preview;
+5. timestamp;
+6. unread indicator expressed with text/semantics as well as styling.
+
+Do not create visually unrelated card designs for Team, Rep Network, Support,
+and official Sparkle Suite communication. Differences should come from a small
+badge, sender treatment, and available actions rather than forcing the rep to
+learn four interfaces.
+
+#### Plain-language vocabulary
+
+Rep-facing copy uses words reps already understand:
+
+- **Team** rather than onboarding communication channel;
+- **Other reps** or **Rep Network** rather than peer-to-peer stream;
+- **Sparkle Suite Support** rather than operator queue;
+- **Sparkle Suite updates** rather than publication deliveries;
+- **Message request** rather than pending conversation membership;
+- **Received**, **Under review**, **Planned**, and **Resolved** rather than raw
+  database status values.
+
+Terms such as stream, publication, delivery, principal, actor, outbox,
+moderation event, and conversation type remain implementation language only.
+
+#### Calm default view
+
+- Message Center always opens to **All** unless a safe deep link names a
+  specific view or conversation.
+- Show active items in one chronological list; do not place four dashboards on
+  the first screen.
+- Use no more than the six approved primary views.
+- Put Reports, Resources, and Updates in a small secondary filter within
+  Sparkle Suite rather than another permanent navigation row.
+- Avoid large metric cards, dense administrative controls, or technical status
+  panels in the rep inbox.
+- Use whitespace, readable previews, and restrained badges so urgency remains
+  meaningful.
+
+#### Predictable responsive layout
+
+- Desktop may use a familiar inbox/thread split view when space permits.
+- Phone and foldable layouts show either the inbox or one thread at a time,
+  with a clear **Back to Messages** action.
+- Opening a message must not unexpectedly replace the entire Workspace route or
+  lose the rep's place.
+- The composer remains visually anchored beneath the active thread without
+  covering the newest message or phone keyboard controls.
+
+#### Guided new-message flow
+
+Do not begin with a blank recipient field. Start with three large, friendly
+choices:
+
+- **Message my team**;
+- **Message another rep**;
+- **Contact Sparkle Suite Support**.
+
+After the choice, ask only for information required by that path. Hide
+advanced or uncommon fields until the rep asks for them or selects the related
+option.
+
+Examples:
+
+- Team shows only established team/onboarding relationships.
+- Another rep explains why the rep is eligible to contact that person and
+  clearly labels the first note as a message request.
+- Support begins with **Ask for help**, **Report a problem**, and **Share an
+  idea**, then presents the matching short form.
+
+The rep must always know who will receive the message before Send becomes
+available.
+
+#### Context without clutter
+
+Each thread shows a small context card only when it helps answer “What is this
+about?” Examples include:
+
+- New Rep Onboarding for a named participant;
+- dancer item number and rep business name;
+- Workspace area where a bug occurred;
+- Support report status.
+
+Keep the context summary compact and link back to the source workflow. Do not
+repeat account profiles, audit findings, database IDs, or internal metadata in
+the rep thread.
+
+#### Clear identity and trust
+
+- Official broadcasts display a verified **Sparkle Suite** sender treatment
+  and a short **Official update** label.
+- Support replies display **Sparkle Suite Support** even though the private
+  audit records the actual operator.
+- Rep Network messages display public business/show identity rather than email
+  address.
+- Onboarding guest messages clearly show the participant name and **New Rep
+  Onboarding** context.
+- A read-only official update never shows an inactive composer; it explains
+  **This is an official Sparkle Suite update**.
+
+#### Friendly status and feedback
+
+- Sending shows immediate progress without removing the draft until the server
+  confirms durable storage.
+- Success places the sent message in the thread and moves focus predictably.
+- Failure keeps the draft and attachment selection, explains what happened in
+  plain language, and offers one Retry action.
+- Preserve one unsent draft per active conversation during the current signed-in
+  browser session; clear it after successful send or logout and never expose it
+  across accounts.
+- Status changes appear as quiet system messages rather than disruptive modal
+  alerts.
+- Empty states say what the area is for and present one useful next action.
+
+#### Notification restraint
+
+- The header badge represents the total unread count, capped visually at
+  `99+` while retaining the real accessible label.
+- Pending Rep Network requests are not styled as urgent support failures.
+- Only `action_required`, live-show urgent Support, and direct safety notices
+  receive high-emphasis treatment.
+- Do not use sound, flashing, repeated toast notifications, or automatic thread
+  opening.
+- Archive and mute are easy to reverse and never delete history.
+
+#### Error prevention
+
+- Disable Send until a valid recipient/path and meaningful body are present.
+- Confirm only high-consequence actions: block, report, close, or send an
+  official multi-rep broadcast.
+- Do not add confirmation friction to ordinary replies.
+- Warn before abandoning an unsent draft or unfinished screenshot upload.
+- Prevent duplicate sends with client request IDs while keeping the UI response
+  understandable if a retry returns the already-saved message.
+
+#### Usability acceptance standard
+
+Before a slice is ready for release, a synthetic reviewer unfamiliar with its
+implementation must be able to complete the relevant tasks without Help text
+or developer guidance:
+
+1. find and reply to an unread Team question;
+2. return from the thread to the same inbox position;
+3. report a Workspace problem and understand that it was received;
+4. share an idea and later find its status;
+5. distinguish an official update from a replyable conversation;
+6. accept or decline a Rep Network request without accidentally starting a
+   conversation;
+7. locate archived or muted communication and reverse the action.
+
+Record confusion, wrong turns, and inaccessible interactions as release
+failures. Passing automated render tests alone does not satisfy this standard.
+
 ### Message Center navigation
 
 Replace the current filters with these primary views:
@@ -909,6 +1077,20 @@ Cover:
 - Control Center Support Inbox, reply, status, promotion, and moderation;
 - mobile layout contracts.
 
+Add interaction-level usability contracts for:
+
+- a consistent inbox-row hierarchy across all communication sources;
+- no rep-facing technical architecture vocabulary;
+- correct focus restoration between inbox, thread, and composer;
+- draft preservation on failed send and safe clearing after success/logout;
+- no inactive composer on official publications;
+- clear destination identity before Send is enabled;
+- no more than six primary Message Center views;
+- phone/foldable one-surface-at-a-time navigation;
+- header unread cap with an accurate accessible count;
+- reduced-motion behavior and no notification behavior based on animation,
+  color, or sound alone.
+
 Modify/remove outdated expectations in:
 
 - `tests/nic-nac-messages-route.test.ts`;
@@ -1047,6 +1229,8 @@ details, or signed storage URLs.
 - Every slice has focused tests, synthetic reviewer fixtures, reset/reseed,
   database smoke, production build, exact-tip release provenance, and live-domain
   verification.
+- A new reviewer can complete the seven friendly-interface acceptance tasks
+  without coaching, and any observed confusion is resolved before release.
 
 ## Explicit non-goals
 
