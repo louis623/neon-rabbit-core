@@ -118,6 +118,21 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(homepage.footerLinks.accessibility).not.toBe('#')
   })
 
+  it('keeps a configured showcase video instead of replacing it with the profile link', () => {
+    const videoUrl = 'https://www.tiktok.com/@brittwithbling/video/7602795836380073229'
+    const homepage = mapPreviewSettingsToHomepageTemplateData(
+      {
+        ...brittWithBlingSettings,
+        homepageMediaSlots: [
+          { key: 'showcase', caption: '', imageUrl: '', videoUrl },
+        ],
+      },
+      brittWithBlingExtras,
+    )
+
+    expect(homepage.showcaseVideoUrl).toBe(videoUrl)
+  })
+
   it('serializes BWB as theme-switchable Black Diamond data', () => {
     const homepage = mapPreviewSettingsToHomepageTemplateData(
       brittWithBlingSettings,

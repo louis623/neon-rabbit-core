@@ -76,7 +76,12 @@ export function applyMileHighFizzHomepage(
     footerTagline:
       `Lindsey is part of ${MILE_HIGH_FIZZ_PROFILE.uplineTeamName}. Join her Diamond Peak Society team for real-time reveals and sparkling jewelry.`,
     showcaseVideoCaption: '@lindze1188 on TikTok',
-    showcaseVideoUrl: MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
+    // A rep's Site Settings video is the public-site source of truth. The
+    // profile link is only a fallback for the legacy site configuration.
+    showcaseVideoUrl:
+      homepage.showcaseVideoUrl.trim() && homepage.showcaseVideoUrl !== '#'
+        ? homepage.showcaseVideoUrl
+        : MILE_HIGH_FIZZ_PROFILE.tiktokUrl,
     showJoinPage: true,
     streamLinks: {
       ...homepage.streamLinks,

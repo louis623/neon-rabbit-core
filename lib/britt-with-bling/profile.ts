@@ -388,7 +388,12 @@ export function applyBrittWithBlingHomepage(
       },
     ],
     showcaseVideoCaption: '@brittwithbling live reveal highlights',
-    showcaseVideoUrl: BRITT_WITH_BLING_PROFILE.tiktokUrl,
+    // Keep a rep-configured customer video intact; this profile URL is only
+    // the fallback for the legacy site configuration.
+    showcaseVideoUrl:
+      homepage.showcaseVideoUrl.trim() && homepage.showcaseVideoUrl !== '#'
+        ? homepage.showcaseVideoUrl
+        : BRITT_WITH_BLING_PROFILE.tiktokUrl,
     signupTitle: 'Never Miss a Show!',
     signupSub:
       'Get email updates now and be first in line when SMS show reminders launch.',

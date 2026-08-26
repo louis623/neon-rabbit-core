@@ -83,6 +83,21 @@ describe('Mile High Fizz hybrid public site contract', () => {
     )
   })
 
+  it('keeps a configured showcase video instead of replacing it with the profile link', () => {
+    const videoUrl = 'https://www.tiktok.com/@lindze1188/video/7598018448039480607'
+    const homepage = mapPreviewSettingsToHomepageTemplateData(
+      {
+        ...mileHighFizzSettings,
+        homepageMediaSlots: [
+          { key: 'showcase', caption: '', imageUrl: '', videoUrl },
+        ],
+      },
+      mileHighFizzExtras,
+    )
+
+    expect(homepage.showcaseVideoUrl).toBe(videoUrl)
+  })
+
   it('serializes the protected Mile High Fizz variant for static runtime branching', () => {
     const homepage = mapPreviewSettingsToHomepageTemplateData(
       mileHighFizzSettings,
