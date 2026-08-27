@@ -22,6 +22,11 @@ const views: Array<{
     label: 'Network Safety',
     description: 'Reported rep conversations',
   },
+  {
+    key: 'approvals',
+    label: 'Remy approvals',
+    description: 'One-time reply permission',
+  },
 ]
 
 export function ControlCenterCommunicationsNav({

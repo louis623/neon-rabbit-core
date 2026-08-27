@@ -2,6 +2,7 @@ export type ControlCenterCommunicationView =
   | 'support'
   | 'broadcasts'
   | 'safety'
+  | 'approvals'
 
 export type OperatorSupportReport = {
   id: string

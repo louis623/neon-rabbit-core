@@ -4,6 +4,7 @@ import { CommunicationsConsole } from '@/app/control-center/_components/Communic
 import { ControlCenterCommunicationsNav } from '@/app/control-center/_components/ControlCenterCommunicationsNav'
 import { ControlCenterConversationInbox } from '@/app/control-center/_components/ControlCenterConversationInbox'
 import { RepNetworkModerationPanel } from '@/app/control-center/_components/RepNetworkModerationPanel'
+import { RemyReplyApprovalsPanel } from '@/app/control-center/_components/RemyReplyApprovalsPanel'
 import type { ControlCenterCommunicationView } from '@/app/control-center/_components/control-center-communications'
 import {
   AuthError,
@@ -16,7 +17,7 @@ export const dynamic = 'force-dynamic'
 
 function communicationView(value: string | string[] | undefined) {
   const requested = Array.isArray(value) ? value[0] : value
-  return (['support', 'broadcasts', 'safety'] as const).includes(
+  return (['support', 'broadcasts', 'safety', 'approvals'] as const).includes(
     requested as ControlCenterCommunicationView,
   )
     ? (requested as ControlCenterCommunicationView)
@@ -72,6 +73,7 @@ export default async function ControlCenterMessagesPage({
         />
       ) : null}
       {view === 'safety' ? <RepNetworkModerationPanel /> : null}
+      {view === 'approvals' ? <RemyReplyApprovalsPanel /> : null}
     </>
   )
 }
