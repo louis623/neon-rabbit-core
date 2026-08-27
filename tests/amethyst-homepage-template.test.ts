@@ -930,29 +930,30 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toMatch(/\.hp-hero-trade-board-cta\s*\{[\s\S]*?width:\s*100%;/)
   })
 
-  it('keeps the Mile High Fizz hero actions together above the shared Dance Floor action', () => {
+  it('keeps the rendered Mile High Fizz hero actions together above the shared Dance Floor action', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
       'utf8',
     )
-    const hero = jsx.slice(
-      jsx.indexOf('function Hero({ t, isLive, liveShow })'),
-      jsx.indexOf('function EventCard('),
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
     )
-    const mileHighFizzHero = hero.slice(
-      hero.indexOf('isMileHighFizzHybrid ? ('),
-      hero.indexOf(') : ('),
+    const mileHighFizzHero = jsx.slice(
+      jsx.indexOf('function MileHighFizzHomepage('),
+      jsx.indexOf('function BrittWithBlingHomepage('),
     )
 
-    expect(mileHighFizzHero).toContain('className="hp-hero-cta-stack"')
-    expect(mileHighFizzHero).toContain('className="hp-hero-cta-primary-row"')
-    expect(mileHighFizzHero).toContain('hp-hero-trade-board-cta')
+    expect(mileHighFizzHero).toContain('className="mhf-hero-cta-stack"')
+    expect(mileHighFizzHero).toContain('className="mhf-hero-cta-primary-row"')
+    expect(mileHighFizzHero).toContain('mhf-cta-dance-floor')
     expect(mileHighFizzHero.indexOf('Join My Team')).toBeLessThan(
-      mileHighFizzHero.indexOf('Browse the dance floor'),
+      mileHighFizzHero.indexOf('Browse the Dance Floor'),
     )
     expect(mileHighFizzHero.indexOf('heroWatchLinks.map((link) =>')).toBeLessThan(
-      mileHighFizzHero.indexOf('Browse the dance floor'),
+      mileHighFizzHero.indexOf('Browse the Dance Floor'),
     )
+    expect(css).toMatch(/\.mhf-cta-dance-floor\s*\{[\s\S]*?width:\s*100%;/)
   })
 
   it('uses the live-show header grid with brand, centered nav, and primary shop CTA', () => {

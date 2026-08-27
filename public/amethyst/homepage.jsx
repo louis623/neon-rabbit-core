@@ -2104,13 +2104,18 @@ function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queu
           <p className="mhf-hero-line">{CONTENT.heroSub || "REVEALING SOMETHING MAGICAL TOGETHER"}</p>
           <p className="mhf-hero-instruction">PLACE YOUR ORDER AND RETURN TO THE LIVE PARTY TO WATCH YOUR REVEAL</p>
           <div className="mhf-hero-ctas">
-            <a {...linkProps(getShopHref())} className="mhf-cta mhf-cta-shop">Shop Bomb Party</a>
-            <a {...linkProps(joinTeamHref)} className="mhf-cta mhf-cta-join">Join My Team</a>
-            {heroWatchLinks.map((link) => (
-              <a key={link.id} {...linkProps(link.href)} className={`mhf-cta mhf-cta-watch ${isLive && link.id === "tiktok" ? "is-live" : ""}`}>
-                {link.label}
-              </a>
-            ))}
+            <div className="mhf-hero-cta-stack">
+              <div className="mhf-hero-cta-primary-row">
+                <a {...linkProps(getShopHref())} className="mhf-cta mhf-cta-shop">Shop Bomb Party</a>
+                <a {...linkProps(joinTeamHref)} className="mhf-cta mhf-cta-join">Join My Team</a>
+                {heroWatchLinks.map((link) => (
+                  <a key={link.id} {...linkProps(link.href)} className={`mhf-cta mhf-cta-watch ${isLive && link.id === "tiktok" ? "is-live" : ""}`}>
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+              <a {...linkProps(getTradeBoardHref())} className="mhf-cta mhf-cta-dance-floor">Browse the Dance Floor</a>
+            </div>
           </div>
         </div>
       </section>

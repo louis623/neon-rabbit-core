@@ -4856,6 +4856,21 @@ body.mile-high-fizz .mhf-hero-title {
   flex-wrap: wrap;
 }
 
+.mhf-hero-cta-stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 20px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.mhf-hero-cta-primary-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
 .mhf-cta {
   min-width: 205px;
   min-height: 48px;
@@ -4882,6 +4897,12 @@ body.mile-high-fizz .mhf-hero-title {
 
 .mhf-cta-watch {
   background: linear-gradient(90deg, var(--mhf-accent), var(--mhf-purple));
+}
+
+.mhf-cta-dance-floor {
+  width: 100%;
+  min-width: 0;
+  background: linear-gradient(90deg, var(--mhf-primary), var(--mhf-purple), var(--mhf-accent));
 }
 
 .mhf-below-hero-shell {
@@ -5192,6 +5213,15 @@ body.mile-high-fizz .mhf-automation-panel .legal-row {
   .mhf-hero-ctas {
     margin-top: 38px;
     gap: 12px;
+  }
+
+  .mhf-hero-cta-stack,
+  .mhf-hero-cta-primary-row {
+    gap: 12px;
+  }
+
+  .mhf-hero-cta-stack {
+    width: min(100%, 280px);
   }
 
   .mhf-cta {
