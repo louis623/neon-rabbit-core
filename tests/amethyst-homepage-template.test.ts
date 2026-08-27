@@ -956,6 +956,34 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toMatch(/\.mhf-cta-dance-floor\s*\{[\s\S]*?width:\s*100%;/)
   })
 
+  it('gives every custom customer-site hero the shared full-width Dance Floor action', () => {
+    const jsx = readFileSync(resolve(process.cwd(), 'public/amethyst/homepage.jsx'), 'utf8')
+    const css = readFileSync(resolve(process.cwd(), 'public/amethyst/homepage.css'), 'utf8')
+    const brittHero = jsx.slice(
+      jsx.indexOf('function BrittWithBlingHomepage('),
+      jsx.indexOf('function BlingKitchenHomepage('),
+    )
+    const blingKitchenHero = jsx.slice(
+      jsx.indexOf('function BlingKitchenHomepage('),
+      jsx.indexOf('// ============================================================\n// Main App'),
+    )
+
+    expect(brittHero).toContain('className="bwb-hero-cta-stack"')
+    expect(brittHero).toContain('className="bwb-hero-cta-primary-row"')
+    expect(brittHero).toContain('bwb-cta-dance-floor')
+    expect(brittHero.indexOf('heroWatchLinks.map((link) =>')).toBeLessThan(
+      brittHero.indexOf('Browse the Dance Floor'),
+    )
+    expect(blingKitchenHero).toContain('className="bk-home-hero-cta-stack"')
+    expect(blingKitchenHero).toContain('className="bk-home-hero-cta-primary-row"')
+    expect(blingKitchenHero).toContain('bk-home-cta-dance-floor')
+    expect(blingKitchenHero.indexOf('heroWatchLinks.map((link) =>')).toBeLessThan(
+      blingKitchenHero.indexOf('Browse the Dance Floor'),
+    )
+    expect(css).toMatch(/\.bwb-cta-dance-floor\s*\{[\s\S]*?width:\s*100%;/)
+    expect(css).toMatch(/\.bk-home-cta-dance-floor\s*\{[\s\S]*?width:\s*100%;/)
+  })
+
   it('uses the live-show header grid with brand, centered nav, and primary shop CTA', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.css'),

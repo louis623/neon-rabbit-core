@@ -303,7 +303,7 @@ body.bling-kitchen {
 }
 
 .bk-home-shop,
-.bk-home-hero-ctas a:first-child,
+.bk-home-hero-cta-primary-row > a:first-child,
 .bk-home-pantry-callout a {
   color: #fff;
   background: linear-gradient(135deg, var(--bk-plum), var(--bk-violet));
@@ -407,8 +407,22 @@ body.bling-kitchen {
   margin-top: 28px;
 }
 
-.bk-home-hero-ctas a:nth-child(2),
-.bk-home-hero-ctas a:nth-child(3) {
+.bk-home-hero-cta-stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 12px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.bk-home-hero-cta-primary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bk-home-hero-cta-primary-row > a:nth-child(2),
+.bk-home-hero-cta-primary-row > a:nth-child(3) {
   color: var(--bk-ink) !important;
   background: #fff;
   text-shadow: none;
@@ -428,6 +442,11 @@ body.bling-kitchen {
 .bk-home-hero-ctas a.is-live {
   color: #fff;
   background: #da1e70;
+}
+
+.bk-home-cta-dance-floor {
+  width: 100%;
+  background: linear-gradient(135deg, var(--bk-plum), var(--bk-violet));
 }
 
 .bk-home-below-shell {
@@ -509,7 +528,7 @@ body.bling-kitchen .bk-home-pantry-callout a {
 }
 
 body.bling-kitchen .bk-home-shop,
-body.bling-kitchen .bk-home-hero-ctas a:first-child,
+body.bling-kitchen .bk-home-hero-cta-primary-row > a:first-child,
 body.bling-kitchen .bk-home-pantry-callout a {
   background: linear-gradient(135deg, #5f2a83, #c95b98);
   box-shadow: 0 12px 24px rgba(95, 42, 131, 0.2);
@@ -5546,6 +5565,21 @@ body.britt-with-bling::before {
   margin-top: 2rem;
 }
 
+.bwb-hero-cta-stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.bwb-hero-cta-primary-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
 .bwb-cta {
   display: inline-flex;
   min-height: 52px;
@@ -5578,6 +5612,11 @@ body.britt-with-bling::before {
 
 .bwb-cta-watch.is-live {
   box-shadow: 0 0 28px rgba(0, 217, 255, 0.5);
+}
+
+.bwb-cta-dance-floor {
+  width: 100%;
+  background: linear-gradient(90deg, var(--bwb-gold), var(--bwb-blush), var(--bwb-cyan));
 }
 
 .bwb-below-hero-shell {
@@ -6006,6 +6045,20 @@ body.britt-with-bling .bwb-automation-panel .hp-footer-tag {
     align-items: center;
   }
 
+  .bwb-hero-cta-stack,
+  .bwb-hero-cta-primary-row {
+    gap: 1rem;
+  }
+
+  .bwb-hero-cta-stack {
+    width: min(100%, 320px);
+  }
+
+  .bwb-hero-cta-primary-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
   .bwb-cta {
     width: min(100%, 320px);
   }
@@ -6101,13 +6154,14 @@ body.homepage.bling-kitchen .hp-footer a {
   color: #fff8ee !important;
 }
 
-body.homepage.bling-kitchen .bk-home-hero-ctas a:nth-child(2),
-body.homepage.bling-kitchen .bk-home-hero-ctas a:nth-child(3) {
+body.homepage.bling-kitchen .bk-home-hero-cta-primary-row > a:nth-child(2),
+body.homepage.bling-kitchen .bk-home-hero-cta-primary-row > a:nth-child(3) {
   color: #22152f !important;
   background: #fff8ee;
 }
 
-body.homepage.bling-kitchen .bk-home-hero-ctas a:first-child {
+body.homepage.bling-kitchen .bk-home-hero-cta-primary-row > a:first-child,
+body.homepage.bling-kitchen .bk-home-cta-dance-floor {
   color: #fff8ee !important;
 }
 

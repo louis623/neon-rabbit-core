@@ -2222,13 +2222,18 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
           <p className="bwb-hero-line">{CONTENT.heroSub || "Where Faith Meets Fizz & Every Reveal is a VIP Experience"}</p>
           <p className="bwb-hero-instruction">PLACE YOUR ORDER AND RETURN TO THE LIVE PARTY TO WATCH YOUR REVEAL</p>
           <div className="bwb-hero-ctas">
-            <a {...linkProps(getShopHref())} className="bwb-cta bwb-cta-shop">{shopCtaLabel}</a>
-            <a {...linkProps(joinTeamHref)} className="bwb-cta bwb-cta-join">Join the Team</a>
-            {heroWatchLinks.map((link) => (
-              <a key={link.id} {...linkProps(link.href)} className={`bwb-cta bwb-cta-watch ${isLive && link.id === "tiktok" ? "is-live" : ""}`}>
-                {link.label}
-              </a>
-            ))}
+            <div className="bwb-hero-cta-stack">
+              <div className="bwb-hero-cta-primary-row">
+                <a {...linkProps(getShopHref())} className="bwb-cta bwb-cta-shop">{shopCtaLabel}</a>
+                <a {...linkProps(joinTeamHref)} className="bwb-cta bwb-cta-join">Join the Team</a>
+                {heroWatchLinks.map((link) => (
+                  <a key={link.id} {...linkProps(link.href)} className={`bwb-cta bwb-cta-watch ${isLive && link.id === "tiktok" ? "is-live" : ""}`}>
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+              <a {...linkProps(getTradeBoardHref())} className="bwb-cta bwb-cta-dance-floor">Browse the Dance Floor</a>
+            </div>
           </div>
         </div>
       </section>
@@ -2263,13 +2268,18 @@ function BlingKitchenHomepage({ t, repName, businessName, isLive, liveShow, queu
           <h1 id="bk-home-hero-title">{businessName}</h1>
           <span>{CONTENT.heroSub || t.heroSub}</span>
           <div className="bk-home-hero-ctas">
-            <a {...linkProps(getShopHref())}><span className="bk-home-cta-label">Shop Bomb Party</span></a>
-            <a {...linkProps(pantryHref)}><span className="bk-home-cta-label">In the Pantry</span></a>
-            {heroWatchLinks.map((link) => (
-              <a key={link.id} {...linkProps(link.href)} className={isLive && link.id === "tiktok" ? "is-live" : ""}>
-                <span className="bk-home-cta-label">{link.label}</span>
-              </a>
-            ))}
+            <div className="bk-home-hero-cta-stack">
+              <div className="bk-home-hero-cta-primary-row">
+                <a {...linkProps(getShopHref())}><span className="bk-home-cta-label">Shop Bomb Party</span></a>
+                <a {...linkProps(pantryHref)}><span className="bk-home-cta-label">In the Pantry</span></a>
+                {heroWatchLinks.map((link) => (
+                  <a key={link.id} {...linkProps(link.href)} className={isLive && link.id === "tiktok" ? "is-live" : ""}>
+                    <span className="bk-home-cta-label">{link.label}</span>
+                  </a>
+                ))}
+              </div>
+              <a {...linkProps(getTradeBoardHref())} className="bk-home-cta-dance-floor"><span className="bk-home-cta-label">Browse the Dance Floor</span></a>
+            </div>
           </div>
         </div>
       </section>
