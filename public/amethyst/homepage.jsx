@@ -673,20 +673,157 @@ function syncDynamicTickerTracks() {
 
 function getTikTokVideoId(value) {
   const input = String(value || "");
+  const sourceUrl = getCustomerVideoSourceUrl(input);
+  if (!isCustomerVideoHost(sourceUrl, ["tiktok.com"])) return "";
   const dataId = input.match(/data-video-id\s*=\s*["']?(\d+)/i);
   if (dataId) return dataId[1];
 
-  const urlId = input.match(/(?:\/video\/|\/player\/v1\/)(\d+)/i);
+  const urlId = sourceUrl.match(/(?:\/video\/|\/player\/v1\/|\/embed\/(?:v2\/)?)(\d+)/i);
   return urlId ? urlId[1] : "";
 }
 
 function getYouTubeVideoId(value) {
-  const input = String(value || "");
-  const shortId = input.match(/(?:youtube\.com\/shorts\/|youtu\.be\/)([\w-]{6,})/i);
+  const input = getCustomerVideoSourceUrl(value);
+  if (!isCustomerVideoHost(input, ["youtube.com", "youtube-nocookie.com", "youtu.be"])) return "";
+  const shortId = input.match(/(?:youtube\.com\/(?:shorts|embed|live)\/|youtu\.be\/)([\w-]{6,})/i);
   if (shortId) return shortId[1];
 
   const watchId = input.match(/[?&]v=([\w-]{6,})/i);
   return watchId ? watchId[1] : "";
+}
+
+function getCustomerVideoSourceUrl(value) {
+  const input = String(value || "").trim();
+  if (!input || input === "#") return "";
+  const embedSource = input.match(/\b(?:src|cite|href)=["'](https?:\/\/[^"']+)["']/i)?.[1];
+  const candidate = embedSource || input;
+  try {
+    const url = new URL(candidate);
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function isCustomerVideoHost(value, allowedDomains) {
+  try {
+    const host = new URL(value).hostname.toLowerCase().replace(/\.$/, "");
+    return allowedDomains.some((domain) => host === domain || host.endsWith(`.${domain}`));
+  } catch {
+    return false;
+  }
+}
+
+function getCustomerVideoProvider(value) {
+  if (getTikTokVideoId(value)) return "tiktok";
+  if (getYouTubeVideoId(value)) return "youtube";
+  if (getInstagramEmbedUrl(value)) return "instagram";
+  if (getFacebookVideoEmbedUrl(value)) return "facebook";
+  return "";
+}
+
+function getCustomerVideoPresentation(value) {
+  const sourceUrl = getCustomerVideoSourceUrl(value);
+  const provider = getCustomerVideoProvider(sourceUrl);
+  const presentations = {
+    tiktok: { label: "TikTok", ctaLabel: "Watch on TikTok" },
+    youtube: { label: "YouTube", ctaLabel: "Watch on YouTube" },
+    instagram: { label: "Instagram", ctaLabel: "Open on Instagram" },
+    facebook: { label: "Facebook", ctaLabel: "Watch on Facebook" },
+  };
+  return {
+    provider,
+    outboundUrl: provider ? sourceUrl : "",
+    ...(presentations[provider] || { label: "Video", ctaLabel: "Watch video" }),
+  };
+}
+
+function CustomerMediaIcon({ name }) {
+  return (
+    <svg className="hp-customer-media-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+      <use href={`/amethyst/media-icons.svg#${name}`} />
+    </svg>
+  );
+}
+
+function CustomerMediaCard({
+  variant,
+  dataSlot,
+  icon = "video",
+  title,
+  subtitle,
+  provider = "",
+  mediaUrl = "",
+  emptyLabel,
+  footer,
+  className = "",
+  children,
+}) {
+  const populated = Boolean(mediaUrl);
+  return (
+    <figure
+      className={`hp-customer-media-card hp-customer-media-card-${variant} ${populated ? "is-populated" : "is-empty"} ${className}`.trim()}
+      data-media-provider={provider || "empty"}
+      data-slot={dataSlot}
+    >
+      <div className="hp-customer-media-header">
+        <span className="hp-customer-media-icon"><CustomerMediaIcon name={icon} /></span>
+        <span className="hp-customer-media-heading">
+          <strong>{title}</strong>
+          {subtitle ? <span>{subtitle}</span> : null}
+        </span>
+        <span className="hp-customer-media-spark" aria-hidden="true"><CustomerMediaIcon name="sparkles" /></span>
+      </div>
+      <div className="hp-customer-media-viewport">
+        {populated ? children : (
+          <div className="hp-customer-media-empty">
+            <span className="hp-customer-media-empty-icon"><CustomerMediaIcon name={icon} /></span>
+            <span>{emptyLabel}</span>
+          </div>
+        )}
+      </div>
+      {mediaUrl ? footer : null}
+    </figure>
+  );
+}
+
+function CustomerVideoCard({
+  className = "",
+  dataSlot,
+  title,
+  subtitle,
+  videoUrl,
+  variant,
+}) {
+  const presentation = getCustomerVideoPresentation(videoUrl);
+  return (
+    <CustomerMediaCard
+      className={className}
+      dataSlot={dataSlot}
+      emptyLabel="Video coming soon"
+      icon={presentation.provider || "video"}
+      mediaUrl={presentation.outboundUrl}
+      provider={presentation.provider}
+      subtitle={subtitle || (presentation.provider ? `Watch on ${presentation.label}` : "A new sparkle moment is on the way")}
+      title={title}
+      variant={variant}
+      footer={presentation.outboundUrl ? (
+        <figcaption className="hp-customer-media-footer">
+          <a className="hp-customer-media-action" href={presentation.outboundUrl} target="_blank" rel="noreferrer noopener">
+            <CustomerMediaIcon name={presentation.provider || "play"} />
+            <span>{presentation.ctaLabel}</span>
+            <CustomerMediaIcon name="external-link" />
+          </a>
+        </figcaption>
+      ) : null}
+    >
+      <CustomerVideoEmbed
+        className="hp-customer-media-player"
+        title={title}
+        videoUrl={videoUrl}
+      />
+    </CustomerMediaCard>
+  );
 }
 
 function getInstagramEmbedUrl(value) {
@@ -804,10 +941,11 @@ function TikTokEmbed({ className = "", videoUrl, title, children, dataSlot }) {
 }
 
 function CustomerVideoEmbed({ className = "", videoUrl, title, children, dataSlot }) {
-  const tiktokVideoId = getTikTokVideoId(videoUrl);
-  const youtubeVideoId = getYouTubeVideoId(videoUrl);
-  const instagramEmbedUrl = getInstagramEmbedUrl(videoUrl);
-  const facebookEmbedUrl = getFacebookVideoEmbedUrl(videoUrl);
+  const sourceUrl = getCustomerVideoSourceUrl(videoUrl);
+  const tiktokVideoId = getTikTokVideoId(sourceUrl || videoUrl);
+  const youtubeVideoId = getYouTubeVideoId(sourceUrl || videoUrl);
+  const instagramEmbedUrl = getInstagramEmbedUrl(sourceUrl || videoUrl);
+  const facebookEmbedUrl = getFacebookVideoEmbedUrl(sourceUrl || videoUrl);
 
   if (tiktokVideoId) {
     return (
@@ -858,14 +996,29 @@ function AboutPortraitCard({ fallbackCaption }) {
 
   if (!hasImage) {
     return (
-      <div className="hp-about-portrait-card hp-about-media-empty slot" data-slot="about portrait">
-        <span className="hp-media-coming-soon">Portrait photo coming soon</span>
-      </div>
+      <CustomerMediaCard
+        className="hp-about-portrait-card slot"
+        dataSlot="about portrait"
+        emptyLabel="Portrait photo coming soon"
+        icon="camera"
+        title="Meet the rep"
+        subtitle={fallbackCaption}
+        variant="portrait"
+      />
     );
   }
 
   return (
-    <figure className="hp-about-portrait-card slot" data-slot="about portrait">
+    <CustomerMediaCard
+      className="hp-about-portrait-card slot"
+      dataSlot="about portrait"
+      icon="camera"
+      mediaUrl={slot.mediaUrl}
+      title="Meet the rep"
+      subtitle={fallbackCaption}
+      variant="portrait"
+      footer={<figcaption className="hp-customer-media-footer hp-about-media-caption">{slot?.caption || fallbackCaption}</figcaption>}
+    >
       <img
         alt={slot?.caption || fallbackCaption}
         className="hp-about-portrait-image"
@@ -877,23 +1030,19 @@ function AboutPortraitCard({ fallbackCaption }) {
           "--hp-about-portrait-zoom": slot?.portraitZoom ?? 1.18,
         }}
       />
-      <figcaption className="hp-about-media-caption">
-        {slot?.caption || fallbackCaption}
-      </figcaption>
-    </figure>
+    </CustomerMediaCard>
   );
 }
 
 function AboutShortCard({ index }) {
   const slot = getAboutMediaSlot(index + 1);
-  const className = "hp-about-short-card slot";
-
   return (
-    <CustomerVideoEmbed
-      className={className}
+    <CustomerVideoCard
+      className="hp-about-short-card slot"
       dataSlot={`about short ${index + 1}`}
-      title={`About short video ${index + 1}`}
+      title={`Sparkle moment ${index + 1}`}
       videoUrl={slot?.href}
+      variant="short"
     />
   );
 }
@@ -1414,7 +1563,10 @@ function Events({ count }) {
                       {platform.label}
                     </a>
                   ))}
-                  <button className="hp-event-add" onClick={() => downloadCalendarEvent(event)}>+ Add to calendar</button>
+                  <button className="hp-event-add" onClick={() => downloadCalendarEvent(event)}>
+                    <CustomerMediaIcon name="calendar" />
+                    <span>Add to calendar</span>
+                  </button>
                 </div>
               </article>
             );
@@ -1443,33 +1595,30 @@ function Wibp({ repName }) {
             </p>
             <div className="hp-steps">
               <div className="hp-step">
-                <div className="hp-step-num">1</div>
+                <div className="hp-step-num"><CustomerMediaIcon name="shopping-bag" /><span className="hp-step-index">1</span></div>
                 <div className="hp-step-label">Order</div>
                 <div className="hp-step-desc">Pick a box, place pre-order before showtime.</div>
               </div>
               <div className="hp-step">
-                <div className="hp-step-num">2</div>
+                <div className="hp-step-num"><CustomerMediaIcon name="video" /><span className="hp-step-index">2</span></div>
                 <div className="hp-step-label">Watch Live</div>
                 <div className="hp-step-desc">{isHeatherBlingKitchenSite ? "Join the reveal live." : "Join the reveal on TikTok or Facebook."}</div>
               </div>
               <div className="hp-step">
-                <div className="hp-step-num">3</div>
+                <div className="hp-step-num"><CustomerMediaIcon name="gift" /><span className="hp-step-index">3</span></div>
                 <div className="hp-step-label">Receive</div>
                 <div className="hp-step-desc">Real jewelry ships to your door.</div>
               </div>
             </div>
           </div>
-          <CustomerVideoEmbed
+          <CustomerVideoCard
             className="hp-wibp-video slot"
             dataSlot="showcase video"
-            title="Showcase video"
+            subtitle={CONTENT.showcaseVideoCaption}
+            title="Watch a Live Reveal"
             videoUrl={CONTENT.showcaseVideoUrl}
-          >
-            <div className="hp-wibp-video-meta">
-              <div className="hp-video-pill"><span className="pip" />TikTok · Loops</div>
-              <div className="hp-video-play">▶</div>
-            </div>
-          </CustomerVideoEmbed>
+            variant="showcase"
+          />
         </div>
       </div>
     </section>
@@ -1507,6 +1656,14 @@ function BlingKitchenRevealGuide({ repName }) {
           <span>Follow show updates, recipes, and VIP community posts between live nights.</span>
         </a>
       </div>
+      <CustomerVideoCard
+        className="bk-home-guide-media slot"
+        dataSlot="showcase video"
+        subtitle={CONTENT.showcaseVideoCaption || `Reveal moments with ${repName}`}
+        title="Watch a Live Reveal"
+        videoUrl={CONTENT.showcaseVideoUrl}
+        variant="showcase"
+      />
     </section>
   );
 }
@@ -1975,6 +2132,9 @@ function BrittWithBlingFeaturedReveal() {
 function BrittWithBlingRevealExplainer() {
   const explainer = CONTENT.revealExplainer;
   if (!explainer) return null;
+  const configuredShowcase = getCustomerVideoProvider(CONTENT.showcaseVideoUrl)
+    ? CONTENT.showcaseVideoUrl
+    : explainer.videoUrl;
 
   return (
     <section id="wibp" className="bwb-source-explainer" aria-labelledby="bwb-explainer-title">
@@ -1994,26 +2154,14 @@ function BrittWithBlingRevealExplainer() {
             ))}
           </div>
         </div>
-        <div className="bwb-tiktok-card">
-          <div className="bwb-tiktok-head">
-            <div className="bwb-tiktok-mark">TT</div>
-            <div>
-              <h3>{explainer.videoCaption}</h3>
-              <p>{explainer.videoHandle}</p>
-            </div>
-          </div>
-          <TikTokEmbed
-            className="bwb-tiktok-frame"
-            title={explainer.videoTitle}
-            videoUrl={explainer.videoUrl}
-          >
-            <span className="bwb-video-play" aria-hidden="true">▶</span>
-            <span className="bwb-video-title">{explainer.videoTitle}</span>
-          </TikTokEmbed>
-          <a {...linkProps(explainer.ctaHref)} className="bwb-tiktok-cta">
-            {explainer.ctaLabel}
-          </a>
-        </div>
+        <CustomerVideoCard
+          className="bwb-tiktok-card slot"
+          dataSlot="showcase video"
+          subtitle={explainer.videoHandle || CONTENT.showcaseVideoCaption}
+          title={explainer.videoCaption || "Watch a Live Reveal"}
+          videoUrl={configuredShowcase}
+          variant="showcase"
+        />
       </div>
     </section>
   );

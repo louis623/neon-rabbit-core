@@ -84,7 +84,7 @@ describe('Amethyst homepage template data wiring', () => {
       resolve(process.cwd(), 'public/amethyst/Homepage.html'),
       'utf8',
     )
-    expect(homepage).toContain('homepage.jsx?v=20260816-inline-ticker-links')
+    expect(homepage).toContain('homepage.jsx?v=20260827-media-polish')
   })
 
   it('keeps the shared tweaks helper scoped while exporting controls on window', () => {
@@ -449,7 +449,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('facebook.com/plugins/video.php')
     expect(jsx).toContain('function CustomerVideoEmbed')
     expect(jsx).toMatch(
-      /<CustomerVideoEmbed[\s\S]*?dataSlot="showcase video"[\s\S]*?<\/CustomerVideoEmbed>/,
+      /<CustomerVideoCard[\s\S]*?dataSlot="showcase video"[\s\S]*?variant="showcase"/,
     )
     expect(css).toContain('.hp-about-portrait-image')
     expect(css).toContain('aspect-ratio: 4 / 5')
@@ -462,6 +462,67 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).toContain('aspect-ratio: 9 / 16')
     expect(css).toContain('width: min(100%, 348px)')
     expect(css).toContain('@media (max-width: 1100px)')
+  })
+
+  it('presents all five configurable media slots through one polished skin-aware card family', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+    const icons = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/media-icons.svg'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('function getCustomerVideoProvider')
+    expect(jsx).toContain('function isCustomerVideoHost')
+    expect(jsx).toContain('["tiktok.com"]')
+    expect(jsx).toContain('["youtube.com", "youtube-nocookie.com", "youtu.be"]')
+    expect(jsx).toContain('host === domain || host.endsWith(`.${domain}`)')
+    expect(jsx).toContain('function getCustomerVideoPresentation')
+    expect(jsx).toContain('function CustomerMediaIcon')
+    expect(jsx).toContain('function CustomerMediaCard')
+    expect(jsx).toContain('variant="showcase"')
+    expect(jsx).toContain('variant="short"')
+    expect(jsx).toContain('variant="portrait"')
+    expect(jsx).toContain('dataSlot="showcase video"')
+    expect(jsx).toContain('dataSlot="about portrait"')
+    expect(jsx).toContain('dataSlot={`about short ${index + 1}`}')
+    expect(jsx).toContain('Watch on TikTok')
+    expect(jsx).toContain('Watch on YouTube')
+    expect(jsx).toContain('Open on Instagram')
+    expect(jsx).toContain('Watch on Facebook')
+    expect(jsx).toContain('href={presentation.outboundUrl}')
+    expect(jsx).toContain('target="_blank"')
+    expect(jsx).toContain('rel="noreferrer noopener"')
+    expect(jsx).toContain('/amethyst/media-icons.svg#')
+    expect(jsx).toContain('mediaUrl ? footer : null')
+    expect(jsx).toContain('Portrait photo coming soon')
+    expect(buildAmethystHomepageBootstrapScript(defaultAmethystHomepageTemplateData)).toContain(
+      "showcase.querySelector('.hp-customer-media-empty')",
+    )
+
+    expect(css).toContain('--hp-media-card-bg:')
+    expect(css).toContain('--hp-media-card-header-bg:')
+    expect(css).toContain('--hp-media-card-footer-bg:')
+    expect(css).toContain('--hp-media-card-shadow:')
+    expect(css).toContain('.hp-customer-media-card')
+    expect(css).toContain('.hp-customer-media-header')
+    expect(css).toContain('.hp-customer-media-action')
+    expect(css).toContain('.hp-customer-media-empty')
+    expect(css).toMatch(/@media\s+\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.hp-customer-media-card/)
+    expect(css).toMatch(/body\.surface-frosted-opal[\s\S]*?--hp-media-card-header-bg:/)
+    expect(css).toMatch(/body\.surface-dark-metallic[\s\S]*?--hp-media-card-header-bg:/)
+    expect(css).toContain('linear-gradient(135deg, #be185d, #7e22ce 52%, #1d4ed8)')
+    expect(css).toContain('linear-gradient(135deg, var(--bk-plum), #8a2c68, #405a43)')
+
+    for (const icon of ['video', 'camera', 'shopping-bag', 'gift', 'calendar', 'external-link', 'tiktok', 'youtube', 'instagram', 'facebook']) {
+      expect(icons).toContain(`id="${icon}"`)
+    }
   })
 
   it('ships crawl and sharing metadata with the locked homepage export', () => {
@@ -749,8 +810,8 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('ss-tiktok-embed-fallback')
     expect(jsx).toContain('data-tiktok-embed="false"')
     expect(jsx).toContain('ss-tiktok-embed-coming-soon')
-    expect(jsx).toContain('hp-about-media-empty')
-    expect(jsx).toContain('hp-media-coming-soon')
+    expect(jsx).toContain('hp-customer-media-empty')
+    expect(jsx).toContain('emptyLabel="Portrait photo coming soon"')
     expect(jsx).toContain('function AboutShortCard')
     expect(jsx).not.toContain('hp-about-media-type')
     expect(jsx).not.toContain('hp-about-media-play')

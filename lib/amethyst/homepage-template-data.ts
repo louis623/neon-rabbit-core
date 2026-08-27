@@ -508,7 +508,7 @@ export function buildAmethystHomepageBootstrapScript(
     `  function all(selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); }`,
     `  function bindButton(selector, value) { var node = document.querySelector(selector); if (!node || !value) return; node.style.cursor = 'pointer'; node.onclick = function () { if (/^https?:\\/\\//.test(value)) window.open(value, '_blank', 'noopener,noreferrer'); else window.location.href = value; }; }`,
     `  text('.hp-wibp-video-caption', content.showcaseVideoCaption);`,
-    `  var showcase = document.querySelector('[data-slot="showcase video"]'); if (showcase && content.showcaseImageUrl) { showcase.style.backgroundImage = 'linear-gradient(rgba(14, 8, 32, 0.2), rgba(14, 8, 32, 0.48)), url("' + content.showcaseImageUrl + '")'; showcase.style.backgroundPosition = 'center'; showcase.style.backgroundSize = 'cover'; }`,
+    `  var showcase = document.querySelector('[data-slot="showcase video"]'); var showcaseSurface = showcase && (showcase.querySelector('.hp-customer-media-empty') || showcase.querySelector('.hp-customer-media-viewport') || showcase); if (showcaseSurface && content.showcaseImageUrl) { showcaseSurface.style.backgroundImage = 'linear-gradient(rgba(14, 8, 32, 0.2), rgba(14, 8, 32, 0.48)), url("' + content.showcaseImageUrl + '")'; showcaseSurface.style.backgroundPosition = 'center'; showcaseSurface.style.backgroundSize = 'cover'; }`,
     `  text('[data-slot="about headline"]', content.aboutHeadline);`,
     `  text('[data-slot="about subheading"]', content.aboutSubheading);`,
     `  text('[data-slot="about paragraph 1"]', content.aboutParagraphs && content.aboutParagraphs[0]);`,
