@@ -4564,3 +4564,11 @@ Lessons retained:
 - A safety-critical multi-step action must make the next step visible at the moment of intent; a correct control below the fold is functionally hidden.
 - Refresh only the narrow data surface that needs freshness. Do not reload the full Workspace or overwrite a conversation/composer while a rep is working.
 - Background polling failures should be silent and preserve the last known-good inbox; explicit user refresh/retry remains the visible recovery path.
+
+---
+
+# August 27, 2026 - milehighfizz.com registrar-transfer follow-up
+
+- Readdy Support replied to the transfer request by asking for nameserver records. Louis sent the clarified response: this is an inter-registrar transfer, not an authorized DNS/nameserver change.
+- The response again requests the current registrar, domain-unlock steps/status, EPP/AuthInfo code, any transfer lock or verification requirement, and the current Readdy-managed DNS/services that must be preserved.
+- No DNS, nameserver, domain-lock, registration, or hosting setting has changed. Keep the transfer pending until Readdy provides the requested information.
