@@ -776,7 +776,7 @@ export async function loadAmethystPreviewTemplateData(
     const extras = {
       shopLink: rep.shop_link,
       streamingLinks: rep.streaming_links,
-      publicSiteSlug: requestedPublicSiteSlug,
+      publicSiteSlug: requestedPublicSiteSlug ?? rep.public_site_slug,
     }
     const draftExtras = applyRequiredSetupDraftToExtras(extras, activeSetupDraftState)
 

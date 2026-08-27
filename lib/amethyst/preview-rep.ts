@@ -9,6 +9,7 @@ interface AmethystPreviewRep {
   email: string
   shop_link?: string | null
   streaming_links?: unknown
+  public_site_slug?: string | null
 }
 
 interface ResolveAmethystPreviewRepOptions {

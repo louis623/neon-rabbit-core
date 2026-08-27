@@ -203,6 +203,38 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(join.repSocialLinks.tiktok).toBe('https://www.tiktok.com/@brilliantfizz')
   })
 
+  it('keeps the BWB skin in a Workspace preview after future identity changes', async () => {
+    const data = await loadAmethystPreviewTemplateData({
+      repId: 'rep-britt-with-bling',
+      env: {
+        NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+      },
+      dependencies: {
+        createAdminClient: viCreateAdminClient(),
+        resolveAmethystPreviewRep: async () => ({
+          id: 'rep-britt-with-bling',
+          email: 'brittany@example.com',
+          public_site_slug: 'brittwithbling',
+          shop_link: BRITT_WITH_BLING_PROFILE.shopUrl,
+          streaming_links: { tiktok: '' },
+        }),
+        getSiteSettingsDashboard: async () => ({
+          ...brittWithBlingSettings,
+          displayName: 'Bri Harper',
+          businessName: 'Brilliant Fizz',
+          teamName: 'Radiant Circle',
+        }),
+        getJoinTeamRoster: async () => [],
+        getRequiredSetupState: async () => null,
+      },
+    })
+
+    expect(data.homepage.publicSiteVariant).toBe('britt_with_bling_hybrid')
+    expect(data.homepage.businessName).toBe('Brilliant Fizz')
+    expect(data.join.heroTitle).toBe('WELCOME TO RADIANT CIRCLE')
+  })
+
   it('serializes BWB as theme-switchable Black Diamond data', () => {
     const homepage = mapPreviewSettingsToHomepageTemplateData(
       brittWithBlingSettings,
