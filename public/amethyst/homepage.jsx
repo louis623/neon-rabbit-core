@@ -1915,7 +1915,7 @@ function MileHighFizzHomepage({ t, repName, businessName, isLive, liveShow, queu
             {CONTENT.heroHeadline || businessName}
           </h1>
           <p className="mhf-hero-with">WITH {repName.toUpperCase()}</p>
-          <p className="mhf-hero-line">REVEALING SOMETHING MAGICAL TOGETHER</p>
+          <p className="mhf-hero-line">{CONTENT.heroSub || "REVEALING SOMETHING MAGICAL TOGETHER"}</p>
           <p className="mhf-hero-instruction">PLACE YOUR ORDER AND RETURN TO THE LIVE PARTY TO WATCH YOUR REVEAL</p>
           <div className="mhf-hero-ctas">
             <a {...linkProps(getShopHref())} className="mhf-cta mhf-cta-shop">Shop Bomb Party</a>

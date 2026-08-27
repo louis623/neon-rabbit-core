@@ -128,6 +128,8 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect(homepage.businessName).toBe('Summit Sparkle')
     expect(homepage.teamName).toBe('Summit Society')
     expect(homepage.tagline).toBe('Sparkle at the summit.')
+    expect(homepage.heroSub).toBe('Sparkle at the summit.')
+    expect(homepage.footerTagline).toBe('Sparkle at the summit.')
     expect(homepage.aboutParagraphs).toEqual([
       'First custom paragraph.',
       'Second custom paragraph.',
@@ -210,6 +212,7 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect(jsx).toContain('Shop Bomb Party')
     expect(jsx).toContain('Join My Team')
     expect(jsx).toContain('getHeroWatchLinks(liveShow, isLive)')
+    expect(jsx).toContain('CONTENT.heroSub || "REVEALING SOMETHING MAGICAL TOGETHER"')
     expect(jsx).toContain('MileHighFizzHomepage')
     expect(jsx).toContain('body.classList.add("mile-high-fizz")')
     expect(css).toContain('.mhf-hero-video')

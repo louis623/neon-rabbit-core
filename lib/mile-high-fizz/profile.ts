@@ -42,6 +42,12 @@ export function isMileHighFizzSettings(settings: SiteSettingsDashboardResult) {
 export function applyMileHighFizzHomepage(
   homepage: AmethystHomepageTemplateData,
 ): AmethystHomepageTemplateData {
+  const hasCustomTagline =
+    homepage.tagline.trim() &&
+    homepage.tagline.trim() !== 'Revealing something magical together.'
+  const hasCustomAboutHeadline =
+    homepage.aboutHeadline.trim() &&
+    !/^meet .+ and the story behind .+\.$/i.test(homepage.aboutHeadline.trim())
   const hasConfiguredAboutNarrative = !homepage.aboutParagraphs.some((paragraph) =>
     /share how you got started|nic-nac can rewrite this|add a final paragraph/i.test(
       paragraph,
@@ -53,14 +59,20 @@ export function applyMileHighFizzHomepage(
     publicSiteVariant: 'mile_high_fizz_hybrid',
     heroEyebrow: 'With Lindsey',
     heroHeadline: homepage.heroHeadlineOverride || 'Mile High Fizz',
-    heroSub:
-      'Revealing something magical together. Place your order and return to the live party to watch your reveal.',
+    // Preserve Lindsey's migrated line today, but let a later Site Settings
+    // tagline become the public hero line instead of being hidden by the
+    // bespoke skin.
+    heroSub: hasCustomTagline
+      ? homepage.tagline
+      : 'Revealing something magical together. Place your order and return to the live party to watch your reveal.',
     heroVideoUrl: MILE_HIGH_FIZZ_PROFILE.heroVideoUrl,
     announcementText: MILE_HIGH_FIZZ_PROFILE.announcementText,
     announcementLinkLabel: 'Learn More',
     announcementHref: '#about',
     promoTickerText: MILE_HIGH_FIZZ_PROFILE.promoTickerText,
-    aboutHeadline: 'What is a Bomb Party?',
+    aboutHeadline: hasCustomAboutHeadline
+      ? homepage.aboutHeadline
+      : 'What is a Bomb Party?',
     aboutParagraphs: hasConfiguredAboutNarrative
       ? homepage.aboutParagraphs
       : [
@@ -77,8 +89,9 @@ export function applyMileHighFizzHomepage(
     joinTeamSub:
       'Turn your passion into profit with the support and energy of the Mile High Fizz family.',
     joinTeamUrl: '/amethyst/Join.html',
-    footerTagline:
-      `Lindsey is part of ${MILE_HIGH_FIZZ_PROFILE.uplineTeamName}. Join her Diamond Peak Society team for real-time reveals and sparkling jewelry.`,
+    footerTagline: hasCustomTagline
+      ? homepage.footerTagline
+      : `Lindsey is part of ${MILE_HIGH_FIZZ_PROFILE.uplineTeamName}. Join her Diamond Peak Society team for real-time reveals and sparkling jewelry.`,
     showcaseVideoCaption: '@lindze1188 on TikTok',
     // A rep's Site Settings video is the public-site source of truth. The
     // profile link is only a fallback for the legacy site configuration.
