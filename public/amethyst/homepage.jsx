@@ -1595,17 +1595,17 @@ function Wibp({ repName }) {
             </p>
             <div className="hp-steps">
               <div className="hp-step">
-                <div className="hp-step-num"><CustomerMediaIcon name="shopping-bag" /><span className="hp-step-index">1</span></div>
+                <div className="hp-step-num"><CustomerMediaIcon name="shopping-bag" /></div>
                 <div className="hp-step-label">Order</div>
                 <div className="hp-step-desc">Pick a box, place pre-order before showtime.</div>
               </div>
               <div className="hp-step">
-                <div className="hp-step-num"><CustomerMediaIcon name="video" /><span className="hp-step-index">2</span></div>
+                <div className="hp-step-num"><CustomerMediaIcon name="video" /></div>
                 <div className="hp-step-label">Watch Live</div>
                 <div className="hp-step-desc">{isHeatherBlingKitchenSite ? "Join the reveal live." : "Join the reveal on TikTok or Facebook."}</div>
               </div>
               <div className="hp-step">
-                <div className="hp-step-num"><CustomerMediaIcon name="gift" /><span className="hp-step-index">3</span></div>
+                <div className="hp-step-num"><CustomerMediaIcon name="gift" /></div>
                 <div className="hp-step-label">Receive</div>
                 <div className="hp-step-desc">Real jewelry ships to your door.</div>
               </div>

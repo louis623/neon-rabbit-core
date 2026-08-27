@@ -84,7 +84,7 @@ describe('Amethyst homepage template data wiring', () => {
       resolve(process.cwd(), 'public/amethyst/Homepage.html'),
       'utf8',
     )
-    expect(homepage).toContain('homepage.jsx?v=20260827-media-polish')
+    expect(homepage).toContain('homepage.jsx?v=20260827-media-polish-icons')
   })
 
   it('keeps the shared tweaks helper scoped while exporting controls on window', () => {
@@ -486,6 +486,10 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('function getCustomerVideoPresentation')
     expect(jsx).toContain('function CustomerMediaIcon')
     expect(jsx).toContain('function CustomerMediaCard')
+    expect(jsx).toContain('<CustomerMediaIcon name="shopping-bag" />')
+    expect(jsx).toContain('<CustomerMediaIcon name="video" />')
+    expect(jsx).toContain('<CustomerMediaIcon name="gift" />')
+    expect(jsx).not.toContain('hp-step-index')
     expect(jsx).toContain('variant="showcase"')
     expect(jsx).toContain('variant="short"')
     expect(jsx).toContain('variant="portrait"')

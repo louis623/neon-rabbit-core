@@ -2456,31 +2456,12 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   border-radius: 50%;
   background: var(--hp-media-card-header-bg);
   color: var(--hp-media-card-accent-contrast);
-  font-weight: 600;
-  font-size: 13px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   box-shadow: 0 10px 24px color-mix(in srgb, var(--hp-primary) 24%, transparent);
 }
 .hp-step-num .hp-customer-media-icon-svg { width: 19px; height: 19px; }
-.hp-step-index {
-  position: absolute;
-  right: -4px;
-  bottom: -3px;
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--hp-bg-elevated);
-  border-radius: 999px;
-  background: var(--hp-media-card-bg);
-  color: var(--hp-media-card-fg);
-  font-size: 9px;
-  line-height: 1;
-}
-
 body.bg-suite-paper .hp-step-num,
 body.bg-rose-gold-paper .hp-step-num,
 body.bg-amber-paper .hp-step-num,
