@@ -84,7 +84,7 @@ describe('Amethyst homepage template data wiring', () => {
       resolve(process.cwd(), 'public/amethyst/Homepage.html'),
       'utf8',
     )
-    expect(homepage).toContain('homepage.jsx?v=20260827-media-polish-icons')
+    expect(homepage).toContain('homepage.jsx?v=20260827-media-provider-copy')
   })
 
   it('keeps the shared tweaks helper scoped while exporting controls on window', () => {
@@ -484,6 +484,10 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('["youtube.com", "youtube-nocookie.com", "youtu.be"]')
     expect(jsx).toContain('host === domain || host.endsWith(`.${domain}`)')
     expect(jsx).toContain('function getCustomerVideoPresentation')
+    expect(jsx).toContain('function getCustomerVideoSubtitle')
+    expect(jsx).toContain('(?:TikTok|YouTube|Instagram|Facebook)')
+    expect(jsx).toContain('`@${handle} on ${presentation.label}`')
+    expect(jsx).toContain('subtitle={getCustomerVideoSubtitle(videoUrl, subtitle)}')
     expect(jsx).toContain('function CustomerMediaIcon')
     expect(jsx).toContain('function CustomerMediaCard')
     expect(jsx).toContain('<CustomerMediaIcon name="shopping-bag" />')

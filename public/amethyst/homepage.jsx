@@ -738,6 +738,27 @@ function getCustomerVideoPresentation(value) {
   };
 }
 
+function getCustomerVideoSubtitle(videoUrl, subtitle) {
+  const presentation = getCustomerVideoPresentation(videoUrl);
+  const suppliedSubtitle = String(subtitle || "").trim();
+  if (!presentation.provider) {
+    return suppliedSubtitle || "A new sparkle moment is on the way";
+  }
+
+  if (!suppliedSubtitle) return `Watch on ${presentation.label}`;
+
+  const platformTail = /\s+(?:on|via)\s+(?:TikTok|YouTube|Instagram|Facebook)\s*$/i;
+  if (platformTail.test(suppliedSubtitle)) {
+    const baseSubtitle = suppliedSubtitle.replace(platformTail, "").trim();
+    return baseSubtitle ? `${baseSubtitle} on ${presentation.label}` : `Watch on ${presentation.label}`;
+  }
+
+  const handle = suppliedSubtitle.match(/^@([\w.-]+)$/)?.[1];
+  if (handle) return `@${handle} on ${presentation.label}`;
+
+  return suppliedSubtitle;
+}
+
 function CustomerMediaIcon({ name }) {
   return (
     <svg className="hp-customer-media-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
@@ -804,7 +825,7 @@ function CustomerVideoCard({
       icon={presentation.provider || "video"}
       mediaUrl={presentation.outboundUrl}
       provider={presentation.provider}
-      subtitle={subtitle || (presentation.provider ? `Watch on ${presentation.label}` : "A new sparkle moment is on the way")}
+      subtitle={getCustomerVideoSubtitle(videoUrl, subtitle)}
       title={title}
       variant={variant}
       footer={presentation.outboundUrl ? (
