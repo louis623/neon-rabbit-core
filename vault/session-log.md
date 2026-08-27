@@ -4,6 +4,29 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 27, 2026 - Open Brain full-history retrieval repair
+
+- Repaired the live `open-brain-mcp` function so `list_thoughts` supports
+  paged retrieval (`offset`), oldest-first/newest-first ordering, exact totals,
+  and a next-page offset. This removes the effective first-1,000-record
+  ceiling that prevented agents from reaching older diary entries.
+- Corrected `thought_stats` to page through the complete database rather than
+  deriving its date range and metadata counts from only the first 1,000 rows.
+  Live verification now reports 2,308 pre-existing thoughts spanning March 30
+  through August 27, 2026.
+- Repaired `capture_thought` to insert directly into `thoughts` and save its
+  embedding rather than calling the missing `upsert_thought` database routine.
+  A live Open Brain capture confirmed the repaired write path.
+- Restored semantic `search_thoughts` by aligning its RPC call with the live
+  `match_thoughts(query_embedding, match_threshold, match_count)` signature.
+  Live verification confirmed semantic search, oldest-first lookup, full
+  statistics, and capture all work together.
+- Live oldest-first query at offset `9` returned the exact 10th diary entry.
+  Open Brain is the diary; the vault records this repair as companion context
+  for future agents.
+
+---
+
 ## August 27, 2026 - Dual memory closeout rule
 
 - Louis clarified that Open Brain is the shared cross-session diary/second

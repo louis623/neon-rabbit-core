@@ -14,6 +14,30 @@ const MCP_ACCESS_KEY = Deno.env.get("MCP_ACCESS_KEY")!;
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+const THOUGHT_PAGE_SIZE = 1000;
+
+async function getAllThoughtMetadata() {
+  const thoughts: Array<{ metadata: Record<string, unknown>; created_at: string }> = [];
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("thoughts")
+      .select("metadata, created_at")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + THOUGHT_PAGE_SIZE - 1);
+
+    if (error) throw error;
+    if (!data?.length) break;
+
+    thoughts.push(...data);
+    if (data.length < THOUGHT_PAGE_SIZE) break;
+    offset += data.length;
+  }
+
+  return thoughts;
+}
+
 async function getEmbedding(text: string): Promise<number[]> {
   const r = await fetch(`${OPENROUTER_BASE}/embeddings`, {
     method: "POST",
@@ -71,7 +95,7 @@ Only extract what's explicitly there.`,
 
 const server = new McpServer({
   name: "open-brain",
-  version: "1.0.0",
+  version: "1.1.0",
 });
 
 // Tool 1: Semantic Search
@@ -94,7 +118,6 @@ server.registerTool(
         query_embedding: qEmb,
         match_threshold: threshold,
         match_count: limit,
-        filter: {},
       });
 
       if (error) {
@@ -154,28 +177,30 @@ server.registerTool(
   }
 );
 
-// Tool 2: List Recent
+// Tool 2: List Thoughts
 server.registerTool(
   "list_thoughts",
   {
-    title: "List Recent Thoughts",
+    title: "List Thoughts",
     description:
-      "List recently captured thoughts with optional filters by type, topic, person, or time range.",
+      "List thoughts with optional filters, pagination, and newest-first or oldest-first ordering.",
     inputSchema: {
-      limit: z.number().optional().default(10),
+      limit: z.number().int().min(1).max(200).optional().default(50),
+      offset: z.number().int().min(0).optional().default(0),
+      order: z.enum(["newest", "oldest"]).optional().default("newest"),
       type: z.string().optional().describe("Filter by type: observation, task, idea, reference, person_note"),
       topic: z.string().optional().describe("Filter by topic tag"),
       person: z.string().optional().describe("Filter by person mentioned"),
       days: z.number().optional().describe("Only thoughts from the last N days"),
     },
   },
-  async ({ limit, type, topic, person, days }) => {
+  async ({ limit, offset, order, type, topic, person, days }) => {
     try {
       let q = supabase
         .from("thoughts")
-        .select("content, metadata, created_at")
-        .order("created_at", { ascending: false })
-        .limit(limit);
+        .select("content, metadata, created_at", { count: "exact" })
+        .order("created_at", { ascending: order === "oldest" })
+        .range(offset, offset + limit - 1);
 
       if (type) q = q.contains("metadata", { type });
       if (topic) q = q.contains("metadata", { topics: [topic] });
@@ -186,7 +211,7 @@ server.registerTool(
         q = q.gte("created_at", since.toISOString());
       }
 
-      const { data, error } = await q;
+      const { data, error, count } = await q;
 
       if (error) {
         return {
@@ -206,7 +231,7 @@ server.registerTool(
         ) => {
           const m = t.metadata || {};
           const tags = Array.isArray(m.topics) ? (m.topics as string[]).join(", ") : "";
-          return `${i + 1}. [${new Date(t.created_at).toLocaleDateString()}] (${m.type || "??"}${tags ? " - " + tags : ""})\n   ${t.content}`;
+          return `${offset + i + 1}. [${new Date(t.created_at).toLocaleDateString()}] (${m.type || "??"}${tags ? " - " + tags : ""})\n   ${t.content}`;
         }
       );
 
@@ -214,7 +239,7 @@ server.registerTool(
         content: [
           {
             type: "text" as const,
-            text: `${data.length} recent thought(s):\n\n${results.join("\n\n")}`,
+            text: `${data.length} thought(s), ${order}-first, positions ${offset + 1}-${offset + data.length} of ${count ?? "unknown"}${count !== null && offset + data.length < count ? `; next_offset: ${offset + data.length}` : ""}:\n\n${results.join("\n\n")}`,
           },
         ],
       };
@@ -241,10 +266,7 @@ server.registerTool(
         .from("thoughts")
         .select("*", { count: "exact", head: true });
 
-      const { data } = await supabase
-        .from("thoughts")
-        .select("metadata, created_at")
-        .order("created_at", { ascending: false });
+      const data = await getAllThoughtMetadata();
 
       const types: Record<string, number> = {};
       const topics: Record<string, number> = {};
@@ -316,23 +338,23 @@ server.registerTool(
         extractMetadata(content),
       ]);
 
-      const { data: upsertResult, error: upsertError } = await supabase.rpc("upsert_thought", {
-        p_content: content,
-        p_payload: { metadata: { ...metadata, source: "mcp" } },
-      });
+      const { data: thought, error: insertError } = await supabase
+        .from("thoughts")
+        .insert({ content, metadata: { ...metadata, source: "mcp" } })
+        .select("id")
+        .single();
 
-      if (upsertError) {
+      if (insertError || !thought) {
         return {
-          content: [{ type: "text" as const, text: `Failed to capture: ${upsertError.message}` }],
+          content: [{ type: "text" as const, text: `Failed to capture: ${insertError?.message || "thought was not returned"}` }],
           isError: true,
         };
       }
 
-      const thoughtId = upsertResult?.id;
       const { error: embError } = await supabase
         .from("thoughts")
         .update({ embedding })
-        .eq("id", thoughtId);
+        .eq("id", thought.id);
 
       if (embError) {
         return {
