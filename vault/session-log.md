@@ -4572,3 +4572,31 @@ Lessons retained:
 - Readdy Support replied to the transfer request by asking for nameserver records. Louis sent the clarified response: this is an inter-registrar transfer, not an authorized DNS/nameserver change.
 - The response again requests the current registrar, domain-unlock steps/status, EPP/AuthInfo code, any transfer lock or verification requirement, and the current Readdy-managed DNS/services that must be preserved.
 - No DNS, nameserver, domain-lock, registration, or hosting setting has changed. Keep the transfer pending until Readdy provides the requested information.
+
+---
+
+# August 27, 2026 - Remy Communications MCP implementation and staging
+
+- Built and released the dedicated Communications MCP for Remy in commit
+  `1b3080979be3cc70aafbeb0732a3a2056594ad5c` on
+  `codex/nic-nac-trade-hardening`. The endpoint is
+  `https://www.yoursparklesuite.com/api/remy/mcp`.
+- Added ten strictly scoped communications tools and the durable one-time
+  Support-reply approval flow. Exact reply text is authorized by Louis in
+  Control Center before a send; broadcasts, moderation, report-status changes,
+  Task List promotion, private unreported chats, attachments, billing, and
+  settings remain out of scope.
+- Applied migration `20260827100000_ss_remy_communications_agent_audit.sql`;
+  remote verification found both Remy audit and reply-approval tables.
+- Focused tests passed: 4 files / 10 tests. Local and Vercel production builds
+  passed. The known unrelated full TypeScript fixture failures were recorded;
+  they are not Remy regressions.
+- Initial deployment `dpl_9JZJBLkU8hAo2uTq3Jz4Ldo4susB` exposed the endpoint
+  as intentionally unavailable until its dedicated token existed. Vercel
+  Production now contains a server-only `REMY_MCP_BEARER_TOKEN`; the current
+  manual deployment after token rotation is
+  `dpl_EwSH5AvtYEAV11Qfo5AWV1MWp4Z2`. Both Suite aliases resolve there and a
+  no-token request correctly receives `401`.
+- The replacement bearer token is presently entered only in Remy's masked Grok
+  Bot connector field. The final **Save securely** control was intentionally
+  not clicked yet. Never disclose the token in conversation or a memory file.

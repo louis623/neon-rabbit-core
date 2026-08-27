@@ -1,5 +1,50 @@
 # Project State
 
+## August 27, 2026 Session - Remy Communications MCP
+
+- Implemented and pushed `1b3080979be3cc70aafbeb0732a3a2056594ad5c`
+  (`feat: add Remy communications MCP`) on the only allowlisted Suite branch,
+  `codex/nic-nac-trade-hardening`.
+- The production MCP endpoint is
+  `https://www.yoursparklesuite.com/api/remy/mcp`. It authenticates with the
+  server-only Vercel Production secret `REMY_MCP_BEARER_TOKEN`; its value must
+  never be recorded in vault files, source, chat, or a prompt.
+- The implementation uses the official MCP server package and offers ten
+  narrowly scoped communications tools: inbox summary; Support report list and
+  detail; reported Rep Network safety queue; broadcast history; Support-reply,
+  broadcast, and Task List drafts; and a durable approved-Support-reply flow.
+  It cannot publish broadcasts, alter report status, promote Task List items,
+  moderate/suspend reps, access attachments/billing/settings, or read ordinary
+  private Rep Network conversations.
+- Support replies require a two-human-gate workflow: Remy drafts and asks
+  Louis; Louis approves the exact one-time request in **Control Center →
+  Messages → Remy approvals**; only then may Remy send the immutable approved
+  text. Approvals expire after 15 minutes and retries cannot duplicate a send.
+- Applied Supabase migration
+  `20260827100000_ss_remy_communications_agent_audit.sql`. It creates durable
+  reply approvals and metadata-only agent audit events; tool calls never store
+  raw message/reply bodies in the audit-event table.
+- Focused Remy/control-center tests passed (4 files, 10 tests) and the
+  production build passed. A standalone full `tsc --noEmit` remains blocked by
+  existing stale test-fixture type errors unrelated to Remy.
+- The current production deployment is
+  `dpl_EwSH5AvtYEAV11Qfo5AWV1MWp4Z2` at the same verified source commit.
+  Both Suite aliases, `https://www.yoursparklesuite.com` and
+  `https://yoursparklesuite.com`, resolve to it. A safe no-token check returns
+  `401 Unauthorized`, confirming the endpoint is enabled and protected.
+- A new bearer token was securely generated and rotated directly into the
+  masked Sparkle Suite MCP field in the open Grok Bot Remy desktop app. It has
+  **not yet been saved**: the final **Save securely** action remains pending
+  Louis's explicit confirmation. Do not regenerate, expose, or paste the
+  token into chat; if the entry must be retried, rotate it atomically in Vercel
+  and the connector.
+- Operator documentation:
+  `docs/sparkle-suite/integrations/remy-communications-mcp.md`.
+
+**Last updated:** August 27, 2026
+
+---
+
 ## August 25, 2026 Session - Sparkle Finder repository relocation
 
 - Sparkle Finder is now contained at `apps\finder` in the active Sparkle Suite

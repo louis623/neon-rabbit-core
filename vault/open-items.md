@@ -397,3 +397,16 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 ## Unified Workspace communications
 
 - [ ] Run the seven-task friendly-interface acceptance walkthrough with an isolated authenticated reviewer browser session when the supported reviewer token is available: Team reply, inbox return position, Support problem, Support idea/status, official-update distinction, Rep Network accept/decline, and archive/mute reversal. Also verify the Message Center's 60-second visible-tab refresh and focus-return refresh update inbox/header unread counts without moving an open thread or disturbing a reply draft. Automated UI contracts and production-schema smoke are complete; do not substitute Louis's or a customer's account for this remaining visual acceptance.
+
+## Remy Communications MCP
+
+- [ ] Finish the authorized Grok Bot connector activation: the fresh bearer
+  token is already entered in Remy's masked Sparkle Suite MCP field, but
+  **Save securely** has not been clicked. Obtain Louis's explicit action-time
+  confirmation immediately before saving. Then verify a safe read-only
+  connection without exposing the token or touching live Support content.
+- [ ] After connector activation, run the isolated reviewer-safe
+  Communications MCP walkthrough: read inbox summary, list a safe Support
+  report if available, create a draft only, request a one-time approval, and
+  confirm no send occurs without the Control Center approval. Do not use
+  Louis's or a customer's account as a substitute.

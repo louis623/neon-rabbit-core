@@ -1567,3 +1567,24 @@ Reason: Broadcasting represents Sparkle Suite to multiple reps. Draft saving mus
 Decision: The Message Center polls its existing inbox endpoint every 60 seconds only while the Workspace is visible and refreshes again when focus/visibility returns. It updates data and unread counts without a full page reload, avoids concurrent requests, and preserves the last good inbox on an automatic-refresh failure.
 
 Reason: Reps need timely awareness of Team, Support, Rep Network, and official updates, but an automatic page reload can disrupt a reply, Support form, or other Workspace work. This is ordinary application/database traffic; it does not invoke Nic-Nac, an agent, or any paid messaging/AI provider.
+
+## 2026-08-27 - Remy receives a dedicated, capability-limited Communications MCP
+
+Decision: Remy connects through a separate bearer-token-protected MCP endpoint,
+not a shared Control Center login or browser session. The connector has only
+the approved communication read/draft tools and the one-time approved Support
+reply flow.
+
+Reason: A Control Center session has full operator authority and cannot safely
+serve as an agent credential. A dedicated endpoint provides narrow capabilities,
+rate limiting, metadata-only audit records, and a revocable secret without
+giving the agent account, billing, deployment, attachment, moderation, or
+ordinary private-message access.
+
+Decision: Louis's chat approval is necessary but not sufficient for a Support
+send. The exact reply must receive a durable, expiring one-time approval in
+Control Center → Messages → Remy approvals before Remy may send it.
+
+Reason: This gives Louis a visible, auditable action-time control and makes
+retry behavior idempotent. The agent cannot silently treat a vague or stale
+conversation acknowledgement as permission to represent Louis.
