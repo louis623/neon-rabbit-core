@@ -296,12 +296,16 @@ function normalizeBrittWithBlingTeamMemberAssets(
   })
 }
 
-export function isBrittWithBlingSettings(settings: SiteSettingsDashboardResult) {
+export function isBrittWithBlingSettings(
+  settings: SiteSettingsDashboardResult,
+  publicSiteSlug?: string | null,
+) {
   const email = settings.email.trim().toLowerCase()
   const businessName = settings.businessName.trim().toLowerCase()
   const teamName = settings.teamName.trim().toLowerCase()
 
   return (
+    publicSiteSlug?.trim().toLowerCase() === BRITT_WITH_BLING_PROFILE.publicSiteSlug ||
     (BRITT_WITH_BLING_PROFILE.email !== '' &&
       email === BRITT_WITH_BLING_PROFILE.email) ||
     businessName === 'britt with bling' ||
@@ -312,17 +316,37 @@ export function isBrittWithBlingSettings(settings: SiteSettingsDashboardResult) 
 export function applyBrittWithBlingHomepage(
   homepage: AmethystHomepageTemplateData,
 ): AmethystHomepageTemplateData {
+  const hasCustomTagline =
+    homepage.tagline.trim() &&
+    homepage.tagline.trim() !== 'Where Faith Meets Fizz & Every Reveal is a VIP Experience'
+  const hasCustomAboutHeadline =
+    homepage.aboutHeadline.trim() &&
+    !/^meet .+ and the story behind .+\.$/i.test(homepage.aboutHeadline.trim())
+  const hasConfiguredAboutNarrative = !homepage.aboutParagraphs.some((paragraph) =>
+    /share how you got started|nic-nac can rewrite this|add a final paragraph/i.test(
+      paragraph,
+    ),
+  )
+  const hasConfiguredAboutMedia = homepage.aboutMediaSlots.some(
+    (slot) => Boolean(slot.mediaUrl?.trim()) || (slot.href && slot.href !== '#'),
+  )
+  const tiktokSocial = homepage.socialLinks.find((link) => link.label === 'TikTok')?.href
+  const facebookSocial = homepage.socialLinks.find((link) => link.label === 'Facebook')?.href
+  const tiktokUrl = tiktokSocial && tiktokSocial !== '#'
+    ? tiktokSocial
+    : homepage.streamLinks.tiktok
+  const facebookUrl = facebookSocial && facebookSocial !== '#'
+    ? facebookSocial
+    : homepage.streamLinks.facebook
+
   return {
     ...homepage,
     publicSiteVariant: 'britt_with_bling_hybrid',
-    repName: BRITT_WITH_BLING_PROFILE.publicName,
-    businessName: BRITT_WITH_BLING_PROFILE.businessName,
-    teamName: BRITT_WITH_BLING_PROFILE.teamName,
-    tagline: 'Where Faith Meets Fizz & Every Reveal is a VIP Experience',
-    heroEyebrow: 'The Virtuous Fizzers',
-    heroHeadline: homepage.heroHeadlineOverride || 'Britt with Bling',
-    heroSub:
-      'Where Faith Meets Fizz & Every Reveal is a VIP Experience. Place your order and return to the live party to watch your reveal.',
+    heroEyebrow: homepage.teamName || BRITT_WITH_BLING_PROFILE.teamName,
+    heroHeadline: homepage.heroHeadlineOverride || homepage.businessName,
+    heroSub: hasCustomTagline
+      ? homepage.tagline
+      : 'Where Faith Meets Fizz & Every Reveal is a VIP Experience. Place your order and return to the live party to watch your reveal.',
     heroImageUrl: BRITT_WITH_BLING_PROFILE.heroImageUrl,
     announcementText: BRITT_WITH_BLING_PROFILE.announcementText,
     announcementLinkLabel: 'Learn More',
@@ -365,28 +389,32 @@ export function applyBrittWithBlingHomepage(
         },
       ],
     },
-    aboutHeadline: 'What is a Bomb Party?',
-    aboutParagraphs: [
-      'Experience the thrill of a live jewelry reveal with Brittany and the Britt with Bling community.',
-      'Order your jewelry, return to the live party, and watch the fizz reveal your new favorite sparkle.',
-      'When a reveal is not quite your style, the Sparkle Suite Dance Floor gives the community a rep-reviewed place to swap.',
-    ],
-    aboutMediaSlots: [
-      {
-        typeLabel: 'Live reveal community',
-        caption:
-          'Follow Brittany on TikTok for live reveals, launches, and VIP sparkle moments.',
-        href: BRITT_WITH_BLING_PROFILE.tiktokUrl,
-        mediaUrl: BRITT_WITH_BLING_PROFILE.heroImageUrl,
-      },
-      {
-        typeLabel: 'The Virtuous Fizzers',
-        caption:
-          'Meet the team, shop with Brittany, and come back when new trade pieces are posted.',
-        href: '/amethyst/Join.html',
-        mediaUrl: BRITT_WITH_BLING_PROFILE.joinHeroImageUrl,
-      },
-    ],
+    aboutHeadline: hasCustomAboutHeadline ? homepage.aboutHeadline : 'What is a Bomb Party?',
+    aboutParagraphs: hasConfiguredAboutNarrative
+      ? homepage.aboutParagraphs
+      : [
+          'Experience the thrill of a live jewelry reveal with Brittany and the Britt with Bling community.',
+          'Order your jewelry, return to the live party, and watch the fizz reveal your new favorite sparkle.',
+          'When a reveal is not quite your style, the Sparkle Suite Dance Floor gives the community a rep-reviewed place to swap.',
+        ],
+    aboutMediaSlots: hasConfiguredAboutMedia
+      ? homepage.aboutMediaSlots
+      : [
+          {
+            typeLabel: 'Live reveal community',
+            caption:
+              'Follow Brittany on TikTok for live reveals, launches, and VIP sparkle moments.',
+            href: BRITT_WITH_BLING_PROFILE.tiktokUrl,
+            mediaUrl: BRITT_WITH_BLING_PROFILE.heroImageUrl,
+          },
+          {
+            typeLabel: 'The Virtuous Fizzers',
+            caption:
+              'Meet the team, shop with Brittany, and come back when new trade pieces are posted.',
+            href: '/amethyst/Join.html',
+            mediaUrl: BRITT_WITH_BLING_PROFILE.joinHeroImageUrl,
+          },
+        ],
     showcaseVideoCaption: '@brittwithbling live reveal highlights',
     // Keep a rep-configured customer video intact; this profile URL is only
     // the fallback for the legacy site configuration.
@@ -397,31 +425,32 @@ export function applyBrittWithBlingHomepage(
     signupTitle: 'Never Miss a Show!',
     signupSub:
       'Get email updates now and be first in line when SMS show reminders launch.',
-    joinTeamTitle: 'Join The Virtuous Fizzers',
+    joinTeamTitle: `Join ${homepage.teamName}`,
     joinTeamSub:
       'Start your Fizz Biz with Brittany, mentorship, community, and a launch-pack path built for sparkle.',
     joinTeamUrl: '/amethyst/Join.html',
-    footerTagline:
-      'Britt with Bling is where faith meets fizz, community, and VIP reveals.',
-    showJoinPage: true,
+    footerTagline: hasCustomTagline
+      ? homepage.footerTagline
+      : 'Britt with Bling is where faith meets fizz, community, and VIP reveals.',
+    showJoinPage: homepage.showJoinPage,
     streamLinks: {
       ...homepage.streamLinks,
       shop: BRITT_WITH_BLING_PROFILE.shopUrl,
-      watch: BRITT_WITH_BLING_PROFILE.tiktokUrl,
-      tiktok: BRITT_WITH_BLING_PROFILE.tiktokUrl,
-      facebook: BRITT_WITH_BLING_PROFILE.facebookVipUrl,
+      watch: tiktokUrl || facebookUrl || homepage.streamLinks.watch,
+      tiktok: tiktokUrl,
+      facebook: facebookUrl,
     },
     socialLinks: homepage.socialLinks,
     footerLinks: {
       ...homepage.footerLinks,
       home: '/amethyst/Homepage.html',
       tradeBoard: '/amethyst/Trade.html',
-      joinTeam: '/amethyst/Join.html',
+      joinTeam: homepage.footerLinks.joinTeam,
       catalog: BRITT_WITH_BLING_PROFILE.shopUrl,
       preOrders: BRITT_WITH_BLING_PROFILE.shopUrl,
       pastShows: '#events',
       faq: '#wibp',
-      contact: BRITT_WITH_BLING_PROFILE.facebookVipUrl,
+      contact: facebookUrl || BRITT_WITH_BLING_PROFILE.facebookVipUrl,
       privacy: '/privacy-policy',
       terms: '/terms-and-conditions',
       accessibility: 'mailto:hello@yoursparklesuite.com?subject=Accessibility%20support',
@@ -435,18 +464,16 @@ export function applyBrittWithBlingTrade(
   return {
     ...trade,
     publicSiteVariant: 'britt_with_bling_hybrid',
-    repName: BRITT_WITH_BLING_PROFILE.publicName,
-    businessName: BRITT_WITH_BLING_PROFILE.businessName,
-    tradeHeroTitle: 'Britt with Bling Dance Floor',
+    tradeHeroTitle: `${trade.businessName} Dance Floor`,
     tradeHeroSub:
-      'When Brittany adds available dancers, you can request a rep-reviewed item-for-item swap here.',
+      `When ${trade.repName} adds available dancers, you can request a rep-reviewed item-for-item swap here.`,
     footerTagline:
-      'Faith, fizz, VIP reveals, and rep-reviewed trades with Britt with Bling.',
+      `Faith, fizz, VIP reveals, and rep-reviewed trades with ${trade.businessName}.`,
     footerLinks: {
       ...trade.footerLinks,
       home: '/amethyst/Homepage.html',
       tradeBoard: '/amethyst/Trade.html',
-      joinTeam: '/amethyst/Join.html',
+      joinTeam: trade.footerLinks.joinTeam,
       catalog: BRITT_WITH_BLING_PROFILE.shopUrl,
       preOrders: BRITT_WITH_BLING_PROFILE.shopUrl,
       pastShows: '/amethyst/Homepage.html#events',
@@ -466,28 +493,24 @@ export function applyBrittWithBlingJoin(
   return {
     ...join,
     publicSiteVariant: 'britt_with_bling_hybrid',
-    repName: BRITT_WITH_BLING_PROFILE.publicName,
     repCity: '',
     repState: 'Florida',
-    businessName: BRITT_WITH_BLING_PROFILE.businessName,
-    teamName: BRITT_WITH_BLING_PROFILE.teamName,
-    heroTitle: 'WELCOME TO THE VIRTUOUS FIZZERS',
+    heroTitle: `WELCOME TO ${join.teamName.toUpperCase()}`,
     promoText:
       '$599 Launch Pack. Guaranteed Diamond reveal. MSRP up to $3,500. 10 years of sparkle.',
     heroPitch:
-      'Your sparkle story starts here. Join The Virtuous Fizzers with Brittany and build your Bomb Party business with mentorship, community, and VIP energy.',
+      `Your sparkle story starts here. Join ${join.teamName} with ${join.repName} and build your Bomb Party business with mentorship, community, and VIP energy.`,
     heroCtaText: 'CLAIM MY DIAMOND AND START MY CLIMB',
     finalPitch:
-      'Join the Virtuous Fizzers and turn your passion for jewelry into a thriving business.',
+      `Join ${join.teamName} and turn your passion for jewelry into a thriving business.`,
     bpReferralUrl: BRITT_WITH_BLING_PROFILE.joinPackUrl,
     tickerTopText:
-      'Join The Virtuous Fizzers | Supportive Community | Flexible Income | Training & Mentorship | Amazing Products | Work From Anywhere | Growth Opportunities',
+      `Join ${join.teamName} | Supportive Community | Flexible Income | Training & Mentorship | Amazing Products | Work From Anywhere | Growth Opportunities`,
     footerTagline:
-      'Build your Bomb Party business with Brittany and The Virtuous Fizzers.',
+      `Build your Bomb Party business with ${join.repName} and ${join.teamName}.`,
     shopUrl: BRITT_WITH_BLING_PROFILE.shopUrl,
     repSocialLinks: {
       ...join.repSocialLinks,
-      tiktok: BRITT_WITH_BLING_PROFILE.tiktokUrl,
       website: BRITT_WITH_BLING_PROFILE.shopUrl,
     },
     socialLinks: join.socialLinks,
@@ -495,12 +518,12 @@ export function applyBrittWithBlingJoin(
       ...join.footerLinks,
       home: '/amethyst/Homepage.html',
       tradeBoard: '/amethyst/Trade.html',
-      joinTeam: '/amethyst/Join.html',
+      joinTeam: join.footerLinks.joinTeam,
       catalog: BRITT_WITH_BLING_PROFILE.shopUrl,
       preOrders: BRITT_WITH_BLING_PROFILE.shopUrl,
       pastShows: '/amethyst/Homepage.html#events',
       faq: '#join-faq',
-      contact: BRITT_WITH_BLING_PROFILE.facebookVipUrl,
+      contact: join.repSocialLinks.tiktok || BRITT_WITH_BLING_PROFILE.facebookVipUrl,
       privacy: '/privacy-policy',
       terms: '/terms-and-conditions',
       accessibility: 'mailto:hello@yoursparklesuite.com?subject=Accessibility%20support',
@@ -512,15 +535,15 @@ export function applyBrittWithBlingJoin(
     teamMembers: normalizeBrittWithBlingTeamMemberAssets(teamMembers),
     faqAnswers: {
       whatIsTeam:
-        "The Virtuous Fizzers is Brittany's Bomb Party rep team - a supportive community that celebrates wins, shares what works, and helps new reps build with confidence.",
+        `${join.teamName} is ${join.repName}'s Bomb Party rep team - a supportive community that celebrates wins, shares what works, and helps new reps build with confidence.`,
       cost:
         'Starter pack details and current promotions are handled by Bomb Party. The current offer highlights a $599 Launch Pack with a guaranteed Diamond reveal.',
       experience:
-        'No experience required. Brittany and the team focus on training, mentorship, and practical support as you get started.',
+        `No experience required. ${join.repName} and the team focus on training, mentorship, and practical support as you get started.`,
       timeCommitment:
         'Work on your own schedule. Whether you want extra income or a full-time opportunity, you control your success.',
       support:
-        'Get tools, training, community, and one-on-one support from a team built around helping reps grow.',
+        `Get tools, training, community, and one-on-one support from ${join.teamName}.`,
       income:
         'Income varies by effort, sales, and time. Review the Bomb Party income disclosure before enrolling.',
     },

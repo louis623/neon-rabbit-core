@@ -2033,11 +2033,11 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
         <img className="bwb-hero-image" src={heroImageUrl} alt="" />
         <div className="bwb-hero-shade" aria-hidden="true" />
         <div className="bwb-hero-content">
-          <p className="bwb-hero-team">The Virtuous Fizzers</p>
+          <p className="bwb-hero-team">{CONTENT.heroEyebrow || "The Virtuous Fizzers"}</p>
           <h1 id="bwb-hero-title" className="bwb-hero-title">
             {CONTENT.heroHeadline || businessName}
           </h1>
-          <p className="bwb-hero-line">Where Faith Meets Fizz & Every Reveal is a VIP Experience</p>
+          <p className="bwb-hero-line">{CONTENT.heroSub || "Where Faith Meets Fizz & Every Reveal is a VIP Experience"}</p>
           <p className="bwb-hero-instruction">PLACE YOUR ORDER AND RETURN TO THE LIVE PARTY TO WATCH YOUR REVEAL</p>
           <div className="bwb-hero-ctas">
             <a {...linkProps(getShopHref())} className="bwb-cta bwb-cta-shop">{shopCtaLabel}</a>

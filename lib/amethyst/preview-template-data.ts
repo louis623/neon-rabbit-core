@@ -69,6 +69,7 @@ interface LoadPreviewTemplateDataOptions {
 interface PreviewRepExtras {
   shopLink?: string | null
   streamingLinks?: unknown
+  publicSiteSlug?: string | null
 }
 
 export interface AmethystPreviewTemplateData {
@@ -579,7 +580,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
 
   return isMileHighFizzSettings(settings)
     ? applyMileHighFizzHomepage(homepage)
-    : isBrittWithBlingSettings(settings)
+    : isBrittWithBlingSettings(settings, extras.publicSiteSlug)
       ? applyBrittWithBlingHomepage(homepage)
       : isBlingKitchenSettings(settings)
         ? applyBlingKitchenPantryAccess(homepage)
@@ -621,7 +622,9 @@ export function mapPreviewSettingsToTradeTemplateData(
   }
 
   if (isMileHighFizzSettings(settings)) return applyMileHighFizzTrade(trade)
-  if (isBrittWithBlingSettings(settings)) return applyBrittWithBlingTrade(trade)
+  if (isBrittWithBlingSettings(settings, extras.publicSiteSlug)) {
+    return applyBrittWithBlingTrade(trade)
+  }
   if (isBlingKitchenSettings(settings)) {
     return {
       ...trade,
@@ -679,7 +682,7 @@ export function mapPreviewSettingsToJoinTemplateData(
   }
 
   if (isMileHighFizzSettings(settings)) return applyMileHighFizzJoin(join)
-  if (isBrittWithBlingSettings(settings)) {
+  if (isBrittWithBlingSettings(settings, extras.publicSiteSlug)) {
     return applyBrittWithBlingJoin(join, teamMembers ?? [])
   }
   if (isBlingKitchenSettings(settings)) {
@@ -739,7 +742,7 @@ export async function loadAmethystPreviewTemplateData(
       env,
       publicSiteSlug: requestedPublicSiteSlug,
       repId: requestedRepId,
-      select: 'id, email, shop_link, streaming_links',
+      select: 'id, email, shop_link, streaming_links, public_site_slug',
     })
 
     if (!rep) return defaultPreviewTemplateData
@@ -773,6 +776,7 @@ export async function loadAmethystPreviewTemplateData(
     const extras = {
       shopLink: rep.shop_link,
       streamingLinks: rep.streaming_links,
+      publicSiteSlug: requestedPublicSiteSlug,
     }
     const draftExtras = applyRequiredSetupDraftToExtras(extras, activeSetupDraftState)
 

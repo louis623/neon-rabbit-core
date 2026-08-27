@@ -45,6 +45,7 @@ const brittWithBlingSettings: SiteSettingsDashboardResult = {
 
 const brittWithBlingExtras = {
   shopLink: BRITT_WITH_BLING_PROFILE.shopUrl,
+  publicSiteSlug: BRITT_WITH_BLING_PROFILE.publicSiteSlug,
   streamingLinks: {
     tiktok: BRITT_WITH_BLING_PROFILE.tiktokUrl,
     facebook: BRITT_WITH_BLING_PROFILE.facebookVipUrl,
@@ -105,6 +106,12 @@ describe('Britt With Bling hybrid public site contract', () => {
       'Experience the thrilling, must-watch excitement',
     )
     expect(homepage.aboutHeadline).toBe('What is a Bomb Party?')
+    expect(homepage.aboutMediaSlots[0]?.mediaUrl).toBe(
+      BRITT_WITH_BLING_PROFILE.heroImageUrl,
+    )
+    expect(homepage.footerTagline).toBe(
+      'Britt with Bling is where faith meets fizz, community, and VIP reveals.',
+    )
     expect(homepage.joinTeamUrl).toBe('/amethyst/Join.html')
     expect(homepage.footerLinks.joinTeam).toBe('/amethyst/Join.html')
     expect(homepage.footerLinks.faq).toBe('#wibp')
@@ -131,6 +138,69 @@ describe('Britt With Bling hybrid public site contract', () => {
     )
 
     expect(homepage.showcaseVideoUrl).toBe(videoUrl)
+  })
+
+  it('keeps future Workspace Site Settings changes across the BWB public pages', () => {
+    const futureSettings: SiteSettingsDashboardResult = {
+      ...brittWithBlingSettings,
+      displayName: 'Bri Harper',
+      businessName: 'Brilliant Fizz',
+      teamName: 'Radiant Circle',
+      tagline: 'Every reveal shines brighter.',
+      showJoinPage: false,
+      aboutHeading: 'The story behind Brilliant Fizz',
+      aboutNarrative:
+        'First custom paragraph.\n\nSecond custom paragraph.\n\nThird custom paragraph.',
+      socialHandles: {
+        ...brittWithBlingSettings.socialHandles,
+        tiktok: '@brilliantfizz',
+      },
+      homepageMediaSlots: [
+        {
+          key: 'showcase',
+          caption: '',
+          imageUrl: '',
+          videoUrl: 'https://www.tiktok.com/@brilliantfizz/video/7602795836380073229',
+        },
+      ],
+    }
+    const futureExtras = {
+      ...brittWithBlingExtras,
+      streamingLinks: {
+        ...brittWithBlingExtras.streamingLinks,
+        tiktok: '',
+      },
+    }
+    const homepage = mapPreviewSettingsToHomepageTemplateData(
+      futureSettings,
+      futureExtras,
+    )
+    const trade = mapPreviewSettingsToTradeTemplateData(futureSettings, futureExtras)
+    const join = mapPreviewSettingsToJoinTemplateData(futureSettings, futureExtras)
+
+    expect(homepage.publicSiteVariant).toBe('britt_with_bling_hybrid')
+    expect(homepage.repName).toBe('Bri')
+    expect(homepage.businessName).toBe('Brilliant Fizz')
+    expect(homepage.teamName).toBe('Radiant Circle')
+    expect(homepage.heroEyebrow).toBe('Radiant Circle')
+    expect(homepage.heroSub).toBe('Every reveal shines brighter.')
+    expect(homepage.aboutHeadline).toBe('The story behind Brilliant Fizz')
+    expect(homepage.aboutParagraphs).toEqual([
+      'First custom paragraph.',
+      'Second custom paragraph.',
+      'Third custom paragraph.',
+    ])
+    expect(homepage.showJoinPage).toBe(false)
+    expect(homepage.footerLinks.joinTeam).toBeUndefined()
+    expect(homepage.showcaseVideoUrl).toContain('@brilliantfizz/video')
+    expect(homepage.streamLinks.tiktok).toBe('https://www.tiktok.com/@brilliantfizz')
+    expect(trade.tradeHeroTitle).toBe('Brilliant Fizz Dance Floor')
+    expect(trade.tradeHeroSub).toContain('Bri')
+    expect(trade.footerLinks.joinTeam).toBeUndefined()
+    expect(join.heroTitle).toBe('WELCOME TO RADIANT CIRCLE')
+    expect(join.heroPitch).toContain('Radiant Circle')
+    expect(join.heroPitch).toContain('Bri')
+    expect(join.repSocialLinks.tiktok).toBe('https://www.tiktok.com/@brilliantfizz')
   })
 
   it('serializes BWB as theme-switchable Black Diamond data', () => {
@@ -397,6 +467,8 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(homepageJsx).toContain('<SparkleSuiteHeaderStack t={t} scheduleIsLive={isLive} effectiveLrqState={queueState} onOpenQueue={onOpenQueue} />')
     expect(homepageJsx).not.toContain('bwb-header-menu')
     expect(homepageJsx).toContain('CONTENT.heroImageUrl')
+    expect(homepageJsx).toContain('CONTENT.heroEyebrow || "The Virtuous Fizzers"')
+    expect(homepageJsx).toContain('CONTENT.heroSub || "Where Faith Meets Fizz & Every Reveal is a VIP Experience"')
     expect(homepageJsx).toContain('CONTENT.footerLinks?.joinTeam && (')
     expect(homepageJsx).toContain(
       '<a {...linkProps(CONTENT.footerLinks.joinTeam)} className="hp-header-link">Join Team</a>',
