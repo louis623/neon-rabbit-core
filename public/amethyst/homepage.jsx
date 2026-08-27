@@ -593,17 +593,25 @@ function Hero({ t, isLive, liveShow }) {
           <div className="hp-hero-ctas">
             {isMileHighFizzHybrid ? (
               <>
-                <a {...linkProps(getShopHref())} className="hp-btn-primary hp-btn-sparkle">
-                  Shop Bomb Party
-                  <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
-                </a>
-                {joinTeamHref && <a {...linkProps(joinTeamHref)} className="hp-btn-outline">Join My Team</a>}
-                {heroWatchLinks.map((link) => (
-                  <a key={link.id} {...linkProps(link.href)} className={`hp-btn-outline hp-btn-watch ${isLive && link.id === "tiktok" ? "is-live" : "is-offline"}`}>
-                    {isLive && link.id === "tiktok" && <span className="hp-watch-dot" />}
-                    {link.label}
+                <div className="hp-hero-cta-stack">
+                  <div className="hp-hero-cta-primary-row">
+                    <a {...linkProps(getShopHref())} className="hp-btn-primary hp-btn-sparkle">
+                      Shop Bomb Party
+                      <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
+                    </a>
+                    {joinTeamHref && <a {...linkProps(joinTeamHref)} className="hp-btn-outline">Join My Team</a>}
+                    {heroWatchLinks.map((link) => (
+                      <a key={link.id} {...linkProps(link.href)} className={`hp-btn-outline hp-btn-watch ${isLive && link.id === "tiktok" ? "is-live" : "is-offline"}`}>
+                        {isLive && link.id === "tiktok" && <span className="hp-watch-dot" />}
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                  <a {...linkProps(getTradeBoardHref())} className="hp-btn-primary hp-btn-sparkle hp-hero-trade-board-cta">
+                    Browse the dance floor
+                    <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
                   </a>
-                ))}
+                </div>
               </>
             ) : (
               <>
