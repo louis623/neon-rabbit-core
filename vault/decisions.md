@@ -1,5 +1,21 @@
 # Decision Log
 
+## August 27, 2026 - Open Brain and vault require dual recording
+
+**Open Brain is the durable cross-session diary; the repository vault is the
+agent-readable project record. They are separate systems and neither replaces
+the other.**
+
+When Louis requests an Open Brain log or lock, agents must capture it with the
+actual Open Brain MCP and verify success. Meaningful information for future
+agents must also be recorded in the relevant vault files. Meaningful session
+closeouts, decisions, lessons, blockers, verification, and next steps should
+normally be written to both systems; a session is not closed until both writes
+are confirmed. Do not record secrets or credentials in either ordinary Open
+Brain entries or Git-tracked vault content.
+
+---
+
 ## August 25, 2026 - One repository, two isolated applications
 
 **Sparkle Suite remains the root app and Sparkle Finder is contained at `apps\finder`.**

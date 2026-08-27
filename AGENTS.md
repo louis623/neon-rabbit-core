@@ -19,6 +19,23 @@ Before doing Sparkle Suite work, read the current project memory from this repo:
 - `vault\decisions.md`
 - `vault\open-items.md`
 
+## Mandatory Dual Memory Closeout
+
+**Open Brain and the repository vault are separate, complementary systems.**
+Neither is a substitute for the other.
+
+- When Louis asks to log or lock anything in **Open Brain**, use the actual
+  Open Brain MCP to capture it and verify the capture succeeded.
+- When information is meaningful to future agents, also update the appropriate
+  repo-local `vault\` files. This includes meaningful session closeouts,
+  decisions, lessons learned, blockers, verification evidence, and next steps.
+- In practice, meaningful sessions should normally be recorded in **both**
+  Open Brain and the vault. A session is not closed until both records are
+  complete and confirmed.
+- Never place passwords, API keys, bearer tokens, payment data, or private
+  credentials in either Git-tracked vault content or ordinary Open Brain
+  entries.
+
 Project skills live in this repo at `.agents\skills`. Use them when their
 trigger rules apply, especially:
 

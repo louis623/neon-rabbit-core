@@ -4,6 +4,22 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 27, 2026 - Dual memory closeout rule
+
+- Louis clarified that Open Brain is the shared cross-session diary/second
+  brain and is distinct from the repository vault. The vault must never be
+  represented as, or substituted for, Open Brain.
+- A real Open Brain MCP capture now records the required policy: when Louis
+  asks for an Open Brain log, agents must use and verify the actual Open Brain
+  connector; meaningful information for future agents must also be captured
+  in the appropriate vault files.
+- Meaningful session closeouts, decisions, lessons, blockers, verification,
+  and next steps normally belong in both systems. A session is not closed until
+  both writes are complete and confirmed. Secrets and credentials remain
+  excluded from both ordinary Open Brain entries and Git-tracked vault files.
+
+---
+
 ## August 25, 2026 - Sparkle Finder moved into the Suite repository
 
 - After explicit follow-up approval, corrected only the Finder Vercel source
