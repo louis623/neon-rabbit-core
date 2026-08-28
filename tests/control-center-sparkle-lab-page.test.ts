@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SparkleLabControlCenterModel } from '@/lib/sparkle-lab/read-model'
 
-const getAuthenticatedOperatorMock = vi.fn()
+const getControlCenterAccessMock = vi.fn()
 const createAdminClientMock = vi.fn()
 const readSparkleLabControlCenterModelMock = vi.fn()
 const redirectMock = vi.fn((target: string) => {
@@ -21,8 +21,8 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/lib/supabase/operator-auth', () => ({
   AuthError: MockAuthError,
   OperatorAuthError: MockOperatorAuthError,
-  getAuthenticatedOperator: (...args: unknown[]) =>
-    getAuthenticatedOperatorMock(...args),
+  getControlCenterAccess: (...args: unknown[]) =>
+    getControlCenterAccessMock(...args),
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -183,13 +183,13 @@ const model: SparkleLabControlCenterModel = {
 
 describe('SparkleLabControlCenterPage', () => {
   beforeEach(() => {
-    getAuthenticatedOperatorMock.mockReset()
+    getControlCenterAccessMock.mockReset()
     createAdminClientMock.mockReset()
     readSparkleLabControlCenterModelMock.mockReset()
     redirectMock.mockClear()
-    getAuthenticatedOperatorMock.mockResolvedValue({
-      repId: 'operator-1',
-      rep: { email: 'louis@neonrabbit.net' },
+    getControlCenterAccessMock.mockResolvedValue({
+      method: 'control_center_session',
+      operator: { email: 'louis@neonrabbit.net', repId: 'operator-1' },
     })
     createAdminClientMock.mockReturnValue({ from: vi.fn() })
     readSparkleLabControlCenterModelMock.mockResolvedValue(model)
@@ -199,7 +199,7 @@ describe('SparkleLabControlCenterPage', () => {
     const page = await SparkleLabControlCenterPage()
     const html = renderToStaticMarkup(page)
 
-    expect(getAuthenticatedOperatorMock).toHaveBeenCalledOnce()
+    expect(getControlCenterAccessMock).toHaveBeenCalledOnce()
     expect(readSparkleLabControlCenterModelMock).toHaveBeenCalledWith({
       from: expect.any(Function),
     })
@@ -227,19 +227,19 @@ describe('SparkleLabControlCenterPage', () => {
   })
 
   it('redirects unauthenticated operators back to login', async () => {
-    getAuthenticatedOperatorMock.mockRejectedValueOnce(
+    getControlCenterAccessMock.mockRejectedValueOnce(
       new MockAuthError('missing session'),
     )
 
     await expect(SparkleLabControlCenterPage()).rejects.toThrow(
-      'redirect:/login?redirect=%2Fcontrol-center%2Flab',
+      'redirect:/control-center/login',
     )
 
     expect(readSparkleLabControlCenterModelMock).not.toHaveBeenCalled()
   })
 
   it('renders an operator access required message for non-operators', async () => {
-    getAuthenticatedOperatorMock.mockRejectedValueOnce(
+    getControlCenterAccessMock.mockRejectedValueOnce(
       new MockOperatorAuthError('not operator'),
     )
 

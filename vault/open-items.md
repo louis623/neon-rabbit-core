@@ -422,3 +422,12 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   Create no approval request or send unless Louis separately authorizes that
   exact workflow; confirm an unapproved Support send remains impossible. Do not
   use Louis's or a customer's account as a substitute.
+- [ ] Release the additive Guardian source only in a separately authorized
+  deployment session. After release, confirm the same existing Grok Bot
+  Control Center card discovers 14 tools, exercise only operator health and
+  Nic-Nac usage reads, and verify `/control-center/guardian` with an isolated
+  operator session. Do not run Sparkle Lab or change any Lab flag.
+- [ ] If Louis later wants complete Finder usage or failed-deployment counts,
+  design narrow read-only contracts for Finder's separate telemetry database
+  and deployment provenance. Do not add cross-product service credentials or a
+  monitoring vendor implicitly, and never substitute zero for unavailable data.

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const getAuthenticatedOperatorMock = vi.fn()
+const getControlCenterAccessMock = vi.fn()
 const createAdminClientMock = vi.fn()
 const runSparkleLabManualScanMock = vi.fn()
 
@@ -12,8 +12,8 @@ const { MockAuthError, MockOperatorAuthError } = vi.hoisted(() => ({
 vi.mock('@/lib/supabase/operator-auth', () => ({
   AuthError: MockAuthError,
   OperatorAuthError: MockOperatorAuthError,
-  getAuthenticatedOperator: (...args: unknown[]) =>
-    getAuthenticatedOperatorMock(...args),
+  getControlCenterAccess: (...args: unknown[]) =>
+    getControlCenterAccessMock(...args),
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -37,12 +37,12 @@ function request(body: unknown = {}) {
 describe('POST /api/control-center/sparkle-lab/run', () => {
   beforeEach(() => {
     vi.unstubAllEnvs()
-    getAuthenticatedOperatorMock.mockReset()
+    getControlCenterAccessMock.mockReset()
     createAdminClientMock.mockReset()
     runSparkleLabManualScanMock.mockReset()
-    getAuthenticatedOperatorMock.mockResolvedValue({
-      repId: 'operator-1',
-      rep: { email: 'louis@neonrabbit.net' },
+    getControlCenterAccessMock.mockResolvedValue({
+      method: 'control_center_session',
+      operator: { email: 'louis@neonrabbit.net', repId: 'operator-1' },
     })
     createAdminClientMock.mockReturnValue({ from: vi.fn() })
     runSparkleLabManualScanMock.mockResolvedValue({
@@ -127,7 +127,7 @@ describe('POST /api/control-center/sparkle-lab/run', () => {
   })
 
   it('rejects unauthenticated users before checking the feature flag', async () => {
-    getAuthenticatedOperatorMock.mockRejectedValueOnce(
+    getControlCenterAccessMock.mockRejectedValueOnce(
       new MockAuthError('missing session'),
     )
 
@@ -140,7 +140,7 @@ describe('POST /api/control-center/sparkle-lab/run', () => {
   })
 
   it('rejects non-operators', async () => {
-    getAuthenticatedOperatorMock.mockRejectedValueOnce(
+    getControlCenterAccessMock.mockRejectedValueOnce(
       new MockOperatorAuthError('not operator'),
     )
 

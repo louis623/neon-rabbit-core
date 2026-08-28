@@ -1655,3 +1655,13 @@ Reason: Grok Bot exposes the same connected tools to every agent and cannot enfo
 Decision: The broken HTTP `user-Sparkle Suite` OAuth connector is retired rather than repaired or reused. Legacy connector cards may be uninstalled only after the unified card is proven and Louis explicitly confirms the destructive cleanup.
 
 Reason: The OAuth path fails authentication and is not required by the working secure connect-card pattern. Delaying removal until after verification preserves rollback while respecting the action-time confirmation boundary for uninstalling integrations.
+
+## 2026-08-28 - Guardian is an additive read model, not an autonomous operator
+
+Decision: Hale's first Guardian surface extends the shared Control Center MCP and existing operator-health read model. It may flag direct Suite/Finder availability, Suite-side operational counts, and existing Nic-Nac/Lab telemetry, but it receives no deploy, DNS, messaging, suspension, billing, profile, waitlist, report-status, or Lab-run capability.
+
+Reason: Grok Bot persona instructions cannot enforce permissions. Reusing the existing capability-limited MCP keeps enforcement in code and preserves Remy's exact one-time Support approval/send boundary.
+
+Decision: Cross-product gaps remain explicit. Suite directly probes both public domains, but Finder runtime usage/operator counts and deployment history stay `null` or coverage holes until an approved read contract exists across the separate Finder data and Vercel boundaries. Nic-Nac credit balance also remains `null` because current telemetry does not record it.
+
+Reason: A Guardian is only useful if absence of evidence is not silently converted into a healthy zero. Truthful holes are safer than invented spend, credit, deployment, or Finder counts.

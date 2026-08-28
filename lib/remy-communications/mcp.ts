@@ -24,6 +24,7 @@ import {
   listControlCenterWaitlistLeads,
 } from '@/lib/remy-communications/waitlist'
 import { getControlCenterOperatorHealth } from '@/lib/remy-communications/operator-health'
+import { getControlCenterNicNacUsage } from '@/lib/remy-communications/nic-nac-usage'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const ACTOR_KEY = 'sparkle-control-center'
@@ -43,6 +44,7 @@ const toolNames = [
   'control_center_list_waitlist_leads',
   'control_center_get_waitlist_lead',
   'control_center_get_operator_health',
+  'control_center_get_nic_nac_usage',
 ] as const
 
 type ToolName = (typeof toolNames)[number]
@@ -179,7 +181,7 @@ const supportReportIdSchema = z.object({
 export function createControlCenterMcpServer() {
   const server = new McpServer({
     name: 'sparkle-suite-control-center',
-    version: '1.1.0',
+    version: '1.2.0',
   })
 
   server.registerTool(
@@ -508,7 +510,7 @@ export function createControlCenterMcpServer() {
   server.registerTool(
     'control_center_get_operator_health',
     {
-      description: 'Read a short Sparkle Suite operator-health snapshot: bounded error/job flags, Support volume and urgency counts, reported Network Safety count, and active messaging-suspension count. It cannot inspect private unreported conversations, deploy, change users, or fix anything.',
+      description: 'Read a short Sparkle Suite and Sparkle Finder operator-health snapshot: direct production endpoint checks plus bounded Suite error/job, Support, and reported Network Safety counts with explicit coverage holes. It cannot inspect private unreported conversations, deploy, change users, or fix anything.',
       inputSchema: z.object({}),
     },
     async () => runTool(
@@ -516,6 +518,21 @@ export function createControlCenterMcpServer() {
       {},
       async () => ({
         result: await getControlCenterOperatorHealth(createAdminClient()),
+      }),
+    ),
+  )
+
+  server.registerTool(
+    'control_center_get_nic_nac_usage',
+    {
+      description: 'Read bounded Nic-Nac usage by product surface and model, including existing estimated-cost telemetry, run spikes, failure/hard-fail counts, Sparkle Lab caps, and explicit coverage holes. This never runs Sparkle Lab or changes prompts, tools, memory, accounts, billing, or production.',
+      inputSchema: z.object({}),
+    },
+    async () => runTool(
+      'control_center_get_nic_nac_usage',
+      {},
+      async () => ({
+        result: await getControlCenterNicNacUsage(createAdminClient()),
       }),
     ),
   )

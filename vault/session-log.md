@@ -4726,3 +4726,15 @@ Lessons retained:
 - Manually deployed the exact verified commit to Vercel production as `dpl_6NhStF3eDSErtBknfmgXTCcRJ8wy`. Both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` resolve to the deployment; unauthenticated MCP access fails closed with `401`.
 - Using Computer Use, Codex identified itself to Sam in Grok Bot and supplied the endpoint/provenance and safety boundaries without disclosing the masked token. Sam confirmed all 13 live tools, a clear operator-health read, and four waitlist records, then connected the **Sparkle Suite Control Center** card.
 - No Support reply, approval request, broadcast, report change, lead change, profile mutation, DNS change, billing action, or other production business write was performed. The two legacy Grok Bot cards were deliberately left installed pending explicit uninstall confirmation.
+
+---
+
+# August 28, 2026 - Additive Guardian watch source slice
+
+- Confirmed the only approved workbench `C:\Users\louis\sparkle-suite-repo`, allowlisted branch `codex/nic-nac-trade-hardening`, starting HEAD `bedd1a40`, GitHub remote `louis623/sparkle-suite`, and only the pre-existing untracked `artifacts/` and `test-results/` directories before editing.
+- Kept the existing `/api/remy/mcp` endpoint, Bearer boundary, 13 tools, and Remy one-time Support approval/send behavior. Source now adds one read-only Nic-Nac usage tool on the same handler and extends—not replaces—the current operator-health snapshot.
+- Added direct Suite/Finder uptime and 5xx probes without credentials or a monitoring vendor. Failed-deployment history, Finder operator counts, Finder runtime Nic-Nac telemetry, and Nic-Nac credit balance are returned as explicit coverage holes/nulls rather than inferred values.
+- Added the operator-authenticated Guardian Control Center page and navigation link using the existing visual system. It runs health and usage reads in parallel and has no client mutation controls.
+- Sparkle Lab remains recommendations-only. The Guardian read path imports only the existing Lab read model, never the runner or POST route, and changes no Lab environment flag.
+- Final focused verification: 14 files / 48 tests passed, changed-file ESLint passed, and the full local production build passed. Full standalone `tsc --noEmit` remains red only on established repository test-fixture errors; the production build's TypeScript phase is green.
+- No deployment or production/business mutation was performed.

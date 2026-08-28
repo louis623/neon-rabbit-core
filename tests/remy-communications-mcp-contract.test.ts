@@ -20,6 +20,7 @@ describe('Sparkle Suite Control Center MCP contract', () => {
       'control_center_list_waitlist_leads',
       'control_center_get_waitlist_lead',
       'control_center_get_operator_health',
+      'control_center_get_nic_nac_usage',
     ])
     expect(remyMcpToolNames).toBe(controlCenterMcpToolNames)
   })
@@ -31,5 +32,7 @@ describe('Sparkle Suite Control Center MCP contract', () => {
     expect(controlCenterMcpToolNames).not.toContain('control_center_update_waitlist_lead')
     expect(controlCenterMcpToolNames).not.toContain('control_center_list_rep_conversations')
     expect(controlCenterMcpToolNames).not.toContain('control_center_deploy')
+    expect(controlCenterMcpToolNames).not.toContain('control_center_run_sparkle_lab')
+    expect(controlCenterMcpToolNames).not.toContain('control_center_suspend_rep')
   })
 })
