@@ -408,13 +408,14 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Grok Bot Control Center MCP
 
-- [ ] Release and activate the one shared Sparkle Suite Control Center MCP only
-  in a future explicitly authorized production session. The verified source
-  extends the existing Sparkle Comms endpoint in place, but Louis explicitly
-  required no deployment or production mutation for the build session. Update
-  and rename the existing Sparkle Comms connect card; do not create a second
-  Sparkle connector and do not reuse the broken `user-Sparkle Suite` OAuth.
-  Obtain action-time confirmation before any connector **Save securely** step.
+- [x] Release and activate the shared Sparkle Suite Control Center MCP. Commit
+  `5241f567` is live as deployment `dpl_6NhStF3eDSErtBknfmgXTCcRJ8wy`, and
+  Grok Bot has a connected **Sparkle Suite Control Center** card with all 13
+  tools. The existing masked bearer token was reused without disclosure.
+- [ ] After Louis explicitly confirms destructive connector cleanup, uninstall
+  the leftover broken `user-Sparkle Suite` OAuth card and the old
+  `user-Sparkle Comms` card. Do not authenticate or repair the broken OAuth
+  card. Confirm the 13-tool Control Center card remains connected afterward.
 - [ ] After activation, run a safe read-only MCP walkthrough: inbox summary,
   minimized Support list/get, reported Network Safety list, broadcast history,
   waitlist list/get (including Kim if present), and operator-health snapshot.

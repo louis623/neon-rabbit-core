@@ -4715,3 +4715,14 @@ Lessons retained:
 - Three matching Open Brain entries were successfully captured: the diary/vault
   rule and retrieval repair; registrar/finance handoff; and GrokBot GitHub
   setup. No secrets were recorded.
+
+---
+
+# August 28, 2026 - Grok Bot unified Control Center MCP release
+
+- Built, tested, committed, and pushed the one shared Sparkle Suite Control Center MCP at the existing `/api/remy/mcp` endpoint. Commit: `5241f567ff641f6bd555cc60e88aac927d23a253`.
+- Preserved all ten Communications tools and their existing data-minimization and one-time Support approval/send controls. Added read-only waitlist list/get and operator-health tools for a total of 13.
+- Focused verification passed (4 files / 11 tests), along with ESLint and a full production build.
+- Manually deployed the exact verified commit to Vercel production as `dpl_6NhStF3eDSErtBknfmgXTCcRJ8wy`. Both `https://www.yoursparklesuite.com` and `https://yoursparklesuite.com` resolve to the deployment; unauthenticated MCP access fails closed with `401`.
+- Using Computer Use, Codex identified itself to Sam in Grok Bot and supplied the endpoint/provenance and safety boundaries without disclosing the masked token. Sam confirmed all 13 live tools, a clear operator-health read, and four waitlist records, then connected the **Sparkle Suite Control Center** card.
+- No Support reply, approval request, broadcast, report change, lead change, profile mutation, DNS change, billing action, or other production business write was performed. The two legacy Grok Bot cards were deliberately left installed pending explicit uninstall confirmation.

@@ -1645,3 +1645,13 @@ Control Center → Messages → Remy approvals before Remy may send it.
 Reason: This gives Louis a visible, auditable action-time control and makes
 retry behavior idempotent. The agent cannot silently treat a vague or stale
 conversation acknowledgement as permission to represent Louis.
+
+## 2026-08-28 - Grok Bot uses one capability-limited Control Center MCP
+
+Decision: Remy, Nic-Nac, Hale, and Sam share one Grok Bot connector backed by the existing bearer-protected `/api/remy/mcp` endpoint. Agent persona instructions describe intended use, while the MCP enforces the real capability boundary. The only live write remains an exact Support reply with a current one-time Control Center approval.
+
+Reason: Grok Bot exposes the same connected tools to every agent and cannot enforce per-agent credentials. One narrowly scoped server avoids duplicated connectors while preserving Control Center operator approval and blocking broad production authority.
+
+Decision: The broken HTTP `user-Sparkle Suite` OAuth connector is retired rather than repaired or reused. Legacy connector cards may be uninstalled only after the unified card is proven and Louis explicitly confirms the destructive cleanup.
+
+Reason: The OAuth path fails authentication and is not required by the working secure connect-card pattern. Delaying removal until after verification preserves rollback while respecting the action-time confirmation boundary for uninstalling integrations.
