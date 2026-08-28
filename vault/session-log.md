@@ -4639,3 +4639,27 @@ Lessons retained:
 - The replacement bearer token is presently entered only in Remy's masked Grok
   Bot connector field. The final **Save securely** control was intentionally
   not clicked yet. Never disclose the token in conversation or a memory file.
+
+---
+
+# August 28, 2026 - Lane bookkeeping handoff for Sparkle Suite and Finder
+
+- Prepared `docs/sparkle-suite/operations/2026-08-28-lane-bookkeeping-handoff.md`
+  for Lane, Neon Rabbit's bookkeeper. It separates Sparkle Suite and Sparkle
+  Finder into distinct profit centers, maps the current money rails and
+  evidence hierarchy, and provides a chart-of-accounts recommendation,
+  monthly-close checklist, 30-day setup plan, and questions for Louis.
+- Read-only production aggregate inspection confirmed that Finder currently has
+  11 Silver trial memberships and no Stripe-backed Finder memberships. Its
+  historical $4.99/month Silver discussion is planning context, not verified
+  present revenue.
+- The live Suite public offer is $49.99 one-time plus $74.99/month. Historical
+  $39 arrangements remain account-specific and require Stripe reconciliation.
+  The internal Suite financial snapshot currently reports $78 MRR across two
+  subscriptions but has `failed` sync status and null P&L fields; it must not
+  be used as a book of record.
+- Lane must reconcile Stripe reports, Bluevine statements, invoices, and
+  receipts before recording totals. No money movement, financial-provider
+  change, refund, or filing is authorized without Louis's explicit action-time
+  approval. The meaningful handoff summary was also captured and confirmed in
+  Open Brain; no credentials or raw payment data were recorded.
