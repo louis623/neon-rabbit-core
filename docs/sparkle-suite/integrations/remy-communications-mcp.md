@@ -1,86 +1,91 @@
-# Remy Communications MCP
+# Sparkle Suite Control Center MCP
 
 ## Purpose
 
-Remy can monitor the Sparkle Suite Communications Center without receiving a
-Control Center user account or its broad operator privileges. The integration
-is intentionally limited to read-only triage and non-persistent drafts.
+Grok Bot uses one Sparkle Suite connector shared by Remy, Nic-Nac, Hale, and
+Sam. Agent persona instructions may narrow how each agent uses the tools, but
+the enforceable boundary lives in this MCP and in the Control Center approval
+workflow.
 
-Endpoint after production release:
+This MCP extends the existing Sparkle Comms server in place. It does not create
+a connector per agent and does not depend on the broken `user-Sparkle Suite`
+OAuth connector.
+
+Existing endpoint (retained so the Sparkle Comms connect card can be updated in
+place rather than duplicated):
 
 `https://www.yoursparklesuite.com/api/remy/mcp`
 
-## What Remy can do
+The MCP server identifies itself as `sparkle-suite-control-center`.
 
-- Read minimized Support Inbox summaries and Support reports.
-- Read only reported Rep Network items in Network Safety.
-- Read official broadcast history and delivery counts.
-- Prepare support-reply, broadcast, and Task List candidate drafts.
-- Send one Support reply only after the exact draft has received a recorded,
-  one-time internal-operator approval.
+## Enforced capability boundary
 
-## What Remy cannot do
+The server is read-only by default. Its only live write remains the existing
+one-time approved Support reply:
 
-- Sign into the Control Center or use its session cookie.
-- Open a customer conversation, mark a conversation read, download an attachment,
-  change a support status, publish a broadcast, moderate a report,
-  suspend a rep, or create/promote a Task List item.
-- Access billing, accounts, customer-site settings, deployment controls, or any
-  unreported private Rep Network conversation.
+1. Draft an exact reply.
+2. Request approval. This creates no message and expires after 15 minutes.
+3. Louis reviews the exact text in **Control Center → Messages → Remy
+   approvals**.
+4. Only a current approval can be claimed once to send that immutable reply as
+   Sparkle Suite Support.
 
-Every successful tool call is recorded in
-`remy_communications_agent_audit_events` with a request digest and resource IDs.
-Raw request bodies, message bodies, attachments, and credentials are not written
-to that audit table. The service is rate-limited to 60 calls per minute.
+The server cannot send unapproved Support replies, publish or modify
+broadcasts, change report or lead status, mutate rep profiles, deploy, change
+DNS or production configuration, access attachments, or read unreported Rep
+Network conversations.
 
-## One-time operator setup
+## Tools
 
-1. Generate a long, random secret in the team password manager. Do not reuse a
-   Control Center password or a Supabase/Vercel credential.
-2. Set it in Vercel Production as `REMY_MCP_BEARER_TOKEN`. Optionally set
-   `REMY_MCP_ALLOWED_ORIGINS` to a comma-separated list of approved browser
-   origins; by default only `https://grok.com` and `https://www.grok.com` are
-   accepted when an Origin header is present. Server-to-server calls without an
-   Origin header remain supported.
-3. In Grok, go to **Connectors → New Connector → Custom**, enter the endpoint
-   above, and configure its Bearer token using the secret. Treat the token as a
-   service credential, never as a prompt or chat message.
-4. Ask Remy to call `communications_get_inbox_summary` first. Confirm that only
-   the ten listed tools are available and that no Control Center credentials
-   were supplied.
-5. Keep all external actions in the human Control Center workflow: review a
-   draft, review recipients, and make the final action deliberately.
+### Communications Center
 
-## Tool contract
+| Tool | Effect |
+| --- | --- |
+| `communications_get_inbox_summary` | Read minimized Support Inbox summaries |
+| `communications_list_support_reports` | Read minimized Support report queue |
+| `communications_get_support_report` | Read one minimized Support report |
+| `communications_list_network_safety_queue` | Read reported Rep Network items only |
+| `communications_list_broadcasts` | Read broadcast history and counts |
+| `communications_draft_support_reply` | Non-persistent draft |
+| `communications_request_support_reply_approval` | Create expiring approval request; no send |
+| `communications_send_approved_support_reply` | One immutable, one-time approved send |
+| `communications_draft_broadcast` | Non-persistent draft and audience count |
+| `communications_draft_task_candidate` | Non-persistent Task List candidate |
 
-| Tool | Purpose | Effect |
-| --- | --- | --- |
-| `communications_get_inbox_summary` | Support Inbox triage | Read-only |
-| `communications_list_support_reports` | Report queue triage | Read-only |
-| `communications_get_support_report` | One minimized report | Read-only |
-| `communications_list_network_safety_queue` | Reported Rep Network queue | Read-only |
-| `communications_list_broadcasts` | Official broadcast history | Read-only |
-| `communications_draft_support_reply` | Prepare a reply | Draft only |
-| `communications_request_support_reply_approval` | Request one-time approval for the exact reply | No message sent |
-| `communications_send_approved_support_reply` | Send only the exact approved reply | One-time approved send |
-| `communications_draft_broadcast` | Prepare a broadcast and count audience | Draft only |
-| `communications_draft_task_candidate` | Prepare Task List candidate | Draft only |
+### Waitlist and operator health
 
-## Human approval boundary
+| Tool | Effect |
+| --- | --- |
+| `control_center_list_waitlist_leads` | Read recent leads; optional status filter |
+| `control_center_get_waitlist_lead` | Read one lead by ID |
+| `control_center_get_operator_health` | Read bounded Support, job, system, and reported-safety counts |
 
-For a simple Support reply, Remy first prepares the exact text and asks for
-approval. The operator then approves that exact text in **Control Center →
-Messages → Remy approvals**. The approval expires after 15 minutes and permits
-one send only; Remy cannot alter the text after it was approved. A "yes" inside
-an external agent chat is not itself the authority to send because Sparkle
-Suite cannot independently verify who typed it.
+Waitlist responses contain lead ID, name, linked intake shop name when one
+exists, contact, signup source, signup date, and status. `shopName` is `null`
+when the lead has not supplied one through a linked intake; the MCP does not
+invent it.
 
-Remy must always hand off the following to a human operator in Control Center:
+The health snapshot returns counts only. It does not return private conversation
+bodies, attachments, billing information, customer profiles, error payloads,
+or deployment controls. Hale may surface a finding, but Codex does not begin a
+fix until Louis approves it.
 
-- Publishing an official broadcast.
-- Changing a Support report status or resolving it.
-- Promoting a report to the live Task List.
-- Moderating, dismissing, blocking, or suspending any Rep Network participant.
+## Authentication and one-connector setup
 
-This preserves Sparkle Suite's intentional broadcast confirmation flow and
-keeps Network Safety decisions with a responsible human operator.
+Use the same Bearer-token connect-card pattern as Sparkle Comms. Keep the token
+in masked connector/server configuration only; never place it in chat, prompts,
+Open Brain, Git-tracked files, or source comments.
+
+The server accepts `SPARKLE_CONTROL_CENTER_MCP_BEARER_TOKEN` as the shared
+configuration name and retains `REMY_MCP_BEARER_TOKEN` as a compatibility
+fallback. This does not create per-agent API keys. Approved browser origins may
+be configured with `SPARKLE_CONTROL_CENTER_MCP_ALLOWED_ORIGINS`, with the prior
+Remy setting retained as a fallback.
+
+Update the existing Sparkle Comms connect card in place and rename it **Sparkle
+Suite Control Center**. Do not add a second Sparkle connector. The broken
+`user-Sparkle Suite` OAuth connector is not part of this MCP and should not be
+used as its authentication path.
+
+No connector save, Support send, deployment, DNS change, or production mutation
+is required to build and verify the source contract.

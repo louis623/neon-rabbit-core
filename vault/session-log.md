@@ -4,6 +4,28 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 28, 2026 - One shared Grok Bot Control Center MCP
+
+- Extended the existing Sparkle Comms MCP in place into one shared Control
+  Center MCP. It retains the existing endpoint and token connect-card pattern,
+  so Remy, Nic-Nac, Hale, and Sam see one Sparkle tool surface rather than
+  separate per-agent connectors or keys.
+- Preserved the complete Communications Center tool set and one-time Support
+  approval/send path. All other sending, broadcasts, moderation, status/profile
+  changes, private unreported Rep Network access, attachments, deployment,
+  DNS, money, and production configuration remain blocked.
+- Added read-only waitlist list/get tools with truthful nullable shop identity,
+  plus a read-only operator-health snapshot built only from bounded Support,
+  job/system, reported Network Safety, and active-suspension counts.
+- Verification passed: 4 focused files / 11 tests, changed-file ESLint, active
+  branch guard, TypeScript, and the full Next.js production build. New read
+  modules have static no-mutation coverage.
+- Per Louis's explicit scope, no deploy, connector save, Support send, DNS
+  change, or production mutation occurred. The broken `user-Sparkle Suite`
+  OAuth connector was not touched or reused.
+
+---
+
 ## August 27, 2026 - Open Brain full-history retrieval repair
 
 - Repaired the live `open-brain-mcp` function so `list_thoughts` supports

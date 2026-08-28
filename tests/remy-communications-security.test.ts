@@ -5,6 +5,8 @@ describe('Remy Communications MCP security', () => {
     vi.resetModules()
     delete process.env.REMY_MCP_BEARER_TOKEN
     delete process.env.REMY_MCP_ALLOWED_ORIGINS
+    delete process.env.SPARKLE_CONTROL_CENTER_MCP_BEARER_TOKEN
+    delete process.env.SPARKLE_CONTROL_CENTER_MCP_ALLOWED_ORIGINS
   })
 
   it('fails closed until a dedicated service token is configured', async () => {
@@ -30,5 +32,13 @@ describe('Remy Communications MCP security', () => {
       headers: { authorization: 'Bearer remy-test-token', origin: 'https://example.test' },
     }))
     expect(response?.status).toBe(403)
+  })
+
+  it('accepts the shared Control Center token name without requiring a per-agent key', async () => {
+    process.env.SPARKLE_CONTROL_CENTER_MCP_BEARER_TOKEN = 'control-center-test-token'
+    const { remyMcpSecurityResponse } = await import('@/lib/remy-communications/security')
+    expect(remyMcpSecurityResponse(new Request('https://www.yoursparklesuite.com/api/remy/mcp', {
+      headers: { authorization: 'Bearer control-center-test-token' },
+    }))).toBeNull()
   })
 })

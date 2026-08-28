@@ -19,9 +19,14 @@ import {
   createRemyReplyApprovalRequest,
   sendApprovedRemyReply,
 } from '@/lib/remy-communications/reply-approvals'
+import {
+  getControlCenterWaitlistLead,
+  listControlCenterWaitlistLeads,
+} from '@/lib/remy-communications/waitlist'
+import { getControlCenterOperatorHealth } from '@/lib/remy-communications/operator-health'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-const ACTOR_KEY = 'remy-communications'
+const ACTOR_KEY = 'sparkle-control-center'
 const MAX_CALLS_PER_MINUTE = 60
 
 const toolNames = [
@@ -35,6 +40,9 @@ const toolNames = [
   'communications_send_approved_support_reply',
   'communications_draft_broadcast',
   'communications_draft_task_candidate',
+  'control_center_list_waitlist_leads',
+  'control_center_get_waitlist_lead',
+  'control_center_get_operator_health',
 ] as const
 
 type ToolName = (typeof toolNames)[number]
@@ -141,7 +149,7 @@ async function runTool<T>(
     return errorResult(
       error instanceof RemyRateLimitError
         ? 'Rate limit reached. Try again in one minute.'
-        : 'This Communications Center tool is temporarily unavailable. Use the human Control Center workflow.',
+        : 'This Sparkle Suite Control Center tool is temporarily unavailable. Use the human Control Center workflow.',
     )
   }
 }
@@ -168,10 +176,10 @@ const supportReportIdSchema = z.object({
   reportId: z.string().uuid(),
 })
 
-export function createRemyMcpServer() {
+export function createControlCenterMcpServer() {
   const server = new McpServer({
-    name: 'sparkle-suite-remy-communications',
-    version: '1.0.0',
+    name: 'sparkle-suite-control-center',
+    version: '1.1.0',
   })
 
   server.registerTool(
@@ -443,8 +451,83 @@ export function createRemyMcpServer() {
     ),
   )
 
+  server.registerTool(
+    'control_center_list_waitlist_leads',
+    {
+      description: 'List recent Sparkle Suite landing-page and operator-added waitlist leads. This is read-only and cannot email, delete, or change a lead or its status.',
+      inputSchema: z.object({
+        status: z.string().trim().min(1).max(80).optional(),
+        limit: z.number().int().min(1).max(100).default(25),
+      }),
+    },
+    async ({ status, limit }) => runTool(
+      'control_center_list_waitlist_leads',
+      { status, limit },
+      async () => {
+        const leads = await listControlCenterWaitlistLeads(
+          createAdminClient(),
+          { status, limit },
+        )
+        return {
+          result: {
+            leads,
+            notice: 'Read-only lead source of truth. Shop name is null when no linked intake supplied one. Use a human operator for outreach or any status change.',
+          },
+          resourceIds: leads.map((lead) => lead.leadId),
+        }
+      },
+    ),
+  )
+
+  server.registerTool(
+    'control_center_get_waitlist_lead',
+    {
+      description: 'Get one Sparkle Suite waitlist lead by ID with name, linked shop name when available, contact, signup source, date, and status. This is read-only.',
+      inputSchema: z.object({ leadId: z.string().uuid() }),
+    },
+    async ({ leadId }) => runTool(
+      'control_center_get_waitlist_lead',
+      { leadId },
+      async () => {
+        const lead = await getControlCenterWaitlistLead(
+          createAdminClient(),
+          leadId,
+        )
+        if (!lead) throw new Error('Waitlist lead was not found.')
+        return {
+          result: {
+            lead,
+            notice: 'Read-only. No email was sent and no lead state was changed.',
+          },
+          resourceIds: [leadId],
+        }
+      },
+    ),
+  )
+
+  server.registerTool(
+    'control_center_get_operator_health',
+    {
+      description: 'Read a short Sparkle Suite operator-health snapshot: bounded error/job flags, Support volume and urgency counts, reported Network Safety count, and active messaging-suspension count. It cannot inspect private unreported conversations, deploy, change users, or fix anything.',
+      inputSchema: z.object({}),
+    },
+    async () => runTool(
+      'control_center_get_operator_health',
+      {},
+      async () => ({
+        result: await getControlCenterOperatorHealth(createAdminClient()),
+      }),
+    ),
+  )
+
   return server
 }
 
-export const remyMcpHandler = createMcpHandler(createRemyMcpServer)
-export const remyMcpToolNames = toolNames
+export const controlCenterMcpHandler = createMcpHandler(createControlCenterMcpServer)
+export const controlCenterMcpToolNames = toolNames
+
+// Compatibility exports keep the existing single connect-card endpoint and
+// tests stable while the server itself is now the shared Control Center MCP.
+export const createRemyMcpServer = createControlCenterMcpServer
+export const remyMcpHandler = controlCenterMcpHandler
+export const remyMcpToolNames = controlCenterMcpToolNames

@@ -1,5 +1,42 @@
 # Project State
 
+## August 28, 2026 Session - One Grok Bot Control Center MCP
+
+- Extended the existing Sparkle Comms MCP in place into one shared
+  `sparkle-suite-control-center` server for Remy, Nic-Nac, Hale, and Sam. The
+  existing `/api/remy/mcp` endpoint and Bearer connect-card pattern are retained
+  so Grok Bot can update one connector rather than add a second overlapping
+  Sparkle connector. The broken `user-Sparkle Suite` OAuth connector is not
+  reused or required.
+- Preserved all ten Communications Center tools and their existing safety
+  boundaries. The only live write remains the immutable one-time Support reply
+  after a current approval in **Control Center → Messages → Remy approvals**.
+  No general send switch, broadcast publication, moderation, report status,
+  Task List promotion, attachment, or private unreported Rep Network access was
+  added.
+- Added read-only waitlist list/get tools backed by
+  `sparkle_suite_waitlist`. Each lead returns name, contact, signup source/date,
+  and status; `shopName` comes only from a linked intake submission and remains
+  `null` when none exists.
+- Added a read-only operator-health snapshot for Support volume/spike and urgent
+  counts, failed notifications/audits/jobs/broadcasts, stale Message Center
+  jobs, reported Network Safety count, and active messaging-suspension count.
+  It returns bounded counts only and exposes no private messages, attachments,
+  billing, customer profiles, error payloads, or deployment controls.
+- Focused MCP/security/read-model verification passed 4 files / 11 tests, the
+  changed files passed ESLint, and the Next.js 16.2.1 production build passed.
+  Static guards prove the new waitlist and health modules contain no insert,
+  update, upsert, delete, or RPC mutation paths.
+- Louis explicitly scoped this job to source work with no deploy, connector
+  save, Support send, DNS change, or production mutation. Production remains on
+  application commit `1b3080979be3cc70aafbeb0732a3a2056594ad5c` and deployment
+  `dpl_EwSH5AvtYEAV11Qfo5AWV1MWp4Z2` until a future explicitly authorized
+  release.
+
+**Last updated:** August 28, 2026
+
+---
+
 ## August 28, 2026 Session - Open Brain, Lane finance handoff, and GrokBot access
 
 - **Open Brain is the actual cross-session diary, not a name for the vault.**

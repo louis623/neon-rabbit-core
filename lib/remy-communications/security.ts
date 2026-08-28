@@ -7,7 +7,10 @@ const DEFAULT_ALLOWED_ORIGINS = new Set([
 ])
 
 function configuredOrigins() {
-  const configured = process.env.REMY_MCP_ALLOWED_ORIGINS
+  const configured = (
+    process.env.SPARKLE_CONTROL_CENTER_MCP_ALLOWED_ORIGINS ??
+    process.env.REMY_MCP_ALLOWED_ORIGINS
+  )
     ?.split(',')
     .map((origin) => origin.trim())
     .filter(Boolean)
@@ -15,7 +18,10 @@ function configuredOrigins() {
 }
 
 function configuredToken() {
-  return process.env.REMY_MCP_BEARER_TOKEN?.trim() ?? ''
+  return (
+    process.env.SPARKLE_CONTROL_CENTER_MCP_BEARER_TOKEN ??
+    process.env.REMY_MCP_BEARER_TOKEN
+  )?.trim() ?? ''
 }
 
 function tokenMatches(authorization: string | null, expectedToken: string) {
@@ -35,7 +41,7 @@ export function remyMcpSecurityResponse(request: Request) {
   const token = configuredToken()
   if (!token) {
     return NextResponse.json(
-      { error: 'Remy Communications MCP is not configured.' },
+      { error: 'Sparkle Suite Control Center MCP is not configured.' },
       { status: 503 },
     )
   }
@@ -50,7 +56,7 @@ export function remyMcpSecurityResponse(request: Request) {
       { error: 'unauthorized' },
       {
         status: 401,
-        headers: { 'www-authenticate': 'Bearer realm="Remy Communications MCP"' },
+        headers: { 'www-authenticate': 'Bearer realm="Sparkle Suite Control Center MCP"' },
       },
     )
   }

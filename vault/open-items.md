@@ -406,15 +406,18 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 - [ ] Run the seven-task friendly-interface acceptance walkthrough with an isolated authenticated reviewer browser session when the supported reviewer token is available: Team reply, inbox return position, Support problem, Support idea/status, official-update distinction, Rep Network accept/decline, and archive/mute reversal. Also verify the Message Center's 60-second visible-tab refresh and focus-return refresh update inbox/header unread counts without moving an open thread or disturbing a reply draft. Automated UI contracts and production-schema smoke are complete; do not substitute Louis's or a customer's account for this remaining visual acceptance.
 
-## Remy Communications MCP
+## Grok Bot Control Center MCP
 
-- [ ] Finish the authorized Grok Bot connector activation: the fresh bearer
-  token is already entered in Remy's masked Sparkle Suite MCP field, but
-  **Save securely** has not been clicked. Obtain Louis's explicit action-time
-  confirmation immediately before saving. Then verify a safe read-only
-  connection without exposing the token or touching live Support content.
-- [ ] After connector activation, run the isolated reviewer-safe
-  Communications MCP walkthrough: read inbox summary, list a safe Support
-  report if available, create a draft only, request a one-time approval, and
-  confirm no send occurs without the Control Center approval. Do not use
-  Louis's or a customer's account as a substitute.
+- [ ] Release and activate the one shared Sparkle Suite Control Center MCP only
+  in a future explicitly authorized production session. The verified source
+  extends the existing Sparkle Comms endpoint in place, but Louis explicitly
+  required no deployment or production mutation for the build session. Update
+  and rename the existing Sparkle Comms connect card; do not create a second
+  Sparkle connector and do not reuse the broken `user-Sparkle Suite` OAuth.
+  Obtain action-time confirmation before any connector **Save securely** step.
+- [ ] After activation, run a safe read-only MCP walkthrough: inbox summary,
+  minimized Support list/get, reported Network Safety list, broadcast history,
+  waitlist list/get (including Kim if present), and operator-health snapshot.
+  Create no approval request or send unless Louis separately authorizes that
+  exact workflow; confirm an unapproved Support send remains impossible. Do not
+  use Louis's or a customer's account as a substitute.

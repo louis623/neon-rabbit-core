@@ -1,5 +1,32 @@
 # Decision Log
 
+## August 28, 2026 - Grok Bot gets one Sparkle Suite Control Center MCP
+
+**Remy, Nic-Nac, Hale, and Sam share one Sparkle Suite MCP and one service
+credential.** Grok Bot persona instructions describe intended use, but real
+enforcement belongs in the MCP and the human Control Center approval flow. Do
+not create per-agent Sparkle connectors, OAuth grants, API keys, or broad write
+switches.
+
+**The existing Sparkle Comms server is extended in place.** Retain its endpoint
+and Bearer connect-card pattern so the existing card can be updated rather than
+duplicated. The broken `user-Sparkle Suite` OAuth connector is not an
+authentication dependency and must not be repointed or repaired as part of
+this integration.
+
+**Read-only is the default; one approved Support reply is the only live
+write.** Waitlist and operator-health tools may read only the approved bounded
+fields and counts. Support sending still requires a current, exact, one-time
+approval in Control Center. Broadcast publication, report or lead status,
+profiles, private unreported Rep Network conversations, attachments, money,
+DNS, deployments, and production configuration remain unavailable.
+
+**A health finding is an alert, not authority to fix.** Hale may read and
+surface operator-health flags, but Codex does not begin a production fix or
+mutation until Louis approves the finding.
+
+---
+
 ## August 27, 2026 - Open Brain and vault require dual recording
 
 **Open Brain is the durable cross-session diary; the repository vault is the

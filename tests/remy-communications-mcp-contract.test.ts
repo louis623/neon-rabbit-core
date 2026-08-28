@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { remyMcpToolNames } from '@/lib/remy-communications/mcp'
+import {
+  controlCenterMcpToolNames,
+  remyMcpToolNames,
+} from '@/lib/remy-communications/mcp'
 
-describe('Remy Communications MCP contract', () => {
-  it('exposes only read/draft tools plus a one-time approved-reply path', () => {
-    expect(remyMcpToolNames).toEqual([
+describe('Sparkle Suite Control Center MCP contract', () => {
+  it('extends the single Communications MCP with waitlist and health reads', () => {
+    expect(controlCenterMcpToolNames).toEqual([
       'communications_get_inbox_summary',
       'communications_list_support_reports',
       'communications_get_support_report',
@@ -14,9 +17,19 @@ describe('Remy Communications MCP contract', () => {
       'communications_send_approved_support_reply',
       'communications_draft_broadcast',
       'communications_draft_task_candidate',
+      'control_center_list_waitlist_leads',
+      'control_center_get_waitlist_lead',
+      'control_center_get_operator_health',
     ])
-    expect(remyMcpToolNames).not.toContain('communications_publish_broadcast')
-    expect(remyMcpToolNames).not.toContain('communications_moderate_network')
-    expect(remyMcpToolNames).not.toContain('communications_change_support_status')
+    expect(remyMcpToolNames).toBe(controlCenterMcpToolNames)
+  })
+
+  it('does not expose blocked writes or private conversation access', () => {
+    expect(controlCenterMcpToolNames).not.toContain('communications_publish_broadcast')
+    expect(controlCenterMcpToolNames).not.toContain('communications_moderate_network')
+    expect(controlCenterMcpToolNames).not.toContain('communications_change_support_status')
+    expect(controlCenterMcpToolNames).not.toContain('control_center_update_waitlist_lead')
+    expect(controlCenterMcpToolNames).not.toContain('control_center_list_rep_conversations')
+    expect(controlCenterMcpToolNames).not.toContain('control_center_deploy')
   })
 })
