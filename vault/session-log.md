@@ -4663,3 +4663,33 @@ Lessons retained:
   change, refund, or filing is authorized without Louis's explicit action-time
   approval. The meaningful handoff summary was also captured and confirmed in
   Open Brain; no credentials or raw payment data were recorded.
+
+---
+
+# August 28, 2026 - Open Brain repair, Readdy transfer clarification, and GrokBot access
+
+- Re-established the Open Brain boundary after Louis's correction: Open Brain
+  is the actual company diary and the vault is a distinct companion system.
+  The repository rule now requires verified Open Brain capture plus relevant
+  vault updates for meaningful work; neither may contain credentials, tokens,
+  payment data, or passwords.
+- Repaired the production Open Brain MCP in `c16f349`: full-history statistics,
+  paginated oldest/newest listing, working capture, and working semantic search
+  were live-verified against all 2,309 records. The exact tenth historical
+  record was retrieved rather than guessed.
+- Louis approved and sent the Readdy response that rejects an AWS internal
+  transfer for `milehighfizz.com` and requests a normal external-transfer EPP
+  code/unlock for CheapNames. Nothing about DNS, nameservers, hosting, or the
+  registration was changed.
+- Prepared and pushed the Lane bookkeeping handoff in `70baf72`. Aggregate
+  production evidence and all resulting finance conclusions are in the linked
+  operations document; the stale/failed Suite financial snapshot must not be
+  treated as books.
+- In Louis's authenticated GitHub Chrome session, prepared but did not
+  generate a fine-grained no-expiration GrokBot token restricted to
+  `louis623/sparkle-suite` with read-only Actions, Contents, Issues, Metadata,
+  and Pull requests. The final **Generate token** action remains for Louis's
+  explicit approval. No token value was created, copied, or recorded.
+- Three matching Open Brain entries were successfully captured: the diary/vault
+  rule and retrieval repair; registrar/finance handoff; and GrokBot GitHub
+  setup. No secrets were recorded.

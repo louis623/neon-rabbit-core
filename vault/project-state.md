@@ -1,5 +1,42 @@
 # Project State
 
+## August 28, 2026 Session - Open Brain, Lane finance handoff, and GrokBot access
+
+- **Open Brain is the actual cross-session diary, not a name for the vault.**
+  When Louis asks to log or lock something there, use the actual Open Brain MCP
+  and verify the capture. Meaningful agent context is normally also recorded in
+  the relevant Git-tracked vault file. Neither record may contain credentials,
+  payment data, passwords, API keys, or bearer tokens.
+- Repaired and deployed the Open Brain MCP in `c16f349` so its entire history
+  is available rather than being capped at the newest 1,000 records.
+  `list_thoughts` now supports pagination and oldest/newest ordering,
+  `thought_stats` counts every record, `capture_thought` works again, and
+  semantic search matches the live RPC contract. Live verification confirmed
+  2,309 records and retrieved the exact tenth entry.
+- Louis approved and sent Readdy a reply clarifying that `milehighfizz.com`
+  should move to CheapNames through an external registrar transfer, not an AWS
+  internal transfer. Readdy still needs to provide unlock status and the
+  EPP/AuthInfo code. No DNS, nameserver, registration, or hosting change has
+  been made; preserve current nameservers until the transfer finishes.
+- Created and pushed the source-backed Lane bookkeeping handoff in commit
+  `70baf72`: `docs/sparkle-suite/operations/2026-08-28-lane-bookkeeping-handoff.md`.
+  It keeps Sparkle Suite and Sparkle Finder as distinct profit centers and
+  requires Stripe reports, Bluevine statements, invoices, and receipts as
+  reconciliation evidence. The current Suite internal financial snapshot is
+  failed/stale and not a book of record. Finder has 11 Silver trials and zero
+  Stripe-backed memberships in the inspected aggregate data.
+- GitHub's fine-grained token form was prepared in Louis's authenticated Chrome
+  session for future GrokBot repository inspection. It is scoped to only
+  `louis623/sparkle-suite`, has no expiration at Louis's request, and is
+  read-only for Actions, Contents, Issues, Metadata, and Pull requests. No
+  token has been generated, copied, saved, or exposed. Stop before **Generate
+  token** until Louis explicitly approves that action; enter the future value
+  only into GrokBot's masked connector field.
+
+**Last updated:** August 28, 2026
+
+---
+
 ## August 27, 2026 Session - Remy Communications MCP
 
 - Implemented and pushed `1b3080979be3cc70aafbeb0732a3a2056594ad5c`

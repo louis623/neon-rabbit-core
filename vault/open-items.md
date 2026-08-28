@@ -5,6 +5,14 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Generate and connect GrokBot's GitHub read-only token** - the
+  fine-grained token form is prepared in Louis's authenticated Chrome session:
+  only `louis623/sparkle-suite`; no expiration at Louis's choice; read-only
+  Actions, Contents, Issues, Metadata, and Pull requests. No token has been
+  generated or exposed. Obtain Louis's explicit action-time confirmation before
+  **Generate token**, then place the one-time-visible value directly in
+  GrokBot's masked connector field and verify read-only repository access.
+
 - [x] **Move Sparkle Finder into the Sparkle Suite repository without combining
   the applications** - completed through history-preserving import commit
   `8e12e6da`. Finder now lives at `apps\finder`; Suite remains at repo root, and

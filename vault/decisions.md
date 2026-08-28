@@ -16,6 +16,20 @@ Brain entries or Git-tracked vault content.
 
 ---
 
+## August 28, 2026 - GrokBot GitHub access is narrowly read-only
+
+GrokBot's future GitHub access is limited to the single repository
+`louis623/sparkle-suite`, using a fine-grained token with read-only Actions,
+Contents, Issues, Metadata, and Pull-request permissions. It receives no write,
+administration, secrets, deployments, webhooks, or workflow-change access.
+
+Louis explicitly chose no expiration for this operational agent token. The
+token must still be generated only with explicit action-time approval and its
+value may appear only in GrokBot's masked connector field, never chat, source,
+Open Brain, or the Git-tracked vault.
+
+---
+
 ## August 25, 2026 - One repository, two isolated applications
 
 **Sparkle Suite remains the root app and Sparkle Finder is contained at `apps\finder`.**
