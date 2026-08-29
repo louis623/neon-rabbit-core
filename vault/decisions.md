@@ -1,5 +1,24 @@
 # Decision Log
 
+## August 29, 2026 - Customer status is durable metadata, not a name whitelist
+
+**A real approved rep is classified as a customer from account creation.** The
+classification does not wait for required setup, billing, a subscription,
+customization, or a public-site slug. The current customer roster is Heather,
+Brittany, Kim, and Lindsey.
+
+**Demo status must be explicit.** Reviewer, smoke, sample, test, and internal
+demo creation paths must persist `demo`; ordinary operator-led and self-serve
+onboarding persists `customer`. Control Center reads this durable field and
+must not infer classification from names, emails, domains, slugs, setup state,
+or payment state.
+
+**Onboarding closeout includes placement verification.** The reusable rep-
+welcome skill must confirm the stored classification and verify that a real rep
+appears in Customer Database before the account package is called complete.
+
+---
+
 ## August 29, 2026 - Operator support is transparent delegated access, not impersonation
 
 **Support access uses an independent actor/subject session.** The operator is

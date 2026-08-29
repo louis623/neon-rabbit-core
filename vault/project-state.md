@@ -1,5 +1,45 @@
 # Project State
 
+## August 29, 2026 Session - Durable customer classification released
+
+- Replaced the Control Center's legacy three-name customer whitelist with a
+  durable `reps.account_classification` field constrained to `customer` or
+  `demo`. Ordinary real-account creation defaults to `customer`; reviewer,
+  smoke, sample, internal-beta, and demo creation paths now opt into `demo`
+  explicitly.
+- Production migration `20260829154000_ss_rep_account_classification.sql`
+  classified the four current customers as Heather/BlingKitchen,
+  Brittany/Britt with Bling, Kim Goforth, and Lindsey/Mile High Fizz. The
+  remaining 24 existing accounts are explicitly `demo`. Setup progress,
+  subscription state, and public-site readiness no longer determine placement.
+- The reusable `sparkle-suite-rep-welcome-site` skill and its onboarding
+  reference now require an explicit customer/demo decision and a read-only
+  Control Center placement check before closeout. Its generic template also no
+  longer contains a Kim-specific Coming Soon instruction.
+- Released exact application commit
+  `299e9bcd1f5c8b818b25c77367e8200cc92d8c57` as Vercel production deployment
+  `dpl_GvTmFiCnhavhU4Z5WeNYrnH4Vk8Y`
+  (`https://sparkle-suite-l71m8dvpm-louis-2849s-projects.vercel.app`). The
+  deployment is Ready and owns both Suite aliases plus every existing project
+  and customer alias; no DNS configuration changed.
+- Live authenticated Control Center verification showed 4 customer accounts,
+  Kim visibly inside Customer Database, no Kim entry in Demo Database, 24 demo
+  accounts, and no browser-console errors. HTTP checks passed both Suite
+  domains and all customer domains, migration parity is exact, and the
+  deployment error-log query was clean.
+- Verification passed 8 focused files / 62 tests, the standard 14 files / 226
+  tests, changed-file ESLint, local and Vercel production builds, migration dry
+  run, staged diff checks, and a full repository sweep with 440 passed files,
+  1 skipped, 19 unrelated baseline-failure files (2,995 tests passed, 1
+  skipped, 37 failed). No classification or onboarding test failed.
+- Kim's rep status, Workspace state, billing, subscription, credentials,
+  customer-facing content, Message Center, and onboarding communications were
+  not changed by this correction.
+
+**Last updated:** August 29, 2026
+
+---
+
 ## August 29, 2026 Session - Full rep Workspace support parity released
 
 - Corrected the first transparent-support release after Louis's live review

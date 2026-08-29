@@ -4,6 +4,37 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 29, 2026 - Kim and future-customer classification correction
+
+- Diagnosed that Kim's active, dashboard-unlocked account appeared in Demo
+  Database because the Control Center still treated only three hardcoded site
+  identifiers as customers. Her onboarding progress and missing subscription
+  were not the classification cause.
+- Added durable `customer` / `demo` classification to `reps`, removed the UI
+  whitelist, and wired the field through the operator customer-profile read
+  model. Real operator-led and self-serve account creation now persists
+  `customer`; every known reviewer/demo/smoke/test creation path persists
+  `demo` explicitly.
+- Updated the reusable rep-welcome skill, component checklist, and tokenized
+  template. Future onboarding must verify classification and the resulting
+  Customer Database placement before closeout.
+- Focused regression passed 62 tests; the standard suite passed 226; changed-
+  file lint and local/Vercel production builds passed. The full sweep improved
+  to 440 passed files and 2,995 passed tests, with 19 files / 37 tests still
+  failing only in unrelated documented expectation drift.
+- Pushed exact application commit
+  `299e9bcd1f5c8b818b25c77367e8200cc92d8c57`, applied migration
+  `20260829154000`, and manually released Vercel deployment
+  `dpl_GvTmFiCnhavhU4Z5WeNYrnH4Vk8Y`.
+- Production readback confirmed four customers and 24 demos. Live Control
+  Center inspection confirmed Kim is visible in Customer Database, absent from
+  Demo Database, and the console is clean. All Suite/customer domain HTTP
+  checks and deployment logs passed.
+- No billing, checkout, subscription, credential, public-site, DNS, Message
+  Center, email/SMS, or Live Queue extension change occurred.
+
+---
+
 ## August 29, 2026 - Support access full Workspace parity correction and release
 
 - Louis's first live review proved the support-only shortcut screen was a

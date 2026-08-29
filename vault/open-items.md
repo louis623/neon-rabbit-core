@@ -259,7 +259,11 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   - Progress: internal cap evaluator exists at `lib/nic-nac/core/lab/budget.ts`; Sparkle Lab schema migration exists at `supabase/migrations/20260621193000_sparkle_lab.sql` and has been applied/verified remotely; deterministic manual runner endpoint exists at `/api/control-center/sparkle-lab/run`; authenticated weekly route exists at `/api/internal/sparkle-lab/weekly` and is wired in `vercel.json` for Sunday overnight. Manual and weekly runners are feature-flagged off by default. Lab runner responses include mutation mode, model-synthesis status, artifact counts/summaries, and deterministic recommendations. A model synthesis harness exists and can create report artifacts only when `SPARKLE_LAB_MODEL_SYNTHESIS_ENABLED=true`; that flag is not enabled in Vercel. Lab synthesis now refuses to make paid model calls when the configured `lab_synthesis` model has no approved pricing entry, preventing pro/nano env overrides from being treated as free or base-priced. Stable deployed route protection smoke passed. Enabling env flags and live model-synthesis smoke remain.
 - [ ] **Design Nic-Nac memory/legal disclosure path** - locked June 21. Nic-Nac memory is a product feature and marketing point, not a beta tuning panel. Update privacy policy, terms, onboarding, and marketing copy before broad rollout; keep internal/operator correction/deletion paths for legal, privacy, abuse, data-quality, or operational needs.
   - Baseline implemented June 22: Suite and Finder privacy policies, terms, and signup/account acknowledgment copy now disclose Nic-Nac AI assistance, memory, telemetry/tool context, bounded linked-rep memory between Suite/Finder, surface-gated actions, review responsibility, off-mission/excessive-use limits, and sensitive-info caution. Still open before broad rollout: attorney review, final privacy/terms approval, and marketing/onboarding positioning copy.
-- [ ] **Control Center customer/demo database polish** - v1 was added June 20 and expanded June 21. `/control-center` now has left-nav options, Trouble Tickets, Customer Database, and Demo Database; customer/demo databases are collapsible; active customers are separated from demo accounts; rep rows include contact, billing, website/social, setup status, internal notes, phone, promo code, and promo-code usage fields. Next polish should add search/filtering, inline internal notes/status editing, richer billing history/detail actions, and durable customer/demo classification metadata.
+- [ ] **Control Center customer/demo database polish** - durable customer/demo
+  classification was completed August 29 in `299e9bcd`; Kim is customer #4 and
+  future real onboarding defaults to Customer Database. Remaining polish is
+  search/filtering, inline internal notes/status editing, and richer billing
+  history/detail actions.
 - [x] **Close out BlingKitchen migration** - completed June 19 in `ccd4456 feat: migrate BlingKitchen public site`. Recipes were seeded, Supabase reported remote DB up to date, focused BlingKitchen/Nic-Nac recipe tests passed, `qa:amethyst` passed, build passed locally and on Vercel, branch was pushed, and stable demo now points to `https://sparkle-suite-5w9d59ald-louis-2849s-projects.vercel.app`.
 - [x] **Smoke Heather's account after BlingKitchen deploy** - account provisioning/login verified for `blingkitchen19@gmail.com`, rep id `9a971c05-3631-443e-bcb8-4e9a26e15885`, live queue sync code `BLI-3767`, and `readyForDomainCutover: true`. Do not store the temporary password in long-term docs; rotate it after handoff if needed.
 - [ ] **Finish Britt With Bling acceptance pass** - pushed checkpoint `2617b8c feat: migrate Britt With Bling public site` carries the custom public site. July 2 Team Management work added a dashboard Public Team Cards manager for Brittany's Join Team cards, with preservation for imported photos/names/links/copy/order and unsafe-link validation. Stable-demo synthetic reviewer-smoke now verifies the unlocked Team Management Public Team Cards UI. Still confirm Louis/Brittany acceptance. Diamonds/unicorns/FAQ pages were intentionally dropped per Louis.
@@ -392,7 +396,12 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [ ] **Command center: billing details** — add billing details per client card
 - [ ] **Command center: System tab** — add System tab
 - [ ] **Command center: Construction Map tab** — add Construction Map tab
-- [ ] **Control Center account classification metadata** - if customer/demo status needs to be editable, add durable account classification fields and Nic-Nac/dashboard controls instead of relying on the current known-customer identifier split.
+- [x] **Control Center account classification metadata** - completed August 29
+  in `299e9bcd` and migration `20260829154000`. Control Center no longer uses a
+  known-customer identifier list. Real onboarding persists `customer`; demo,
+  reviewer, smoke, and sample creation persists `demo` explicitly. Live
+  verification confirmed Kim in Customer Database and absent from Demo
+  Database.
 
 ---
 
