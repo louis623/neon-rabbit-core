@@ -8,6 +8,7 @@ Replace only the tokens below. Never put a password, email address, Live Queue c
 | --- | --- |
 | `{{REP_FIRST_NAME}}` | First name used in welcome copy. |
 | `{{ONBOARDING_DAY_TIME}}` | Confirmed onboarding schedule, such as `Sunday · 11:00 AM`. |
+| `{{MEETING_LINK_COPY}}` | Optional, explicitly approved meeting-link wording. Use only when the user authorizes sharing the link on the public page; otherwise omit it. |
 | `{{PROMO_MONTHLY_PRICE}}` | Exact advertised promotional monthly price. |
 | `{{PROMO_MONTHS}}` | Promotional duration in paid months. |
 | `{{STANDARD_MONTHLY_PRICE}}` | Exact monthly price after the promotion. |
@@ -23,6 +24,8 @@ Replace only the tokens below. Never put a password, email address, Live Queue c
 This is your first guide to a stronger, more polished setup—built around the way you want your business and your live shows to feel. You do not need every detail perfect on day one. We will build it one good step at a time.
 
 First session: **{{ONBOARDING_DAY_TIME}}**
+
+{{MEETING_LINK_COPY}}
 
 ### First-week checklist
 

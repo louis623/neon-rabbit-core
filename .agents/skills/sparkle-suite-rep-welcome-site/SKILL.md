@@ -29,7 +29,7 @@ Use `assets/rep-welcome-site-template.md` as the reusable page blueprint. Keep t
 
 ## Personalization
 
-Replace only the tokens identified in the template: rep name, schedule, promotion, standard price, shipping-address state, and explicitly approved roadmap items. Do not infer a business name, team affiliation, customer details, shipping address, private URL, or product entitlement.
+Replace only the tokens identified in the template: rep name, schedule, promotion, standard price, shipping-address state, and explicitly approved roadmap items. Do not infer a business name, team affiliation, customer details, shipping address, private URL, or product entitlement. A meeting URL is treated as private unless the user explicitly authorizes it to be published on the rep's public welcome page.
 
 If a user asks for a different public URL, use a new Sites project. Otherwise update the existing rep’s Sites project in place. Keep this separate from the Sparkle Suite application and do not deploy the main product merely to change a welcome site.
 
