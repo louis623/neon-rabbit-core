@@ -5,6 +5,17 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Louis review/send Kim's welcome email** - Kim's personalized Gmail
+  welcome is deliberately still an unsent draft. It has the approved public
+  guide, sign-in, meeting, and official Live Queue Store links plus private
+  onboarding details. Do not send until Louis explicitly authorizes sending
+  that exact draft.
+
+- [ ] **Confirm Kim's light-box shipping address privately** - the public
+  starter guide asks Kim to confirm the best address during onboarding, but no
+  address belongs in public content, the vault, or Open Brain. Use the approved
+  private fulfillment path when Louis is ready to collect and ship.
+
 - [ ] **Generate and connect GrokBot's GitHub read-only token** - the
   fine-grained token form is prepared in Louis's authenticated Chrome session:
   only `louis623/sparkle-suite`; no expiration at Louis's choice; read-only

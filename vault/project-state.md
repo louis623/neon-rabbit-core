@@ -1,5 +1,44 @@
 # Project State
 
+## August 29, 2026 Session - Kim onboarding package
+
+- Kim now has a personalized public Sparkle Suite starter guide, deployed
+  through its separate Sites project rather than the main Sparkle Suite
+  application. It is a practical welcome and self-paced orientation, not a
+  promotional page or a substitute for the authenticated Workspace.
+- The guide covers customer-site customization, Live Queue, Dance Floor, live
+  calendar, Nic-Nac, Help & Resources, transparent introductory pricing,
+  light-box fulfillment, and a clearly labeled Coming soon area. Features not
+  ready for Kim, including Email and SMS updates, are not presented as usable.
+- Kim's onboarding meeting is stated with its full date, time, and `ET` time
+  zone. A reusable Google Meet link appears on the guide only because Louis
+  explicitly approved that public placement; its value is intentionally not
+  recorded here. The guided session is a walkthrough, not a promise that Kim's
+  personal settings will be completed for her.
+- The five starter-guide checkboxes are device-local orientation aids. They do
+  not mutate Workspace data, confirm actual completion, or create an account
+  setup record.
+- Kim's Gmail welcome remains an unsent draft in Louis's verified mailbox. It
+  contains real HTML links for the public guide, Sparkle Suite sign-in, the
+  approved meeting, and the official Live Queue Chrome Web Store listing. Any
+  temporary credential and private Live Queue code remain only in the private
+  draft and are not recorded in the vault or Open Brain.
+- A credential-free in-app Message Center welcome was published through the
+  Control Center after a frozen single-recipient preview and Louis's final
+  approval. Control Center verified one intended recipient and one delivery;
+  no email or SMS was sent by that publication.
+- The reusable `sparkle-suite-rep-welcome-site` skill is now a component-based
+  onboarding package that can begin from a small verified intake. It covers
+  account preparation, a public guide, an unsent email draft, optional Message
+  Center welcome, pricing, fulfillment, verification, and independent approval
+  gates for sensitive or external actions.
+- No Sparkle Suite app deployment, payment/checkout, DNS or production-config
+  change, Live Queue extension change, or Gmail send occurred in this package.
+
+**Last updated:** August 29, 2026
+
+---
+
 ## August 28, 2026 Session - One Grok Bot Control Center MCP
 
 - Extended the existing Sparkle Comms MCP in place into one shared

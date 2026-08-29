@@ -1,5 +1,35 @@
 # Decision Log
 
+## August 29, 2026 - Rep onboarding is a reusable, component-based package
+
+**A small verified intake starts onboarding; it does not grant blanket
+authority.** The rep's identity, supplied details, product readiness,
+promotion, schedule, and fulfillment state are verified first. Account
+preparation, public guide, email draft, Message Center welcome, payment link,
+and fulfillment are separate components, activated only when Louis asks for
+them.
+
+**The public starter guide is educational and self-paced.** It helps a rep
+understand the Workspace, customer-site customization, Live Queue, Nic-Nac,
+and available help. It must never expose private credentials, codes, address,
+or billing link, and its checklist is local-device guidance rather than proof
+of actual account setup. Deferred capabilities are moved into visibly labeled
+Coming soon cards.
+
+**Credentials and communications retain independent gates.** Default welcome
+email output is a verified unsent HTML draft. A Message Center welcome uses the
+Control Center composer, exact-recipient preview, and final publication
+approval. A password, private Live Queue code, address, payment link, meeting
+link, checkout, or money movement needs its own specific authorization before
+transmission or publication.
+
+**Welcome-site changes remain separate from the main application release.** A
+rep guide deploys through its dedicated Sites project after explicit public
+authorization and page QA; it does not trigger a Sparkle Suite application
+deployment or a change to the protected Live Queue extension.
+
+---
+
 ## August 28, 2026 - Grok Bot gets one Sparkle Suite Control Center MCP
 
 **Remy, Nic-Nac, Hale, and Sam share one Sparkle Suite MCP and one service
