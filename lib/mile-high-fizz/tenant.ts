@@ -149,6 +149,7 @@ async function upsertRep(
   }
   const base = {
     auth_user_id: authUserId,
+    account_classification: 'customer',
     email: MILE_HIGH_FIZZ_PROFILE.email,
     display_name: isPlaceholderName(existingRep?.display_name)
       ? MILE_HIGH_FIZZ_PROFILE.displayName

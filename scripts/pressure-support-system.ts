@@ -172,6 +172,7 @@ async function main() {
         .from('reps')
         .insert({
           auth_user_id: createdUser.data.user.id,
+          account_classification: 'demo',
           display_name: `Support Pressure Rep ${index}`,
           business_name: `Support Pressure Studio ${index}`,
           email,

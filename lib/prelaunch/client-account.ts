@@ -365,6 +365,7 @@ export async function preparePrelaunchClientAccountForLaunchBuild(
       .from('reps')
       .insert({
         auth_user_id: authUserId,
+        account_classification: 'customer',
         email,
         display_name: cleanRequiredString(build.lead_name, 'leadName'),
         business_name: businessName,

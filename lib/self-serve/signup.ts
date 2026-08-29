@@ -16,6 +16,7 @@ export interface SelfServeWorkspaceAccount {
   displayName: string
   referralCode?: string | null
   finderDirectoryVisible: boolean
+  accountClassification?: 'customer' | 'demo'
 }
 
 const selfServeSignupSchema = z.object({
@@ -155,6 +156,7 @@ export async function createSelfServeWorkspaceForAuthUser(
     .from('reps')
     .insert({
       auth_user_id: account.authUserId,
+      account_classification: account.accountClassification ?? 'customer',
       email,
       display_name: displayName,
       business_name: displayName,

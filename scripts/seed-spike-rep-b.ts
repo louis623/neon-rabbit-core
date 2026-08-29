@@ -49,6 +49,7 @@ async function main() {
       .from('reps')
       .insert({
         auth_user_id: authUser!.id,
+        account_classification: 'demo',
         email: REP_B_EMAIL,
         display_name: 'Spike Test Rep B',
         business_name: 'Spike B Test Boutique',

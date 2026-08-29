@@ -63,7 +63,7 @@ Frame Nic-Nac as Sparkle Suite’s practical assistant for setup, live-show flow
 
 Render `{{COMING_SOON_ITEMS}}` as separate cards, each with a visible **Coming soon** label. Do not give dates or describe an existing accessible tool as deferred.
 
-When Email updates or SMS updates are not ready for this rep's account, move both from the checklist/tool guide into this section with a visible **Coming soon** label. Do not imply Kim can configure or send those updates yet.
+When Email updates or SMS updates are not ready for this rep's account, move both from the checklist/tool guide into this section with a visible **Coming soon** label. Do not imply the rep can configure or send those updates yet.
 
 ### Light box
 

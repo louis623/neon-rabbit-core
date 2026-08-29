@@ -9,7 +9,7 @@ Use this reference only when a request includes more than the public starter gui
 | Identity | One exact lead or account | Ask Louis to resolve the match. |
 | Public guide | First name, confirmed schedule, approved public details | Omit unknown details. |
 | Pricing | Active pricing source plus any approved offer | Do not publish a price. |
-| Account prep | Explicit request and confirmed account state | Do not create a duplicate. |
+| Account prep | Explicit request, confirmed account state, and customer/demo classification | Do not create a duplicate or leave classification implicit. |
 | Welcome email | Verified mailbox, recipient, approved scope | Prepare no draft until confirmed. |
 | Live Queue | Canonical Store listing; private code only if account flow provides one | Leave code instructions out until ready. |
 | Light box | Fulfillment status, not the raw address | Ask for address confirmation in private. |
@@ -17,12 +17,18 @@ Use this reference only when a request includes more than the public starter gui
 ## Suggested package order
 
 1. Read-only discovery: verify identity, waitlist/intake details, existing account, feature readiness, price, and fulfillment status.
-2. Prepare the requested account shell and non-sensitive settings using only confirmed intake values.
+2. Prepare the requested account shell and non-sensitive settings using only confirmed intake values. Persist real onboarding as `customer`, reserve `demo` for deliberate reviewer/test accounts, and verify the resulting Control Center database placement.
 3. Create or update the public guide from the tokenized template. Keep it educational: welcome, overview, self-paced checklist, tools, Nic-Nac, help, Live Queue, Coming soon, fulfillment, and transparent pricing.
 4. Build and publish the guide only after explicit authorization; validate the actual public URL.
 5. Prepare the unsent welcome-email draft. Include the guide link high in the message, sign-in instructions, and the official Live Queue Store link if relevant. Add private credentials, payment links, or meeting links only with their specific approval.
 6. Publish a credential-free Message Center welcome only after exact-recipient preview and final approval.
 7. Verify each external result and report what remains intentionally unsent, unconfigured, or dependent on Louis/rep action.
+
+## Account classification gate
+
+- A newly approved real rep is a `customer` from account creation onward; setup progress, subscription state, and public-site readiness do not change that classification.
+- Demo, reviewer, smoke, and sample accounts must opt into `demo` explicitly.
+- Before closeout, read the durable classification and confirm a real rep appears under **Customer Database**, not **Demo Database**.
 
 ## Starter-guide content map
 

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 type JsonObject = Record<string, unknown>
+export type RepAccountClassification = 'customer' | 'demo'
 
 export interface ClientAccountSnapshot {
   profileId: string
@@ -20,6 +21,7 @@ export interface ClientAccountSnapshot {
 
 export interface OperatorCustomerProfile {
   repId: string
+  accountClassification: RepAccountClassification
   clientName: string
   showName: string
   primaryContactName: string | null
@@ -54,6 +56,7 @@ export interface OperatorCustomerProfile {
 
 interface RepProfileSource {
   id: string
+  account_classification: string | null
   display_name: string | null
   business_name: string | null
   email: string | null
@@ -282,7 +285,7 @@ export async function listOperatorCustomerProfiles(
       supabase
         .from('reps')
         .select(
-          'id, display_name, business_name, email, phone, status, referral_code, public_site_slug, custom_domain, shop_link, streaming_links, social_handles, created_at, updated_at',
+          'id, account_classification, display_name, business_name, email, phone, status, referral_code, public_site_slug, custom_domain, shop_link, streaming_links, social_handles, created_at, updated_at',
         )
         .order('business_name', { ascending: true })
         .limit(limit),
@@ -362,6 +365,10 @@ export async function listOperatorCustomerProfiles(
 
     return {
       repId: rep.id,
+      accountClassification:
+        textOrNull(rep.account_classification) === 'customer'
+          ? 'customer'
+          : 'demo',
       clientName:
         textOrNull(profile?.client_name) ??
         fallbackName,

@@ -248,6 +248,7 @@ describe('listOperatorCustomerProfiles', () => {
       reps: [
         {
           id: 'rep-1',
+          account_classification: 'customer',
           display_name: 'Jane Roberts',
           business_name: "Jane's Sparkle Party",
           email: 'jane@example.com',
@@ -322,7 +323,7 @@ describe('listOperatorCustomerProfiles', () => {
     expect(client.from).toHaveBeenCalledWith('client_account_profiles')
     expect(client.from).toHaveBeenCalledWith('self_serve_setup_sessions')
     expect(queries.reps.select).toHaveBeenCalledWith(
-      'id, display_name, business_name, email, phone, status, referral_code, public_site_slug, custom_domain, shop_link, streaming_links, social_handles, created_at, updated_at',
+      'id, account_classification, display_name, business_name, email, phone, status, referral_code, public_site_slug, custom_domain, shop_link, streaming_links, social_handles, created_at, updated_at',
     )
     expect(client.from).toHaveBeenCalledWith('rep_referrals')
     expect(queries.rep_referrals.select).toHaveBeenCalledWith(
@@ -334,6 +335,7 @@ describe('listOperatorCustomerProfiles', () => {
     expect(customers).toEqual([
       {
         repId: 'rep-1',
+        accountClassification: 'customer',
         clientName: 'Jane Roberts',
         showName: "Jane's Sparkle Party Live",
         primaryContactName: 'Jane Roberts',

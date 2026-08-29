@@ -14,6 +14,7 @@ function createAdminMock() {
     data: {
       id: 'rep-self-serve',
       auth_user_id: 'auth-self-serve',
+      account_classification: 'customer',
       email: 'jamie@example.com',
     },
     error: null,
@@ -118,6 +119,7 @@ describe('POST /api/self-serve/signup', () => {
     expect(admin.repsInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         auth_user_id: 'auth-self-serve',
+        account_classification: 'customer',
         email: 'jamie@example.com',
         display_name: 'Jamie Hart',
         business_name: 'Jamie Hart',

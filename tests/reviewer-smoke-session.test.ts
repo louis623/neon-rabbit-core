@@ -200,6 +200,7 @@ describe('reviewer smoke session reset', () => {
 
     expect(spies.repUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
+        account_classification: 'demo',
         status: 'active',
         finder_directory_visible: false,
       }),

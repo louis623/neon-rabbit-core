@@ -64,6 +64,7 @@ export async function finalizeBetaDemoAccount() {
     .update({
       display_name: 'Louis',
       business_name: 'Sparkle Suite Beta Demo',
+      account_classification: 'demo',
       public_site_slug: slug,
       status: 'active',
       shop_link: 'https://www.bombparty.com/shop/sparkle-suite-demo',

@@ -32,6 +32,8 @@ Use only the pieces the user asks for. Do not make one request imply every exter
 ### Account preparation
 
 - Create or prepare an account only when the user explicitly asks. First check for an existing account and use an exact identity guard.
+- Confirm whether the account is a real customer or an intentional demo/reviewer account before creation. Real approved rep onboarding must persist `account_classification=customer`; demo, reviewer, smoke, and sample accounts must explicitly persist `account_classification=demo`. Never infer demo status from incomplete onboarding, missing billing, a missing public-site slug, or absence from a name whitelist.
+- After account preparation, verify the rep appears in the correct Control Center database. A real customer must appear in **Customer Database** even before setup, billing, or site customization is complete. Treat placement in **Demo Database** as a classification defect and repair the durable classification before closeout.
 - Prepopulate only fields supplied by the rep’s intake or explicitly confirmed by the user. Leave unknown settings empty and identify the coverage hole.
 - Generate or set a temporary password, private Live Queue code, or other credential only through the approved product flow. Treat it as sensitive: never put it on the public guide or in durable memory, and confirm immediately before transmitting it to the rep.
 - Do not mutate billing, pricing reservations, subscription records, Stripe, DNS, production configuration, or the Live Queue extension unless the user explicitly asks for that exact action.
@@ -73,4 +75,4 @@ Use [assets/rep-welcome-site-template.md](assets/rep-welcome-site-template.md) f
 
 Report each requested component as prepared, published, sent, or intentionally left as a draft. Include coverage holes and exact recipient/delivery verification for Message Center. Do not claim a website, email, account, payment link, or message is complete until its destination confirms the outcome.
 
-When a broadly useful improvement comes from a real onboarding, update this skill and its tokenized template without copying a rep’s private data.
+When a broadly useful improvement comes from a real onboarding, update this skill and its tokenized template without copying a rep’s private data. Closeout must include read-only verification of the account classification and Control Center placement.

@@ -152,6 +152,7 @@ async function upsertRep(
   }
   const base = {
     auth_user_id: authUserId,
+    account_classification: 'customer',
     email: BLING_KITCHEN_PROFILE.email,
     display_name: isPlaceholderName(existingRep?.display_name)
       ? BLING_KITCHEN_PROFILE.displayName

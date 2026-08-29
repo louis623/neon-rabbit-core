@@ -75,6 +75,7 @@ function customerProfile(overrides: Record<string, unknown> = {}) {
 
   return {
     repId: 'rep-default',
+    accountClassification: 'customer',
     clientName: 'Default Rep',
     showName: 'Default Show',
     primaryContactName: 'Default Rep',
@@ -155,6 +156,7 @@ describe('SparkleSuiteControlCenterPage', () => {
     listOperatorCustomerProfilesMock.mockResolvedValue([
       {
         repId: 'rep-1',
+        accountClassification: 'customer',
         clientName: 'Jane Roberts',
         showName: "Jane's Sparkle Party",
         primaryContactName: 'Jane Roberts',
@@ -213,10 +215,8 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('Publisher')
     expect(html).toContain('Support Inbox')
     expect(html).toContain('Customer Database')
-    expect(html).toContain('Report Detail')
-    expect(html).toContain('Rep Profile')
-    expect(html).toContain('Resolution')
-    expect(html).toContain('Dance Floor item vanished')
+    expect(html).toContain('Support conversations')
+    expect(html).toContain('Open Support Inbox')
     expect(html).toContain('Jane Roberts')
     expect(html).toContain("Jane&#x27;s Sparkle Party")
     expect(html).toContain('Founder')
@@ -246,28 +246,41 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('data-selected="true"')
   })
 
-  it('separates active customer accounts from demo accounts', async () => {
+  it('uses durable classification for four active customers and keeps demo accounts separate', async () => {
     listOperatorCustomerProfilesMock.mockResolvedValueOnce([
       customerProfile({
         repId: 'rep-mile-high-fizz',
+        accountClassification: 'customer',
         clientName: 'Lindsey',
         showName: 'Mile High Fizz',
         publicSiteSlug: 'milehighfizz',
       }),
       customerProfile({
         repId: 'rep-britt-with-bling',
+        accountClassification: 'customer',
         clientName: 'Brittany',
         showName: 'Britt With Bling',
         publicSiteSlug: 'brittwithbling',
       }),
       customerProfile({
         repId: 'rep-blingkitchen',
+        accountClassification: 'customer',
         clientName: 'Heather',
         showName: 'BlingKitchen',
         publicSiteSlug: 'blingkitchen',
       }),
       customerProfile({
+        repId: 'rep-kim',
+        accountClassification: 'customer',
+        clientName: 'Kim Goforth',
+        showName: 'Kim Goforth',
+        publicSiteSlug: null,
+        subscriptionStatus: null,
+        setupCurrentStep: 'account_basics',
+      }),
+      customerProfile({
         repId: 'rep-demo',
+        accountClassification: 'demo',
         clientName: 'Demo Sparkle Rep',
         showName: 'Demo Sparkle Show',
         publicSiteSlug: 'demo-sparkle-show',
@@ -286,11 +299,12 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('aria-label="Expand Customer Database"')
     expect(html).toContain('aria-label="Expand Demo Database"')
     expect(html).not.toContain('open=""')
-    expect(html).toContain('3 customer accounts')
+    expect(html).toContain('4 customer accounts')
     expect(html).toContain('1 demo account')
     expect(html).toContain('Mile High Fizz')
     expect(html).toContain('Britt With Bling')
     expect(html).toContain('BlingKitchen')
+    expect(html).toContain('Kim Goforth')
     expect(html).toContain('Demo Sparkle Rep')
     expect(html).toContain('Demo Sparkle Show')
     expect(html).toContain('Demo Account')

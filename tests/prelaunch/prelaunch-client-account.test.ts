@@ -162,6 +162,7 @@ describe('prelaunch client account provisioning', () => {
     })
     expect(insertRep).toHaveBeenCalledWith({
       auth_user_id: 'auth-user-1',
+      account_classification: 'customer',
       email: 'louis+real@neonrabbit.net',
       display_name: 'Louis Sparkle',
       business_name: 'Louis Live Sparkles',

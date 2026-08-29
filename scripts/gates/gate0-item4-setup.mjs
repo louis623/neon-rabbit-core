@@ -49,6 +49,7 @@ if (existingRep) {
   // We don't know required fields yet — try minimal first
   const candidate = {
     auth_user_id: authUuid,
+    account_classification: 'demo',
     email: EMAIL,
     display_name: 'Gate Test',
     business_name: 'Gate Test Co',

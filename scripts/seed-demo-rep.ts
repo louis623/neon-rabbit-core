@@ -405,6 +405,7 @@ export async function seedDemoRep(plan: DemoSeedPlan): Promise<DemoSeedResult> {
       .from('reps')
       .update({
         auth_user_id: authUser.id,
+        account_classification: 'demo',
         display_name: plan.rep.displayName,
         business_name: plan.rep.businessName,
         shop_link: plan.rep.shopLink,
@@ -424,6 +425,7 @@ export async function seedDemoRep(plan: DemoSeedPlan): Promise<DemoSeedResult> {
       .from('reps')
       .insert({
         auth_user_id: authUser.id,
+        account_classification: 'demo',
         email: plan.rep.email,
         display_name: plan.rep.displayName,
         business_name: plan.rep.businessName,

@@ -95,6 +95,7 @@ export async function createSyntheticReviewer(
       .from('reps')
       .insert({
         auth_user_id: auth.data.user.id,
+        account_classification: 'demo',
         display_name: displayName,
         business_name: `${displayName} Studio`,
         email,

@@ -105,6 +105,7 @@ describe('Control Center transparent operator support access UI', () => {
         customers: [
           {
             repId: 'rep-1',
+            accountClassification: 'customer',
             clientName: 'Kim Sparkles',
             showName: 'Kim Live',
             primaryContactName: 'Kim',

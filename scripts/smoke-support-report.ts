@@ -105,6 +105,7 @@ async function main() {
       .from('reps')
       .insert({
         auth_user_id: authUserId,
+        account_classification: 'demo',
         display_name: 'Support Report Smoke Rep',
         business_name: 'Support Report Smoke Studio',
         email,

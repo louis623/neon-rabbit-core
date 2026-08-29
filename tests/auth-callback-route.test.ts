@@ -43,6 +43,7 @@ function createAdminMock(existingRep?: { id: string; status?: string } | null) {
     data: {
       id: 'rep-google',
       auth_user_id: 'auth-google',
+      account_classification: 'customer',
       email: 'google@example.com',
     },
     error: null,
@@ -275,6 +276,7 @@ describe('GET /api/auth/callback', () => {
     expect(admin.repsInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         auth_user_id: 'auth-google',
+        account_classification: 'customer',
         email: 'google@example.com',
         display_name: 'Google Rep',
         business_name: 'Google Rep',

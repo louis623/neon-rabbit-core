@@ -28,6 +28,7 @@ export type SupportReportRecord = {
 
 export type OperatorCustomerRecord = {
   repId: string
+  accountClassification: 'customer' | 'demo'
   clientName: string
   showName: string
   primaryContactName: string | null
@@ -67,8 +68,6 @@ interface SupportCommandCenterProps {
   bugHuntItems: BugHuntItem[]
 }
 
-const CUSTOMER_DATABASE_KEYS = ['milehighfizz', 'brittwithbling', 'blingkitchen']
-
 function label(value: string | null | undefined) {
   return value
     ? value
@@ -82,25 +81,8 @@ function countLabel(count: number, singular: string, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`
 }
 
-function normalizeAccountKey(value: string | null | undefined) {
-  return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
-}
-
 function isCustomerDatabaseAccount(customer: OperatorCustomerRecord) {
-  const candidates = [
-    customer.publicSiteSlug,
-    customer.customDomain,
-    customer.clientName,
-    customer.showName,
-    customer.email,
-  ].map(normalizeAccountKey)
-
-  return candidates.some((candidate) =>
-    CUSTOMER_DATABASE_KEYS.some(
-      (knownCustomer) =>
-        candidate === knownCustomer || candidate.includes(knownCustomer),
-    ),
-  )
+  return customer.accountClassification === 'customer'
 }
 
 function objectEntries(value: Record<string, unknown> | null | undefined) {
@@ -581,8 +563,7 @@ export function SupportCommandCenter({
                     />
                   </div>
                   <p className="mt-1 text-sm text-slate-600">
-                    Active customer accounts only: Mile High Fizz, Britt With
-                    Bling, and BlingKitchen.
+                    Every real onboarding account is classified here explicitly.
                   </p>
                 </div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
@@ -620,8 +601,8 @@ export function SupportCommandCenter({
                     />
                   </div>
                   <p className="mt-1 text-sm text-slate-600">
-                    Demo, reviewer, smoke, and sample accounts are kept separate
-                    from active customers.
+                    Demo, reviewer, smoke, and sample accounts are explicitly
+                    kept separate from active customers.
                   </p>
                 </div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">

@@ -172,6 +172,7 @@ async function upsertRep(
   }
   const base = {
     auth_user_id: authUserId,
+    account_classification: 'customer',
     email,
     display_name: isPlaceholderName(existingRep?.display_name)
       ? BRITT_WITH_BLING_PROFILE.displayName

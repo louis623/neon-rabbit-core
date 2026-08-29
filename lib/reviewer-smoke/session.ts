@@ -401,6 +401,7 @@ export async function resetReviewerSmokeSession(
       email: persona.email,
       displayName: persona.displayName,
       finderDirectoryVisible: false,
+      accountClassification: 'demo',
     },
     existingRepId,
   )
@@ -416,6 +417,7 @@ export async function resetReviewerSmokeSession(
     .update({
       display_name: persona.displayName,
       business_name: 'Britt Test Rep Sparkle Studio',
+      account_classification: 'demo',
       status: state === 'dashboard_unlocked' ? 'active' : 'onboarding',
       finder_directory_visible: false,
       updated_at: now,

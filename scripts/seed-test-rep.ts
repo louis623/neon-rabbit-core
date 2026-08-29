@@ -128,6 +128,7 @@ async function main() {
   if (!louisRep) {
     await admin.from('reps').insert({
       auth_user_id: louisAuthId,
+      account_classification: 'demo',
       display_name: 'Louis',
       business_name: 'Neon Rabbit',
       email: 'louis@neonrabbit.net',
@@ -142,6 +143,7 @@ async function main() {
     .from('reps')
     .insert({
       auth_user_id: testRepAuthId,
+      account_classification: 'demo',
       display_name: 'Demo Rep',
       business_name: 'Sparkle Suite Demo',
       email: 'testrep@neonrabbit.net',
