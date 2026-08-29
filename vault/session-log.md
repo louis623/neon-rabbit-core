@@ -44,6 +44,12 @@ Running log of significant work sessions. Most recent first.
   to Kim only. It includes the public onboarding-guide action link and no
   private credentials or Live Queue code; Control Center verified 1 recipient
   and 1 delivered message. No email or SMS was sent.
+- Expanded the reusable `sparkle-suite-rep-welcome-site` skill into a
+  component-based onboarding package: verified intake, explicit account
+  preparation, educational public guide, unsent Gmail draft, optional
+  Message Center welcome, exact-price/fulfillment handling, and separate
+  approvals for sensitive or external actions. Added a tokenized reference
+  without any Kim-specific credentials, addresses, codes, or links.
 
 ---
 

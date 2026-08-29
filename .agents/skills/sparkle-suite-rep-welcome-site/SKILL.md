@@ -1,45 +1,76 @@
 ---
 name: sparkle-suite-rep-welcome-site
-description: Create or update a personalized Sparkle Suite welcome and starter-guide site for a rep. Use for first-time rep onboarding pages, including verified pricing, Live Queue guidance, help, and product-roadmap status.
+description: Create or update a personalized Sparkle Suite rep welcome and onboarding package: account preparation, public starter guide, unsent welcome-email draft, and optional Message Center welcome. Use for a newly approved rep—not public prelaunch or Team Management onboarding.
 ---
 
-# Sparkle Suite Rep Welcome Site
+# Sparkle Suite Rep Welcome & Onboarding Package
 
-Create a warm, practical welcome site that helps a new rep get oriented. It is an onboarding guide, not a generic sales page or a replacement for the authenticated Sparkle Suite Workspace.
+Build a warm, practical, rep-specific onboarding package from verified intake data. The package helps a new rep get started; it never replaces their authenticated Workspace, turns a guide checklist into an account-attestation, or silently sends communications.
 
-## Before drafting
+## Start with a small, verified intake
 
-1. Read the Sparkle Suite master-brand skill and its required brand sources.
-2. Inspect the current Workspace labels and `comingSoon` state in the application source. Treat source-visible status as authoritative. A user may explicitly ask to label an additional surface as coming soon; note that choice in the page copy rather than claiming a launch date.
-3. Verify each price from the active pricing source before publishing. Always show the specific post-promotion monthly amount; never use “then-current rate” when the amount is known.
-4. For any light-box copy, check only whether a fulfillment address/task exists. Do not place an address, password, Live Queue code, email address, auth link, or payment data on the public page.
+The user can begin with a name and the information they have. Before acting, resolve missing facts through the approved, read-only waitlist/intake and existing-account surfaces. Fail closed on ambiguous identity—do not choose between matching leads or accounts.
 
-## Content contract
+Collect or verify only what the requested pieces need:
 
-Use `assets/rep-welcome-site-template.md` as the reusable page blueprint. Keep these sections unless the rep’s actual access makes one inaccurate:
+- exact rep identity and contact for account or communication work;
+- rep first name and any business/site details the rep actually supplied;
+- onboarding date, time, and time-zone abbreviation;
+- promotion and the source-verified monthly price after it ends;
+- whether a light-box shipping address or fulfillment task already exists;
+- confirmed readiness/coming-soon state for each feature named;
+- any explicitly approved meeting link, public starter-guide URL, payment link, or existing Live Queue code.
 
-- a welcoming, encouraging hero and scheduled onboarding note;
-- a practical first-week checklist;
-- concise explanations of customer site, Live Queue, Dance Floor, calendar, Nic-Nac, and Help & Resources; present Email updates and SMS updates in the ready-now guide only when they are ready for that rep's account, otherwise put them in Coming soon;
-- a Nic-Nac starter-prompt panel that treats Nic-Nac as useful rep support, not the whole product;
-- Live Queue instructions that never reveal the sync code;
-- a clearly labeled Coming soon section for verified deferred surfaces;
-- light-box fulfillment wording that asks for a shipping address only when one is not already collected;
-- transparent pricing: introductory price and duration plus the exact amount beginning after the promotion.
+Never guess a business name, account entitlement, address, price, existing account, meeting link, Live Queue code, or payment link. Keep passwords, codes, addresses, raw intake data, billing URLs, tokens, and account IDs out of public pages, source comments, templates, and project memory.
 
-## Personalization
+Read [references/onboarding-package.md](references/onboarding-package.md) for the component checklist and ready-to-adapt copy structure. Read the Sparkle Suite master-brand skill and the current Workspace feature state before drafting rep-facing copy.
 
-Replace only the tokens identified in the template: rep name, schedule, promotion, standard price, shipping-address state, and explicitly approved roadmap items. Do not infer a business name, team affiliation, customer details, shipping address, private URL, or product entitlement. A meeting URL is treated as private unless the user explicitly authorizes it to be published on the rep's public welcome page.
+## Work in components, with their own approval gates
 
-If a user asks for a different public URL, use a new Sites project. Otherwise update the existing rep’s Sites project in place. Keep this separate from the Sparkle Suite application and do not deploy the main product merely to change a welcome site.
+Use only the pieces the user asks for. Do not make one request imply every external action.
 
-## Publication safety
+### Account preparation
 
-- Public deployment requires the user to have asked to publish or update the public welcome page.
-- Build the site, validate desktop and mobile rendering, check console errors, and exercise at least one page-navigation link.
-- Use the Sites source/version/deployment flow. Push the exact source before saving a version.
-- Do not send the welcome email, create a checkout, collect the address, or install/configure the Live Queue extension as part of a page update.
+- Create or prepare an account only when the user explicitly asks. First check for an existing account and use an exact identity guard.
+- Prepopulate only fields supplied by the rep’s intake or explicitly confirmed by the user. Leave unknown settings empty and identify the coverage hole.
+- Generate or set a temporary password, private Live Queue code, or other credential only through the approved product flow. Treat it as sensitive: never put it on the public guide or in durable memory, and confirm immediately before transmitting it to the rep.
+- Do not mutate billing, pricing reservations, subscription records, Stripe, DNS, production configuration, or the Live Queue extension unless the user explicitly asks for that exact action.
 
-## Template maintenance
+### Public starter guide
 
-When a welcome-site improvement is broadly useful, update the template alongside the current rep page. Keep the template factual and tokenized; do not copy a real rep’s private data or credentials into it.
+Use [assets/rep-welcome-site-template.md](assets/rep-welcome-site-template.md) for a published guide. It is educational and encouraging, not a promotional landing page.
+
+- Keep the schedule precise, including the confirmed time-zone abbreviation.
+- Explain customer-site customization as the rep’s own work, with a guided walkthrough and help available on request; do not imply Sparkle Suite is completing it during the onboarding meeting.
+- Include a local, independently checkable first-week checklist when useful. Clearly keep progress device-local; it does not update the Workspace or prove a setup task is done.
+- Keep deferred features as visible **Coming soon** cards, and remove them from ready-now guidance. Do not give roadmap dates.
+- Link only the verified official Live Queue Chrome Web Store listing when requested. Never expose the private code or alter the protected extension.
+- A meeting link is private by default; publish it only with explicit approval. Do not create a Calendar event, invite, or transcription setting merely because the guide has a meeting card.
+- Publish only when the user explicitly authorizes the public page. Build, check desktop and mobile, check console errors, exercise a navigation link, and deploy through the Sites project/version flow. Do not deploy the main Sparkle Suite app for a guide-only change.
+
+### Welcome email
+
+- Default to an editable, unsent Gmail draft. Verify the sending mailbox before editing and do not send unless the user separately authorizes send.
+- Put the optional starter-guide invitation near the top: reading ahead is welcome, not required before the meeting.
+- Give clear sign-in instructions with a real hyperlink to the verified Sparkle Suite sign-in page. When approved to share credentials, identify where they are used and instruct the rep to change the temporary password after first access.
+- Use actual HTML hyperlinks—not bare URLs—for the public guide, approved meeting, sign-in page, and official Chrome Web Store listing when included. Verify the saved draft remains labeled `DRAFT`.
+- Include a private Live Queue code only in the private email, never the guide or Message Center. Confirm immediately before transmitting any credential, code, address, or payment link.
+
+### Message Center welcome
+
+- Use the authenticated Control Center Message Center composer, never a direct database write or a general broadcast workaround.
+- Select the exact rep, preview the frozen audience, and verify the sample and count before publishing. For a new-rep welcome, expect exactly one recipient unless the user explicitly specifies otherwise.
+- Keep the in-app message short, welcoming, and credential-free; it may link to the public starter guide.
+- Publish only with explicit final approval. Verify the resulting publication’s recipient and delivered counts. State plainly that it is in-app only unless another channel was independently authorized.
+
+### Payments and fulfillment
+
+- State the precise introductory rate, duration, and verified post-promotion monthly price in rep-facing materials. Do not use “then-current price.”
+- Create or share a payment link only when the user explicitly asks for that exact billing action. Never charge, create checkout, or move money without a separate action-time approval.
+- Mention a light box only when it is part of the approved onboarding. Ask to confirm the best shipping address when needed; do not expose or collect the address in the public guide.
+
+## Closeout
+
+Report each requested component as prepared, published, sent, or intentionally left as a draft. Include coverage holes and exact recipient/delivery verification for Message Center. Do not claim a website, email, account, payment link, or message is complete until its destination confirms the outcome.
+
+When a broadly useful improvement comes from a real onboarding, update this skill and its tokenized template without copying a rep’s private data.

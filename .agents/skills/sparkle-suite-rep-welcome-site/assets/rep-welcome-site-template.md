@@ -24,7 +24,7 @@ Replace only the tokens below. Never put a password, email address, Live Queue c
 
 This is your first guide to a stronger, more polished setup—built around the way you want your business and your live shows to feel. You do not need every detail perfect on day one. We will build it one good step at a time.
 
-First session: **{{ONBOARDING_DAY_TIME}}**
+**Meeting with Louis:** {{ONBOARDING_DAY_TIME}}
 
 {{MEETING_LINK_COPY}}
 
