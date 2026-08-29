@@ -40,6 +40,10 @@ Running log of significant work sessions. Most recent first.
   Added a direct Sparkle Suite sign-in hyperlink plus steps to use her email
   address and temporary password, select Sign in, and change the password
   after first access. The draft remains unsent.
+- With Louis's final publish approval, sent one in-app Message Center welcome
+  to Kim only. It includes the public onboarding-guide action link and no
+  private credentials or Live Queue code; Control Center verified 1 recipient
+  and 1 delivered message. No email or SMS was sent.
 
 ---
 
