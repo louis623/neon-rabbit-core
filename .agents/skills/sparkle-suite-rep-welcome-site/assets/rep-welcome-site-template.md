@@ -7,7 +7,7 @@ Replace only the tokens below. Never put a password, email address, Live Queue c
 | Token | Meaning |
 | --- | --- |
 | `{{REP_FIRST_NAME}}` | First name used in welcome copy. |
-| `{{ONBOARDING_DAY_TIME}}` | Confirmed onboarding date, time, and time zone, such as `Sunday, August 30 · 11:00 AM Eastern Time`. |
+| `{{ONBOARDING_DAY_TIME}}` | Confirmed onboarding date, time, and time-zone abbreviation, such as `Sunday, August 30 · 11:00 AM ET`. |
 | `{{MEETING_LINK_COPY}}` | Optional, explicitly approved meeting-link wording. Use only when the user authorizes sharing the link on the public page; otherwise omit it. |
 | `{{LIVE_QUEUE_EXTENSION_URL}}` | Verified official Chrome Web Store listing for Sparkle Suite Live Queue. Use only after verifying the canonical listing; never expose a private sync code alongside it. |
 | `{{PROMO_MONTHLY_PRICE}}` | Exact advertised promotional monthly price. |
@@ -35,6 +35,11 @@ First session: **{{ONBOARDING_DAY_TIME}}**
 3. Set up Live Queue when ready: use the private code sent separately, correct Party Orders view, and Party Filter. The onboarding session is a guided walkthrough; the rep can complete the setup on their own schedule and ask for help whenever needed.
 4. Put the next live—or recurring schedule—on the calendar.
 5. Add starter Dance Floor content; the rep keeps every listing and trade decision.
+
+When the guide supports checklist interaction, make every item independently
+checkable and keep completion state device-local. Do not imply a checked item
+updates the rep's Sparkle Suite Workspace or proves a required setup step is
+complete.
 
 ### Tool guide
 

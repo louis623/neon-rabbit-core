@@ -24,6 +24,14 @@ Running log of significant work sessions. Most recent first.
 - Published the updated public guide after a successful build and desktop plus
   mobile checks. The published page displays the official extension link and
   no horizontal overflow at the checked mobile width.
+- Follow-up polish: all Kim onboarding references now use the `ET` time-zone
+  abbreviation. The five starter cards are individually checkable and retain
+  progress only in the reader's local device storage; checking a card never
+  mutates or attests to Workspace setup.
+- The guide now explicitly says the private Live Queue code is in the
+  onboarding email. Kim's still-unsent draft makes the official Chrome Web
+  Store link a standalone, labeled line; draft verification confirmed the
+  link and `DRAFT` state.
 
 ---
 
