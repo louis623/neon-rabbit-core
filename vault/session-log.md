@@ -32,6 +32,9 @@ Running log of significant work sessions. Most recent first.
   onboarding email. Kim's still-unsent draft makes the official Chrome Web
   Store link a standalone, labeled line; draft verification confirmed the
   link and `DRAFT` state.
+- Replaced plain-text URLs in Kim's draft with actual HTML hyperlinks for both
+  the public onboarding guide and the official Chrome Web Store listing; both
+  destinations were verified in the still-unsent draft.
 
 ---
 
