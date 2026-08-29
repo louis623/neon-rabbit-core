@@ -4,6 +4,25 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 29, 2026 - Kim onboarding Meet link
+
+- Created a reusable Google Meet link under Louis's authenticated Google
+  account without creating a Calendar event or inviting attendees. The link is
+  intentionally published only because Louis explicitly approved placing it on
+  Kim's public starter guide; do not record the URL itself in vault or Open
+  Brain content.
+- Updated Kim's still-unsent Gmail welcome draft with the meeting link and
+  corrected month-13 pricing to the verified $74.99 monthly rate. The draft
+  remains a draft; no email was sent.
+- Published the Kim welcome guide update and verified its First session card
+  exposes the approved Meeting at Google Meet link. Transcription/Gemini notes
+  remain a host action for Louis to start inside the meeting, as requested.
+- Generalized the reusable rep-welcome skill/template with an optional
+  meeting-link placeholder that requires explicit approval before a meeting URL
+  is placed on a public page.
+
+---
+
 ## August 28, 2026 - One shared Grok Bot Control Center MCP
 
 - Extended the existing Sparkle Comms MCP in place into one shared Control
