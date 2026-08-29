@@ -7,7 +7,7 @@ Replace only the tokens below. Never put a password, email address, Live Queue c
 | Token | Meaning |
 | --- | --- |
 | `{{REP_FIRST_NAME}}` | First name used in welcome copy. |
-| `{{ONBOARDING_DAY_TIME}}` | Confirmed onboarding schedule, such as `Sunday · 11:00 AM`. |
+| `{{ONBOARDING_DAY_TIME}}` | Confirmed onboarding date, time, and time zone, such as `Sunday, August 30 · 11:00 AM Eastern Time`. |
 | `{{MEETING_LINK_COPY}}` | Optional, explicitly approved meeting-link wording. Use only when the user authorizes sharing the link on the public page; otherwise omit it. |
 | `{{PROMO_MONTHLY_PRICE}}` | Exact advertised promotional monthly price. |
 | `{{PROMO_MONTHS}}` | Promotional duration in paid months. |

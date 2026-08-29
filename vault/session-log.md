@@ -26,6 +26,9 @@ Running log of significant work sessions. Most recent first.
   light-box copy asks to confirm the best shipping address during onboarding.
   The reusable template now carries the same account-readiness rule for
   customer-update tools.
+- All Kim onboarding times are explicitly Eastern Time in both her public
+  guide and still-unsent Gmail draft. The welcome-guide template now requires
+  the time zone alongside a rep's confirmed onboarding date and time.
 
 ---
 
