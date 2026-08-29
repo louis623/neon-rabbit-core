@@ -1,5 +1,34 @@
 # Decision Log
 
+## August 29, 2026 - Operator support is transparent delegated access, not impersonation
+
+**Support access uses an independent actor/subject session.** The operator is
+always Louis's currently authorized Control Center identity and the subject is
+one frozen eligible rep. No rep password, rep Auth cookie, hidden impersonation,
+or target switching is permitted. Sessions are short-lived and end on expiry,
+revocation, or target ineligibility.
+
+**Disclosure and audit are part of authorization.** The exact rep must receive
+a start notice before activation. Session history is durable even for read-only
+work, mutations require an attempted audit before dispatch, uncertain outcomes
+cannot be acknowledged as success, and completion produces a rep-visible notice
+and history record. Support access without those controls is not an acceptable
+fallback.
+
+**The gateway is deny-by-default and billing stays outside it.** Existing rep
+routes do not accept Control Center identity directly. Only explicitly reviewed
+route/method/capability combinations can run inside the frozen support request
+context. Billing, payment, wallet, auth/security/ownership, private messaging,
+outbound communication, exports, Live Queue codes, Nic-Nac conversation,
+Guardian/Lab, deployment, and DNS capabilities are excluded.
+
+**Ordinary rep and customer behavior remains unchanged.** Support-specific
+behavior activates only on the separate Control Center support URL and explicit
+gateway. Public customer sites remain publicly viewable; edits must occur in an
+active disclosed support session.
+
+---
+
 ## August 29, 2026 - Rep onboarding is a reusable, component-based package
 
 **A small verified intake starts onboarding; it does not grant blanket

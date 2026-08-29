@@ -1,5 +1,41 @@
 # Project State
 
+## August 29, 2026 Session - Transparent operator support access source
+
+- Implemented password-free, transparent operator support access from each
+  rep's Control Center profile in commit `c6bfcab`. The feature uses an
+  independent, time-limited support session with frozen operator/target
+  identity; it never creates or borrows the rep's Auth session.
+- A one-recipient Message Center start notice must publish before activation.
+  Every session is retained, every attempted mutation is request-identified and
+  audited, and the rep receives an idempotent completion notice plus Account
+  history. Expiry, operator revocation, target ineligibility, failed activation,
+  correction notices, and completion retries fail closed.
+- The server gateway is deny-by-default. Approved setup areas include
+  customer-site settings/media/recipes, inventory/trade/fulfillment, calendar
+  reads, non-messaging team setup, and a read-only customer list. Billing,
+  payments, subscriptions, wallet funding, auth/security/ownership, private
+  messages, outbound communication, customer exports, Nic-Nac conversation,
+  Live Queue codes, Guardian/Lab, deployments, and DNS remain unavailable.
+- Ordinary rep Workspace and customer-site routes retain their existing auth
+  and behavior. Support identity exists only inside server-owned async request
+  context reached through the explicit Control Center gateway.
+- Verification passed 16 focused files / 182 tests, the standard suite at 14
+  files / 226 tests, changed-file ESLint, Supabase migration dry run, diff and
+  secret checks, local unauthenticated browser redirect smoke, and the Next.js
+  16.2.1 production build. A full repository Vitest run remained red only on
+  the documented unrelated baseline drift (434 passed, 1 skipped, 21 failed;
+  2,969 tests passed and 39 failed).
+- No migration was applied and no deployment, DNS, billing, customer-account,
+  Message Center, email/SMS, Live Queue extension, MCP, or production mutation
+  occurred. The branch still contains the separately held additive Guardian
+  source, so any production release requires Louis's explicit Guardian release
+  authorization first.
+
+**Last updated:** August 29, 2026
+
+---
+
 ## August 29, 2026 Session - Kim onboarding package
 
 - Kim now has a personalized public Sparkle Suite starter guide, deployed

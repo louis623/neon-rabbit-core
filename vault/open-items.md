@@ -5,6 +5,17 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Authorize and release transparent operator support access together with
+  the held Guardian source** - source implementation is committed at `c6bfcab`
+  and locally verified. Before it can be used, Louis must explicitly authorize
+  releasing the previously held additive Guardian source on the same branch.
+  Then apply only migration `20260829120000_ss_operator_support_access.sql`,
+  manually deploy the exact verified branch tip, confirm both Suite domains,
+  and run the read-only plus audited-mutation synthetic reviewer smoke in
+  `docs/sparkle-suite/operations/operator-support-access.md`. Do not use Louis's
+  or a customer's account, charge anything, send outbound communication, alter
+  DNS, or touch the Live Queue extension during acceptance.
+
 - [ ] **Louis review/send Kim's welcome email** - Kim's personalized Gmail
   welcome is deliberately still an unsent draft. It has the approved public
   guide, sign-in, meeting, and official Live Queue Store links plus private

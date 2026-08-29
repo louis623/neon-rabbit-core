@@ -4,6 +4,41 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 29, 2026 - Transparent operator support access implementation
+
+- Started from the approved repo, remote, allowlisted branch, and exact plan
+  commit `75617e4e`, preserving the existing untracked `artifacts/` and
+  `test-results/` directories.
+- Implemented Control Center start/history UI, frozen and expiring support
+  sessions, exact-recipient start and completion notices, rep-visible Account
+  history, a persistent support-mode Workspace, target-scoped request context,
+  deny-by-default route classification, audited mutation dispatch, CSRF/origin
+  enforcement, redaction, idempotent retry handling, and stale-session cleanup.
+- Kept billing/auth/security/ownership, private messaging, outbound sends,
+  customer exports and edits, Live Queue codes, Nic-Nac conversation, Guardian,
+  Sparkle Lab, deploy/DNS controls, and shared resources outside support mode.
+  The customer list is read-only; supported customer-site, inventory, calendar,
+  fulfillment, and non-messaging team setup remain explicitly classified.
+- Security review hardened current operator allowlist/status revalidation,
+  target entitlement revalidation, strict same-origin mutation requests,
+  session-scoped HttpOnly CSRF cookies, mutation-attempt durability, duplicate
+  retry blocking, activation-failure correction notices, and expiry closeout.
+- Added the operator/reviewer runbook at
+  `docs/sparkle-suite/operations/operator-support-access.md`.
+- Verification passed: 16 focused files / 182 tests; standard 14 files / 226
+  tests; changed-file ESLint; `supabase db push --dry-run` showing only
+  `20260829120000_ss_operator_support_access.sql`; `git diff --check`; secret
+  scan; local unauthenticated browser redirect smoke; and the full production
+  build through TypeScript and route generation. The earlier full-repository
+  run had 434 files pass, 1 skip, and 21 unrelated baseline-failure files (2,969
+  tests passed, 39 unrelated failures).
+- Saved the implementation as `c6bfcab feat: add transparent operator support
+  access`. No migration, deploy, DNS, payment, customer/account, communication,
+  MCP, or production change occurred. Release remains gated because the same
+  branch also contains the separately held Guardian source.
+
+---
+
 ## August 29, 2026 - Kim welcome guide: self-paced Live Queue setup
 
 - Updated Kim's public welcome guide with the canonical Sparkle Suite Live
