@@ -43,16 +43,20 @@ reopened; start a newly disclosed session if more work is needed.
 
 ## Allowed support areas
 
-The support Workspace can expose explicitly classified, target-scoped account
-setup work:
+The support URL renders the same Workspace shell, navigation, account data,
+and ordinary tools the selected rep uses. Target-scoped support work includes:
 
-- Workspace identity and required setup state;
-- customer-site settings, media, and recipes;
+- Workspace identity, required setup, Help & Resources, and site analytics;
+- customer-site settings, media, recipes, and public-site previews;
 - Dance Floor, jewelry-library, trade, fulfillment, and cleanup workflows;
-- show calendar viewing;
-- non-messaging team setup workflows;
-- a read-only customer list with export, edit, unsubscribe, and outreach
-  controls removed.
+- show calendar and Live Queue tools, including display of an existing sync
+  code (support access never creates or rotates that code);
+- customer list viewing, editing, import, consent updates, copying, CSV export,
+  and ordinary one-recipient outreach;
+- Message Center, Support, Rep Network, team messages, and attachments;
+- Nic-Nac in a support-session-scoped conversation. Its visible experience is
+  the normal Nic-Nac panel, while stored turns and tool audits retain the
+  operator, target rep, and support-session provenance.
 
 Routes are denied by default. Adding a new Workspace route does not make it
 available to support access; its method, capability, and risk classification
@@ -60,17 +64,15 @@ must be reviewed and added explicitly.
 
 ## Always unavailable
 
-Support access cannot view or change:
+Support access cannot change:
 
-- billing, subscriptions, pricing, checkout, payments, Stripe objects, or SMS
-  wallet funding;
-- passwords, authentication, account ownership, or security settings;
-- private Message Center, Support, Rep Network, or Nic-Nac conversation
-  content;
-- outbound email, SMS, team messages, Rep Network messages, or support reports
-  sent as the rep;
-- Live Queue codes or Chrome extension state;
-- customer exports or bulk contact copying;
+- billing, subscriptions, pricing, checkout, payments, Stripe objects, SMS
+  wallet funding, or auto-recharge settings (read-only summaries may display);
+- passwords, authentication, sign-in email, account ownership, activation,
+  deletion, or security settings;
+- provider callbacks or provider credentials;
+- Rep Network block/report safety state;
+- creation or rotation of Live Queue sync codes, or Chrome extension state;
 - Guardian, Sparkle Lab runs, deployments, DNS, production configuration, or
   Grok Bot/MCP control.
 
@@ -91,10 +93,11 @@ review. Do not enter live billing or payment flows.
 2. Verify the start notice has exactly one recipient before the Workspace
    opens.
 3. Verify the amber banner names the operator and target and shows an expiry.
-4. Open customer-site setup, Dance Floor, calendar, and the read-only customer
-   list.
-5. Verify Account/billing, messages, Nic-Nac chat, Live Queue code, exports,
-   customer edit controls, and outbound actions are absent or blocked.
+4. Verify the Workspace Home, navigation, customer-site setup, Dance Floor,
+   calendar, Customer List, Message Center, resources, Live Queue, Account,
+   and Nic-Nac match the ordinary rep Workspace.
+5. Verify billing/wallet summaries are read-only, password and logout controls
+   are disabled, and Stripe/payment/auth mutations are blocked.
 6. Open the synthetic public customer site in a separate tab and confirm it is
    unchanged.
 7. End access with **No account changes**.
@@ -111,8 +114,9 @@ Only run this pass against resettable synthetic data.
    change.
 4. Refresh after each change and confirm the result without repeating an
    uncertain request.
-5. Attempt one blocked billing URL and one blocked outbound route; both must
-   return a support-action denial and must not call a provider.
+5. Attempt one blocked billing URL and one blocked authentication/security
+   action; both must return a support-action denial and must not call a
+   provider or Supabase Auth mutation.
 6. End access with **Yes, I made a change** and a customer-safe summary.
 7. Verify the audit contains attempted and final outcomes for both mutations,
    the blocked attempts, and the session close.
@@ -145,7 +149,7 @@ Before release:
    any separate release authorization it requires.
 3. Run focused support tests, the standard suite, changed-file lint, the
    production build, and `supabase db push --dry-run`.
-4. Apply only the reviewed operator-support migration.
+4. Apply only the reviewed operator-support migrations.
 5. Manually deploy the exact verified branch tip to the Sparkle Suite Vercel
    project.
 6. Confirm both `https://www.yoursparklesuite.com` and

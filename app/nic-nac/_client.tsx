@@ -241,6 +241,9 @@ export default function NicNacClient({
   const billingState = searchParams.get('billing')
   const checkoutSessionId = searchParams.get('session_id')?.trim() ?? ''
   const activeWorkspaceSection = searchParams.get('section')?.trim() ?? ''
+  const workspaceRoutePath = operatorSupport
+    ? `/control-center/support/${encodeURIComponent(operatorSupport.sessionId)}`
+    : '/nic-nac'
   const shouldKeepDesktopNicNacOpen = activeWorkspaceSection === 'help-resources'
   const isCheckoutSuccessReturn =
     wantsRequiredSetup &&
@@ -481,7 +484,6 @@ export default function NicNacClient({
   const isRequiredSetupMode = workspaceMode === 'required_setup'
   const isCheckoutRequiredMode = workspaceMode === 'checkout_required'
   const shouldUseConversation =
-    !operatorSupport &&
     setupStateStatus === 'ready' &&
     !isCheckoutRequiredMode &&
     (isRequiredSetupMode || isDashboardUnlocked)
@@ -515,18 +517,22 @@ export default function NicNacClient({
           error: null,
         })
       }
-      if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, next)
+      if (!operatorSupport && typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY, next)
+      }
+      if (operatorSupport) return
       const nextSearch = putConversationIdInSearch(
         new URLSearchParams(Array.from(searchParams.entries())).toString(),
         next,
       )
-      router.replace(`/nic-nac?${nextSearch}`)
+      router.replace(`${workspaceRoutePath}?${nextSearch}`)
     },
-    [router, searchParams],
+    [operatorSupport, router, searchParams, workspaceRoutePath],
   )
 
   const rolloverConversation = useCallback(
     async (sourceConversationId: string) => {
+      if (operatorSupport) return false
       const currentChatState = chatStateRef.current
       if (
         rolloverInFlightRef.current ||
@@ -559,7 +565,7 @@ export default function NicNacClient({
         setRolloverInFlight(false)
       }
     },
-    [activateConversation],
+    [activateConversation, operatorSupport],
   )
 
   // Resolve conversationId via URL → /latest → fresh UUID. localStorage is
@@ -574,6 +580,15 @@ export default function NicNacClient({
       const urlId = getConversationIdFromSearch(
         new URLSearchParams(Array.from(searchParams.entries())).toString(),
       )
+      if (operatorSupport) {
+        setConversationId(operatorSupport.sessionId)
+        setHistoryState({
+          conversationId: operatorSupport.sessionId,
+          messages: null,
+          error: null,
+        })
+        return
+      }
       if (showWorkspaceReviewState) {
         // Workspace review mode starts fresh so Nic-Nac is visible without
         // requiring persisted conversation history or a signed-in browser.
@@ -634,7 +649,7 @@ export default function NicNacClient({
           new URLSearchParams(Array.from(searchParams.entries())).toString(),
           id,
         )
-        router.replace(`/nic-nac?${nextSearch}`)
+        router.replace(`${workspaceRoutePath}?${nextSearch}`)
       } catch (err) {
         if (cancelled) return
         if ((err as { name?: string })?.name === 'AbortError') return
@@ -653,6 +668,8 @@ export default function NicNacClient({
     router,
     searchParams,
     resolveAttempt,
+    workspaceRoutePath,
+    operatorSupport,
   ])
 
   useEffect(() => {
@@ -714,6 +731,7 @@ export default function NicNacClient({
         )
         if (cancelled) return
         if (
+          !operatorSupport &&
           shouldStartNicNacRollover(body.runHealth) &&
           (await rolloverConversation(conversationId))
         ) {
@@ -741,6 +759,7 @@ export default function NicNacClient({
     shouldUseConversation,
     showWorkspaceReviewState,
     rolloverConversation,
+    operatorSupport,
   ])
 
   // Desktop Escape minimizes (only if no HITL pending).
@@ -806,11 +825,11 @@ export default function NicNacClient({
         })
         if (!res.ok) return
       }
-      activateConversation(newConversationId(), [])
+      activateConversation(operatorSupport ? operatorSupport.sessionId : newConversationId(), [])
     } finally {
       setClearInFlight(false)
     }
-  }, [activateConversation, chatState, clearInFlight, conversationId, showWorkspaceReviewState])
+  }, [activateConversation, chatState, clearInFlight, conversationId, operatorSupport, showWorkspaceReviewState])
 
   const handleLaunchNicNacAction = useCallback(
     (action: WorkspaceLaunchAction) => {
@@ -967,20 +986,6 @@ export default function NicNacClient({
     )
   }
 
-  if (operatorSupport) {
-    return (
-      <div className={shellStyles.root}>
-        <DashboardPlaceholder
-          repIdOverride={setupState?.repId ?? undefined}
-          publicSiteSlugOverride={requiredSetupPublicSiteSlug}
-          liveQueueSyncCodeOverride={null}
-          operatorSupportMode
-          operatorSupportSessionId={operatorSupport.sessionId}
-        />
-      </div>
-    )
-  }
-
   return (
     <div
       className={`${shellStyles.root} ${
@@ -995,6 +1000,7 @@ export default function NicNacClient({
         liveQueueSyncCodeOverride={requiredSetupSyncCode}
         initialSiteSettings={buildReviewSiteSettings(setupState)}
         reviewWorkspaceMode={showWorkspaceReviewState}
+        operatorSupportMode={Boolean(operatorSupport)}
         onLaunchNicNacAction={handleLaunchNicNacAction}
         onSendNicNacPrompt={handleSendNicNacPrompt}
         onNewConversation={handleNewConversation}

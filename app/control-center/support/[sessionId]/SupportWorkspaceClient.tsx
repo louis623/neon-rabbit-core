@@ -34,15 +34,7 @@ export function SupportWorkspaceClient({
           : input instanceof URL
             ? input.toString()
             : input.url
-      const parsedUrl = new URL(rawUrl, window.location.origin)
-      const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
-      const customerReadUrl =
-        parsedUrl.origin === window.location.origin &&
-        parsedUrl.pathname === '/api/nic-nac/customer-audience' &&
-        method === 'GET'
-          ? `/api/control-center/support-sessions/${encodeURIComponent(context.sessionId)}/customers${parsedUrl.search}`
-          : null
-      const gatewayUrl = customerReadUrl ?? buildOperatorSupportGatewayUrl(
+      const gatewayUrl = buildOperatorSupportGatewayUrl(
         rawUrl,
         context.sessionId,
         window.location.origin,
@@ -143,8 +135,8 @@ export function SupportWorkspaceClient({
         <div>
           <strong>Support mode — acting for {context.target.displayName}</strong>
           <p className="text-sm">
-            Signed in as {context.operator.displayName}. Every change is logged; billing,
-            security, private messaging, outbound communications, and Live Queue codes are blocked.
+            Signed in as {context.operator.displayName}. Every action is logged; billing,
+            payments, account ownership, sign-in, and security changes are disabled.
           </p>
           {endError ? <p aria-live="assertive" className="text-sm font-semibold text-rose-700" role="alert">{endError}</p> : null}
         </div>

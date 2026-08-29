@@ -1,6 +1,7 @@
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
 
 import {
   buildOperatorPublicSiteHref,
@@ -36,21 +37,66 @@ const session: OperatorSupportSession = {
 }
 
 describe('Control Center transparent operator support access UI', () => {
-  it('renders a visibly constrained support Workspace instead of the rep chat shell', () => {
+  it('renders the rep Workspace home and header tools during support access', () => {
     const html = renderToStaticMarkup(
-      createElement(DashboardPlaceholder, {
-        operatorSupportMode: true,
-        operatorSupportSessionId: 'session-1',
-        repIdOverride: 'rep-1',
-        publicSiteSlugOverride: 'kim-sparkles',
-      }),
+      <DashboardPlaceholder
+        operatorSupportMode
+        repIdOverride="rep-1"
+        publicSiteSlugOverride="kim-sparkles"
+      />,
     )
 
-    expect(html).toContain('Support Workspace')
-    expect(html).toContain('Customer-facing site setup')
-    expect(html).toContain('Customer List (read only)')
-    expect(html).toContain('billing, security, private messages')
-    expect(html).not.toContain('>Live Queue code<')
+    expect(html).toContain('Nic-Nac')
+    expect(html).toContain('Open Trade Workspace')
+    expect(html).toContain('Visit resources')
+    expect(html).toContain('>Live Queue code<')
+    expect(html).toContain('>Messages<')
+    expect(html).toContain('>Log out<')
+    expect(html).toContain('Sign-in changes are disabled during support access.')
+    expect(html).not.toContain('Support Workspace')
+    expect(html).not.toContain('Customer List (read only)')
+  })
+
+  it('keeps support mode as a narrow restriction flag, not an alternate Workspace', () => {
+    const clientSource = readFileSync('app/nic-nac/_client.tsx', 'utf8')
+    const dashboardSource = readFileSync(
+      'app/nic-nac/components/DashboardPlaceholder.tsx',
+      'utf8',
+    )
+    const supportClientSource = readFileSync(
+      'app/control-center/support/[sessionId]/SupportWorkspaceClient.tsx',
+      'utf8',
+    )
+
+    expect(clientSource).toContain('operatorSupportMode={Boolean(operatorSupport)}')
+    expect(clientSource).toContain('workspaceRoutePath')
+    expect(clientSource).not.toMatch(/if \(operatorSupport\) \{\s*return \(/)
+    expect(dashboardSource).toContain("const showConceptHome = activeSection === 'home'")
+    expect(dashboardSource).not.toContain('OperatorSupportOverviewCard')
+    expect(dashboardSource).not.toContain('OperatorSupportUnavailableCard')
+    expect(dashboardSource).not.toContain('readOnly={operatorSupportMode}')
+    expect(dashboardSource).toContain('<AccountSecurityCard mutationsDisabled={operatorSupportMode} />')
+    expect(dashboardSource).toContain('mutationsDisabled={operatorSupportMode}')
+    expect(dashboardSource).toContain('downloadCustomerExport')
+    expect(dashboardSource).toContain("fetch('/api/nic-nac/customer-audience?format=csv'")
+    expect(supportClientSource).not.toContain('customerReadUrl')
+  })
+
+  it('keeps every rep tool discoverable from More during support access', () => {
+    const html = renderToStaticMarkup(
+      <DashboardPlaceholder
+        initialSectionOverride="more"
+        operatorSupportMode
+        repIdOverride="rep-1"
+        publicSiteSlugOverride="kim-sparkles"
+      />,
+    )
+
+    expect(html).toContain('Message Center')
+    expect(html).toContain('Resources &amp; Help')
+    expect(html).toContain('Live Queue')
+    expect(html).toContain('Account')
+    expect(html).toContain('Customer List')
   })
 
   it('shows support access inside every expanded customer profile', () => {
@@ -115,7 +161,8 @@ describe('Control Center transparent operator support access UI', () => {
     expect(html).toContain('kim@example.com')
     expect(html).toContain('rep-1')
     expect(html).toContain('Notify rep and open Workspace')
-    expect(html).toContain('Billing, subscriptions, passwords, security')
+    expect(html).toContain('The Workspace works as it does for the rep')
+    expect(html).toContain('billing, payments, subscriptions, passwords, security')
     expect(html).toContain('Account setup help')
     expect(html).toContain('Support request or ticket')
   })

@@ -37,4 +37,14 @@ describe('Sparkle Suite Account Security card', () => {
     expect(source).toContain('password: newPassword')
     expect(source).not.toContain('password: newPasswordConfirm')
   })
+
+  it('keeps the normal security form visible but disables every mutation control in support mode', () => {
+    const html = renderToStaticMarkup(
+      <AccountSecurityCard mutationsDisabled />,
+    )
+
+    expect(html).toContain('Password &amp; security')
+    expect(html.match(/disabled=""/g)).toHaveLength(3)
+    expect(html).toContain('Update password')
+  })
 })

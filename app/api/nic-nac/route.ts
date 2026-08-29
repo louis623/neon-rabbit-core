@@ -51,7 +51,17 @@ import {
   getNicNacProviderOptions,
 } from '@/lib/nic-nac/core/model-provider'
 import { estimateNicNacRunCostCents } from '@/lib/nic-nac/core/model-cost'
-import { createSuiteRepWorkspaceProductContext } from '@/lib/nic-nac/core/product-context'
+import {
+  createSuiteOperatorSupportProductContext,
+  createSuiteRepWorkspaceProductContext,
+} from '@/lib/nic-nac/core/product-context'
+import { getOperatorSupportRequestContext } from '@/lib/operator-support/request-context'
+import {
+  assertOperatorSupportConversationId,
+  insertOperatorSupportConversationMessage,
+  loadOperatorSupportConversation,
+  recordOperatorSupportApprovalEvent,
+} from '@/lib/nic-nac/support-conversation'
 import { filterNicNacToolIntentsForContext } from '@/lib/nic-nac/core/tool-policy'
 import { assembleNicNacContext } from '@/lib/nic-nac/core/context-assembler'
 import { loadSuiteRepMemoryCards } from '@/lib/nic-nac/core/memory/rep-memory-cards'
@@ -281,10 +291,25 @@ export async function POST(request: Request) {
     throw err
   }
   const { repId, rep, supabase } = ctx
-  const productContext = createSuiteRepWorkspaceProductContext({
-    repId,
-    userId: rep.auth_user_id,
-  })
+  const supportContext = getOperatorSupportRequestContext()
+  const supportScope = supportContext
+    ? {
+        supportSessionId: supportContext.session.id,
+        operatorRepId: supportContext.actor.operatorRepId,
+        targetRepId: supportContext.actor.subjectRepId,
+      }
+    : null
+  const productContext = supportContext
+    ? createSuiteOperatorSupportProductContext({
+        targetRepId: repId,
+        targetUserId: rep.auth_user_id,
+        operatorRepId: supportContext.actor.operatorRepId,
+        supportSessionId: supportContext.session.id,
+      })
+    : createSuiteRepWorkspaceProductContext({
+        repId,
+        userId: rep.auth_user_id,
+      })
 
   let body: PostBody
   try {
@@ -304,6 +329,16 @@ export async function POST(request: Request) {
   }
 
   const { conversationId, messages } = body
+  if (supportScope) {
+    try {
+      assertOperatorSupportConversationId(conversationId, supportScope)
+    } catch {
+      return NextResponse.json(
+        { error: 'support_conversation_mismatch' },
+        { status: 403, headers: responseHeaders },
+      )
+    }
+  }
   const mode = body.mode === 'required_setup' ? 'required_setup' : 'workspace'
 
   console.info('[nic-nac] run', { runId, conversationId, repId })
@@ -318,7 +353,9 @@ export async function POST(request: Request) {
   try {
     ;[existingOwner, existingHistory] = await Promise.all([
       probeConversationOwner(conversationId),
-      loadCanonicalHistory(supabase, conversationId),
+      supportScope
+        ? loadOperatorSupportConversation(supabase, supportScope)
+        : loadCanonicalHistory(supabase, conversationId),
     ])
   } catch (err) {
     const message = (err as Error).message
@@ -356,20 +393,33 @@ export async function POST(request: Request) {
     for (const m of messages) {
       if (m.role !== 'user') continue
       if (existingIds.has(m.id)) continue
-      await insertUserMessage(supabase, {
-        conversationId,
-        repId,
-        messageId: m.id,
-        parts: m.parts,
-      })
+      if (supportScope) {
+        await insertOperatorSupportConversationMessage(supabase, supportScope, m)
+      } else {
+        await insertUserMessage(supabase, {
+          conversationId,
+          repId,
+          messageId: m.id,
+          parts: m.parts,
+        })
+      }
     }
 
     const assistantMessageId = randomUUID()
-    await reserveAssistantMessage(supabase, {
-      conversationId,
-      repId,
-      messageId: assistantMessageId,
-    })
+    if (supportScope) {
+      await insertOperatorSupportConversationMessage(supabase, supportScope, {
+        id: assistantMessageId,
+        role: 'assistant',
+        parts: [],
+        status: 'pending',
+      })
+    } else {
+      await reserveAssistantMessage(supabase, {
+        conversationId,
+        repId,
+        messageId: assistantMessageId,
+      })
+    }
     await completeAssistant(supabase, {
       conversationId,
       messageId: assistantMessageId,
@@ -429,13 +479,15 @@ export async function POST(request: Request) {
   // Approval replay protection. UNIQUE(approval_id) is the durable backstop.
   const approvals = extractApprovalResponses(messages)
   for (const a of approvals) {
-    const { replayed } = await recordApprovalEvent(supabase, {
-      conversationId,
-      repId,
-      approvalId: a.approvalId,
-      toolName: a.toolName,
-      approved: a.approved,
-    })
+    const { replayed } = supportScope
+      ? await recordOperatorSupportApprovalEvent(supabase, supportScope, a)
+      : await recordApprovalEvent(supabase, {
+          conversationId,
+          repId,
+          approvalId: a.approvalId,
+          toolName: a.toolName,
+          approved: a.approved,
+        })
     if (replayed) {
       return NextResponse.json(
         { error: 'approval_replayed', approvalId: a.approvalId },
@@ -449,12 +501,16 @@ export async function POST(request: Request) {
   for (const m of messages) {
     if (m.role !== 'user') continue
     if (existingIds.has(m.id)) continue
-    await insertUserMessage(supabase, {
-      conversationId,
-      repId,
-      messageId: m.id,
-      parts: m.parts,
-    })
+    if (supportScope) {
+      await insertOperatorSupportConversationMessage(supabase, supportScope, m)
+    } else {
+      await insertUserMessage(supabase, {
+        conversationId,
+        repId,
+        messageId: m.id,
+        parts: m.parts,
+      })
+    }
   }
 
   // Reserve assistant row before streamText starts. Same ID is wired to the
@@ -469,11 +525,20 @@ export async function POST(request: Request) {
   const { messageId: assistantMessageId, isContinuation } =
     decideAssistantMessageId(messages, () => randomUUID())
   if (!isContinuation) {
-    await reserveAssistantMessage(supabase, {
-      conversationId,
-      repId,
-      messageId: assistantMessageId,
-    })
+    if (supportScope) {
+      await insertOperatorSupportConversationMessage(supabase, supportScope, {
+        id: assistantMessageId,
+        role: 'assistant',
+        parts: [],
+        status: 'pending',
+      })
+    } else {
+      await reserveAssistantMessage(supabase, {
+        conversationId,
+        repId,
+        messageId: assistantMessageId,
+      })
+    }
   }
 
   const latestUserMessage = [...messages]
@@ -578,6 +643,13 @@ export async function POST(request: Request) {
       activeTradeBoardWorkflow,
       activeTradeWorkflow: tradeWorkflowContext.sessionAfter,
       activeCalendarWorkflow: calendarWorkflowContext.sessionAfter,
+      operatorSupport: supportContext
+        ? {
+            supportSessionId: supportContext.session.id,
+            operatorRepId: supportContext.actor.operatorRepId,
+            capabilities: supportContext.session.capabilities,
+          }
+        : undefined,
     },
     toolIntents,
   )

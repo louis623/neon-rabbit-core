@@ -203,8 +203,9 @@ export function OperatorSupportStartDialog({
 
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
           Sparkle Suite will log this session and notify the rep before access
-          opens. Billing, subscriptions, passwords, security, ownership, and
-          outbound communications stay blocked.
+          opens. The Workspace works as it does for the rep, while billing,
+          payments, subscriptions, passwords, security, and ownership changes
+          stay disabled.
         </div>
 
         {message ? (

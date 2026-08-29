@@ -9,13 +9,18 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import styles from './DashboardPlaceholder.module.css'
 
-export function AccountSecurityCard() {
+export function AccountSecurityCard({
+  mutationsDisabled = false,
+}: {
+  mutationsDisabled?: boolean
+} = {}) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (mutationsDisabled) return
     const form = event.currentTarget
     const data = new FormData(form)
     const newPassword = String(data.get('newPassword') ?? '')
@@ -74,7 +79,7 @@ export function AccountSecurityCard() {
             autoComplete="new-password"
             minLength={PASSWORD_MIN_LENGTH}
             aria-describedby="account-password-requirements"
-            disabled={busy}
+            disabled={busy || mutationsDisabled}
             required
           />
         </label>
@@ -87,7 +92,7 @@ export function AccountSecurityCard() {
             autoComplete="new-password"
             minLength={PASSWORD_MIN_LENGTH}
             aria-describedby="account-password-requirements"
-            disabled={busy}
+            disabled={busy || mutationsDisabled}
             required
           />
         </label>
@@ -107,7 +112,11 @@ export function AccountSecurityCard() {
         ) : null}
 
         <div className={styles.actionRow}>
-          <button type="submit" className={styles.actionButton} disabled={busy}>
+          <button
+            type="submit"
+            className={styles.actionButton}
+            disabled={busy || mutationsDisabled}
+          >
             {busy ? 'Updating password...' : 'Update password'}
           </button>
         </div>

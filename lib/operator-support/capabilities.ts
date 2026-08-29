@@ -2,6 +2,7 @@ import type { SupportCapability } from './types'
 
 export const OPERATOR_SUPPORT_CAPABILITIES = [
   'workspace.view',
+  'workspace.manage',
   'site.view',
   'site.manage',
   'inventory.view',
@@ -13,19 +14,19 @@ export const OPERATOR_SUPPORT_CAPABILITIES = [
   'team.view',
   'team.manage',
   'messages.view',
+  'messages.manage',
+  'communications.manage',
   'nic_nac.use',
   'live_queue.view',
+  'live_queue.manage',
 ] as const satisfies readonly SupportCapability[]
 
-export const DEFAULT_OPERATOR_SUPPORT_CAPABILITIES = OPERATOR_SUPPORT_CAPABILITIES.filter(
-  (capability) =>
-    ![
-      'customers.manage',
-      'messages.view',
-      'nic_nac.use',
-      'live_queue.view',
-    ].includes(capability),
-)
+// An active support session mirrors ordinary Workspace access. The deny list
+// is structural (billing/auth/security/ownership routes are never gateway
+// eligible), rather than silently removing ordinary product capabilities.
+export const DEFAULT_OPERATOR_SUPPORT_CAPABILITIES = [
+  ...OPERATOR_SUPPORT_CAPABILITIES,
+] as const
 
 const capabilitySet = new Set<string>(OPERATOR_SUPPORT_CAPABILITIES)
 
@@ -57,8 +58,8 @@ export const BLOCKED_OPERATOR_SUPPORT_AREAS = [
   'account_ownership',
   'account_deletion',
   'provider_credentials',
-  'outbound_communications',
-  'customer_exports',
-  'message_state',
+  'account_security',
+  'account_email',
+  'account_password',
   'deployments',
 ] as const

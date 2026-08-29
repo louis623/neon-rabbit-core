@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createSparkleFinderProductContext,
   createSparkleLabProductContext,
+  createSuiteOperatorSupportProductContext,
   createSuiteRepWorkspaceProductContext,
 } from '@/lib/nic-nac/core/product-context'
 
@@ -26,6 +27,32 @@ describe('Nic-Nac product context', () => {
         canMutateSuiteWorkspace: true,
         canMutateFinderAccount: false,
         canRunSparkleLab: false,
+      },
+    })
+  })
+
+  it('keeps the operator as actor while targeting the rep workspace', () => {
+    const context = createSuiteOperatorSupportProductContext({
+      targetRepId: 'target-rep',
+      targetUserId: 'target-auth',
+      operatorRepId: 'operator-rep',
+      supportSessionId: 'support-session',
+    })
+
+    expect(context).toMatchObject({
+      product: 'sparkle_suite',
+      surface: 'operator_support_workspace',
+      actor: {
+        type: 'operator',
+        suiteRepId: 'target-rep',
+        linkedSuiteRepId: 'target-rep',
+        operatorRepId: 'operator-rep',
+        supportSessionId: 'support-session',
+        subjectUserId: 'target-auth',
+      },
+      permissions: {
+        canMutateSuiteWorkspace: true,
+        canMutateFinderAccount: false,
       },
     })
   })

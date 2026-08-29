@@ -5,6 +5,14 @@ const migration = readFileSync(
   'supabase/migrations/20260829120000_ss_operator_support_access.sql',
   'utf8',
 )
+const fullWorkspaceCapabilitiesMigration = readFileSync(
+  'supabase/migrations/20260829122500_ss_operator_support_full_workspace_capabilities.sql',
+  'utf8',
+)
+const nicNacProvenanceMigration = readFileSync(
+  'supabase/migrations/20260829123000_ss_operator_support_nic_nac_provenance.sql',
+  'utf8',
+)
 
 describe('operator support access schema contract', () => {
   it('creates frozen actor/subject sessions with concurrency and expiry guards', () => {
@@ -51,5 +59,36 @@ describe('operator support access schema contract', () => {
     expect(migration).toContain("'support_access_notifier'")
     expect(migration).toContain("'Sparkle Suite Support'")
     expect(migration).toContain("'{\"categories\":[\"account_activity\"],\"audiences\":[\"selected\"]}'::jsonb")
+  })
+
+  it('allows ordinary Workspace capabilities without adding billing or account-security authority', () => {
+    for (const capability of [
+      'workspace.manage',
+      'customers.manage',
+      'messages.manage',
+      'communications.manage',
+      'nic_nac.use',
+      'live_queue.view',
+    ]) {
+      expect(fullWorkspaceCapabilitiesMigration).toContain(`'${capability}'`)
+    }
+    expect(fullWorkspaceCapabilitiesMigration).not.toMatch(
+      /'(?:billing|payments?|authentication|account_security|account_ownership)\.(?:view|manage)'/,
+    )
+  })
+
+  it('records support Nic-Nac actor provenance and keeps it out of ordinary rep RLS paths', () => {
+    expect(nicNacProvenanceMigration).toContain('support_session_id uuid')
+    expect(nicNacProvenanceMigration).toContain('source_actor_rep_id uuid')
+    expect(nicNacProvenanceMigration).toContain('guard_operator_support_nic_nac_provenance')
+    expect(nicNacProvenanceMigration).toContain('new.conversation_id <> v_session.id')
+    expect(nicNacProvenanceMigration).toContain('new.rep_id <> v_session.target_rep_id')
+    expect(nicNacProvenanceMigration).toContain('new.source_actor_rep_id <> v_session.operator_rep_id')
+    expect(nicNacProvenanceMigration).toMatch(
+      /create policy nic_nac_conv_own_data[\s\S]*support_session_id is null/,
+    )
+    expect(nicNacProvenanceMigration).toMatch(
+      /create policy approval_events_own_data[\s\S]*support_session_id is null/,
+    )
   })
 })

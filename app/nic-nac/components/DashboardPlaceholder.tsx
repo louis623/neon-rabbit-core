@@ -2,7 +2,13 @@
 
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import type { ChangeEvent, CSSProperties, FormEvent, ReactNode } from 'react'
+import type {
+  ChangeEvent,
+  CSSProperties,
+  FormEvent,
+  MouseEvent as ReactMouseEvent,
+  ReactNode,
+} from 'react'
 import {
   useCallback,
   useEffect,
@@ -2543,7 +2549,6 @@ export type DashboardPlaceholderProps = {
   initialSiteSettings?: SiteSettingsDashboardResult
   reviewWorkspaceMode?: boolean
   operatorSupportMode?: boolean
-  operatorSupportSessionId?: string
   initialSectionOverride?: WorkspaceSectionKey
   onLaunchNicNacAction?: (action: WorkspaceLaunchAction) => void
   onSendNicNacPrompt?: (prompt: string) => void
@@ -2568,7 +2573,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     initialSiteSettings,
     reviewWorkspaceMode = false,
     operatorSupportMode = false,
-    operatorSupportSessionId,
     initialSectionOverride,
     onLaunchNicNacAction,
     onSendNicNacPrompt,
@@ -2601,8 +2605,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     liveQueueSyncCode: liveQueueSyncCodeOverride ?? null,
   })
   const [audienceState, setAudienceState] = useState<AudienceState>({
-    status: reviewWorkspaceMode || operatorSupportMode ? 'ready' : 'loading',
-    summary: reviewWorkspaceMode || operatorSupportMode
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    summary: reviewWorkspaceMode
       ? {
           totalCustomers: 0,
           smsReachableCount: 0,
@@ -2613,7 +2617,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           addedLast30DaysCount: 0,
         }
       : undefined,
-    customers: reviewWorkspaceMode || operatorSupportMode ? [] : undefined,
+    customers: reviewWorkspaceMode ? [] : undefined,
   })
 
   useEffect(() => {
@@ -2639,8 +2643,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     pending: false,
   })
   const [walletState, setWalletState] = useState<WalletState>({
-    status: reviewWorkspaceMode || operatorSupportMode ? 'ready' : 'loading',
-    summary: reviewWorkspaceMode || operatorSupportMode
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    summary: reviewWorkspaceMode
       ? {
           balanceMils: 0,
           balanceUsd: 0,
@@ -2682,8 +2686,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
   const [accountBillingState, setAccountBillingState] =
     useState<AccountBillingState>({
-      status: reviewWorkspaceMode || operatorSupportMode ? 'ready' : 'loading',
-      summary: reviewWorkspaceMode || operatorSupportMode
+      status: reviewWorkspaceMode ? 'ready' : 'loading',
+      summary: reviewWorkspaceMode
         ? {
             stripeConfigured: false,
             checkoutMode: 'test_buyer',
@@ -2817,15 +2821,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       facets: EMPTY_JEWELRY_LIBRARY_FACETS,
     })
   const [messagesState, setMessagesState] = useState<MessagesState>({
-    status: reviewWorkspaceMode || operatorSupportMode ? 'ready' : 'loading',
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
     inbox: reviewWorkspaceMode
       ? {
           unreadCount: getActiveUnreadMessageCount(REVIEW_INBOX_FIXTURES),
           messages: REVIEW_INBOX_FIXTURES,
         }
-      : operatorSupportMode
-        ? { unreadCount: 0, messages: [] }
-        : undefined,
+      : undefined,
   })
   const [messagesActionState, setMessagesActionState] =
     useState<MessagesActionState>({
@@ -2864,8 +2866,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     resources: reviewWorkspaceMode ? [] : undefined,
   })
   const [analyticsState, setAnalyticsState] = useState<AnalyticsState>({
-    status: reviewWorkspaceMode || operatorSupportMode ? 'ready' : 'loading',
-    analytics: reviewWorkspaceMode || operatorSupportMode
+    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    analytics: reviewWorkspaceMode
       ? {
           configured: false,
           privacy: {
@@ -2936,7 +2938,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadWallet(signal?: AbortSignal) {
-    if (operatorSupportMode) return
     const response = await fetch('/api/nic-nac/wallet-summary?limit=5', {
       credentials: 'include',
       signal,
@@ -3022,7 +3023,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadAccountBilling(signal?: AbortSignal) {
-    if (operatorSupportMode) return
     const response = await fetch('/api/nic-nac/account-billing', {
       credentials: 'include',
       signal,
@@ -3113,7 +3113,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadMessages(signal?: AbortSignal) {
-    if (operatorSupportMode) return
     const loadInbox = async (archived: boolean) => {
       const params = new URLSearchParams({
         limit: '100',
@@ -3226,7 +3225,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadAnalytics(signal?: AbortSignal) {
-    if (operatorSupportMode) return
     const response = await fetch('/api/nic-nac/site-analytics', {
       credentials: 'include',
       signal,
@@ -3350,24 +3348,16 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           if ((error as { name?: string }).name === 'AbortError') return
           setRepProfileState({ status: 'error' })
         }),
-        ...(operatorSupportMode
-          ? []
-          : [
-              loadAccountBilling(controller.signal).catch((error) => {
-                if (cancelled) return
-                if ((error as { name?: string }).name === 'AbortError') return
-                setAccountBillingState({ status: 'error' })
-              }),
-            ]),
-        ...(operatorSupportMode
-          ? []
-          : [
-              loadResources(controller.signal).catch((error) => {
-                if (cancelled) return
-                if ((error as { name?: string }).name === 'AbortError') return
-                setResourcesState({ status: 'error' })
-              }),
-            ]),
+        loadAccountBilling(controller.signal).catch((error) => {
+          if (cancelled) return
+          if ((error as { name?: string }).name === 'AbortError') return
+          setAccountBillingState({ status: 'error' })
+        }),
+        loadResources(controller.signal).catch((error) => {
+          if (cancelled) return
+          if ((error as { name?: string }).name === 'AbortError') return
+          setResourcesState({ status: 'error' })
+        }),
       ])
     })()
 
@@ -5839,16 +5829,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
 
     if (canRenderWorkspaceSections && activeSection === 'home') {
-      if (operatorSupportMode) {
-        return (
-          <OperatorSupportOverviewCard
-            onOpenCalendar={() => setActiveSection('show-calendar')}
-            onOpenCustomers={() => setActiveSection('customer-list')}
-            onOpenInventory={() => setActiveSection('trade-board')}
-            onOpenSite={() => setActiveSection('site-settings')}
-          />
-        )
-      }
       return (
         <NicNacHomeWorkspaceCard
           tradeRequestsCount={tradeRequestsState.requests?.length ?? 0}
@@ -5912,11 +5892,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         <MoreWorkspaceCard
           sections={SECONDARY_WORKSPACE_SECTIONS.filter(
             (section) =>
-              (section.key !== 'recipes' || hasRecipeWorkspaceAccess) &&
-              (!operatorSupportMode ||
-                !['account', 'help-resources', 'live-queue', 'messages', 'resources'].includes(
-                  section.key,
-                )),
+              section.key !== 'recipes' || hasRecipeWorkspaceAccess,
           )}
           onSectionChange={(section) => {
             const nextSection = resolveWorkspaceSectionForAccess(
@@ -5962,14 +5938,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
 
     if (activeSection === 'messages') {
-      if (operatorSupportMode) {
-        return (
-          <OperatorSupportUnavailableCard
-            title="Message Center is read-only outside support access"
-            detail="Private messages and outbound communications are intentionally unavailable while you are working as support. The rep still receives automatic access notices."
-          />
-        )
-      }
       return (
         <div className={styles.workspaceSectionStack}>
           <UnifiedMessageCenter
@@ -5990,14 +5958,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       activeSection === 'resources' ||
       activeSection === 'help-resources'
     ) {
-      if (operatorSupportMode) {
-        return (
-          <OperatorSupportUnavailableCard
-            title="Shared resources stay outside support access"
-            detail="This session is limited to the selected rep's account and customer-site setup. Shared Help & Resources content is unchanged and remains available to the rep in their own Workspace."
-          />
-        )
-      }
       return (
         <div className={styles.workspaceSectionStack}>
           <HelpResourcesCard
@@ -6028,7 +5988,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       return (
         <div className={styles.workspaceSectionStack}>
           <CustomerRosterCard
-            readOnly={operatorSupportMode}
             state={audienceState}
             activeFilter={rosterFilter}
             onFilterChange={setRosterFilter}
@@ -6152,14 +6111,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
 
     if (activeSection === 'account') {
-      if (operatorSupportMode) {
-        return (
-          <OperatorSupportUnavailableCard
-            title="Billing and security are unavailable"
-            detail={`Support session ${operatorSupportSessionId ?? ''} cannot view or change billing, subscriptions, payments, passwords, identity, ownership, wallet funding, or account security.`}
-          />
-        )
-      }
       return (
         <div className={styles.workspaceSectionStack}>
           <SupportAccessHistoryCard />
@@ -6171,8 +6122,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             statusMessage={accountBillingActionState.helperMessage}
             agreementAccepted={subscriptionAgreementAccepted}
             onAgreementAcceptedChange={setSubscriptionAgreementAccepted}
+            mutationsDisabled={operatorSupportMode}
           />
-          <AccountSecurityCard />
+          <AccountSecurityCard mutationsDisabled={operatorSupportMode} />
           {accountBillingState.status === 'ready' &&
           accountBillingState.summary ? (
             <ReferralProgramCard referral={accountBillingState.summary.referral} />
@@ -6188,6 +6140,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
                   onSaveAutoRechargeSettings={handleSaveAutoRechargeSettings}
                   onLoadWallet={handleWalletLoad}
                   statusMessage={walletActionState.helperMessage}
+                  mutationsDisabled={operatorSupportMode}
                 />
               ) : null}
               <SiteAnalyticsCard state={analyticsState} />
@@ -6200,7 +6153,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     return null
   }
   const renderedSection = renderActiveWorkspaceSection()
-  const showConceptHome = activeSection === 'home' && !operatorSupportMode
+  const showConceptHome = activeSection === 'home'
   const workspaceBackDestination = getWorkspaceBackDestination(activeSection)
   const isRecipeDetailOpen =
     activeSection === 'recipes' && recipeEditorTab === 'edit'
@@ -6330,64 +6283,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
 }
 
-function OperatorSupportUnavailableCard({
-  title,
-  detail,
-}: {
-  title: string
-  detail: string
-}) {
-  return (
-    <div className={styles.workspaceSectionStack}>
-      <section className={styles.cardFill} aria-live="polite">
-        <div className={styles.cardTitle}>{title}</div>
-        <p>{detail}</p>
-      </section>
-    </div>
-  )
-}
-
-function OperatorSupportOverviewCard({
-  onOpenCalendar,
-  onOpenCustomers,
-  onOpenInventory,
-  onOpenSite,
-}: {
-  onOpenCalendar: () => void
-  onOpenCustomers: () => void
-  onOpenInventory: () => void
-  onOpenSite: () => void
-}) {
-  const actions = [
-    ['Customer-facing site setup', onOpenSite],
-    ['Customer List (read only)', onOpenCustomers],
-    ['Dance Floor and inventory', onOpenInventory],
-    ['Show calendar', onOpenCalendar],
-  ] as const
-  return (
-    <section className={styles.cardFill}>
-      <div className={styles.cardTitle}>Support Workspace</div>
-      <p>
-        Choose the part of this rep&apos;s account you are helping with. Nic-Nac,
-        billing, security, private messages, outbound communication, exports,
-        and Live Queue codes stay unavailable in support mode.
-      </p>
-      <div className={styles.bulkActions}>
-        {actions.map(([label, onClick]) => (
-          <button
-            className={styles.bulkActionButton}
-            key={label}
-            onClick={onClick}
-            type="button"
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-    </section>
-  )
-}
-
 export function WorkspaceAppHeader({
   repName,
   showName,
@@ -6502,13 +6397,13 @@ export function WorkspaceAppHeader({
             {siteLinkCopied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
           </button>
         </div>
-        {!operatorSupportMode ? <div className={styles.appHeaderReference}>
+        <div className={styles.appHeaderReference}>
           <span className={styles.appHeaderReferenceLabel}>Live Queue code</span>
           <strong className={styles.appHeaderQueueCode}>
             {liveQueueSyncCode?.trim() ||
               (repName === 'Rep info loading' ? 'Loading' : 'Not set')}
           </strong>
-        </div> : null}
+        </div>
         {memberTeamName ? (
           <div className={styles.appHeaderReference}>
             <span className={styles.appHeaderReferenceLabel}>Team I belong to</span>
@@ -6517,7 +6412,7 @@ export function WorkspaceAppHeader({
         ) : null}
       </div>
       <div className={styles.appHeaderActions}>
-        {!operatorSupportMode ? <button
+        <button
           type="button"
           className={`${styles.appMessageButton} ${
             messagesActive ? styles.appMessageButtonActive : ''
@@ -6538,7 +6433,7 @@ export function WorkspaceAppHeader({
               {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
             </span>
           ) : null}
-        </button> : null}
+        </button>
         <details className={styles.appProfileMenu}>
           <summary
             className={styles.appProfile}
@@ -6554,19 +6449,20 @@ export function WorkspaceAppHeader({
             <ChevronDown className={styles.appProfileChevron} aria-hidden="true" />
           </summary>
           <div className={styles.appProfilePopover}>
-            {operatorSupportMode ? (
-              <span className={styles.appProfileError}>
-                Support mode — use the banner above to end access.
-              </span>
-            ) : <button
+            <button
               type="button"
               className={styles.appProfileLogout}
-              disabled={logoutBusy}
+              disabled={logoutBusy || operatorSupportMode}
               onClick={() => void handleLogout()}
+              title={
+                operatorSupportMode
+                  ? 'Sign-in changes are disabled during support access.'
+                  : undefined
+              }
             >
               <LogOut aria-hidden="true" />
               {logoutBusy ? 'Logging out…' : 'Log out'}
-            </button>}
+            </button>
             {logoutError ? (
               <span className={styles.appProfileError} role="alert">
                 {logoutError}
@@ -10690,6 +10586,7 @@ export function AccountBillingCard({
   statusMessage,
   agreementAccepted = false,
   onAgreementAcceptedChange,
+  mutationsDisabled = false,
 }: {
   state: AccountBillingState
   actionState?: AccountBillingActionState
@@ -10698,11 +10595,14 @@ export function AccountBillingCard({
   statusMessage?: string | null
   agreementAccepted?: boolean
   onAgreementAcceptedChange?: (accepted: boolean) => void
+  mutationsDisabled?: boolean
 }) {
   if (state.status === 'error') {
     return (
       <div className={styles.walletFallback}>
-        Account and billing details will show here once Stripe data loads.
+        {mutationsDisabled
+          ? 'Billing details are unavailable during support access. Billing and payment changes remain disabled.'
+          : 'Account and billing details will show here once Stripe data loads.'}
       </div>
     )
   }
@@ -10780,6 +10680,11 @@ export function AccountBillingCard({
             href={grandfatheredCheckout.href}
             target="_blank"
             rel="noreferrer"
+            aria-disabled={mutationsDisabled || undefined}
+            tabIndex={mutationsDisabled ? -1 : undefined}
+            onClick={(event) => {
+              if (mutationsDisabled) event.preventDefault()
+            }}
           >
             Stripe Billing and Payments
           </a>
@@ -10860,6 +10765,7 @@ export function AccountBillingCard({
             <input
               type="checkbox"
               checked={agreementAccepted}
+              disabled={mutationsDisabled}
               onChange={(event) =>
                 onAgreementAcceptedChange?.(event.currentTarget.checked)
               }
@@ -10878,7 +10784,11 @@ export function AccountBillingCard({
             type="button"
             className={styles.actionButton}
             onClick={() => onStartSubscription?.()}
-            disabled={actionState?.pendingAction !== null || !agreementAccepted}
+            disabled={
+              mutationsDisabled ||
+              actionState?.pendingAction !== null ||
+              !agreementAccepted
+            }
           >
             {actionState?.pendingAction === 'subscribe'
               ? 'Opening checkout...'
@@ -10890,7 +10800,7 @@ export function AccountBillingCard({
             type="button"
             className={styles.actionButton}
             onClick={() => onManageBilling?.()}
-            disabled={actionState?.pendingAction !== null}
+            disabled={mutationsDisabled || actionState?.pendingAction !== null}
           >
             {actionState?.pendingAction === 'manage'
               ? 'Opening portal...'
@@ -11260,6 +11170,7 @@ export function WalletSummaryCard({
   onSaveAutoRechargeSettings,
   onLoadWallet,
   statusMessage,
+  mutationsDisabled = false,
 }: {
   state: WalletState
   actionState?: WalletActionState
@@ -11270,11 +11181,14 @@ export function WalletSummaryCard({
   onSaveAutoRechargeSettings?: () => void
   onLoadWallet?: (amountCents: number) => void
   statusMessage?: string | null
+  mutationsDisabled?: boolean
 }) {
   if (state.status === 'error') {
     return (
       <div className={styles.walletFallback}>
-        Wallet details will show here once billing data loads.
+        {mutationsDisabled
+          ? 'SMS Wallet billing details are unavailable during support access. Funding and auto-recharge changes remain disabled.'
+          : 'Wallet details will show here once billing data loads.'}
       </div>
     )
   }
@@ -11378,6 +11292,7 @@ export function WalletSummaryCard({
             <input
               type="checkbox"
               checked={autoRechargeDraft.enabled}
+              disabled={mutationsDisabled}
               onChange={(event) =>
                 onAutoRechargeDraftChange?.({ enabled: event.target.checked })
               }
@@ -11389,6 +11304,7 @@ export function WalletSummaryCard({
               <select
                 value={autoRechargeDraft.thresholdCents}
                 className={styles.sortSelect}
+                disabled={mutationsDisabled}
                 onChange={(event) =>
                   onAutoRechargeDraftChange?.({
                     thresholdCents: Number.parseInt(event.target.value, 10),
@@ -11407,6 +11323,7 @@ export function WalletSummaryCard({
               <select
                 value={autoRechargeDraft.amountCents}
                 className={styles.sortSelect}
+                disabled={mutationsDisabled}
                 onChange={(event) =>
                   onAutoRechargeDraftChange?.({
                     amountCents: Number.parseInt(event.target.value, 10),
@@ -11425,7 +11342,11 @@ export function WalletSummaryCard({
             <button
               type="button"
               className={styles.bulkActionButton}
-              disabled={actionState?.pendingSettings || !onSaveAutoRechargeSettings}
+              disabled={
+                mutationsDisabled ||
+                actionState?.pendingSettings ||
+                !onSaveAutoRechargeSettings
+              }
               onClick={() => onSaveAutoRechargeSettings?.()}
             >
               {actionState?.pendingSettings ? 'Saving...' : 'Save settings'}
@@ -11461,7 +11382,9 @@ export function WalletSummaryCard({
             type="button"
             className={styles.bulkActionButton}
             disabled={
-              !onLoadWallet || actionState?.pendingAmountCents === option.amountCents
+              mutationsDisabled ||
+              !onLoadWallet ||
+              actionState?.pendingAmountCents === option.amountCents
             }
             onClick={() => onLoadWallet?.(option.amountCents)}
           >
@@ -11598,6 +11521,7 @@ export function CustomerRosterCard({
     error: string | null
     success: string | null
   } | null>(null)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   const openCreate = () =>
     setEditor({ audienceId: null, profile: emptyProfile(), pending: false, error: null })
@@ -11674,6 +11598,43 @@ export function CustomerRosterCard({
     }
   }
 
+  const downloadCustomerExport = async (
+    event: ReactMouseEvent<HTMLAnchorElement>,
+  ) => {
+    event.preventDefault()
+    setExportError(null)
+    try {
+      const response = await fetch('/api/nic-nac/customer-audience?format=csv', {
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error(`Customer export request failed: ${response.status}`)
+      }
+      if (!(response.headers.get('content-type') ?? '').includes('text/csv')) {
+        throw new Error('Customer export did not return a CSV file.')
+      }
+      const blob = await response.blob()
+      const disposition = response.headers.get('content-disposition') ?? ''
+      const filename =
+        disposition.match(/filename="?([^";]+)"?/i)?.[1] ??
+        'sparkle-suite-customers.csv'
+      const objectUrl = URL.createObjectURL(blob)
+      const download = document.createElement('a')
+      download.href = objectUrl
+      download.download = filename
+      document.body.appendChild(download)
+      download.click()
+      download.remove()
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0)
+    } catch (error) {
+      setExportError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to download this customer list.',
+      )
+    }
+  }
+
   if (state.status === 'error') {
     return (
       <div className={styles.rosterFallback}>
@@ -11727,12 +11688,18 @@ export function CustomerRosterCard({
             className={styles.bulkActionButton}
             href="/api/nic-nac/customer-audience?format=csv"
             download
+            onClick={(event) => void downloadCustomerExport(event)}
           >
             <Download size={16} aria-hidden="true" />
             Download full list (CSV)
           </a>
         </div> : null}
       </div>
+      {exportError ? (
+        <div className={styles.actionError} role="alert">
+          {exportError}
+        </div>
+      ) : null}
       <div className={styles.metricGrid}>
         <div className={styles.metricBlock}>
           <span className={styles.metricLabel}>Total</span>

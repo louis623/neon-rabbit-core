@@ -72,6 +72,8 @@ import { requestRequiredSetupSupportTool } from './request-required-setup-suppor
 import { unlockRequiredSetupTool } from './unlock-required-setup'
 import { withTelemetry } from './wrappers/with-telemetry'
 import { withErrorHandling } from './wrappers/with-error-handling'
+import { withOperatorSupportAudit } from './wrappers/with-operator-support-audit'
+import { filterOperatorSupportToolNames } from '@/lib/nic-nac/core/operator-support-policy'
 import type { ToolContext, ToolDefinition } from './types'
 
 const REGISTRY: ToolDefinition[] = [
@@ -831,7 +833,11 @@ export function buildToolsForIntents(
   ctx: ToolContext,
   intents: NicNacToolIntent[],
 ): ToolSet {
-  const definitions = listToolNamesForIntents(intents).map((name) => {
+  const requestedNames = listToolNamesForIntents(intents)
+  const allowedNames = ctx.operatorSupport
+    ? filterOperatorSupportToolNames(requestedNames, ctx.operatorSupport.capabilities)
+    : requestedNames
+  const definitions = allowedNames.map((name) => {
     const def = REGISTRY_BY_NAME.get(name)
     if (!def) throw new Error(`[nic-nac] unknown routed tool name: ${name}`)
     return def
@@ -858,7 +864,8 @@ function buildToolSet(ctx: ToolContext, definitions: ToolDefinition[]): ToolSet 
 
   const entries: Array<[string, Tool]> = definitions.map((def) => {
     const built = def.build(ctx) as Tool & { needsApproval?: boolean }
-    const inner = withTelemetry(def.name, ctx, built)
+    const audited = withOperatorSupportAudit(def.name, ctx, built)
+    const inner = withTelemetry(def.name, ctx, audited)
     const outer = withErrorHandling({ name: def.name, ctx, readOnly: def.readOnly }, inner)
     // Dev-time safety net: assert metadata survived wrapping. If a future
     // wrapper change drops needsApproval, HITL silently breaks.

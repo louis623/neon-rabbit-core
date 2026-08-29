@@ -80,17 +80,12 @@ describe('operator support route classification manifest', () => {
     expect(new Set(paths).size).toBe(paths.length)
   })
 
-  it('does not mark provider, billing, auth, outbound, or export routes as support allowed', () => {
+  it('keeps billing mutations, authentication, provider callbacks, and account safety mutations blocked', () => {
     const sensitiveFiles = new Set([
       'app/api/account/activate-trial/route.ts',
       'app/api/auth/callback/route.ts',
-      'app/api/nic-nac/account-billing/route.ts',
-      'app/api/nic-nac/customer-audience/route.ts',
-      'app/api/nic-nac/send-email/route.ts',
-      'app/api/nic-nac/wallet-summary/route.ts',
-      'app/api/nic-nac/messages/route.ts',
-      'app/api/nic-nac/conversations/[conversationId]/messages/route.ts',
-      'app/api/nic-nac/team-onboarding/participants/[participantId]/messages/route.ts',
+      'app/api/nic-nac/conversations/[conversationId]/block/route.ts',
+      'app/api/nic-nac/conversations/[conversationId]/report/route.ts',
       'app/api/self-serve/signup/route.ts',
     ])
 
@@ -101,6 +96,60 @@ describe('operator support route classification manifest', () => {
       if (isProviderRoute || sensitiveFiles.has(entry.file)) {
         expect(entry.classification, entry.file).toBe('support_blocked_sensitive')
       }
+    }
+  })
+
+  it('allows ordinary Workspace parity while retaining the explicit account boundary', () => {
+    const expectedAllowed = new Map([
+      ['/api/nic-nac/account-billing', 'support_allowed_read'],
+      ['/api/nic-nac/wallet-summary', 'support_allowed_read'],
+      ['/api/nic-nac/customer-audience', 'support_allowed_write'],
+      ['/api/nic-nac/messages', 'support_allowed_write'],
+      ['/api/nic-nac/conversations/[conversationId]', 'support_allowed_read'],
+      ['/api/nic-nac/conversations/[conversationId]/messages', 'support_allowed_write'],
+      ['/api/nic-nac/resources', 'support_allowed_read'],
+      ['/api/nic-nac/resource-library', 'support_allowed_read'],
+      ['/api/nic-nac/site-analytics', 'support_allowed_read'],
+      ['/api/nic-nac/send-email', 'support_allowed_write'],
+      ['/api/nic-nac', 'support_allowed_write'],
+      ['/api/nic-nac/conversation/clear', 'support_allowed_write'],
+      ['/api/self-serve/setup-state', 'support_allowed_read'],
+    ])
+
+    for (const [path, expected] of expectedAllowed) {
+      const entry = OPERATOR_SUPPORT_ROUTE_INVENTORY.find((item) => item.path === path)
+      expect(entry?.classification, path).toBe(expected)
+    }
+
+    for (const path of [
+      '/api/account/activate-trial',
+      '/api/auth/callback',
+      '/api/nic-nac/conversations/[conversationId]/block',
+      '/api/nic-nac/conversations/[conversationId]/report',
+      '/api/self-serve/signup',
+      '/api/stripe/create-checkout',
+      '/api/stripe/create-portal-session',
+      '/api/stripe/wallet/load',
+      '/api/stripe/wallet/auto-recharge',
+    ]) {
+      const entry = OPERATOR_SUPPORT_ROUTE_INVENTORY.find((item) => item.path === path)
+      expect(entry?.classification, path).toBe('support_blocked_sensitive')
+    }
+  })
+
+  it('keeps every support-allowed Workspace route wired into the audited gateway', () => {
+    const gatewaySource = readFileSync(
+      resolve(
+        process.cwd(),
+        'app/api/control-center/support-sessions/[sessionId]/gateway/route.ts',
+      ),
+      'utf8',
+    )
+
+    for (const entry of OPERATOR_SUPPORT_ROUTE_INVENTORY) {
+      if (!entry.classification.startsWith('support_allowed_')) continue
+      if (entry.path.startsWith('/api/control-center/support-sessions/')) continue
+      expect(gatewaySource, entry.path).toContain(entry.path)
     }
   })
 

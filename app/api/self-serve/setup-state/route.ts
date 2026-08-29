@@ -31,7 +31,15 @@ async function loadSetupStateForRep(repId: string) {
   const state = await getRequiredSetupState(repId)
   const operatorSupport = getOperatorSupportRequestContext()
   if (operatorSupport) {
-    return { ...state, liveQueueSyncCode: null }
+    const canViewLiveQueue = operatorSupport.actor.capabilities.includes('live_queue.view')
+    return {
+      ...state,
+      // Support access may display the target's existing code, but a read must
+      // never manufacture a new credential-like code for the target account.
+      liveQueueSyncCode: canViewLiveQueue
+        ? await getLiveQueueSyncCodeForRep(admin, repId)
+        : null,
+    }
   }
   const existingLiveQueueSyncCode = await getLiveQueueSyncCodeForRep(admin, repId)
   const liveQueueSyncCode =

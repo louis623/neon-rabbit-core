@@ -1,13 +1,30 @@
 import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 
+import * as accountBilling from '@/app/api/nic-nac/account-billing/route'
 import * as calendarSummary from '@/app/api/nic-nac/calendar-summary/route'
+import * as conversationAttachment from '@/app/api/nic-nac/conversations/[conversationId]/attachments/[attachmentId]/route'
+import * as conversationAttachments from '@/app/api/nic-nac/conversations/[conversationId]/attachments/route'
+import * as conversationMessages from '@/app/api/nic-nac/conversations/[conversationId]/messages/route'
+import * as conversationRequestDecision from '@/app/api/nic-nac/conversations/[conversationId]/request-decision/route'
+import * as conversation from '@/app/api/nic-nac/conversations/[conversationId]/route'
+import * as conversationState from '@/app/api/nic-nac/conversations/[conversationId]/state/route'
+import * as conversationRepDirectory from '@/app/api/nic-nac/conversations/rep-directory/route'
+import * as conversationRepRequests from '@/app/api/nic-nac/conversations/rep-requests/route'
+import * as conversationSupport from '@/app/api/nic-nac/conversations/support/route'
+import * as customerAudience from '@/app/api/nic-nac/customer-audience/route'
 import * as fulfillmentQueue from '@/app/api/nic-nac/fulfillment-queue/route'
 import * as jewelryLibrary from '@/app/api/nic-nac/jewelry-library/route'
 import * as joinTeamRoster from '@/app/api/nic-nac/join-team-roster/route'
 import * as me from '@/app/api/nic-nac/me/route'
+import * as messages from '@/app/api/nic-nac/messages/route'
+import * as nicNac from '@/app/api/nic-nac/route'
+import * as nicNacConversationState from '@/app/api/nic-nac/conversation-state/route'
+import * as nicNacConversationClear from '@/app/api/nic-nac/conversation/clear/route'
 import * as resources from '@/app/api/nic-nac/resources/route'
 import * as resourceLibrary from '@/app/api/nic-nac/resource-library/route'
+import * as sendEmail from '@/app/api/nic-nac/send-email/route'
+import * as siteAnalytics from '@/app/api/nic-nac/site-analytics/route'
 import * as siteRecipes from '@/app/api/nic-nac/site-recipes/route'
 import * as siteRecipeDraft from '@/app/api/nic-nac/site-recipes/draft/route'
 import * as siteRecipeImage from '@/app/api/nic-nac/site-recipes/image/route'
@@ -15,11 +32,15 @@ import * as siteSettings from '@/app/api/nic-nac/site-settings/route'
 import * as siteSettingsMedia from '@/app/api/nic-nac/site-settings/media/route'
 import * as teamParticipants from '@/app/api/nic-nac/team-onboarding/participants/route'
 import * as teamParticipant from '@/app/api/nic-nac/team-onboarding/participants/[participantId]/route'
+import * as teamParticipantMessages from '@/app/api/nic-nac/team-onboarding/participants/[participantId]/messages/route'
+import * as supportAccessHistory from '@/app/api/nic-nac/support-access-history/route'
+import * as supportReports from '@/app/api/nic-nac/support-reports/route'
 import * as tradeBoard from '@/app/api/nic-nac/trade-board/route'
 import * as tradeHistory from '@/app/api/nic-nac/trade-history/route'
 import * as tradeRequests from '@/app/api/nic-nac/trade-requests/route'
 import * as tradeRevealScreenshot from '@/app/api/nic-nac/trade-requests/[requestId]/reveal-screenshot/route'
 import * as tradeSwapCleanup from '@/app/api/nic-nac/trade-swap-cleanup/route'
+import * as walletSummary from '@/app/api/nic-nac/wallet-summary/route'
 import * as setupState from '@/app/api/self-serve/setup-state/route'
 import {
   appendOperatorSupportAuditEvent,
@@ -45,24 +66,48 @@ type RouteModule = Partial<Record<OperatorSupportHttpMethod, RouteHandler>>
 
 const STATIC_ROUTE_MODULES = new Map<string, RouteModule>([
   ['/api/self-serve/setup-state', setupState as unknown as RouteModule],
+  ['/api/nic-nac', nicNac as unknown as RouteModule],
+  ['/api/nic-nac/conversation-state', nicNacConversationState as unknown as RouteModule],
+  ['/api/nic-nac/conversation/clear', nicNacConversationClear as unknown as RouteModule],
+  ['/api/nic-nac/account-billing', accountBilling as unknown as RouteModule],
   ['/api/nic-nac/me', me as unknown as RouteModule],
   ['/api/nic-nac/calendar-summary', calendarSummary as unknown as RouteModule],
+  ['/api/nic-nac/conversations/rep-directory', conversationRepDirectory as unknown as RouteModule],
+  ['/api/nic-nac/conversations/rep-requests', conversationRepRequests as unknown as RouteModule],
+  ['/api/nic-nac/conversations/support', conversationSupport as unknown as RouteModule],
+  ['/api/nic-nac/customer-audience', customerAudience as unknown as RouteModule],
   ['/api/nic-nac/fulfillment-queue', fulfillmentQueue as unknown as RouteModule],
   ['/api/nic-nac/jewelry-library', jewelryLibrary as unknown as RouteModule],
   ['/api/nic-nac/join-team-roster', joinTeamRoster as unknown as RouteModule],
+  ['/api/nic-nac/messages', messages as unknown as RouteModule],
   ['/api/nic-nac/resources', resources as unknown as RouteModule],
   ['/api/nic-nac/resource-library', resourceLibrary as unknown as RouteModule],
+  ['/api/nic-nac/send-email', sendEmail as unknown as RouteModule],
+  ['/api/nic-nac/site-analytics', siteAnalytics as unknown as RouteModule],
   ['/api/nic-nac/site-recipes', siteRecipes as unknown as RouteModule],
   ['/api/nic-nac/site-recipes/draft', siteRecipeDraft as unknown as RouteModule],
   ['/api/nic-nac/site-recipes/image', siteRecipeImage as unknown as RouteModule],
   ['/api/nic-nac/site-settings', siteSettings as unknown as RouteModule],
   ['/api/nic-nac/site-settings/media', siteSettingsMedia as unknown as RouteModule],
   ['/api/nic-nac/team-onboarding/participants', teamParticipants as unknown as RouteModule],
+  ['/api/nic-nac/support-access-history', supportAccessHistory as unknown as RouteModule],
+  ['/api/nic-nac/support-reports', supportReports as unknown as RouteModule],
   ['/api/nic-nac/trade-board', tradeBoard as unknown as RouteModule],
   ['/api/nic-nac/trade-history', tradeHistory as unknown as RouteModule],
   ['/api/nic-nac/trade-requests', tradeRequests as unknown as RouteModule],
   ['/api/nic-nac/trade-swap-cleanup', tradeSwapCleanup as unknown as RouteModule],
+  ['/api/nic-nac/wallet-summary', walletSummary as unknown as RouteModule],
 ])
+
+function decodeRouteSegment(value: string) {
+  try {
+    const decoded = decodeURIComponent(value)
+    if (!decoded || /[\\/\0]/.test(decoded)) return null
+    return decoded
+  } catch {
+    return null
+  }
+}
 
 function resolveRoute(path: string): {
   module: RouteModule
@@ -72,20 +117,91 @@ function resolveRoute(path: string): {
   const direct = STATIC_ROUTE_MODULES.get(path)
   if (direct) return { module: direct, pattern: path, params: {} }
 
-  let match = path.match(/^\/api\/nic-nac\/team-onboarding\/participants\/([^/]+)$/)
+  let match = path.match(/^\/api\/nic-nac\/conversations\/([^/]+)\/attachments\/([^/]+)$/)
   if (match) {
+    const conversationId = decodeRouteSegment(match[1]!)
+    const attachmentId = decodeRouteSegment(match[2]!)
+    if (!conversationId || !attachmentId) return null
+    return {
+      module: conversationAttachment as unknown as RouteModule,
+      pattern: '/api/nic-nac/conversations/[conversationId]/attachments/[attachmentId]',
+      params: { conversationId, attachmentId },
+    }
+  }
+
+  match = path.match(/^\/api\/nic-nac\/conversations\/([^/]+)\/attachments$/)
+  if (match) {
+    const conversationId = decodeRouteSegment(match[1]!)
+    if (!conversationId) return null
+    return {
+      module: conversationAttachments as unknown as RouteModule,
+      pattern: '/api/nic-nac/conversations/[conversationId]/attachments',
+      params: { conversationId },
+    }
+  }
+
+  match = path.match(/^\/api\/nic-nac\/conversations\/([^/]+)\/(messages|request-decision|state)$/)
+  if (match) {
+    const conversationId = decodeRouteSegment(match[1]!)
+    const action = match[2]!
+    if (!conversationId) return null
+    const modules: Record<string, RouteModule> = {
+      messages: conversationMessages as unknown as RouteModule,
+      'request-decision': conversationRequestDecision as unknown as RouteModule,
+      state: conversationState as unknown as RouteModule,
+    }
+    const patterns: Record<string, string> = {
+      messages: '/api/nic-nac/conversations/[conversationId]/messages',
+      'request-decision': '/api/nic-nac/conversations/[conversationId]/request-decision',
+      state: '/api/nic-nac/conversations/[conversationId]/state',
+    }
+    return {
+      module: modules[action]!,
+      pattern: patterns[action]!,
+      params: { conversationId },
+    }
+  }
+
+  match = path.match(/^\/api\/nic-nac\/conversations\/([^/]+)$/)
+  if (match) {
+    const conversationId = decodeRouteSegment(match[1]!)
+    if (!conversationId) return null
+    return {
+      module: conversation as unknown as RouteModule,
+      pattern: '/api/nic-nac/conversations/[conversationId]',
+      params: { conversationId },
+    }
+  }
+
+  match = path.match(/^\/api\/nic-nac\/team-onboarding\/participants\/([^/]+)\/messages$/)
+  if (match) {
+    const participantId = decodeRouteSegment(match[1]!)
+    if (!participantId) return null
+    return {
+      module: teamParticipantMessages as unknown as RouteModule,
+      pattern: '/api/nic-nac/team-onboarding/participants/[participantId]/messages',
+      params: { participantId },
+    }
+  }
+
+  match = path.match(/^\/api\/nic-nac\/team-onboarding\/participants\/([^/]+)$/)
+  if (match) {
+    const participantId = decodeRouteSegment(match[1]!)
+    if (!participantId) return null
     return {
       module: teamParticipant as unknown as RouteModule,
       pattern: '/api/nic-nac/team-onboarding/participants/[participantId]',
-      params: { participantId: decodeURIComponent(match[1]!) },
+      params: { participantId },
     }
   }
   match = path.match(/^\/api\/nic-nac\/trade-requests\/([^/]+)\/reveal-screenshot$/)
   if (match) {
+    const requestId = decodeRouteSegment(match[1]!)
+    if (!requestId) return null
     return {
       module: tradeRevealScreenshot as unknown as RouteModule,
       pattern: '/api/nic-nac/trade-requests/[requestId]/reveal-screenshot',
-      params: { requestId: decodeURIComponent(match[1]!) },
+      params: { requestId },
     }
   }
   return null
@@ -187,6 +303,10 @@ async function handleGateway(
       'capabilities' in classification ? classification.capabilities : undefined
     const capability = chooseCapability(classifiedCapabilities, method)
     const mutation = !['GET', 'HEAD', 'OPTIONS'].includes(method)
+    // Opening a streamed Nic-Nac turn persists conversation metadata, but it
+    // is not itself an account/content change. Individual tools perform and
+    // durably audit any real mutations inside the stream.
+    const auditAsMutation = mutation && resolved.pattern !== '/api/nic-nac'
     const context = await loadVerifiedOperatorSupportContext(sessionId, {
       capability,
       mutation,
@@ -213,7 +333,7 @@ async function handleGateway(
       requestId,
     } as const
 
-    if (mutation) {
+    if (auditAsMutation) {
       const { data: priorAttempt, error: priorAttemptError } = await context.supabase
         .from('operator_support_audit_events')
         .select('id')
@@ -244,9 +364,9 @@ async function handleGateway(
         ...auditBase,
         eventType: 'workspace_area_viewed',
         result: 'succeeded',
-        idempotencyKey: `view:${sessionId}:${workspaceArea(capability)}`,
-        actionName: `view_${workspaceArea(capability)}`,
-        requestId: null,
+        idempotencyKey: mutation ? requestId : `view:${sessionId}:${workspaceArea(capability)}`,
+        actionName: mutation ? 'nic_nac_turn' : `view_${workspaceArea(capability)}`,
+        requestId: mutation ? requestId : null,
       })
     }
 
@@ -257,7 +377,7 @@ async function handleGateway(
         handler(originalRequest, { params: Promise.resolve(resolved.params) }),
       )
     } catch (error) {
-      if (mutation) {
+      if (auditAsMutation) {
         await appendOperatorSupportAuditEvent(context.supabase, {
           ...auditBase,
           eventType: 'mutation_failed',
@@ -269,7 +389,7 @@ async function handleGateway(
       throw error
     }
 
-    if (mutation) {
+    if (auditAsMutation) {
       if (!response.ok) {
         await appendOperatorSupportAuditEvent(context.supabase, {
           ...auditBase,

@@ -7,6 +7,11 @@ import {
   loadConversationForClient,
 } from '@/lib/nic-nac/persistence'
 import { getLatestNicNacRunHealth } from '@/lib/nic-nac/run-telemetry'
+import { getOperatorSupportRequestContext } from '@/lib/operator-support/request-context'
+import {
+  assertOperatorSupportConversationId,
+  loadOperatorSupportConversation,
+} from '@/lib/nic-nac/support-conversation'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -31,10 +36,34 @@ export async function GET(request: Request) {
   const { repId, supabase } = ctx
   const url = new URL(request.url)
   const conversationId = url.searchParams.get('conversationId')?.trim() ?? ''
+  const supportContext = getOperatorSupportRequestContext()
+  const supportScope = supportContext
+    ? {
+        supportSessionId: supportContext.session.id,
+        operatorRepId: supportContext.actor.operatorRepId,
+        targetRepId: supportContext.actor.subjectRepId,
+      }
+    : null
 
   if (!conversationId) {
+    if (supportScope) {
+      return NextResponse.json({ conversationId: supportScope.supportSessionId })
+    }
     const latestConversationId = await getLatestConversationId(supabase, repId)
     return NextResponse.json({ conversationId: latestConversationId })
+  }
+
+  if (supportScope) {
+    try {
+      assertOperatorSupportConversationId(conversationId, supportScope)
+    } catch {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+    }
+    const [messages, runHealth] = await Promise.all([
+      loadOperatorSupportConversation(supabase, supportScope),
+      getLatestNicNacRunHealth(repId, conversationId),
+    ])
+    return NextResponse.json({ conversationId, messages, runHealth })
   }
 
   const owner = await getConversationOwner(supabase, conversationId)

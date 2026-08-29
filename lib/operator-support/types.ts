@@ -74,6 +74,7 @@ export type OperatorSupportAuditResult = 'attempted' | 'succeeded' | 'failed' | 
 
 export type SupportCapability =
   | 'workspace.view'
+  | 'workspace.manage'
   | 'site.view'
   | 'site.manage'
   | 'inventory.view'
@@ -85,8 +86,11 @@ export type SupportCapability =
   | 'team.view'
   | 'team.manage'
   | 'messages.view'
+  | 'messages.manage'
+  | 'communications.manage'
   | 'nic_nac.use'
   | 'live_queue.view'
+  | 'live_queue.manage'
 
 export type WorkspaceActor =
   | {

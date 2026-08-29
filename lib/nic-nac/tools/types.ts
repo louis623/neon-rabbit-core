@@ -7,6 +7,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { CalendarWorkflowSessionState } from '@/lib/nic-nac/workflows/calendar-workflow-types'
 import type { TradeBoardIntakeSessionState } from '@/lib/nic-nac/workflows/trade-board-intake-types'
 import type { TradeWorkflowSessionState } from '@/lib/nic-nac/workflows/trade-workflow-types'
+import type { SupportCapability } from '@/lib/operator-support/types'
 
 export type ToolContext = {
   repId: string
@@ -17,6 +18,11 @@ export type ToolContext = {
   activeTradeBoardWorkflow?: TradeBoardIntakeSessionState | null
   activeTradeWorkflow?: TradeWorkflowSessionState | null
   activeCalendarWorkflow?: CalendarWorkflowSessionState | null
+  operatorSupport?: {
+    supportSessionId: string
+    operatorRepId: string
+    capabilities: SupportCapability[]
+  }
 }
 
 export type ToolDefinition = {

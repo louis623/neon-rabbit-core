@@ -3040,6 +3040,28 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('disabled=""')
   })
 
+  it('shows real account billing status while disabling payment mutations in support mode', () => {
+    const html = renderToStaticMarkup(
+      createElement(AccountBillingCard, {
+        state: {
+          status: 'ready',
+          summary: {
+            ...ACCOUNT_BILLING_READY_STATE.summary,
+            subscription: null,
+            canStartSubscription: true,
+            canManageBilling: true,
+          },
+        },
+        agreementAccepted: true,
+        mutationsDisabled: true,
+      }),
+    )
+
+    expect(html).toContain('Review your Sparkle Suite plan')
+    expect(html).toContain('Stripe Billing and Payments')
+    expect(html.match(/disabled=""/g)?.length).toBeGreaterThanOrEqual(2)
+  })
+
   it('renders Brianna\'s grandfathered Stripe link without the standard build-fee checkout', () => {
     const html = renderToStaticMarkup(
       createElement(AccountBillingCard, {

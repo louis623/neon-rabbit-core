@@ -5,7 +5,10 @@ export type NicNacProduct =
   | 'sparkle_finder'
   | 'sparkle_lab'
 
-export type NicNacProductSurface = NicNacSurface | 'sparkle_lab'
+export type NicNacProductSurface =
+  | NicNacSurface
+  | 'sparkle_lab'
+  | 'operator_support_workspace'
 
 export type NicNacActorType =
   | 'rep'
@@ -27,6 +30,37 @@ export interface NicNacProductActor {
   suiteRepId?: string
   linkedSuiteRepId?: string
   finderUserId?: string
+  operatorRepId?: string
+  supportSessionId?: string
+  subjectUserId?: string
+}
+
+export function createSuiteOperatorSupportProductContext(input: {
+  targetRepId: string
+  targetUserId?: string
+  operatorRepId: string
+  supportSessionId: string
+}): NicNacProductContext {
+  return {
+    product: 'sparkle_suite',
+    surface: 'operator_support_workspace',
+    actor: {
+      type: 'operator',
+      accountTier: 'operator',
+      suiteRepId: input.targetRepId,
+      linkedSuiteRepId: input.targetRepId,
+      operatorRepId: input.operatorRepId,
+      supportSessionId: input.supportSessionId,
+      subjectUserId: input.targetUserId,
+    },
+    permissions: {
+      canReadSharedMemory: true,
+      canWriteSharedMemory: true,
+      canMutateSuiteWorkspace: true,
+      canMutateFinderAccount: false,
+      canRunSparkleLab: false,
+    },
+  }
 }
 
 export interface NicNacProductPermissions {
@@ -158,4 +192,3 @@ export function createSparkleLabProductContext(input: {
     },
   }
 }
-

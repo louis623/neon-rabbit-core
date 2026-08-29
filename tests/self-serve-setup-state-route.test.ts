@@ -6,12 +6,18 @@ const {
   ensureLiveQueueSyncCodeForRepMock,
   getLiveQueueSyncCodeForRepMock,
   getRequiredSetupStateMock,
+  getOperatorSupportRequestContextMock,
 } = vi.hoisted(() => ({
   createAdminClientMock: vi.fn(),
   getAuthenticatedRepMock: vi.fn(),
   ensureLiveQueueSyncCodeForRepMock: vi.fn(),
   getLiveQueueSyncCodeForRepMock: vi.fn(),
   getRequiredSetupStateMock: vi.fn(),
+  getOperatorSupportRequestContextMock: vi.fn(),
+}))
+
+vi.mock('@/lib/operator-support/request-context', () => ({
+  getOperatorSupportRequestContext: () => getOperatorSupportRequestContextMock(),
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -42,6 +48,8 @@ describe('/api/self-serve/setup-state', () => {
     ensureLiveQueueSyncCodeForRepMock.mockReset()
     getLiveQueueSyncCodeForRepMock.mockReset()
     getRequiredSetupStateMock.mockReset()
+    getOperatorSupportRequestContextMock.mockReset()
+    getOperatorSupportRequestContextMock.mockReturnValue(null)
   })
 
   it('returns setup state for authenticated reps', async () => {
@@ -109,6 +117,36 @@ describe('/api/self-serve/setup-state', () => {
         completedSteps: ['account_basics'],
         liveQueueSyncCode: 'GFF-7342',
       },
+    })
+  })
+
+  it('shows an existing Live Queue code during authorized support without creating one', async () => {
+    getAuthenticatedRepMock.mockResolvedValue({
+      repId: 'target-rep',
+      rep: { id: 'target-rep' },
+    })
+    getRequiredSetupStateMock.mockResolvedValue({
+      status: 'dashboard_unlocked',
+      currentStep: 'final_preview_approval',
+      completedSteps: ['live_queue_setup'],
+    })
+    const admin = { from: vi.fn() }
+    createAdminClientMock.mockReturnValue(admin)
+    getLiveQueueSyncCodeForRepMock.mockResolvedValue('LQX-9321')
+    getOperatorSupportRequestContextMock.mockReturnValue({
+      actor: {
+        mode: 'operator_support',
+        capabilities: ['workspace.view', 'live_queue.view'],
+      },
+    })
+    const { GET } = await import('@/app/api/self-serve/setup-state/route')
+
+    const response = await GET()
+
+    expect(getLiveQueueSyncCodeForRepMock).toHaveBeenCalledWith(admin, 'target-rep')
+    expect(ensureLiveQueueSyncCodeForRepMock).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toMatchObject({
+      state: { liveQueueSyncCode: 'LQX-9321' },
     })
   })
 
