@@ -35,6 +35,11 @@ Running log of significant work sessions. Most recent first.
 - Replaced plain-text URLs in Kim's draft with actual HTML hyperlinks for both
   the public onboarding guide and the official Chrome Web Store listing; both
   destinations were verified in the still-unsent draft.
+- Moved Kim's optional onboarding-guide invitation near the top of the draft,
+  making clear that reading ahead is welcome but not required before Sunday.
+  Added a direct Sparkle Suite sign-in hyperlink plus steps to use her email
+  address and temporary password, select Sign in, and change the password
+  after first access. The draft remains unsent.
 
 ---
 
