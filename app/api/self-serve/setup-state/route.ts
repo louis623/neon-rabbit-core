@@ -7,6 +7,7 @@ import { workspaceReviewAccessEnabled } from '@/lib/reviewer-smoke/config'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getRequiredSetupState } from '@/lib/self-serve/required-setup'
 import { AuthError, getAuthenticatedRep } from '@/lib/supabase/auth'
+import { getOperatorSupportRequestContext } from '@/lib/operator-support/request-context'
 
 async function getRepIdForWorkspaceReview(conversationId: string) {
   const admin = createAdminClient()
@@ -28,6 +29,10 @@ function getConversationIdFromRequest(request?: Request) {
 async function loadSetupStateForRep(repId: string) {
   const admin = createAdminClient()
   const state = await getRequiredSetupState(repId)
+  const operatorSupport = getOperatorSupportRequestContext()
+  if (operatorSupport) {
+    return { ...state, liveQueueSyncCode: null }
+  }
   const existingLiveQueueSyncCode = await getLiveQueueSyncCodeForRep(admin, repId)
   const liveQueueSyncCode =
     existingLiveQueueSyncCode ??

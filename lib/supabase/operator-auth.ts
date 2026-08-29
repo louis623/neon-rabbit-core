@@ -166,7 +166,30 @@ export async function getControlCenterSession() {
 export async function getControlCenterAccess() {
   const session = await getControlCenterSession()
   if (!session) throw new AuthError('Control Center sign in is required.')
-  return { method: 'control_center_session' as const, operator: { email: session.email, repId: session.repId } }
+
+  // A valid signature proves who created the cookie, but it must not preserve
+  // access after the operator account or allowlist changes. Re-resolve the
+  // frozen identity on every privileged Control Center request.
+  const email = session.email.trim().toLowerCase()
+  if (!getOperatorEmails().includes(email)) {
+    throw new OperatorAuthError('Control Center operator identity is no longer authorized.')
+  }
+  const admin = createAdminClient()
+  const { data: rep, error } = await admin
+    .from('reps')
+    .select('id, auth_user_id, email, status')
+    .eq('id', session.repId)
+    .maybeSingle()
+  if (error || !rep) throw new AuthError('Control Center operator account was not found.')
+  if (
+    rep.auth_user_id !== session.authUserId ||
+    rep.email.trim().toLowerCase() !== email ||
+    rep.status !== 'active'
+  ) {
+    throw new OperatorAuthError('Control Center operator identity is no longer authorized.')
+  }
+
+  return { method: 'control_center_session' as const, operator: { email, repId: session.repId } }
 }
 
 export const controlCenterSessionCookie = {

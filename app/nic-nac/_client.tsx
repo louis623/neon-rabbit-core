@@ -224,8 +224,15 @@ type ReviewerSmokeResponse =
 
 export default function NicNacClient({
   reviewerSmokeVisible = false,
+  operatorSupport,
 }: {
   reviewerSmokeVisible?: boolean
+  operatorSupport?: {
+    sessionId: string
+    operatorDisplayName: string
+    targetDisplayName: string
+    expiresAt: string
+  }
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -463,16 +470,18 @@ export default function NicNacClient({
   ])
 
   const setupStatus = setupState?.status
-  const workspaceMode = resolveNicNacWorkspaceMode({
+  const resolvedWorkspaceMode = resolveNicNacWorkspaceMode({
     setupStatus,
     isCheckoutSuccessReturn,
     wantsCheckout,
     wantsRequiredSetup,
   })
+  const workspaceMode = operatorSupport ? 'dashboard_unlocked' : resolvedWorkspaceMode
   const isDashboardUnlocked = workspaceMode === 'dashboard_unlocked'
   const isRequiredSetupMode = workspaceMode === 'required_setup'
   const isCheckoutRequiredMode = workspaceMode === 'checkout_required'
   const shouldUseConversation =
+    !operatorSupport &&
     setupStateStatus === 'ready' &&
     !isCheckoutRequiredMode &&
     (isRequiredSetupMode || isDashboardUnlocked)
@@ -954,6 +963,20 @@ export default function NicNacClient({
     return (
       <div className={shellStyles.root}>
         <div className={shellStyles.loading}>{setupStateError}</div>
+      </div>
+    )
+  }
+
+  if (operatorSupport) {
+    return (
+      <div className={shellStyles.root}>
+        <DashboardPlaceholder
+          repIdOverride={setupState?.repId ?? undefined}
+          publicSiteSlugOverride={requiredSetupPublicSiteSlug}
+          liveQueueSyncCodeOverride={null}
+          operatorSupportMode
+          operatorSupportSessionId={operatorSupport.sessionId}
+        />
       </div>
     )
   }

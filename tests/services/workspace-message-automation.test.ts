@@ -8,6 +8,9 @@ const publishMessage = vi.fn()
 const collectMonthly = vi.fn()
 const saveSnapshot = vi.fn()
 const attachPublication = vi.fn()
+const getSupportSession = vi.fn()
+const publishSupportEnd = vi.fn()
+const recordSupportCompletion = vi.fn()
 
 vi.mock('@/lib/services/workspace-message-outbox', () => ({
   claimWorkspaceMessageOutboxEvents: (...args: unknown[]) => claimEvents(...args),
@@ -17,6 +20,14 @@ vi.mock('@/lib/services/workspace-message-outbox', () => ({
 }))
 vi.mock('@/lib/services/workspace-messages', () => ({
   publishWorkspaceMessage: (...args: unknown[]) => publishMessage(...args),
+}))
+vi.mock('@/lib/operator-support/messages', () => ({
+  publishOperatorSupportEndNotice: (...args: unknown[]) => publishSupportEnd(...args),
+}))
+vi.mock('@/lib/operator-support/session-service', () => ({
+  getOperatorSupportSession: (...args: unknown[]) => getSupportSession(...args),
+  recordOperatorSupportCompletionNotice: (...args: unknown[]) =>
+    recordSupportCompletion(...args),
 }))
 vi.mock('@/lib/services/workspace-monthly-reports', async (importOriginal) => {
   const original = await importOriginal<typeof import('@/lib/services/workspace-monthly-reports')>()
@@ -40,8 +51,46 @@ describe('workspace message automation', () => {
     collectMonthly.mockReset()
     saveSnapshot.mockReset()
     attachPublication.mockReset()
+    getSupportSession.mockReset()
+    publishSupportEnd.mockReset()
+    recordSupportCompletion.mockReset()
     completeEvent.mockResolvedValue({})
     failEvent.mockResolvedValue({})
+  })
+
+  it('retries an ended support-session completion notice idempotently', async () => {
+    claimEvents.mockResolvedValue([
+      {
+        id: 'event-support-end',
+        eventType: 'operator_support_completion_notice',
+        idempotencyKey: 'support-access-end:session-1',
+        payload: { sessionId: 'session-1', changedAnything: true },
+        attemptCount: 1,
+      },
+    ])
+    getSupportSession.mockResolvedValue({
+      id: 'session-1',
+      status: 'ended',
+      targetRepId: 'rep-1',
+    })
+    publishSupportEnd.mockResolvedValue({ id: 'publication-end' })
+    recordSupportCompletion.mockResolvedValue({})
+
+    const result = await processWorkspaceMessageAutomation({
+      supabase: { marker: 'admin' } as never,
+      workerId: 'worker-1',
+    })
+
+    expect(result).toMatchObject({ claimed: 1, completed: 1, failed: 0 })
+    expect(publishSupportEnd).toHaveBeenCalledWith(
+      { marker: 'admin' },
+      expect.objectContaining({ id: 'session-1', status: 'ended' }),
+      true,
+    )
+    expect(recordSupportCompletion).toHaveBeenCalledWith(
+      { marker: 'admin' },
+      { sessionId: 'session-1', endPublicationId: 'publication-end' },
+    )
   })
 
   it('publishes one privacy-minimized customer signup message', async () => {

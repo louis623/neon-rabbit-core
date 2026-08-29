@@ -8,6 +8,7 @@ import { cookies } from 'next/headers'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getAuthenticatedRep, AuthError } from '@/lib/supabase/auth'
 import { assertPaidWorkspaceAccess } from '@/lib/nic-nac/subscription-access'
+import { getOperatorSupportRequestContext } from '@/lib/operator-support/request-context'
 
 export interface NicNacAuthContext {
   repId: string
@@ -30,6 +31,11 @@ export async function getAuthenticatedNicNacContext(): Promise<NicNacAuthContext
   // an independent authed client for tool/service queries against RLS-scoped
   // tables (trade_listings, trade_requests, nic_nac_conversations, etc.).
   const { repId, rep } = await getAuthenticatedRep()
+
+  const supportContext = getOperatorSupportRequestContext()
+  if (supportContext) {
+    return { repId, rep, supabase: supportContext.supabase }
+  }
 
   const cookieStore = await cookies()
   const supabase = createServerClient(

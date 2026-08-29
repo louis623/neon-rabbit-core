@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createAdminClient } from './admin'
+import { getOperatorSupportRequestContext } from '@/lib/operator-support/request-context'
 
 interface AuthenticatedRep {
   repId: string
@@ -18,6 +19,14 @@ interface AuthenticatedRep {
 }
 
 export async function getAuthenticatedRep(): Promise<AuthenticatedRep> {
+  const supportContext = getOperatorSupportRequestContext()
+  if (supportContext) {
+    return {
+      repId: supportContext.actor.subjectRepId,
+      rep: supportContext.targetRep,
+    }
+  }
+
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

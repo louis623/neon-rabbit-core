@@ -4,6 +4,8 @@ import {
   processWorkspaceMessageAutomation,
 } from '@/lib/services/workspace-message-automation'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { expireOperatorSupportSessions } from '@/lib/operator-support/session-service'
+import { enqueueMissingOperatorSupportCompletionNotices } from '@/lib/operator-support/completion-retry'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -27,6 +29,9 @@ export async function GET(request: Request) {
   if (authError) return authError
   const admin = createAdminClient()
   const now = new Date()
+  const expiredSupportSessions = await expireOperatorSupportSessions(admin)
+  const supportCompletionNoticesQueued =
+    await enqueueMissingOperatorSupportCompletionNotices(admin)
   const monthlyEnqueued = await enqueueDueMonthlyReports({ supabase: admin, now })
   const workerId = `vercel-workspace-messages-${now.getTime()}`
   const result = await processWorkspaceMessageAutomation({
@@ -35,5 +40,11 @@ export async function GET(request: Request) {
     limit: 50,
     now,
   })
-  return NextResponse.json({ ok: true, monthlyEnqueued: monthlyEnqueued.length, result })
+  return NextResponse.json({
+    ok: true,
+    monthlyEnqueued: monthlyEnqueued.length,
+    expiredSupportSessions,
+    supportCompletionNoticesQueued,
+    result,
+  })
 }

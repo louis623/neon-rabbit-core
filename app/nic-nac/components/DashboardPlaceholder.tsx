@@ -50,6 +50,7 @@ import {
 import { sparkleSuitePublicLandingContent } from '@/lib/sparkle-suite/public-landing-content'
 import { createClient } from '@/lib/supabase/client'
 import { AccountSecurityCard } from './AccountSecurityCard'
+import { SupportAccessHistoryCard } from './SupportAccessHistoryCard'
 import {
   CalendarDays,
   BookOpen,
@@ -2541,6 +2542,8 @@ export type DashboardPlaceholderProps = {
   liveQueueSyncCodeOverride?: string | null
   initialSiteSettings?: SiteSettingsDashboardResult
   reviewWorkspaceMode?: boolean
+  operatorSupportMode?: boolean
+  operatorSupportSessionId?: string
   initialSectionOverride?: WorkspaceSectionKey
   onLaunchNicNacAction?: (action: WorkspaceLaunchAction) => void
   onSendNicNacPrompt?: (prompt: string) => void
@@ -2564,6 +2567,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     liveQueueSyncCodeOverride,
     initialSiteSettings,
     reviewWorkspaceMode = false,
+    operatorSupportMode = false,
+    operatorSupportSessionId,
     initialSectionOverride,
     onLaunchNicNacAction,
     onSendNicNacPrompt,
@@ -2596,8 +2601,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     liveQueueSyncCode: liveQueueSyncCodeOverride ?? null,
   })
   const [audienceState, setAudienceState] = useState<AudienceState>({
-    status: reviewWorkspaceMode ? 'ready' : 'loading',
-    summary: reviewWorkspaceMode
+    status: reviewWorkspaceMode || operatorSupportMode ? 'ready' : 'loading',
+    summary: reviewWorkspaceMode || operatorSupportMode
       ? {
           totalCustomers: 0,
           smsReachableCount: 0,
@@ -2608,7 +2613,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           addedLast30DaysCount: 0,
         }
       : undefined,
-    customers: reviewWorkspaceMode ? [] : undefined,
+    customers: reviewWorkspaceMode || operatorSupportMode ? [] : undefined,
   })
 
   useEffect(() => {
@@ -2634,8 +2639,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     pending: false,
   })
   const [walletState, setWalletState] = useState<WalletState>({
-    status: reviewWorkspaceMode ? 'ready' : 'loading',
-    summary: reviewWorkspaceMode
+    status: reviewWorkspaceMode || operatorSupportMode ? 'ready' : 'loading',
+    summary: reviewWorkspaceMode || operatorSupportMode
       ? {
           balanceMils: 0,
           balanceUsd: 0,
@@ -2677,8 +2682,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
   const [accountBillingState, setAccountBillingState] =
     useState<AccountBillingState>({
-      status: reviewWorkspaceMode ? 'ready' : 'loading',
-      summary: reviewWorkspaceMode
+      status: reviewWorkspaceMode || operatorSupportMode ? 'ready' : 'loading',
+      summary: reviewWorkspaceMode || operatorSupportMode
         ? {
             stripeConfigured: false,
             checkoutMode: 'test_buyer',
@@ -2812,13 +2817,15 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       facets: EMPTY_JEWELRY_LIBRARY_FACETS,
     })
   const [messagesState, setMessagesState] = useState<MessagesState>({
-    status: reviewWorkspaceMode ? 'ready' : 'loading',
+    status: reviewWorkspaceMode || operatorSupportMode ? 'ready' : 'loading',
     inbox: reviewWorkspaceMode
       ? {
           unreadCount: getActiveUnreadMessageCount(REVIEW_INBOX_FIXTURES),
           messages: REVIEW_INBOX_FIXTURES,
         }
-      : undefined,
+      : operatorSupportMode
+        ? { unreadCount: 0, messages: [] }
+        : undefined,
   })
   const [messagesActionState, setMessagesActionState] =
     useState<MessagesActionState>({
@@ -2857,8 +2864,8 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     resources: reviewWorkspaceMode ? [] : undefined,
   })
   const [analyticsState, setAnalyticsState] = useState<AnalyticsState>({
-    status: reviewWorkspaceMode ? 'ready' : 'loading',
-    analytics: reviewWorkspaceMode
+    status: reviewWorkspaceMode || operatorSupportMode ? 'ready' : 'loading',
+    analytics: reviewWorkspaceMode || operatorSupportMode
       ? {
           configured: false,
           privacy: {
@@ -2929,6 +2936,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadWallet(signal?: AbortSignal) {
+    if (operatorSupportMode) return
     const response = await fetch('/api/nic-nac/wallet-summary?limit=5', {
       credentials: 'include',
       signal,
@@ -3014,6 +3022,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadAccountBilling(signal?: AbortSignal) {
+    if (operatorSupportMode) return
     const response = await fetch('/api/nic-nac/account-billing', {
       credentials: 'include',
       signal,
@@ -3104,6 +3113,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadMessages(signal?: AbortSignal) {
+    if (operatorSupportMode) return
     const loadInbox = async (archived: boolean) => {
       const params = new URLSearchParams({
         limit: '100',
@@ -3216,6 +3226,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   }
 
   async function loadAnalytics(signal?: AbortSignal) {
+    if (operatorSupportMode) return
     const response = await fetch('/api/nic-nac/site-analytics', {
       credentials: 'include',
       signal,
@@ -3339,16 +3350,24 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           if ((error as { name?: string }).name === 'AbortError') return
           setRepProfileState({ status: 'error' })
         }),
-        loadAccountBilling(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setAccountBillingState({ status: 'error' })
-        }),
-        loadResources(controller.signal).catch((error) => {
-          if (cancelled) return
-          if ((error as { name?: string }).name === 'AbortError') return
-          setResourcesState({ status: 'error' })
-        }),
+        ...(operatorSupportMode
+          ? []
+          : [
+              loadAccountBilling(controller.signal).catch((error) => {
+                if (cancelled) return
+                if ((error as { name?: string }).name === 'AbortError') return
+                setAccountBillingState({ status: 'error' })
+              }),
+            ]),
+        ...(operatorSupportMode
+          ? []
+          : [
+              loadResources(controller.signal).catch((error) => {
+                if (cancelled) return
+                if ((error as { name?: string }).name === 'AbortError') return
+                setResourcesState({ status: 'error' })
+              }),
+            ]),
       ])
     })()
 
@@ -3356,7 +3375,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       cancelled = true
       controller.abort()
     }
-  }, [reviewWorkspaceMode])
+  }, [operatorSupportMode, reviewWorkspaceMode])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -4533,7 +4552,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     void loadPaidWorkspaceData(controller.signal)
 
     return () => controller.abort()
-  }, [reviewWorkspaceMode])
+  }, [operatorSupportMode, reviewWorkspaceMode])
 
   useEffect(() => {
     if (reviewWorkspaceMode) return
@@ -4573,7 +4592,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       window.removeEventListener('focus', refreshMessagesInBackground)
       window.clearInterval(intervalId)
     }
-  }, [reviewWorkspaceMode])
+  }, [operatorSupportMode, reviewWorkspaceMode])
 
   useEffect(() => {
     if (accountBillingState.status !== 'ready') return
@@ -4595,7 +4614,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
     const allowedSection = resolveWorkspaceSectionForAccess(
       activeSection,
-      hasPaidWorkspace,
+      operatorSupportMode || hasPaidWorkspace,
       hasRecipeWorkspaceAccess,
     )
     if (allowedSection !== activeSection) {
@@ -4610,6 +4629,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     repProfileState.status,
     repProfileState.publicSiteSlug,
     repProfileState.repId,
+    operatorSupportMode,
     reviewWorkspaceMode,
   ])
 
@@ -5673,14 +5693,15 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     publicSiteSlug: publicSiteSlugOverride ?? repProfileState.publicSiteSlug,
   })
   const isWorkspaceAccessLoading = accountBillingState.status !== 'ready'
-  const canRenderWorkspaceSections = hasPaidWorkspace
+  const hasWorkspaceAccess = operatorSupportMode || hasPaidWorkspace
+  const canRenderWorkspaceSections = hasWorkspaceAccess
   const visibleWorkspaceSections = getVisibleWorkspaceSections(
-    hasPaidWorkspace,
+    hasWorkspaceAccess,
     hasRecipeWorkspaceAccess,
   )
   const showWorkspaceAccessNotice = shouldShowWorkspaceAccessNotice(
     activeSection,
-    hasPaidWorkspace,
+    hasWorkspaceAccess,
     isWorkspaceAccessLoading,
   )
   const showWorkspaceLoadingSkeleton = shouldShowWorkspaceLoadingSkeleton(
@@ -5759,6 +5780,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         setPreviewUnavailableMessage(null)
         setActiveSection('home')
       }}
+      operatorSupportMode={operatorSupportMode}
     />
   ) : null
   const accessNotice = (
@@ -5817,6 +5839,16 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
 
     if (canRenderWorkspaceSections && activeSection === 'home') {
+      if (operatorSupportMode) {
+        return (
+          <OperatorSupportOverviewCard
+            onOpenCalendar={() => setActiveSection('show-calendar')}
+            onOpenCustomers={() => setActiveSection('customer-list')}
+            onOpenInventory={() => setActiveSection('trade-board')}
+            onOpenSite={() => setActiveSection('site-settings')}
+          />
+        )
+      }
       return (
         <NicNacHomeWorkspaceCard
           tradeRequestsCount={tradeRequestsState.requests?.length ?? 0}
@@ -5879,12 +5911,17 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       return (
         <MoreWorkspaceCard
           sections={SECONDARY_WORKSPACE_SECTIONS.filter(
-            (section) => section.key !== 'recipes' || hasRecipeWorkspaceAccess,
+            (section) =>
+              (section.key !== 'recipes' || hasRecipeWorkspaceAccess) &&
+              (!operatorSupportMode ||
+                !['account', 'help-resources', 'live-queue', 'messages', 'resources'].includes(
+                  section.key,
+                )),
           )}
           onSectionChange={(section) => {
             const nextSection = resolveWorkspaceSectionForAccess(
               section,
-              hasPaidWorkspace,
+              hasWorkspaceAccess,
               hasRecipeWorkspaceAccess,
             )
             if (nextSection === 'recipes') setRecipeEditorTab('current')
@@ -5925,6 +5962,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
 
     if (activeSection === 'messages') {
+      if (operatorSupportMode) {
+        return (
+          <OperatorSupportUnavailableCard
+            title="Message Center is read-only outside support access"
+            detail="Private messages and outbound communications are intentionally unavailable while you are working as support. The rep still receives automatic access notices."
+          />
+        )
+      }
       return (
         <div className={styles.workspaceSectionStack}>
           <UnifiedMessageCenter
@@ -5945,6 +5990,14 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       activeSection === 'resources' ||
       activeSection === 'help-resources'
     ) {
+      if (operatorSupportMode) {
+        return (
+          <OperatorSupportUnavailableCard
+            title="Shared resources stay outside support access"
+            detail="This session is limited to the selected rep's account and customer-site setup. Shared Help & Resources content is unchanged and remains available to the rep in their own Workspace."
+          />
+        )
+      }
       return (
         <div className={styles.workspaceSectionStack}>
           <HelpResourcesCard
@@ -5975,6 +6028,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       return (
         <div className={styles.workspaceSectionStack}>
           <CustomerRosterCard
+            readOnly={operatorSupportMode}
             state={audienceState}
             activeFilter={rosterFilter}
             onFilterChange={setRosterFilter}
@@ -6098,8 +6152,17 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
 
     if (activeSection === 'account') {
+      if (operatorSupportMode) {
+        return (
+          <OperatorSupportUnavailableCard
+            title="Billing and security are unavailable"
+            detail={`Support session ${operatorSupportSessionId ?? ''} cannot view or change billing, subscriptions, payments, passwords, identity, ownership, wallet funding, or account security.`}
+          />
+        )
+      }
       return (
         <div className={styles.workspaceSectionStack}>
+          <SupportAccessHistoryCard />
           <AccountBillingCard
             state={accountBillingState}
             actionState={accountBillingActionState}
@@ -6137,7 +6200,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     return null
   }
   const renderedSection = renderActiveWorkspaceSection()
-  const showConceptHome = activeSection === 'home'
+  const showConceptHome = activeSection === 'home' && !operatorSupportMode
   const workspaceBackDestination = getWorkspaceBackDestination(activeSection)
   const isRecipeDetailOpen =
     activeSection === 'recipes' && recipeEditorTab === 'edit'
@@ -6209,7 +6272,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             setActiveSection(
               resolveWorkspaceSectionForAccess(
                 section,
-                hasPaidWorkspace,
+                hasWorkspaceAccess,
                 hasRecipeWorkspaceAccess,
               ),
             )
@@ -6267,6 +6330,64 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
   )
 }
 
+function OperatorSupportUnavailableCard({
+  title,
+  detail,
+}: {
+  title: string
+  detail: string
+}) {
+  return (
+    <div className={styles.workspaceSectionStack}>
+      <section className={styles.cardFill} aria-live="polite">
+        <div className={styles.cardTitle}>{title}</div>
+        <p>{detail}</p>
+      </section>
+    </div>
+  )
+}
+
+function OperatorSupportOverviewCard({
+  onOpenCalendar,
+  onOpenCustomers,
+  onOpenInventory,
+  onOpenSite,
+}: {
+  onOpenCalendar: () => void
+  onOpenCustomers: () => void
+  onOpenInventory: () => void
+  onOpenSite: () => void
+}) {
+  const actions = [
+    ['Customer-facing site setup', onOpenSite],
+    ['Customer List (read only)', onOpenCustomers],
+    ['Dance Floor and inventory', onOpenInventory],
+    ['Show calendar', onOpenCalendar],
+  ] as const
+  return (
+    <section className={styles.cardFill}>
+      <div className={styles.cardTitle}>Support Workspace</div>
+      <p>
+        Choose the part of this rep&apos;s account you are helping with. Nic-Nac,
+        billing, security, private messages, outbound communication, exports,
+        and Live Queue codes stay unavailable in support mode.
+      </p>
+      <div className={styles.bulkActions}>
+        {actions.map(([label, onClick]) => (
+          <button
+            className={styles.bulkActionButton}
+            key={label}
+            onClick={onClick}
+            type="button"
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export function WorkspaceAppHeader({
   repName,
   showName,
@@ -6280,6 +6401,7 @@ export function WorkspaceAppHeader({
   onOpenPublicSite,
   onOpenMessages,
   onGoHome,
+  operatorSupportMode = false,
 }: {
   repName: string
   showName: string
@@ -6293,6 +6415,7 @@ export function WorkspaceAppHeader({
   onOpenPublicSite: () => void
   onOpenMessages: () => void
   onGoHome: () => void
+  operatorSupportMode?: boolean
 }) {
   const [logoutBusy, setLogoutBusy] = useState(false)
   const [logoutError, setLogoutError] = useState<string | null>(null)
@@ -6379,13 +6502,13 @@ export function WorkspaceAppHeader({
             {siteLinkCopied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
           </button>
         </div>
-        <div className={styles.appHeaderReference}>
+        {!operatorSupportMode ? <div className={styles.appHeaderReference}>
           <span className={styles.appHeaderReferenceLabel}>Live Queue code</span>
           <strong className={styles.appHeaderQueueCode}>
             {liveQueueSyncCode?.trim() ||
               (repName === 'Rep info loading' ? 'Loading' : 'Not set')}
           </strong>
-        </div>
+        </div> : null}
         {memberTeamName ? (
           <div className={styles.appHeaderReference}>
             <span className={styles.appHeaderReferenceLabel}>Team I belong to</span>
@@ -6394,7 +6517,7 @@ export function WorkspaceAppHeader({
         ) : null}
       </div>
       <div className={styles.appHeaderActions}>
-        <button
+        {!operatorSupportMode ? <button
           type="button"
           className={`${styles.appMessageButton} ${
             messagesActive ? styles.appMessageButtonActive : ''
@@ -6415,7 +6538,7 @@ export function WorkspaceAppHeader({
               {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
             </span>
           ) : null}
-        </button>
+        </button> : null}
         <details className={styles.appProfileMenu}>
           <summary
             className={styles.appProfile}
@@ -6431,7 +6554,11 @@ export function WorkspaceAppHeader({
             <ChevronDown className={styles.appProfileChevron} aria-hidden="true" />
           </summary>
           <div className={styles.appProfilePopover}>
-            <button
+            {operatorSupportMode ? (
+              <span className={styles.appProfileError}>
+                Support mode — use the banner above to end access.
+              </span>
+            ) : <button
               type="button"
               className={styles.appProfileLogout}
               disabled={logoutBusy}
@@ -6439,7 +6566,7 @@ export function WorkspaceAppHeader({
             >
               <LogOut aria-hidden="true" />
               {logoutBusy ? 'Logging out…' : 'Log out'}
-            </button>
+            </button>}
             {logoutError ? (
               <span className={styles.appProfileError} role="alert">
                 {logoutError}
@@ -7395,6 +7522,7 @@ const MESSAGE_CENTER_FILTERS: readonly {
 ]
 
 const MESSAGE_CATEGORY_LABELS: Record<string, string> = {
+  account_activity: 'Account activity',
   customer_activity: 'Customer activity',
   business_update: 'Business update',
   monthly_report: 'Monthly report',
@@ -7426,6 +7554,7 @@ function isReportMessage(message: WorkspaceMessageSummary) {
 function isUpdateMessage(message: WorkspaceMessageSummary) {
   const category = getMessageCategory(message)
   return (
+    category === 'account_activity' ||
     category === 'platform_update' ||
     category === 'business_update' ||
     category === 'help_update' ||
@@ -11394,6 +11523,7 @@ export function CustomerRosterCard({
   onCreate,
   onUpdate,
   onImport,
+  readOnly = false,
 }: {
   state: AudienceState
   activeFilter: RosterFilter
@@ -11427,6 +11557,7 @@ export function CustomerRosterCard({
   onImport?: (
     contacts: CustomerAudienceImportInput[],
   ) => Promise<CustomerAudienceImportResult>
+  readOnly?: boolean
 }) {
   const emptyProfile = (): CustomerProfileInput => ({
     name: '',
@@ -11578,7 +11709,7 @@ export function CustomerRosterCard({
           <h2 className={styles.rosterHeading}>Customer List</h2>
           <p className={styles.rosterIntro}>Keep the details your customers choose to share in one place.</p>
         </div>
-        <div className={styles.rosterPrimaryActions}>
+        {!readOnly ? <div className={styles.rosterPrimaryActions}>
           <button type="button" className={styles.bulkActionButton} onClick={openCreate} disabled={!onCreate}>
             Add customer
           </button>
@@ -11600,7 +11731,7 @@ export function CustomerRosterCard({
             <Download size={16} aria-hidden="true" />
             Download full list (CSV)
           </a>
-        </div>
+        </div> : null}
       </div>
       <div className={styles.metricGrid}>
         <div className={styles.metricBlock}>
@@ -11667,7 +11798,7 @@ export function CustomerRosterCard({
           ))}
         </select>
       </label>
-      <div className={styles.bulkActions}>
+      {!readOnly ? <div className={styles.bulkActions}>
         <button
           type="button"
           className={styles.bulkActionButton}
@@ -11682,7 +11813,7 @@ export function CustomerRosterCard({
         >
           Copy visible emails
         </button>
-      </div>
+      </div> : null}
       <div className={styles.customerList} role="list" aria-label="Customer roster">
         {actionState?.error ? (
           <div className={styles.actionError}>{actionState.error}</div>
@@ -11754,7 +11885,7 @@ export function CustomerRosterCard({
                   ))}
                 </dl>
               ) : null}
-              <div className={styles.actionRow}>
+              {!readOnly ? <div className={styles.actionRow}>
                 <button
                   type="button"
                   className={styles.helperButton}
@@ -11814,7 +11945,7 @@ export function CustomerRosterCard({
                     </button>
                   ),
                 )}
-              </div>
+              </div> : null}
               {isComposerOpen ? (
                 <div className={styles.emailComposer}>
                   <label className={styles.searchField}>

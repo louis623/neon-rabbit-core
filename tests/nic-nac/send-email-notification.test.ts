@@ -321,6 +321,7 @@ describe('send_email_notification', () => {
       'list_my_shows',
       'list_my_trade_board',
       'list_site_recipes',
+      'manage_customer_contact',
       'manage_join_team_roster',
       'manage_site_recipes',
       'pause_show_series',

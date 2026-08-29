@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthenticatedNicNacContext, AuthError } from '@/lib/nic-nac/auth'
 import { getLiveQueueSyncCodeForRep } from '@/lib/services/live-queue'
+import { getOperatorSupportRequestContext } from '@/lib/operator-support/request-context'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -8,7 +9,9 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   try {
     const { repId, rep, supabase } = await getAuthenticatedNicNacContext()
-    const liveQueueSyncCode = await getLiveQueueSyncCodeForRep(supabase, repId)
+    const liveQueueSyncCode = getOperatorSupportRequestContext()
+      ? null
+      : await getLiveQueueSyncCodeForRep(supabase, repId)
     return NextResponse.json({
       rep: {
         id: rep.id,

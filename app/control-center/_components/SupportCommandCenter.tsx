@@ -5,6 +5,7 @@ import { ControlCenterThemeToggle } from '@/app/internal/prelaunch/intake/_compo
 import { CustomerWaitlistPanel } from '@/app/control-center/_components/CustomerWaitlistPanel'
 import { BugHuntPanel } from '@/app/control-center/_components/BugHuntPanel'
 import { ControlCenterProductSwitcher } from '@/app/control-center/_components/ControlCenterProductSwitcher'
+import { OperatorSupportAccessPanel } from '@/app/control-center/_components/OperatorSupportAccessPanel'
 import type { BugHuntItem } from '@/lib/control-center/bug-hunt'
 import type { CustomerWaitlistLead } from '@/lib/prelaunch/customer-waitlist'
 
@@ -235,6 +236,14 @@ function CustomerProfile({
       </summary>
 
       <div className="grid gap-4 border-t border-slate-100 bg-slate-50/70 p-4 lg:grid-cols-2">
+        <OperatorSupportAccessPanel
+          customDomain={customer.customDomain}
+          publicSiteSlug={customer.publicSiteSlug}
+          repDisplayName={customer.primaryContactName ?? customer.clientName}
+          repEmail={customer.email}
+          targetRepId={customer.repId}
+        />
+
         <section className="rounded-lg border border-slate-200 bg-white p-4">
           <h3 className="text-sm font-semibold">Contact</h3>
           <dl className="mt-3 grid gap-3 sm:grid-cols-2">

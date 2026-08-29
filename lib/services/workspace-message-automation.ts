@@ -15,6 +15,11 @@ import {
   isMonthlyReportDue,
   saveMonthlyReportSnapshot,
 } from '@/lib/services/workspace-monthly-reports'
+import { publishOperatorSupportEndNotice } from '@/lib/operator-support/messages'
+import {
+  getOperatorSupportSession,
+  recordOperatorSupportCompletionNotice,
+} from '@/lib/operator-support/session-service'
 
 function requiredString(payload: Record<string, unknown>, key: string) {
   const value = payload[key]
@@ -160,6 +165,28 @@ async function processResourcePublished(
   return publication
 }
 
+async function processOperatorSupportCompletionNotice(
+  supabase: SupabaseClient,
+  event: WorkspaceMessageOutboxEvent,
+) {
+  const sessionId = requiredString(event.payload, 'sessionId')
+  const session = await getOperatorSupportSession(supabase, { sessionId })
+  if (!session) throw new Error('Operator support session was not found')
+  if (!['ended', 'expired', 'revoked', 'failed'].includes(session.status)) {
+    throw new Error('Operator support session is not closed')
+  }
+  const publication = await publishOperatorSupportEndNotice(
+    supabase,
+    session,
+    event.payload.changedAnything === true,
+  )
+  await recordOperatorSupportCompletionNotice(supabase, {
+    sessionId,
+    endPublicationId: publication.id,
+  })
+  return publication
+}
+
 async function processEvent(
   supabase: SupabaseClient,
   event: WorkspaceMessageOutboxEvent,
@@ -172,6 +199,9 @@ async function processEvent(
   }
   if (event.eventType === 'workspace_resource_published') {
     return processResourcePublished(supabase, event)
+  }
+  if (event.eventType === 'operator_support_completion_notice') {
+    return processOperatorSupportCompletionNotice(supabase, event)
   }
   throw new Error(`Unsupported Message Center automation event: ${event.eventType}`)
 }

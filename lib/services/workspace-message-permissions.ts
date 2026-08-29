@@ -1,6 +1,7 @@
 import { ServiceError } from '@/lib/services/errors'
 
 export const WORKSPACE_MESSAGE_CATEGORIES = [
+  'account_activity',
   'customer_activity',
   'business_update',
   'monthly_report',

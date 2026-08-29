@@ -1017,7 +1017,7 @@ describe('DashboardPlaceholder', () => {
     const loadEffectStart = source.indexOf('void loadPaidWorkspaceData(controller.signal)')
     const loadEffectSource = source.slice(
       source.lastIndexOf('useEffect(() => {', loadEffectStart),
-      source.indexOf('}, [reviewWorkspaceMode])', loadEffectStart),
+      source.indexOf('}, [operatorSupportMode, reviewWorkspaceMode])', loadEffectStart),
     )
 
     expect(loadEffectStart).toBeGreaterThan(-1)
