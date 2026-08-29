@@ -4,6 +4,43 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 29, 2026 - Support access full Workspace parity correction and release
+
+- Louis's first live review proved the support-only shortcut screen was a
+  requirements miss: it logged access correctly but did not present the exact
+  rep Workspace needed for hands-on account assistance.
+- Replaced that alternate support screen with the normal Workspace experience
+  under the frozen support target, including its navigation, tools,
+  customer-site editing, customer records, inventory, calendar, team,
+  resources, analytics, Message Center, exports, outbound workflows, and both
+  Nic-Nac layouts.
+- Preserved transparent independent support sessions, the support banner,
+  start/completion notices, durable history, expiry/revocation, and per-action
+  audit. Narrowed hard blocks to billing/payment/wallet mutations and account
+  authentication/security/ownership changes. Existing Live Queue codes are
+  display-only; provider callbacks and the target rep's ordinary Nic-Nac
+  conversation remain isolated.
+- Added support-session-specific Nic-Nac conversations and operator/target
+  provenance, plus deny-by-default tool classification and mutation audit.
+- Applied production migrations `20260829122500` and `20260829123000` and
+  manually deployed exact commit `bbc1283b4b79c9cc7b29ff3ccd97383930bcea93`
+  as Vercel production deployment `dpl_Z5DCR55PT3gKsQKeFpTmJxhgoEiJ`.
+- Confirmed the deployment is Ready and owns every existing alias. HTTP smoke
+  passed both Suite domains, Control Center and support login guards, and all
+  four customer-domain variants. In-app browser smoke passed the live landing
+  page, authenticated Control Center entry/history, and Mile High Fizz public
+  site with no console errors. The production error-log query was clean.
+- Verification passed 226 focused support/Workspace tests, the standard 226-
+  test suite, 33 policy/schema follow-ups, local and Vercel builds, migration
+  parity, and source hygiene checks. The full-repository failure set remains
+  unrelated baseline drift and improved by one file/test from the prior run.
+- Did not open, mutate, or end Lindsey's existing support session and did not
+  create a replacement session, duplicate disclosure, customer mutation,
+  outbound provider send, checkout/payment, DNS change, or extension change
+  during release smoke.
+
+---
+
 ## August 29, 2026 - Transparent operator support access implementation
 
 - Started from the approved repo, remote, allowlisted branch, and exact plan

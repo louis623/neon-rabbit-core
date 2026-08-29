@@ -1,5 +1,50 @@
 # Project State
 
+## August 29, 2026 Session - Full rep Workspace support parity released
+
+- Corrected the first transparent-support release after Louis's live review
+  showed that its support-only shortcut card did not satisfy the approved
+  requirement. Support sessions now render the normal rep Workspace home,
+  navigation, desktop/mobile Nic-Nac shell, tools, customer-site editor,
+  inventory, calendar, team, resources, analytics, Message Center, exports,
+  and outbound workflows against the frozen target rep.
+- The independent actor/subject session, conspicuous amber support banner,
+  start/completion disclosure, durable access history, request-scoped target,
+  mutation-attempt audit, expiry/revocation, and no-password design remain in
+  force. The correction does not change ordinary rep Workspace or public
+  customer-site behavior.
+- Support access now blocks only billing/payment/wallet mutations and account
+  authentication, security, and ownership changes. Account and wallet details
+  remain visible as read-only summaries. Existing Live Queue codes may be
+  viewed, but support cannot create or rotate one. Provider callbacks and
+  ordinary rep Nic-Nac conversation history remain isolated.
+- Nic-Nac support conversations are keyed to the exact support session and
+  record both operator and target provenance. Its tool policy is deny-by-
+  default for entitlement/access-code and other blocked capabilities; allowed
+  mutations are audited before dispatch.
+- Applied production migrations
+  `20260829122500_ss_operator_support_full_workspace_capabilities.sql` and
+  `20260829123000_ss_operator_support_nic_nac_provenance.sql`.
+- Released exact source commit `bbc1283b4b79c9cc7b29ff3ccd97383930bcea93`
+  as production deployment `dpl_Z5DCR55PT3gKsQKeFpTmJxhgoEiJ`
+  (`https://sparkle-suite-nw8209vfb-louis-2849s-projects.vercel.app`). The
+  deployment is Ready and owns both Sparkle Suite domains plus the existing
+  project/customer aliases; no DNS settings were changed.
+- Verification passed 25 focused files / 226 tests, the standard 14 files /
+  226 tests, a 33-test policy/schema follow-up, local and Vercel production
+  builds, migration parity, diff/secret checks, production HTTP guards, live
+  landing/customer-site browser smoke with no console errors, and a clean
+  deployment error-log query. The full repository sweep improved the unrelated
+  known baseline to 438 passed files, 1 skipped, 20 failed (2,989 tests passed,
+  1 skipped, 38 failed); no support-parity test failed.
+- No real customer mutation, outbound provider send, payment, checkout, DNS
+  change, Live Queue extension change, or duplicate Lindsey support session or
+  Message Center notice was used for release verification.
+
+**Last updated:** August 29, 2026
+
+---
+
 ## August 29, 2026 Session - Transparent operator support access source
 
 - Implemented password-free, transparent operator support access from each
@@ -11,12 +56,9 @@
   audited, and the rep receives an idempotent completion notice plus Account
   history. Expiry, operator revocation, target ineligibility, failed activation,
   correction notices, and completion retries fail closed.
-- The server gateway is deny-by-default. Approved setup areas include
-  customer-site settings/media/recipes, inventory/trade/fulfillment, calendar
-  reads, non-messaging team setup, and a read-only customer list. Billing,
-  payments, subscriptions, wallet funding, auth/security/ownership, private
-  messages, outbound communication, customer exports, Nic-Nac conversation,
-  Live Queue codes, Guardian/Lab, deployments, and DNS remain unavailable.
+- This section records the original source-only boundary. It was superseded by
+  the full-Workspace parity correction documented above before the feature was
+  accepted for use.
 - Ordinary rep Workspace and customer-site routes retain their existing auth
   and behavior. Support identity exists only inside server-owned async request
   context reached through the explicit Control Center gateway.

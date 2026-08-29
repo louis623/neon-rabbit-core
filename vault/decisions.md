@@ -15,12 +15,21 @@ cannot be acknowledged as success, and completion produces a rep-visible notice
 and history record. Support access without those controls is not an acceptable
 fallback.
 
-**The gateway is deny-by-default and billing stays outside it.** Existing rep
-routes do not accept Control Center identity directly. Only explicitly reviewed
-route/method/capability combinations can run inside the frozen support request
-context. Billing, payment, wallet, auth/security/ownership, private messaging,
-outbound communication, exports, Live Queue codes, Nic-Nac conversation,
-Guardian/Lab, deployment, and DNS capabilities are excluded.
+**The gateway is deny-by-default and the support surface is the real rep
+Workspace.** Existing rep routes do not accept Control Center identity
+directly. Explicitly reviewed route/method/capability combinations run inside
+the frozen support request context, and the normal Workspace UI is reused so
+Louis can assist through the same features and navigation as the rep. A
+support-only shortcut dashboard is not acceptable.
+
+**Only financial and account-control mutations are intentionally unavailable.**
+Billing, payment, subscription, wallet funding, authentication, security, and
+ownership changes remain outside support access. Their useful summaries may be
+read. Existing Live Queue codes may be viewed but not created or rotated.
+Provider callbacks and the rep's ordinary Nic-Nac conversation history remain
+isolated. Normal setup, customer-site, customer-record, inventory, calendar,
+team, Message Center, outbound, export, analytics, resource, and session-
+isolated Nic-Nac work is available and audited.
 
 **Ordinary rep and customer behavior remains unchanged.** Support-specific
 behavior activates only on the separate Control Center support URL and explicit
