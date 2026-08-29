@@ -9,6 +9,7 @@ Replace only the tokens below. Never put a password, email address, Live Queue c
 | `{{REP_FIRST_NAME}}` | First name used in welcome copy. |
 | `{{ONBOARDING_DAY_TIME}}` | Confirmed onboarding date, time, and time zone, such as `Sunday, August 30 · 11:00 AM Eastern Time`. |
 | `{{MEETING_LINK_COPY}}` | Optional, explicitly approved meeting-link wording. Use only when the user authorizes sharing the link on the public page; otherwise omit it. |
+| `{{LIVE_QUEUE_EXTENSION_URL}}` | Verified official Chrome Web Store listing for Sparkle Suite Live Queue. Use only after verifying the canonical listing; never expose a private sync code alongside it. |
 | `{{PROMO_MONTHLY_PRICE}}` | Exact advertised promotional monthly price. |
 | `{{PROMO_MONTHS}}` | Promotional duration in paid months. |
 | `{{STANDARD_MONTHLY_PRICE}}` | Exact monthly price after the promotion. |
@@ -31,14 +32,14 @@ First session: **{{ONBOARDING_DAY_TIME}}**
 
 1. Meet your Workspace.
 2. Make your customer-facing site feel like yours: public details, links, ticker, tagline, and preview.
-3. Connect Live Queue with the private code sent separately, correct Party Orders view, and Party Filter.
+3. Set up Live Queue when ready: use the private code sent separately, correct Party Orders view, and Party Filter. The onboarding session is a guided walkthrough; the rep can complete the setup on their own schedule and ask for help whenever needed.
 4. Put the next live—or recurring schedule—on the calendar.
 5. Add starter Dance Floor content; the rep keeps every listing and trade decision.
 
 ### Tool guide
 
-- **Customer-facing site:** the public home for shoppers to find links and show information.
-- **Live Queue:** supports queue visibility during a live. It does not place orders, handle payments, or change Bomb Party orders.
+- **Customer-facing site:** the fully customizable public home for shoppers to find links and show information. The rep chooses its details and can ask for help when they want it.
+- **Live Queue:** supports queue visibility during a live. Link to the verified official Chrome Web Store listing ({{LIVE_QUEUE_EXTENSION_URL}}) in this section when requested. It does not place orders, handle payments, or change Bomb Party orders.
 - **Dance Floor:** customers can request an eligible trade; the rep approves or declines.
 - **Live event calendar:** makes upcoming lives easier for customers to find.
 - **Help & Resources:** searchable workflow guides and a place to start when a task feels new.

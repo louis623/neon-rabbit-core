@@ -4,6 +4,29 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 29, 2026 - Kim welcome guide: self-paced Live Queue setup
+
+- Updated Kim's public welcome guide with the canonical Sparkle Suite Live
+  Queue Chrome Web Store listing. The guide now explicitly frames Sunday as a
+  guided walkthrough; Kim completes Live Queue setup on her own schedule and
+  can ask for help whenever needed.
+- Clarified that Kim's customer-facing site is fully customizable and that she
+  chooses and refines it herself, with help available on request. No Live
+  Queue extension code, Web Store settings, sync data, or live-show behavior
+  changed.
+- Updated and verified Kim's Gmail welcome as an unsent draft from Louis's
+  account. It mirrors the self-paced setup framing and includes the official
+  Store link; no email was sent.
+- Extended the reusable rep-welcome template with the same walkthrough and
+  self-service guidance plus a token for the verified official extension
+  listing. No private code, password, address, or meeting URL was added to the
+  template or project memory.
+- Published the updated public guide after a successful build and desktop plus
+  mobile checks. The published page displays the official extension link and
+  no horizontal overflow at the checked mobile width.
+
+---
+
 ## August 29, 2026 - Kim onboarding Meet link
 
 - Created a reusable Google Meet link under Louis's authenticated Google
