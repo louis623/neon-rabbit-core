@@ -20,7 +20,7 @@ Use `assets/rep-welcome-site-template.md` as the reusable page blueprint. Keep t
 
 - a welcoming, encouraging hero and scheduled onboarding note;
 - a practical first-week checklist;
-- concise explanations of customer site, Live Queue, Dance Floor, calendar, Email updates, SMS updates, Nic-Nac, and Help & Resources;
+- concise explanations of customer site, Live Queue, Dance Floor, calendar, Nic-Nac, and Help & Resources; present Email updates and SMS updates in the ready-now guide only when they are ready for that rep's account, otherwise put them in Coming soon;
 - a Nic-Nac starter-prompt panel that treats Nic-Nac as useful rep support, not the whole product;
 - Live Queue instructions that never reveal the sync code;
 - a clearly labeled Coming soon section for verified deferred surfaces;

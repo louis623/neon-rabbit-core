@@ -34,7 +34,6 @@ First session: **{{ONBOARDING_DAY_TIME}}**
 3. Connect Live Queue with the private code sent separately, correct Party Orders view, and Party Filter.
 4. Put the next live—or recurring schedule—on the calendar.
 5. Add starter Dance Floor content; the rep keeps every listing and trade decision.
-6. Set a clear customer-update rhythm for account-ready, opted-in audiences.
 
 ### Tool guide
 
@@ -42,7 +41,6 @@ First session: **{{ONBOARDING_DAY_TIME}}**
 - **Live Queue:** supports queue visibility during a live. It does not place orders, handle payments, or change Bomb Party orders.
 - **Dance Floor:** customers can request an eligible trade; the rep approves or declines.
 - **Live event calendar:** makes upcoming lives easier for customers to find.
-- **Email updates and SMS updates:** distinct paths for account-ready, opted-in customer communication.
 - **Help & Resources:** searchable workflow guides and a place to start when a task feels new.
 
 ### Nic-Nac
@@ -58,6 +56,8 @@ Frame Nic-Nac as Sparkle Suite’s practical assistant for setup, live-show flow
 ### Coming soon
 
 Render `{{COMING_SOON_ITEMS}}` as separate cards, each with a visible **Coming soon** label. Do not give dates or describe an existing accessible tool as deferred.
+
+When Email updates or SMS updates are not ready for this rep's account, move both from the checklist/tool guide into this section with a visible **Coming soon** label. Do not imply Kim can configure or send those updates yet.
 
 ### Light box
 

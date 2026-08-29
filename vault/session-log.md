@@ -20,6 +20,12 @@ Running log of significant work sessions. Most recent first.
 - Generalized the reusable rep-welcome skill/template with an optional
   meeting-link placeholder that requires explicit approval before a meeting URL
   is placed on a public page.
+- Follow-up guide corrections: the meeting card now states the full Sunday,
+  August 30 date; Email + SMS updates are removed from Kim's ready-now
+  checklist/tool guide and shown in its Coming soon section instead; and the
+  light-box copy asks to confirm the best shipping address during onboarding.
+  The reusable template now carries the same account-readiness rule for
+  customer-update tools.
 
 ---
 
