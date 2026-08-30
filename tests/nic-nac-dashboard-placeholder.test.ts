@@ -3025,11 +3025,14 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Customer-facing site')
     expect(html).toContain('Dance Floor / dance floor')
     expect(html).toContain('Checkout alone does not send customer texts')
-    expect(html).toContain('Read the Sparkle Suite terms before checkout.')
+    expect(html).toContain(
+      'Review the Sparkle Suite Terms and Conditions (optional).',
+    )
     expect(html).toContain('Read Terms and Conditions')
     expect(html).toContain(
       'I understand today&#x27;s charge, the monthly renewal, and the cancel policy',
     )
+    expect(html).toContain('I accept the Sparkle Suite Terms and Conditions.')
     expect(html).toContain('_termsLink_')
     expect(html).toContain(
       'href="/terms-and-conditions?returnTo=%2Fnic-nac%3Fsection%3Daccount"',

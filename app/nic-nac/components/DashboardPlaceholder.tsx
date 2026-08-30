@@ -10753,7 +10753,7 @@ export function AccountBillingCard({
           </section>
 
           <div className={styles.termsReadRow}>
-            <span>Read the Sparkle Suite terms before checkout.</span>
+            <span>Review the Sparkle Suite Terms and Conditions (optional).</span>
             <Link
               className={styles.termsLink}
               href="/terms-and-conditions?returnTo=%2Fnic-nac%3Fsection%3Daccount"
@@ -10772,7 +10772,8 @@ export function AccountBillingCard({
             />
             <span>
               I understand today&apos;s charge, the monthly renewal, and the
-              cancel policy, and I accept the Sparkle Suite terms.
+              cancel policy, and I accept the Sparkle Suite Terms and
+              Conditions.
             </span>
           </label>
         </div>
