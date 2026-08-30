@@ -1,5 +1,24 @@
 # Project State
 
+## August 30, 2026 Release - Dark ticker hard-edge alignment
+
+- Removed the theme-label fades from Black Diamond and Moonstone tickers. Both
+  the Announcements and Dance Floor labels now use a shared fixed 170px label
+  column with a crisp right border, so their stops align exactly while keeping
+  their respective gold/violet and dark theme colors.
+- Released application commit `3519c892ddb2931c034e4492541aba4a3ecd0294` as
+  Vercel production deployment `dpl_egkwWXCEsj1SyJ6MJzJjK17RJrE2`. Both
+  `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to the Ready
+  deployment; no DNS or alias change was made.
+- Focused homepage coverage passed (43 tests) and the local production build
+  completed. Live smoke on `/brittwithbling` measured both label edges at
+  170px with no background image/fade and visually confirmed the clean
+  alignment. No authenticated session or production data was used or changed.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Release - Dark ticker label refinement
 
 - Refined the dark-skin announcement treatment: Black Diamond's left

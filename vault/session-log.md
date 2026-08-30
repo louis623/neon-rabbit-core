@@ -4,6 +4,21 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Dark ticker hard-edge alignment release
+
+- Removed the fade treatment from dark-skin ticker labels. Announcements and
+  Dance Floor now share a fixed 170px, right-bordered label column so their
+  clean stop lines align; Black Diamond retains gold/black and Moonstone
+  retains violet/charcoal presentation.
+- Pushed application commit `3519c892ddb2931c034e4492541aba4a3ecd0294` and
+  manually released `dpl_egkwWXCEsj1SyJ6MJzJjK17RJrE2`. Both Suite domains
+  alias the Ready deployment with no DNS change. Live `/brittwithbling` smoke
+  measured both label edges at 170px, with solid backgrounds and no fade.
+- Focused homepage coverage passed 43 tests and the local production build
+  completed. No authenticated session or customer data was used.
+
+---
+
 ## August 30, 2026 - Dark ticker label refinement release
 
 - Replaced the plain light announcement label on dark skins with a theme-color
