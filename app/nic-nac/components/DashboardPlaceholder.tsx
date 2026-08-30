@@ -10474,19 +10474,6 @@ function PublicTeamRosterPanel({
               </div>
             </div>
 
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>
-                Photo URL or saved path (optional fallback)
-              </span>
-              <input
-                className={`${styles.searchInput} ph-no-capture`}
-                placeholder="https://example.com/team-member.jpg"
-                value={draft.photoUrl}
-                onChange={(event) =>
-                  onDraftChange?.({ photoUrl: event.target.value })
-                }
-              />
-            </label>
           </div>
 
           <div className={styles.teamSocialGrid}>

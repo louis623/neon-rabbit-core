@@ -1212,7 +1212,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Save or download the team member&#x27;s profile photo')
     expect(html).toContain('I have permission to publish this team member&#x27;s photo')
     expect(html).toContain('Upload profile photo')
-    expect(html).toContain('Photo URL or saved path (optional fallback)')
+    expect(html).not.toContain('Photo URL or saved path (optional fallback)')
     expect(html).toContain('accept="image/jpeg,image/png,image/webp"')
     expect(html).toContain('Mile High Fizz')
     expect(html).toContain('Lindsey')
