@@ -187,6 +187,7 @@ describe('Amethyst preview template data', () => {
 
     expect(trade.repName).toBe('Launch')
     expect(trade.businessName).toBe('Sparkle Suite Demo Boutique')
+    expect(trade.memberTeamName).toBe('North Star Team')
     expect(trade.shopUrl).toBe(
       'https://www.bombparty.com/shop/sparkle-suite-demo',
     )
@@ -194,6 +195,7 @@ describe('Amethyst preview template data', () => {
     expect(join.repName).toBe('Launch')
     expect(join.businessName).toBe('Sparkle Suite Demo Boutique')
     expect(join.teamName).toBe('Sparkle Demo Circle')
+    expect(join.memberTeamName).toBe('North Star Team')
     expect(join.heroTitle).toBe('Join Sparkle Demo Circle')
     expect(join.repCity).toBe('')
     expect(join.repState).toBe('')
@@ -340,7 +342,7 @@ describe('Amethyst preview template data', () => {
       expect.anything(),
       expect.objectContaining({
         repId: 'rep-target',
-        select: 'id, email, shop_link, streaming_links',
+        select: 'id, email, shop_link, streaming_links, public_site_slug',
       }),
     )
     expect(data.homepage.joinTeamUrl).toBe('/amethyst/Join.html?c=rep-target')

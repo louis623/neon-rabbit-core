@@ -56,6 +56,8 @@ export interface AmethystJoinTemplateData {
   repState: string
   businessName: string
   teamName: string
+  /** The upline or other team this rep belongs to, shown in the public footer. */
+  memberTeamName?: string
   heroTitle?: string
   promoText: string
   heroPitch: string

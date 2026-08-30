@@ -936,6 +936,9 @@ function Footer({ businessName }) {
         <div>
           <div className="hp-footer-brand slot" data-slot="business name">{businessName}</div>
           <p className="hp-footer-tag">{CONTENT.footerTagline || "Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle."}</p>
+          {CONTENT.memberTeamName ? (
+            <p className="hp-footer-team">Proud member of team {CONTENT.memberTeamName}</p>
+          ) : null}
           <div className="hp-footer-socials">
             {FOOTER_SOCIALS.map((link, index) => (
               <a

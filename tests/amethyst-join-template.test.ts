@@ -267,5 +267,6 @@ describe('Amethyst join page template data wiring', () => {
     expect(jsx).toContain('document.title = `Join ${t.teamName} | ${repName}')
     expect(jsx).toContain('Rep city')
     expect(jsx).toContain('rep city and state')
+    expect(jsx).toContain('Proud member of team {CONTENT.memberTeamName}')
   })
 })

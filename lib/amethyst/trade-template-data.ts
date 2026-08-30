@@ -32,6 +32,8 @@ export interface AmethystTradeTemplateData {
   publicSiteVariant?: 'mile_high_fizz_hybrid' | 'britt_with_bling_hybrid' | 'bling_kitchen_hybrid'
   repName: string
   businessName: string
+  /** The upline or other team this rep belongs to, shown in the public footer. */
+  memberTeamName?: string
   tradeHeroTitle: string
   tradeHeroSub: string
   tickerTopText: string
