@@ -519,6 +519,8 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect(homepageCss).toContain('--bwb-gold: var(--hp-primary)')
     expect(homepageCss).toContain('--bwb-cyan: var(--hp-accent)')
     expect(homepageCss).toContain('overflow-x: clip')
+    expect(homepageCss).toMatch(/\.bwb-hero-title\s*\{[\s\S]*?line-height:\s*1\.02;/)
+    expect(homepageCss).toMatch(/\.bwb-hero-title\s*\{[\s\S]*?padding:\s*0\.04em 0\.06em 0\.1em;/)
     expect(homepageCss).toContain('.bwb-featured-video')
     expect(homepageCss).toContain('.bwb-tiktok-card')
 
