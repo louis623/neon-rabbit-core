@@ -4,6 +4,34 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Public Team Card photo upload release
+
+- Built the approved upload path inside Brittany's existing manual-beta Team
+  Management surface without changing its entitlement or roster functions.
+  Reps now receive a short three-step process, a per-file confirmation that
+  they have permission to publish the team member's photo, a square preview,
+  and a reminder to save the card after upload. The existing photo URL/path
+  input remains as an optional fallback.
+- Added matching browser/API file guards for JPG, PNG, or WebP at 3 MB or less.
+  The smaller ceiling is deliberate because base64 encoding expands the JSON
+  request and Vercel Functions reject request bodies over 4.5 MB. The new API
+  also rechecks paid Workspace and Team Management access before writing to
+  the existing public site media bucket.
+- Added the route to the audited transparent-support gateway under
+  `team.manage`; upload does not save or publish a roster card by itself.
+- Focused verification passed 143 tests, selected-file ESLint, and local plus
+  Vercel production builds. Application commit `bece3bb620408be86c06ed201eef8d3f78fabdbd`
+  was pushed and manually released as Ready deployment
+  `dpl_DhgGyfyyLfLfBL5FZV21doswAr7T`. Both Suite domains resolve to it.
+- Read-only live smoke in Brittany's existing workspace confirmed the full
+  workflow, disabled upload button before permission confirmation, URL fallback,
+  27 unchanged public roster cards, and no browser errors. No file, form,
+  roster, invite, message, support session, Live Queue, billing, or customer
+  data was changed. `artifacts/` and `test-results/` remain untracked and
+  preserved.
+
+---
+
 ## August 30, 2026 - Team Management layout polish release
 
 - Preserved every Team Management capability while improving the visual layout:

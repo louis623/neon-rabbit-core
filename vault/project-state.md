@@ -1,5 +1,34 @@
 # Project State
 
+## August 30, 2026 Release - Public Team Card photo uploads
+
+- Added a durable profile-photo upload workflow to Brittany's manual-beta
+  **Public Team Cards** editor. The UI explains the three-step process: save or
+  download the team member's photo, confirm publication permission, upload and
+  review the square card preview, then save the card. The existing URL/path
+  field remains available as an optional fallback.
+- Uploads accept JPG, PNG, and WebP only and stop at 3 MB in both the browser
+  and API. The 3 MB limit keeps the base64 JSON request below Vercel's 4.5 MB
+  function payload ceiling. Upload access requires both paid Workspace access
+  and the existing Team Management entitlement; audited transparent support
+  uses the established `team.manage` capability. No roster card is published
+  automatically after upload.
+- Released application commit `bece3bb620408be86c06ed201eef8d3f78fabdbd`
+  as Vercel production deployment `dpl_DhgGyfyyLfLfBL5FZV21doswAr7T`.
+  Both `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to the
+  Ready deployment; no DNS setting changed.
+- Verification passed 143 focused tests, selected-file ESLint, the local and
+  Vercel production builds, exact alias inspection, live HTTP checks, and a
+  read-only visual smoke in Brittany's already-open Team Management view. The
+  instructions, empty preview, permission checkbox, disabled upload button,
+  fallback field, and all 27 existing roster cards were present with no browser
+  errors. No file was uploaded, no form was submitted, and no production data
+  changed.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Release - Team Management layout polish
 
 - Refined Brittany's manual-beta Team Management workspace without altering
