@@ -4,6 +4,26 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Dark customer-site homepage contrast release
+
+- Improved the Britt with Bling public homepage title's fit by reducing its
+  responsive maximum scale and adding a safe line box/padding, so the display
+  font's details are not clipped. The title copy and styling direction remain
+  intact.
+- Updated the shared Black Diamond and Moonstone announcement-ticker surfaces
+  to a light-gray background with dark readable text. Their Dance Floor rows
+  remain dark, preserving the requested visual contrast and existing ticker
+  motion/content contract.
+- Pushed application commit `1857d53ba671981eaa384c0506cc5977014d5170` and
+  manually released `dpl_CLKikaYsCV5ngJ6YRihyKqgho8rC`. Both Suite domains
+  alias the Ready deployment without a DNS change. The public `/brittwithbling`
+  browser smoke visually confirmed the title and paired ticker treatments.
+- Focused homepage coverage passed 43 tests and the local production build
+  completed. The known unrelated Britt-with-Bling roster fixture assertion was
+  not changed; no authenticated user session or production data was used.
+
+---
+
 ## August 30, 2026 - Britt with Bling Join Team polish release
 
 - Corrected the visual duplicate on Brittany's public team roster. The Join

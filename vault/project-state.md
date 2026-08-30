@@ -1,5 +1,28 @@
 # Project State
 
+## August 30, 2026 Release - Dark customer-site homepage contrast
+
+- Adjusted Britt with Bling's homepage hero title to fit cleanly within its
+  visual space: the display scale is slightly reduced and the title now has a
+  full line box with safe inset padding, preserving the existing copy, font,
+  and visual hierarchy.
+- The non-Dance-Floor announcement row now uses a light-gray, dark-ink surface
+  in both Black Diamond and Moonstone. The Dance Floor ticker remains its
+  deliberately dark, high-contrast treatment, making the two rows distinct
+  without changing ticker behavior or content.
+- Released application commit `1857d53ba671981eaa384c0506cc5977014d5170` as
+  Vercel production deployment `dpl_CLKikaYsCV5ngJ6YRihyKqgho8rC`. Both
+  `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to the Ready
+  deployment; no DNS or alias change was made.
+- Focused homepage template coverage passed (43 tests) and the local
+  production build completed. Live visual smoke on `/brittwithbling` confirmed
+  the fully visible title, light announcement row, and unchanged dark Dance
+  Floor row. No authenticated session or customer data was used or changed.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Release - Britt with Bling Join Team polish
 
 - Removed the redundant generic Brittany leader card when Brittany already
