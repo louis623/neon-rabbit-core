@@ -4,6 +4,27 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Team Management layout polish release
+
+- Preserved every Team Management capability while improving the visual layout:
+  team naming and private onboarding-link creation now sit in equal-width,
+  equal-height primary panels with aligned actions, and Public Team Cards begins
+  directly beneath them. Removed the CSS grid-row span that produced the
+  unintentional dead-zone feel; no entitlement, field, action, or roster logic
+  changed.
+- Pushed application commits `211d42967c49abae2d84499c6bca547ef2a9a8ac` and
+  `d9ef0e2a3630e2753cefbf42ed439bd7a4a1e126`; manually released final
+  deployment `dpl_9YMGzfC8ceRSrhR1bVVww5DQePDB`. Both Suite domains alias the
+  Ready deployment without a DNS change. A read-only live view of Brittany's
+  already-open Team Management screen confirmed the paired panels' matching
+  532.5px widths and bottom edge, plus all existing controls.
+- Focused dashboard coverage passed 115 tests and the local production build
+  completed. The reviewer-smoke path was not used because its normal controls
+  were unavailable; no alternative account was signed in. No customer or team
+  data was changed.
+
+---
+
 ## August 30, 2026 - Tight dark ticker label alignment release
 
 - Reduced the dark-skin label column from 170px to 120px, preserving a small

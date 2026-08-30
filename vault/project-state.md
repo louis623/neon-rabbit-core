@@ -1,5 +1,27 @@
 # Project State
 
+## August 30, 2026 Release - Team Management layout polish
+
+- Refined Brittany's manual-beta Team Management workspace without altering
+  any capabilities, entitlement rules, data, or actions. The first two panels
+  now use balanced equal columns and a clearer, more deliberate card surface;
+  their primary actions share a baseline, and Public Team Cards follows directly
+  under the paired actions instead of after a forced empty grid row.
+- Released application commits `211d42967c49abae2d84499c6bca547ef2a9a8ac` and
+  `d9ef0e2a3630e2753cefbf42ed439bd7a4a1e126` as final Vercel production
+  deployment `dpl_9YMGzfC8ceRSrhR1bVVww5DQePDB`. Both
+  `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to the Ready
+  deployment; no DNS or alias change was made.
+- Focused dashboard coverage passed (115 tests) and the local production build
+  completed. Read-only live workspace smoke on Brittany's already-open Team
+  Management view confirmed both 532.5px-wide top panels share the same bottom
+  edge; all existing fields, controls, roster actions, and beta access remained
+  visible. No form was entered or submitted, and no production data changed.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Release - Tight dark ticker label alignment
 
 - Corrected the oversize dark-skin ticker label columns: Black Diamond and
