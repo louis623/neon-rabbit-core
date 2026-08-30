@@ -1134,6 +1134,19 @@ describe('DashboardPlaceholder', () => {
     expect(html).not.toContain('Sparkle Suite SMS')
   })
 
+  it('keeps Team Management top actions in balanced panels without a forced empty grid row', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.module.css'),
+      'utf8',
+    )
+
+    expect(css).toMatch(
+      /\.teamManagementGrid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\);/,
+    )
+    expect(css).toContain('.teamPublicCardsPanel {')
+    expect(css).not.toContain('.teamManagementPanel:first-child')
+  })
+
   it('renders public team card management separately from onboarding links', () => {
     const html = renderToStaticMarkup(
       createElement(TeamManagementCard, {
