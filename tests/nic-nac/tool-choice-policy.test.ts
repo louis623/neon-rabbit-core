@@ -139,7 +139,7 @@ describe('Nic-Nac tool choice policy', () => {
     ).toBe('auto')
   })
 
-  it('does not force a tool for non-required turns', () => {
+  it('disables tools for a purely conversational first turn', () => {
     expect(
       chooseNicNacToolChoiceForStep({
         requireToolCall: false,
@@ -151,6 +151,29 @@ describe('Nic-Nac tool choice policy', () => {
           missing: [],
           blockers: [],
         },
+      }),
+    ).toBe('none')
+  })
+
+  it('keeps optional tool selection for a routed but non-required turn', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: false,
+        stepsLength: 0,
+        activeToolNames: ['get_help_resources'],
+        routedToolIntents: ['resources'],
+      }),
+    ).toBe('auto')
+  })
+
+  it('keeps optional memory lookup for real follow-up language', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: false,
+        stepsLength: 0,
+        activeToolNames: ['read_recent_rep_notes'],
+        routedToolIntents: ['memory'],
+        latestUserText: 'What follow-up did I promise that customer?',
       }),
     ).toBe('auto')
   })

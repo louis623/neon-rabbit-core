@@ -32,6 +32,7 @@ type GenericTradeWorkflowForToolChoice = {
 } | null | undefined
 
 export type NicNacStepToolChoice =
+  | 'none'
   | 'auto'
   | 'required'
   | {
@@ -62,7 +63,15 @@ export function chooseNicNacToolChoiceForStep(args: {
   previousAssistantText?: string
 }): NicNacStepToolChoice {
   if (args.stepsLength > 0) return 'auto'
-  if (!args.requireToolCall) return 'auto'
+  if (!args.requireToolCall) {
+    // The Workspace keeps its complete tool catalog available, but a purely
+    // conversational turn does not need the provider to evaluate tool calls.
+    // Explicitly disabling tools for that first step also avoids a provider
+    // edge case where `auto` with the full catalog can finish at `length`
+    // before producing any tokens. Routed intents still retain optional tool
+    // use, and required/workflow turns continue through the pinning rules.
+    return shouldAllowOptionalToolSelection(args) ? 'auto' : 'none'
+  }
   if (
     args.activeToolNames.includes('update_site_setting') &&
     (isAboutNarrativeCopySubmission({
@@ -108,6 +117,22 @@ export function chooseNicNacToolChoiceForStep(args: {
   }
 
   return 'required'
+}
+
+function shouldAllowOptionalToolSelection(args: {
+  routedToolIntents?: NicNacToolIntent[]
+  latestUserText?: string
+}) {
+  const intents = args.routedToolIntents ?? []
+  if (intents.some((intent) => intent !== 'memory')) return true
+  if (!intents.includes('memory')) return false
+
+  // `memory` is also the router's harmless fallback when no product intent
+  // matches. Preserve optional memory lookup for real show/follow-up language,
+  // while treating greetings and ordinary conversation as tool-free turns.
+  return /\b(?:live|shows?|post[- ]?show|after the live|current[- ]?show|follow[- ]?up|promise|remember|queue)\b/i.test(
+    args.latestUserText ?? '',
+  )
 }
 
 function chooseGenericTradeWorkflowTool(

@@ -772,6 +772,7 @@ export async function POST(request: Request) {
   const systemPrompt = buildNicNacSystemPrompt({
     intents: toolIntents,
     activeToolNames,
+    repDisplayName: rep.display_name,
     mode,
     workflowPromptState: renderActiveWorkflowPromptStates(activeWorkflowContexts),
     productContext,
