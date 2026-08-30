@@ -8,12 +8,11 @@ permission to publish it, upload a supported file, review the square preview,
 and then deliberately save the public card. Uploading alone must never create,
 update, or expose a roster card.
 
-**Use durable Sparkle Suite media, not TikTok page hotlinks.** Accept JPG, PNG,
-and WebP files at 3 MB or less, store them in the existing rep-scoped public
-site media bucket, and retain the URL/path field only as an optional fallback.
-The browser and API must enforce the same validation. The 3 MB ceiling is
-intentional because base64 transport must remain below Vercel's 4.5 MB request
-payload limit.
+**Use durable Sparkle Suite media, not TikTok page hotlinks or manual photo
+URLs.** Accept JPG, PNG, and WebP files at 3 MB or less and store them in the
+existing rep-scoped public site media bucket. The browser and API must enforce
+the same validation. The 3 MB ceiling is intentional because base64 transport
+must remain below Vercel's 4.5 MB request payload limit.
 
 **Keep the beta boundary intact.** The upload API requires paid Workspace
 access plus the existing Team Management entitlement. Transparent support may

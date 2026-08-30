@@ -4,14 +4,32 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Public Team Cards upload-only correction
+
+- Removed the **Photo URL or saved path** input immediately after Louis noted
+  that he authorized file uploads only. Existing stored roster photos are
+  unaffected; a new photo can now be set only by the explicit, guarded upload
+  workflow.
+- Focused UI and upload coverage passed 120 tests; the local and Vercel
+  production builds passed. Application commit
+  `ec3d72029c3dac2993ad398694d651e2c6a785cc` is live as Ready deployment
+  `dpl_89yWuc9jjwr9EHNY4Ha8tB1uojG1`, serving both Sparkle Suite domains.
+- Read-only live smoke in Brittany's existing Team Management tab confirmed the
+  field is absent, the permission-confirmed upload option is still present,
+  and all 27 roster cards remain. No file upload, save, or production data
+  change occurred. `artifacts/` and `test-results/` remain untracked and
+  preserved.
+
+---
+
 ## August 30, 2026 - Public Team Card photo upload release
 
 - Built the approved upload path inside Brittany's existing manual-beta Team
   Management surface without changing its entitlement or roster functions.
   Reps now receive a short three-step process, a per-file confirmation that
   they have permission to publish the team member's photo, a square preview,
-  and a reminder to save the card after upload. The existing photo URL/path
-  input remains as an optional fallback.
+  and a reminder to save the card after upload. The URL/path fallback was
+  removed in the follow-up upload-only correction.
 - Added matching browser/API file guards for JPG, PNG, or WebP at 3 MB or less.
   The smaller ceiling is deliberate because base64 encoding expands the JSON
   request and Vercel Functions reject request bodies over 4.5 MB. The new API
