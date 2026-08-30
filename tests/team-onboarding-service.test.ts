@@ -4,6 +4,7 @@ import {
   createTeamOnboardingParticipant,
   getTeamOnboardingAccess,
   listTeamOnboardingParticipants,
+  refreshTeamOnboardingParticipantAccess,
   recordTeamOnboardingProgress,
   sendTeamOnboardingMessage,
 } from '@/lib/services/team-onboarding'
@@ -15,6 +16,7 @@ function createQueryResult(data: unknown, error: unknown = null) {
     upsert: vi.fn(() => query),
     update: vi.fn(() => query),
     eq: vi.fn(() => query),
+    neq: vi.fn(() => query),
     in: vi.fn(() => query),
     order: vi.fn(() => query),
     limit: vi.fn(() => query),
@@ -70,6 +72,85 @@ describe('team onboarding service', () => {
       'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=visible-token-for-lindsey',
     )
     expect(result.participant.displayName).toBe('Lindsey')
+  })
+
+  it('links a new onboarding participant to an owned team member card', async () => {
+    const memberQuery = createQueryResult({
+      id: 'member-rayna',
+      display_name: 'Rayna',
+    })
+    const participantQuery = createQueryResult({
+      id: 'participant-rayna',
+      owner_rep_id: 'rep-britt',
+      join_team_member_id: 'member-rayna',
+      display_name: 'Rayna',
+      contact_email: null,
+      status: 'invited',
+      access_slug: 'rayna-123abc',
+      access_token_hash: 'stored-hash',
+      created_at: '2026-08-30T12:00:00.000Z',
+      updated_at: '2026-08-30T12:00:00.000Z',
+      last_activity_at: null,
+      archived_at: null,
+    })
+    const queries = [memberQuery, participantQuery]
+    const supabase = {
+      from: vi.fn(() => queries.shift()),
+    } as never
+
+    const result = await createTeamOnboardingParticipant(supabase, 'rep-britt', {
+      displayName: 'Ignored client name',
+      joinTeamMemberId: 'member-rayna',
+      tokenFactory: () => 'rayna-visible-token',
+    })
+
+    expect(memberQuery.eq).toHaveBeenCalledWith('id', 'member-rayna')
+    expect(memberQuery.eq).toHaveBeenCalledWith('rep_id', 'rep-britt')
+    expect(participantQuery.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner_rep_id: 'rep-britt',
+        join_team_member_id: 'member-rayna',
+        display_name: 'Rayna',
+      }),
+    )
+    expect(result.participant.joinTeamMemberId).toBe('member-rayna')
+  })
+
+  it('creates a fresh link for the same participant without losing progress identity', async () => {
+    const participantQuery = createQueryResult({
+      id: 'participant-rayna',
+      owner_rep_id: 'rep-britt',
+      join_team_member_id: 'member-rayna',
+      display_name: 'Rayna',
+      contact_email: null,
+      status: 'started',
+      access_slug: 'rayna-123abc',
+      access_token_hash: 'new-hash',
+      created_at: '2026-08-30T12:00:00.000Z',
+      updated_at: '2026-08-30T13:00:00.000Z',
+      last_activity_at: '2026-08-30T12:30:00.000Z',
+      archived_at: null,
+      workspace_conversation_id: 'conversation-rayna',
+    })
+    const supabase = {
+      from: vi.fn(() => participantQuery),
+    } as never
+
+    const result = await refreshTeamOnboardingParticipantAccess(
+      supabase,
+      'rep-britt',
+      'participant-rayna',
+      { tokenFactory: () => 'fresh-visible-token' },
+    )
+
+    expect(participantQuery.update).toHaveBeenCalledWith(
+      expect.objectContaining({ access_token_hash: expect.any(String) }),
+    )
+    expect(participantQuery.eq).toHaveBeenCalledWith('owner_rep_id', 'rep-britt')
+    expect(participantQuery.eq).toHaveBeenCalledWith('id', 'participant-rayna')
+    expect(participantQuery.neq).toHaveBeenCalledWith('status', 'archived')
+    expect(result.participant.id).toBe('participant-rayna')
+    expect(result.accessUrl).toContain('invite=fresh-visible-token')
   })
 
   it('lists participants with progress and unread message counts for the owning rep', async () => {

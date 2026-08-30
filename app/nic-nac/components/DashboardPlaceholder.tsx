@@ -701,6 +701,7 @@ type TeamManagementAccess = {
 
 type TeamOnboardingParticipant = {
   id: string
+  joinTeamMemberId?: string | null
   displayName: string
   contactEmail: string | null
   status: 'invited' | 'started' | 'needs_help' | 'completed' | 'archived'
@@ -748,11 +749,6 @@ type TeamManagementActionState = {
   pendingKey: string | null
   error: string | null
   helperMessage: string | null
-}
-
-type TeamManagementCreateDraft = {
-  displayName: string
-  contactEmail: string
 }
 
 export type JoinTeamRosterDraft = {
@@ -951,7 +947,7 @@ const EMPTY_JOIN_TEAM_ROSTER_DRAFT: JoinTeamRosterDraft = {
   website: '',
   youtube: '',
   whatnot: '',
-  isVisible: true,
+  isVisible: false,
 }
 
 function cleanOptionalText(value?: string | null) {
@@ -2859,11 +2855,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
       pendingKey: null,
       error: null,
       helperMessage: null,
-    })
-  const [teamCreateDraft, setTeamCreateDraft] =
-    useState<TeamManagementCreateDraft>({
-      displayName: '',
-      contactEmail: '',
     })
   const [publicTeamDraft, setPublicTeamDraft] = useState<JoinTeamRosterDraft>(
     () => getJoinTeamRosterDraft(),
@@ -5227,17 +5218,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  function handleTeamCreateDraftChange(
-    patch: Partial<TeamManagementCreateDraft>,
-  ) {
-    setTeamManagementActionState((current) => ({
-      ...current,
-      error: null,
-      helperMessage: null,
-    }))
-    setTeamCreateDraft((current) => ({ ...current, ...patch }))
-  }
-
   function handlePublicTeamDraftChange(patch: Partial<JoinTeamRosterDraft>) {
     setTeamManagementActionState((current) => ({
       ...current,
@@ -5541,18 +5521,9 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     }
   }
 
-  async function handleCreateTeamOnboardingParticipant() {
-    if (!teamCreateDraft.displayName.trim()) {
-      setTeamManagementActionState({
-        pendingKey: null,
-        error: 'Enter the new rep name first.',
-        helperMessage: null,
-      })
-      return
-    }
-
+  async function handleCreateTeamOnboardingParticipant(member: JoinTeamMember) {
     setTeamManagementActionState({
-      pendingKey: 'create',
+      pendingKey: `onboarding:create:${member.id}`,
       error: null,
       helperMessage: null,
     })
@@ -5562,7 +5533,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         method: 'POST',
         credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(teamCreateDraft),
+        body: JSON.stringify({
+          displayName: member.displayName,
+          joinTeamMemberId: member.id,
+        }),
       })
       const payload = (await response.json().catch(() => null)) as
         | TeamManagementResponsePayload
@@ -5587,11 +5561,10 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           publicTeamRoster: current.publicTeamRoster,
         }
       })
-      setTeamCreateDraft({ displayName: '', contactEmail: '' })
       setTeamManagementActionState({
         pendingKey: null,
         error: null,
-        helperMessage: 'Onboarding link created. Copy it or open your email app to send it.',
+        helperMessage: `${member.displayName}'s private onboarding link is ready in their card.`,
       })
     } catch (error) {
       setTeamManagementActionState({
@@ -5600,6 +5573,62 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           error instanceof Error
             ? error.message
             : 'Unable to create that onboarding link right now.',
+        helperMessage: null,
+      })
+    }
+  }
+
+  async function handleRefreshTeamOnboardingInvite(participantId: string) {
+    setTeamManagementActionState({
+      pendingKey: `onboarding:refresh:${participantId}`,
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const response = await fetch(
+        `/api/nic-nac/team-onboarding/participants/${participantId}`,
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'refresh_access' }),
+        },
+      )
+      const payload = (await response.json().catch(() => null)) as
+        | TeamManagementResponsePayload
+        | null
+
+      if (!response.ok || !payload?.participant || !payload.accessUrl) {
+        throw new Error(
+          payload?.error || 'Unable to create a fresh onboarding link right now.',
+        )
+      }
+
+      setTeamManagementState((current) => ({
+        ...current,
+        participants: (current.participants ?? []).map((participant) =>
+          participant.id === participantId
+            ? {
+                ...participant,
+                ...payload.participant,
+                accessUrl: payload.accessUrl,
+              }
+            : participant,
+        ),
+      }))
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: `${payload.participant.displayName}'s fresh private onboarding link is ready. The previous link no longer works.`,
+      })
+    } catch (error) {
+      setTeamManagementActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to create a fresh onboarding link right now.',
         helperMessage: null,
       })
     }
@@ -5983,14 +6012,13 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
           <TeamManagementCard
             state={teamManagementState}
             actionState={teamManagementActionState}
-            createDraft={teamCreateDraft}
             publicTeamDraft={publicTeamDraft}
             teamName={managedTeamName}
             joinTeamPreviewHref={customerJoinTeamHref}
-            onCreateDraftChange={handleTeamCreateDraftChange}
             onTeamNameChange={(teamName) => handleSiteSettingsDraftChange({ teamName })}
             onSaveTeamName={handleSaveManagedTeamName}
             onCreateParticipant={handleCreateTeamOnboardingParticipant}
+            onRefreshInvite={handleRefreshTeamOnboardingInvite}
             onCopyInvite={handleCopyTeamOnboardingInvite}
             onArchiveParticipant={handleArchiveTeamOnboardingParticipant}
             onPublicTeamDraftChange={handlePublicTeamDraftChange}
@@ -10023,14 +10051,13 @@ export function TeamManagementCard({
     participants: [],
   },
   actionState,
-  createDraft = { displayName: '', contactEmail: '' },
   publicTeamDraft = getJoinTeamRosterDraft(),
   teamName = '',
   joinTeamPreviewHref = '/amethyst/Join.html',
-  onCreateDraftChange,
   onTeamNameChange,
   onSaveTeamName,
   onCreateParticipant,
+  onRefreshInvite,
   onCopyInvite,
   onArchiveParticipant,
   onPublicTeamDraftChange,
@@ -10044,14 +10071,13 @@ export function TeamManagementCard({
 }: {
   state?: TeamManagementState
   actionState?: TeamManagementActionState
-  createDraft?: TeamManagementCreateDraft
   publicTeamDraft?: JoinTeamRosterDraft
   teamName?: string
   joinTeamPreviewHref?: string
-  onCreateDraftChange?: (patch: Partial<TeamManagementCreateDraft>) => void
   onTeamNameChange?: (value: string) => void
   onSaveTeamName?: () => void
-  onCreateParticipant?: () => void
+  onCreateParticipant?: (member: JoinTeamMember) => void
+  onRefreshInvite?: (participantId: string) => void
   onCopyInvite?: (accessUrl?: string) => void
   onArchiveParticipant?: (participantId: string) => void
   onPublicTeamDraftChange?: (patch: Partial<JoinTeamRosterDraft>) => void
@@ -10067,6 +10093,16 @@ export function TeamManagementCard({
   const publicTeamRoster = state.publicTeamRoster ?? []
   const activeParticipants = participants.filter(
     (participant) => participant.status !== 'archived',
+  )
+  const unattachedParticipants = activeParticipants.filter(
+    (participant) =>
+      !publicTeamRoster.some(
+        (member) =>
+          participant.joinTeamMemberId === member.id ||
+          (!participant.joinTeamMemberId &&
+            participant.displayName.trim().toLowerCase() ===
+              member.displayName.trim().toLowerCase()),
+      ),
   )
   const isLocked = state.status === 'locked' || state.access?.enabled === false
   const isLoading = state.status === 'loading'
@@ -10094,19 +10130,11 @@ export function TeamManagementCard({
 
         <div className={styles.teamManagementGrid}>
           <section className={styles.teamManagementPanel}>
-            <div className={styles.walletSettingsTitle}>Create onboarding link</div>
+            <div className={styles.walletSettingsTitle}>Private onboarding actions</div>
             <div className={styles.helperNote}>
-              This workspace will unlock when Team Management is available for
-              your team.
+              When Team Management opens, each saved team member card will
+              include its own private onboarding link and progress controls.
             </div>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Rep name</span>
-              <input
-                className={`${styles.searchInput} ph-no-capture`}
-                placeholder="New rep name"
-                disabled
-              />
-            </label>
             <button type="button" className={styles.actionButton} disabled>
               Coming soon
             </button>
@@ -10185,54 +10213,9 @@ export function TeamManagementCard({
             {actionState?.pendingKey === 'team-name' ? 'Saving team name...' : 'Save team name'}
           </button>
         </section>
-        <section className={styles.teamManagementPanel}>
-          <div className={styles.walletSettingsTitle}>Create onboarding link</div>
-          <div className={styles.helperNote}>
-            Enter the rep name, create the private link, then copy it or open
-            your email app to send it yourself.
-          </div>
-          <div className={styles.teamInputGrid}>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Rep name</span>
-              <input
-                className={`${styles.searchInput} ph-no-capture`}
-                placeholder="New rep name"
-                value={createDraft.displayName}
-                onChange={(event) =>
-                  onCreateDraftChange?.({ displayName: event.target.value })
-                }
-              />
-            </label>
-            <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Optional email</span>
-              <input
-                className={`${styles.searchInput} ph-no-capture`}
-                placeholder="rep@example.com"
-                value={createDraft.contactEmail}
-                onChange={(event) =>
-                  onCreateDraftChange?.({ contactEmail: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <button
-            type="button"
-            className={styles.actionButton}
-            disabled={actionState?.pendingKey === 'create' || isLoading}
-            onClick={onCreateParticipant}
-          >
-            {actionState?.pendingKey === 'create'
-              ? 'Creating link...'
-              : 'Create onboarding link'}
-          </button>
-          <div className={styles.helperNote}>
-            Link sharing stays in the team lead&apos;s hands. Sparkle Suite does
-            not send team invite texts from this panel.
-          </div>
-        </section>
-
         <PublicTeamRosterPanel
           members={publicTeamRoster}
+          participants={activeParticipants}
           draft={publicTeamDraft}
           actionState={actionState}
           joinTeamPreviewHref={joinTeamPreviewHref}
@@ -10244,19 +10227,21 @@ export function TeamManagementCard({
           onToggle={onTogglePublicTeamMember}
           onMove={onMovePublicTeamMember}
           onRemove={onRemovePublicTeamMember}
+          onCreateParticipant={onCreateParticipant}
+          onRefreshInvite={onRefreshInvite}
+          onCopyInvite={onCopyInvite}
+          onArchiveParticipant={onArchiveParticipant}
+          onOpenMessages={onOpenMessages}
         />
 
-        <section className={styles.teamManagementPanel}>
-          <div className={styles.walletSettingsTitle}>New Rep Progress</div>
-          {isLoading ? (
-            <div className={styles.emptyState}>Loading Team Management...</div>
-          ) : activeParticipants.length === 0 ? (
-            <div className={styles.emptyState}>
-              No onboarding links yet. Create one when you&apos;re ready to invite
-              the next rep.
+        {unattachedParticipants.length > 0 ? (
+          <section className={styles.teamManagementPanel}>
+            <div className={styles.walletSettingsTitle}>Earlier onboarding links</div>
+            <div className={styles.helperNote}>
+              These older links are not attached to a saved team card yet. Their
+              progress and messages remain available here.
             </div>
-          ) : (
-            activeParticipants.map((participant) => (
+            {unattachedParticipants.map((participant) => (
               <div key={participant.id} className={styles.teamMessagePreview}>
                 <div className={styles.workspaceSectionHeader}>
                   <div>
@@ -10311,9 +10296,17 @@ export function TeamManagementCard({
                   <button
                     type="button"
                     className={styles.helperButton}
-                    onClick={() => onCopyInvite?.(participant.accessUrl)}
+                    disabled={
+                      actionState?.pendingKey ===
+                      `onboarding:refresh:${participant.id}`
+                    }
+                    onClick={() =>
+                      participant.accessUrl
+                        ? onCopyInvite?.(participant.accessUrl)
+                        : onRefreshInvite?.(participant.id)
+                    }
                   >
-                    Copy link
+                    {participant.accessUrl ? 'Copy link' : 'Create fresh link'}
                   </button>
                   <button
                     type="button"
@@ -10325,16 +10318,34 @@ export function TeamManagementCard({
                   </button>
                 </div>
               </div>
-            ))
-          )}
-        </section>
+            ))}
+          </section>
+        ) : null}
       </div>
     </div>
   )
 }
 
+function findParticipantForRosterMember(
+  member: JoinTeamMember,
+  participants: TeamOnboardingParticipant[],
+) {
+  return (
+    participants.find(
+      (participant) => participant.joinTeamMemberId === member.id,
+    ) ??
+    participants.find(
+      (participant) =>
+        !participant.joinTeamMemberId &&
+        participant.displayName.trim().toLowerCase() ===
+          member.displayName.trim().toLowerCase(),
+    )
+  )
+}
+
 function PublicTeamRosterPanel({
   members,
+  participants,
   draft,
   actionState,
   joinTeamPreviewHref,
@@ -10346,8 +10357,14 @@ function PublicTeamRosterPanel({
   onToggle,
   onMove,
   onRemove,
+  onCreateParticipant,
+  onRefreshInvite,
+  onCopyInvite,
+  onArchiveParticipant,
+  onOpenMessages,
 }: {
   members: JoinTeamMember[]
+  participants: TeamOnboardingParticipant[]
   draft: JoinTeamRosterDraft
   actionState?: TeamManagementActionState
   joinTeamPreviewHref: string
@@ -10359,9 +10376,14 @@ function PublicTeamRosterPanel({
   onToggle?: (member: JoinTeamMember) => void
   onMove?: (memberId: string, direction: 'up' | 'down') => void
   onRemove?: (memberId: string) => void
+  onCreateParticipant?: (member: JoinTeamMember) => void
+  onRefreshInvite?: (participantId: string) => void
+  onCopyInvite?: (accessUrl?: string) => void
+  onArchiveParticipant?: (participantId: string) => void
+  onOpenMessages?: (conversationId: string) => void
 }) {
   const [photoPermissionConfirmed, setPhotoPermissionConfirmed] = useState(false)
-  const saveLabel = draft.id ? 'Save card changes' : 'Save to Join Team page'
+  const saveLabel = draft.id ? 'Save card changes' : 'Save team member card'
   const isPhotoUploading =
     actionState?.pendingKey === 'public-team:photo-upload'
 
@@ -10373,7 +10395,8 @@ function PublicTeamRosterPanel({
         <div>
           <div className={styles.walletSettingsTitle}>Public Team Cards</div>
           <div className={styles.helperNote}>
-            Onboarding links do not publish public cards automatically.
+            Manage each person&apos;s public card and private onboarding in one
+            place. Private links never appear on the customer-facing site.
           </div>
         </div>
         <Link
@@ -10389,6 +10412,11 @@ function PublicTeamRosterPanel({
       <div className={styles.teamRosterWorkspace}>
         <div className={styles.teamRosterEditor}>
           <div className={styles.walletSettingsTitle}>Add team member card</div>
+          <div className={styles.helperNote}>
+            Adding someone new? Save their card first, leave it hidden until
+            you are ready to publish, then create their private onboarding link
+            from the saved card.
+          </div>
           <div className={styles.teamInputGrid}>
             <label className={styles.searchField}>
               <span className={styles.searchLabel}>First name</span>
@@ -10571,7 +10599,22 @@ function PublicTeamRosterPanel({
               Team page.
             </div>
           ) : (
-            members.map((member, index) => (
+            members.map((member, index) => {
+              const participant = findParticipantForRosterMember(
+                member,
+                participants,
+              )
+              const conversationId =
+                participant?.workspaceConversationId ||
+                participant?.workspace_conversation_id
+              const isCreating =
+                actionState?.pendingKey === `onboarding:create:${member.id}`
+              const isRefreshing =
+                participant &&
+                actionState?.pendingKey ===
+                  `onboarding:refresh:${participant.id}`
+
+              return (
               <div key={member.id} className={styles.teamRosterCard} role="listitem">
                 <div className={styles.teamRosterAvatar}>
                   {member.photoUrl ? (
@@ -10600,6 +10643,151 @@ function PublicTeamRosterPanel({
                     {Object.values(member.links).every((value) => !value) ? (
                       <span>No links yet</span>
                     ) : null}
+                  </div>
+                  <div className={styles.teamOnboardingCardPanel}>
+                    <div className={styles.workspaceSectionHeader}>
+                      <div>
+                        <strong>Private onboarding</strong>
+                        <div className={styles.helperNote}>
+                          Workspace only — never shown on the public Join Team page.
+                        </div>
+                      </div>
+                      {participant ? (
+                        <span className={styles.rosterTag}>
+                          {participant.status.replace('_', ' ')}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {!participant ? (
+                      <button
+                        type="button"
+                        className={styles.helperButton}
+                        disabled={Boolean(isCreating) || isLoading}
+                        onClick={() => onCreateParticipant?.(member)}
+                      >
+                        {isCreating ? 'Creating link...' : 'Create onboarding link'}
+                      </button>
+                    ) : (
+                      <>
+                        <div className={styles.teamOnboardingProgressLine}>
+                          <span>
+                            {participant.progress.total > 0
+                              ? `${participant.progress.completed} of ${participant.progress.total} steps completed`
+                              : 'Onboarding has not started yet'}
+                          </span>
+                          {participant.progress.needsHelp > 0 ? (
+                            <strong>Needs help</strong>
+                          ) : null}
+                          {participant.unreadMessageCount > 0 ? (
+                            <strong>
+                              {participant.unreadMessageCount} new message
+                              {participant.unreadMessageCount === 1 ? '' : 's'}
+                            </strong>
+                          ) : null}
+                        </div>
+
+                        {participant.contactEmail ? (
+                          <div className={styles.helperNote}>
+                            Contact: {participant.contactEmail}
+                          </div>
+                        ) : null}
+                        <div className={styles.helperNote}>
+                          {participant.latestMessagePreview
+                            ? `Latest: ${participant.latestMessagePreview}`
+                            : participant.unreadMessageCount > 0
+                              ? 'A new onboarding question is waiting in Messages.'
+                              : 'No onboarding questions yet.'}
+                        </div>
+                        {participant.lastActivityAt ? (
+                          <div className={styles.helperNote}>
+                            Last activity{' '}
+                            {formatCompactDateTime(participant.lastActivityAt)}
+                          </div>
+                        ) : null}
+
+                        {participant.accessUrl ? (
+                          <label className={styles.teamOnboardingLinkField}>
+                            <span>Private onboarding link</span>
+                            <input
+                              className={`${styles.searchInput} ph-no-capture`}
+                              readOnly
+                              value={participant.accessUrl}
+                              aria-label={`${member.displayName} private onboarding link`}
+                            />
+                          </label>
+                        ) : (
+                          <div className={styles.helperNote}>
+                            For security, an older private link cannot be displayed
+                            again. Create a fresh link to replace it.
+                          </div>
+                        )}
+
+                        <div className={styles.workspaceInlineActions}>
+                          {participant.accessUrl ? (
+                            <>
+                              <button
+                                type="button"
+                                className={styles.helperButton}
+                                onClick={() => onCopyInvite?.(participant.accessUrl)}
+                              >
+                                Copy link
+                              </button>
+                              <a
+                                className={styles.helperLink}
+                                href={participant.accessUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Open link
+                              </a>
+                            </>
+                          ) : null}
+                          <button
+                            type="button"
+                            className={styles.helperButton}
+                            disabled={Boolean(isRefreshing) || isLoading}
+                            onClick={() => {
+                              if (
+                                participant.accessUrl &&
+                                !window.confirm(
+                                  `Replace ${member.displayName}'s private onboarding link? The previous link will stop working.`,
+                                )
+                              ) {
+                                return
+                              }
+                              onRefreshInvite?.(participant.id)
+                            }}
+                          >
+                            {isRefreshing
+                              ? 'Creating fresh link...'
+                              : participant.accessUrl
+                                ? 'Replace link'
+                                : 'Create fresh link'}
+                          </button>
+                          {conversationId ? (
+                            <button
+                              type="button"
+                              className={styles.helperButton}
+                              onClick={() => onOpenMessages?.(conversationId)}
+                            >
+                              Open in Messages
+                            </button>
+                          ) : null}
+                          <button
+                            type="button"
+                            className={styles.helperButton}
+                            disabled={
+                              actionState?.pendingKey ===
+                              `archive:${participant.id}`
+                            }
+                            onClick={() => onArchiveParticipant?.(participant.id)}
+                          >
+                            Archive onboarding
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className={styles.workspaceInlineActions}>
                     <button
@@ -10656,7 +10844,8 @@ function PublicTeamRosterPanel({
                   </div>
                 </div>
               </div>
-            ))
+              )
+            })
           )}
         </div>
       </div>

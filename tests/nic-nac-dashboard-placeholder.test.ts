@@ -1075,7 +1075,7 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Coming soon')
     expect(html).toContain('Team Management is coming soon.')
     expect(html).not.toContain('Stripe upgrade')
-    expect(html).toContain('Create onboarding link')
+    expect(html).toContain('Private onboarding actions')
     expect(html).not.toContain('Send text')
     expect(html).not.toContain('SMS')
   })
@@ -1089,6 +1089,7 @@ describe('DashboardPlaceholder', () => {
           participants: [
             {
               id: 'participant-1',
+              joinTeamMemberId: 'member-lindsey',
               displayName: 'Lindsey',
               contactEmail: 'lindsey@example.com',
               status: 'started',
@@ -1102,27 +1103,46 @@ describe('DashboardPlaceholder', () => {
               latestMessagePreview: 'Can you help me choose my first show date?',
             },
           ],
+          publicTeamRoster: [
+            {
+              id: 'member-lindsey',
+              repId: 'rep-britt',
+              displayName: 'Lindsey',
+              businessName: 'Mile High Fizz',
+              state: 'Colorado',
+              city: 'Denver',
+              initials: 'L',
+              photoUrl: '/britt-with-bling/team/lindsey.jpg',
+              photoAlt: 'Lindsey from Mile High Fizz',
+              imageClassName: '',
+              bio: '',
+              links: {},
+              sortOrder: 0,
+              isVisible: true,
+              createdAt: '2026-07-02T12:00:00.000Z',
+              updatedAt: '2026-07-02T12:00:00.000Z',
+            },
+          ],
         },
-        createDraft: { displayName: 'New Rep', contactEmail: '' },
         teamName: 'Moonstone Squad',
-        onCreateDraftChange: () => {},
         onCreateParticipant: () => {},
+        onRefreshInvite: () => {},
         onCopyInvite: () => {},
         onArchiveParticipant: () => {},
         onOpenMessages: () => {},
       }),
     )
 
-    expect(html).toContain('Create onboarding link')
+    expect(html).toContain('Replace link')
     expect(html).toContain('Team I manage')
     expect(html).toContain('Moonstone Squad')
-    expect(html).toContain('Rep name')
-    expect(html).toContain('Optional email')
-    expect(html).toContain('New Rep Progress')
+    expect(html).toContain('Private onboarding')
+    expect(html).toContain('Workspace only')
+    expect(html).toContain('Private onboarding link')
     expect(html).toContain('Copy link')
     expect(html).not.toContain('Email with my email app')
     expect(html).toContain('Lindsey')
-    expect(html).toContain('3 of 8')
+    expect(html).toContain('3 of 8 steps completed')
     expect(html).toContain('Needs help')
     expect(html).toContain('1 new')
     expect(html).toContain('Open in Messages')
@@ -1151,7 +1171,7 @@ describe('DashboardPlaceholder', () => {
     expect(css).not.toContain('grid-row: span 2;')
   })
 
-  it('renders public team card management separately from onboarding links', () => {
+  it('renders private onboarding controls inside each public team card workspace record', () => {
     const html = renderToStaticMarkup(
       createElement(TeamManagementCard, {
         state: {
@@ -1205,7 +1225,7 @@ describe('DashboardPlaceholder', () => {
 
     expect(html).toContain('Public Team Cards')
     expect(html).toContain('Add team member card')
-    expect(html).toContain('Save to Join Team page')
+    expect(html).toContain('Save team member card')
     expect(html).toContain('First name')
     expect(html).toContain('Show name')
     expect(html).toContain('Profile photo process')
@@ -1216,9 +1236,12 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('accept="image/jpeg,image/png,image/webp"')
     expect(html).toContain('Mile High Fizz')
     expect(html).toContain('Lindsey')
+    expect(html).toContain('Private onboarding')
+    expect(html).toContain('Create onboarding link')
+    expect(html).toContain('Private links never appear on the customer-facing site.')
     expect(html).toContain('Visible on Join Team page')
     expect(html).toContain('Preview Join Team page')
-    expect(html).toContain('Onboarding links do not publish public cards automatically.')
+    expect(html).not.toContain('Optional email')
     expect(html).not.toContain('Send text')
 
     const source = readFileSync(

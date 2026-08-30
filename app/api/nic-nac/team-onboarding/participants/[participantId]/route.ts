@@ -4,11 +4,16 @@ import { ServiceError } from '@/lib/services/errors'
 import {
   archiveTeamOnboardingParticipant,
   getTeamOnboardingAccess,
+  refreshTeamOnboardingParticipantAccess,
 } from '@/lib/services/team-onboarding'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+const DEFAULT_ONBOARDING_BASE_URL =
+  process.env.TEAM_ONBOARDING_BASE_URL ??
+  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
 
 function serviceErrorResponse(error: ServiceError) {
   return NextResponse.json(
@@ -38,18 +43,26 @@ export async function PATCH(
       )
     }
 
-    if (body?.action !== 'archive') {
+    if (body?.action !== 'archive' && body?.action !== 'refresh_access') {
       return NextResponse.json(
         { code: 'INVALID_INPUT', error: 'Choose a valid participant action.' },
         { status: 400 },
       )
     }
 
-    const result = await archiveTeamOnboardingParticipant(
-      createAdminClient(),
-      repId,
-      participantId,
-    )
+    const result =
+      body.action === 'refresh_access'
+        ? await refreshTeamOnboardingParticipantAccess(
+            createAdminClient(),
+            repId,
+            participantId,
+            { baseUrl: DEFAULT_ONBOARDING_BASE_URL },
+          )
+        : await archiveTeamOnboardingParticipant(
+            createAdminClient(),
+            repId,
+            participantId,
+          )
 
     return NextResponse.json({ ok: true, ...result })
   } catch (error) {

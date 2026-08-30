@@ -60,6 +60,7 @@ export async function POST(request: Request) {
     const result = await createTeamOnboardingParticipant(createAdminClient(), repId, {
       displayName: body?.displayName,
       contactEmail: body?.contactEmail,
+      joinTeamMemberId: body?.joinTeamMemberId,
       baseUrl:
         typeof body?.baseUrl === 'string' && body.baseUrl.trim()
           ? body.baseUrl.trim()

@@ -35,6 +35,7 @@ export interface TeamOnboardingAccess {
 export interface TeamOnboardingParticipantSummary {
   id: string
   ownerRepId: string
+  joinTeamMemberId: string | null
   displayName: string
   contactEmail: string | null
   status: TeamOnboardingParticipantStatus
@@ -88,6 +89,7 @@ export interface TeamOnboardingPublicAccess {
 type ParticipantRow = {
   id: string
   owner_rep_id: string
+  join_team_member_id: string | null
   display_name: string
   contact_email: string | null
   status: TeamOnboardingParticipantStatus
@@ -123,7 +125,7 @@ type MessageRow = {
 }
 
 const PARTICIPANT_SELECT =
-  'id, owner_rep_id, display_name, contact_email, status, access_slug, created_at, updated_at, last_activity_at, archived_at, workspace_conversation_id'
+  'id, owner_rep_id, join_team_member_id, display_name, contact_email, status, access_slug, created_at, updated_at, last_activity_at, archived_at, workspace_conversation_id'
 const PRIVATE_PARTICIPANT_SELECT = `${PARTICIPANT_SELECT}, access_token_hash`
 const PROGRESS_SELECT = 'participant_id, step_id, status, completed_at, updated_at'
 const MESSAGE_SELECT = 'id, participant_id, sender_type, body, read_at, created_at'
@@ -153,6 +155,7 @@ function mapParticipantRow(row: ParticipantRow): TeamOnboardingParticipantSummar
   return {
     id: row.id,
     ownerRepId: row.owner_rep_id,
+    joinTeamMemberId: row.join_team_member_id ?? null,
     displayName: row.display_name,
     contactEmail: row.contact_email,
     status: row.status,
@@ -260,11 +263,40 @@ export async function createTeamOnboardingParticipant(
   input: {
     displayName?: unknown
     contactEmail?: unknown
+    joinTeamMemberId?: unknown
     baseUrl?: string
     tokenFactory?: () => string
   },
 ) {
-  const displayName = normalizeText(input.displayName)
+  const joinTeamMemberId = normalizeText(input.joinTeamMemberId) || null
+  let displayName = normalizeText(input.displayName)
+
+  if (joinTeamMemberId) {
+    const { data: member, error: memberError } = await supabase
+      .from('join_team_members')
+      .select('id, display_name')
+      .eq('id', joinTeamMemberId)
+      .eq('rep_id', ownerRepId)
+      .maybeSingle()
+
+    if (memberError) {
+      throw toServiceError(
+        'TEAM_ONBOARDING_ROSTER_MEMBER_LOOKUP_FAILED',
+        'failed to verify onboarding roster member ownership',
+        "I couldn't verify that team member card right now.",
+        memberError,
+      )
+    }
+    if (!member) {
+      throw errors.INVALID_INPUT(
+        'join team member does not belong to rep',
+        'Save that team member card before creating an onboarding link.',
+      )
+    }
+
+    displayName = normalizeText((member as { display_name?: unknown }).display_name)
+  }
+
   if (!displayName) {
     throw errors.INVALID_INPUT('displayName required', 'Enter the new rep name first.')
   }
@@ -275,6 +307,7 @@ export async function createTeamOnboardingParticipant(
     .from('team_onboarding_participants')
     .insert({
       owner_rep_id: ownerRepId,
+      join_team_member_id: joinTeamMemberId,
       display_name: displayName,
       contact_email: normalizeEmail(input.contactEmail),
       status: 'invited',
@@ -296,6 +329,49 @@ export async function createTeamOnboardingParticipant(
   if ((data as ParticipantRow).workspace_conversation_id !== undefined) {
     const conversationId = await ensureTeamOnboardingConversation(supabase, (data as ParticipantRow).id)
     ;(data as ParticipantRow).workspace_conversation_id = conversationId
+  }
+
+  return {
+    participant: mapParticipantRow(data as ParticipantRow),
+    accessUrl: buildAccessUrl(input.baseUrl, token),
+  }
+}
+
+export async function refreshTeamOnboardingParticipantAccess(
+  supabase: SupabaseClient,
+  ownerRepId: string,
+  participantId: string,
+  input: {
+    baseUrl?: string
+    tokenFactory?: () => string
+  } = {},
+) {
+  const normalizedId = normalizeText(participantId)
+  if (!normalizedId) {
+    throw errors.INVALID_INPUT('participant id required', 'Which rep is this for?')
+  }
+
+  const token = input.tokenFactory?.() ?? createTeamOnboardingToken()
+  const now = new Date().toISOString()
+  const { data, error } = await supabase
+    .from('team_onboarding_participants')
+    .update({
+      access_token_hash: hashTeamOnboardingToken(token),
+      updated_at: now,
+    })
+    .eq('owner_rep_id', ownerRepId)
+    .eq('id', normalizedId)
+    .neq('status', 'archived')
+    .select(PRIVATE_PARTICIPANT_SELECT)
+    .single()
+
+  if (error || !data) {
+    throw toServiceError(
+      'TEAM_ONBOARDING_ACCESS_REFRESH_FAILED',
+      'failed to refresh team onboarding participant access',
+      "I couldn't create a fresh onboarding link right now.",
+      error ?? new Error('participant access refresh returned no row'),
+    )
   }
 
   return {

@@ -5,6 +5,7 @@ const getPaidNicNacContextMock = vi.fn()
 const getTeamOnboardingAccessMock = vi.fn()
 const listTeamOnboardingParticipantsMock = vi.fn()
 const createTeamOnboardingParticipantMock = vi.fn()
+const refreshTeamOnboardingParticipantAccessMock = vi.fn()
 const archiveTeamOnboardingParticipantMock = vi.fn()
 const sendTeamOnboardingMessageMock = vi.fn()
 const adminClient = { marker: 'admin-supabase' }
@@ -26,6 +27,8 @@ vi.mock('@/lib/services/team-onboarding', () => ({
     listTeamOnboardingParticipantsMock(...args),
   createTeamOnboardingParticipant: (...args: unknown[]) =>
     createTeamOnboardingParticipantMock(...args),
+  refreshTeamOnboardingParticipantAccess: (...args: unknown[]) =>
+    refreshTeamOnboardingParticipantAccessMock(...args),
   archiveTeamOnboardingParticipant: (...args: unknown[]) =>
     archiveTeamOnboardingParticipantMock(...args),
   sendTeamOnboardingMessage: (...args: unknown[]) =>
@@ -46,6 +49,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
     getTeamOnboardingAccessMock.mockReset()
     listTeamOnboardingParticipantsMock.mockReset()
     createTeamOnboardingParticipantMock.mockReset()
+    refreshTeamOnboardingParticipantAccessMock.mockReset()
     archiveTeamOnboardingParticipantMock.mockReset()
     sendTeamOnboardingMessageMock.mockReset()
   })
@@ -138,6 +142,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
         body: JSON.stringify({
           displayName: 'Lindsey',
           contactEmail: 'lindsey@example.com',
+          joinTeamMemberId: 'member-lindsey',
           delivery: 'copy_link',
         }),
       }),
@@ -149,6 +154,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
       expect.objectContaining({
         displayName: 'Lindsey',
         contactEmail: 'lindsey@example.com',
+        joinTeamMemberId: 'member-lindsey',
         baseUrl: 'https://brittwithbling-start-strong.louis526569.chatgpt.site',
       }),
     )
@@ -167,6 +173,52 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
         'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=visible-token',
       delivery: 'copy_link',
     })
+  })
+
+  it('creates a fresh card-linked onboarding URL without replacing the participant', async () => {
+    getPaidNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-britt',
+      supabase: { marker: 'supabase' },
+    })
+    getTeamOnboardingAccessMock.mockResolvedValueOnce({ enabled: true })
+    refreshTeamOnboardingParticipantAccessMock.mockResolvedValueOnce({
+      participant: {
+        id: 'participant-1',
+        joinTeamMemberId: 'member-lindsey',
+        displayName: 'Lindsey',
+        status: 'started',
+      },
+      accessUrl:
+        'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=fresh-token',
+    })
+
+    const response = await PATCH_PARTICIPANT(
+      new Request(
+        'http://localhost/api/nic-nac/team-onboarding/participants/participant-1',
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ action: 'refresh_access' }),
+        },
+      ),
+      { params: Promise.resolve({ participantId: 'participant-1' }) },
+    )
+
+    expect(refreshTeamOnboardingParticipantAccessMock).toHaveBeenCalledWith(
+      adminClient,
+      'rep-britt',
+      'participant-1',
+      expect.objectContaining({
+        baseUrl: 'https://brittwithbling-start-strong.louis526569.chatgpt.site',
+      }),
+    )
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        ok: true,
+        accessUrl:
+          'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=fresh-token',
+      }),
+    )
   })
 
   it('archives participants and sends team-lead replies through participant routes', async () => {

@@ -4659,6 +4659,7 @@
 }
 
 .teamManagementGrid > .teamManagementPanel:first-child {
+  grid-column: 1 / -1;
   justify-content: space-between;
 }
 
@@ -4898,6 +4899,43 @@
   color: var(--nic-nac-text-secondary);
   font-size: 11px;
   font-weight: 800;
+}
+
+.teamOnboardingCardPanel {
+  display: grid;
+  gap: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(118, 79, 191, 0.16);
+  background: rgba(255, 255, 255, 0.7);
+  padding: 12px;
+}
+
+.teamOnboardingProgressLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  color: var(--nic-nac-text-secondary);
+  font-size: 12px;
+}
+
+.teamOnboardingProgressLine strong {
+  color: var(--nic-nac-accent-strong);
+}
+
+.teamOnboardingLinkField {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: var(--nic-nac-text-secondary);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.teamOnboardingLinkField input {
+  width: 100%;
+  min-width: 0;
+  font-size: 12px;
 }
 
 .workspaceInlineActions {
@@ -6353,6 +6391,7 @@
 .main[data-workspace-skin='black_diamond'] .teamManagementPanel,
 .main[data-workspace-skin='black_diamond'] .teamRosterEditor,
 .main[data-workspace-skin='black_diamond'] .teamRosterCard,
+.main[data-workspace-skin='black_diamond'] .teamOnboardingCardPanel,
 .main[data-workspace-skin='black_diamond'] .teamMessagePreview,
 .main[data-workspace-skin='black_diamond'] .wisprFlowUseCard,
 .main[data-workspace-skin='black_diamond'] .wisprFlowInviteUrl,
