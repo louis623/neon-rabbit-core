@@ -118,6 +118,7 @@ function buildReviewSiteSettings(
     businessName: getStringAnswer(accountBasics, 'businessName', 'Sparkle Suite Review Studio'),
     email: getStringAnswer(accountBasics, 'email'),
     phone: getStringAnswer(accountBasics, 'phone'),
+    shopLink: getStringAnswer(accountBasics, 'bombPartyRepStoreLink'),
     bannerText: getStringAnswer(welcomeCopy, 'bannerText'),
     bannerVisible: Boolean(getStringAnswer(welcomeCopy, 'bannerText')),
     tickerText: getStringAnswer(welcomeCopy, 'tickerText'),

@@ -2706,6 +2706,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Profile basics')
     expect(html).toContain('Display name')
     expect(html).toContain('Show name')
+    expect(html).toContain('Bomb Party rep store link')
+    expect(html).toContain('This powers the Shop buttons across your customer-facing site.')
     expect(html).not.toContain('Business name')
     expect(html).not.toContain('Phone</span>')
     expect(html).toContain('Announcement ticker and Join Team page')

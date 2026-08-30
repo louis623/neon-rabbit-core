@@ -136,6 +136,7 @@ describe('site settings service', () => {
         business_name: 'Sparkle by Sasha',
         email: 'louis@example.com',
         phone: '+19045551234',
+        shop_link: null,
         social_handles: {
           instagram: '@sparklebysasha',
         },
@@ -158,6 +159,7 @@ describe('site settings service', () => {
       businessName: 'Sparkle by Sasha',
       email: 'louis@example.com',
       phone: '+19045551234',
+      shopLink: '',
       bannerText: '',
       bannerVisible: false,
       tickerText: '',
@@ -220,6 +222,7 @@ describe('site settings service', () => {
         business_name: 'Sparkle by Sasha',
         email: 'hello@sparklebysasha.com',
         phone: '+19045551234',
+        shop_link: 'https://bombparty.com/shop/sparkle-by-sasha',
         social_handles: {
           instagram: '@sparklebysasha',
           facebook: 'sparklebysasha',
@@ -241,6 +244,7 @@ describe('site settings service', () => {
       businessName: 'Sparkle by Sasha',
       email: 'hello@sparklebysasha.com',
       phone: '+19045551234',
+      shopLink: 'https://bombparty.com/shop/sparkle-by-sasha',
       bannerText: 'Going live tonight',
       bannerVisible: true,
       tickerText: 'Fresh reveals every Tuesday',
@@ -303,6 +307,7 @@ describe('site settings service', () => {
       business_name: 'Sparkle by Sasha',
       email: 'hello@sparklebysasha.com',
       phone: '+19045551234',
+      shop_link: 'https://bombparty.com/shop/sparkle-by-sasha',
       social_handles: {
         instagram: '@sparklebysasha',
         facebook: 'sparklebysasha',
@@ -316,6 +321,19 @@ describe('site settings service', () => {
     expect(result.heroAnimationType).toBe('soft_glow')
     expect(result.customerSiteTemplate).toBe('amethyst')
     expect(result.appearancePreset).toBe('rose_gold')
+    expect(result.shopLink).toBe('https://bombparty.com/shop/sparkle-by-sasha')
+  })
+
+  it('rejects unsafe Bomb Party store links before writing the rep profile', async () => {
+    const supabase = { from: vi.fn() }
+
+    await expect(
+      updateSiteSettingsDashboard(supabase as never, 'rep-1', {
+        shopLink: 'javascript:alert(1)',
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT' })
+
+    expect(supabase.from).not.toHaveBeenCalled()
   })
 
   it('lets Nic-Nac save only the customer-site appearance preset', async () => {

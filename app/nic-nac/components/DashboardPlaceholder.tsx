@@ -8349,6 +8349,20 @@ export function SiteSettingsCard({
             onChange={(event) => onDraftChange?.({ email: event.target.value })}
           />
         </label>
+        <label className={styles.searchField}>
+          <span className={styles.searchLabel}>Bomb Party rep store link</span>
+          <input
+            className={styles.searchInput}
+            type="url"
+            inputMode="url"
+            value={draft.shopLink ?? ''}
+            onChange={(event) => onDraftChange?.({ shopLink: event.target.value })}
+            placeholder="https://bombparty.com/..."
+          />
+          <span className={styles.helperNote}>
+            This powers the Shop buttons across your customer-facing site. Use the full store URL.
+          </span>
+        </label>
       </div>
 
       <div className={styles.siteSettingsSection}>

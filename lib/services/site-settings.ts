@@ -38,13 +38,14 @@ type RepProfileRow = {
   business_name: string
   email: string
   phone: string | null
+  shop_link: string | null
   social_handles: Record<string, string> | null
 }
 
 const SITE_SETTINGS_SELECT =
   'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_headline, hero_image_url, hero_animation_type, team_name, member_team_name, join_team_access_enabled, show_join_page, customer_site_template, appearance_preset, about_heading, about_subheading, about_narrative, homepage_media_slots'
 const REP_PROFILE_SELECT =
-  'display_name, business_name, email, phone, social_handles'
+  'display_name, business_name, email, phone, shop_link, social_handles'
 
 function normalizeText(value: string | null | undefined) {
   return typeof value === 'string' ? value.trim() : ''
@@ -74,6 +75,31 @@ function normalizeHeroAnimationType(
   }
   if (value === 'pan') return 'soft_glow'
   return 'sparkle_rise'
+}
+
+function normalizeShopLink(value: unknown) {
+  if (value === undefined) return undefined
+  if (typeof value !== 'string') {
+    throw errors.INVALID_INPUT(
+      'shopLink must be a string',
+      'Bomb Party rep store link needs a complete https:// or http:// URL.',
+    )
+  }
+  const trimmed = value.trim()
+  if (!trimmed) return null
+
+  try {
+    const url = new URL(trimmed)
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+      throw new Error('unsupported protocol')
+    }
+    return url.toString()
+  } catch {
+    throw errors.INVALID_INPUT(
+      'shopLink must be a complete http(s) URL',
+      'Bomb Party rep store link needs a complete https:// or http:// URL.',
+    )
+  }
 }
 
 function normalizeSocialHandles(
@@ -257,6 +283,7 @@ function buildDashboardResult(args: {
     businessName: args.repProfile.business_name,
     email: args.repProfile.email,
     phone: normalizePhone(args.repProfile.phone),
+    shopLink: normalizeText(args.repProfile.shop_link),
     bannerText: normalizeText(args.siteSettings?.banner_text),
     bannerVisible: args.siteSettings?.banner_visible ?? false,
     tickerText: normalizeText(args.siteSettings?.ticker_text),
@@ -434,6 +461,9 @@ export async function updateSiteSettingsDashboard(
   }
   if (input.phone !== undefined) {
     repPatch.phone = normalizeNullableText(input.phone)
+  }
+  if (input.shopLink !== undefined) {
+    repPatch.shop_link = normalizeShopLink(input.shopLink)
   }
   if (input.socialHandles !== undefined) {
     repPatch.social_handles = normalizeSocialHandles(input.socialHandles)

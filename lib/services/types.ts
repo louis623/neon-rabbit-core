@@ -580,6 +580,8 @@ export interface SiteSettingsDashboardResult {
   businessName: string
   email: string
   phone: string
+  /** The rep-owned store destination used by public customer-site Shop actions. */
+  shopLink?: string
   bannerText: string
   bannerVisible: boolean
   tickerText: string
@@ -609,6 +611,7 @@ export interface UpdateSiteSettingsDashboardInput {
   businessName?: string
   email?: string
   phone?: string
+  shopLink?: string
   bannerText?: string
   bannerVisible?: boolean
   tickerText?: string
