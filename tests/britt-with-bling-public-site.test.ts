@@ -435,7 +435,7 @@ describe('Britt With Bling hybrid public site contract', () => {
   })
 
   it('imports all Ready.ai roster cards as seed material for the BWB tenant', () => {
-    expect(BRITT_WITH_BLING_TEAM_MEMBERS).toHaveLength(23)
+    expect(BRITT_WITH_BLING_TEAM_MEMBERS).toHaveLength(27)
     expect(BRITT_WITH_BLING_TEAM_MEMBERS.map((member) => member.business)).toEqual(
       expect.arrayContaining([
         'Britt with Bling',
@@ -444,6 +444,10 @@ describe('Britt With Bling hybrid public site contract', () => {
         'Bdubbfizz',
         'Gypsy Jewels Boutique',
         'jennfizz4keeps',
+        'kyndalhibbeler',
+        'blingwithkrissig',
+        'Bling with Sam',
+        'Angies Fizz & Bling',
       ]),
     )
     expect(BRITT_WITH_BLING_TEAM_MEMBERS[0].socialLinks).toMatchObject({

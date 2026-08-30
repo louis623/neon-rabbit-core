@@ -268,6 +268,46 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
         'https://www.tiktok.com/@jennfizz4keeps?is_from_webapp=1&sender_device=pc',
     },
   },
+  {
+    name: 'Kyndal',
+    business: 'kyndalhibbeler',
+    state: 'Texas',
+    imageUrl: '/britt-with-bling/team-24-kyndal.webp',
+    socialLinks: {
+      tiktok:
+        'https://www.tiktok.com/@kyndalhibbeler?is_from_webapp=1&sender_device=pc',
+    },
+  },
+  {
+    name: 'Kristin',
+    business: 'blingwithkrissig',
+    state: 'Florida',
+    imageUrl: '/britt-with-bling/team-25-kristin.webp',
+    socialLinks: {
+      tiktok:
+        'https://www.tiktok.com/@blingwithkrissig?is_from_webapp=1&sender_device=pc',
+    },
+  },
+  {
+    name: 'Samantha',
+    business: 'Bling with Sam',
+    state: 'Indiana',
+    imageUrl: '/britt-with-bling/team-26-samantha.webp',
+    socialLinks: {
+      tiktok:
+        'https://www.tiktok.com/@samantha.waldrep?is_from_webapp=1&sender_device=pc',
+    },
+  },
+  {
+    name: 'Angela',
+    business: 'Angies Fizz & Bling',
+    state: 'Kentucky',
+    imageUrl: '/britt-with-bling/team-27-angela.png',
+    socialLinks: {
+      tiktok:
+        'https://www.tiktok.com/@angiesfizzbling?is_from_webapp=1&sender_device=pc',
+    },
+  },
 ]
 
 function brittWithBlingTeamMemberKey(member: Pick<AmethystJoinTeamMember, 'name' | 'business'>) {
