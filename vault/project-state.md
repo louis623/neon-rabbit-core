@@ -1,5 +1,26 @@
 # Project State
 
+## August 30, 2026 Release - Tight dark ticker label alignment
+
+- Corrected the oversize dark-skin ticker label columns: Black Diamond and
+  Moonstone now use a 120px fixed label width with a small trailing inset after
+  the label text. Both their Announcements and Dance Floor ticker tracks begin
+  at the same 120px edge, eliminating the unused label space while retaining
+  the solid hard stop and theme-specific colors.
+- Released application commit `c87396d5bed1f22b47987e4239ffeff7ddd2810d` as
+  Vercel production deployment `dpl_AKAFEVeKjn83rhV7pKFmhtTEMUEm`. Both
+  `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to the Ready
+  deployment; no DNS or alias change was made.
+- Focused homepage coverage passed (43 tests) and the local production build
+  completed. Live public smoke on `/brittwithbling` measured both label edges
+  and the announcement track offset at exactly 120px, with solid backgrounds
+  and no fade; visual confirmation showed the reclaimed ticker-message space.
+  No authenticated session or production data was used or changed.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Release - Dark ticker hard-edge alignment
 
 - Removed the theme-label fades from Black Diamond and Moonstone tickers. Both
