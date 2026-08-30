@@ -1,5 +1,27 @@
 # Project State
 
+## August 30, 2026 Release - Dark ticker label refinement
+
+- Refined the dark-skin announcement treatment: Black Diamond's left
+  **Announcements** label is now gold with dark ink and Moonstone's is violet
+  with white ink. Their announcement tracks remain light gray, while Dance
+  Floor rows remain dark.
+- Audited Brittany's Ready-published source homepage for reusable TikTok media.
+  It has exactly two embeds (Featured Reveal and What is a Bomb Party?), both
+  already represented on her Sparkle Suite homepage. No duplicate or invented
+  media was added to the empty generic video cards.
+- Released application commit `c0599fe647a2b251809b88b16043ce84ad24f054` as
+  Vercel production deployment `dpl_6h82kETr2oTe2pQuZoVdE44i9UFA`. Both
+  `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to the Ready
+  deployment; no DNS or alias change was made.
+- Focused homepage coverage passed (43 tests) and the local production build
+  completed. Live smoke on `/brittwithbling` confirmed the final paired ticker
+  treatment. No authenticated session or production data was used or changed.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Release - Dark customer-site homepage contrast
 
 - Adjusted Britt with Bling's homepage hero title to fit cleanly within its

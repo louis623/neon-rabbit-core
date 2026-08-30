@@ -4,6 +4,25 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Dark ticker label refinement release
+
+- Replaced the plain light announcement label on dark skins with a theme-color
+  label: gold/dark ink for Black Diamond and violet/white for Moonstone. The
+  light announcement track and dark Dance Floor ticker remain intentionally
+  distinct.
+- Checked `brittwithbling.com` for source TikTok embeds before making any
+  media change. The only two Ready embeds are already live in the matching
+  Featured Reveal and What is a Bomb Party sections on Sparkle Suite, so no
+  duplicate media was inserted into the generic placeholder cards.
+- Pushed application commit `c0599fe647a2b251809b88b16043ce84ad24f054` and
+  manually released `dpl_6h82kETr2oTe2pQuZoVdE44i9UFA`. Both Suite domains
+  alias the Ready deployment without a DNS change. Live public browser smoke
+  confirmed the gold label, light announcement track, and dark Dance Floor row.
+- Focused homepage coverage passed 43 tests and the local production build
+  completed. No authenticated user session or customer data was used.
+
+---
+
 ## August 30, 2026 - Dark customer-site homepage contrast release
 
 - Improved the Britt with Bling public homepage title's fit by reducing its
