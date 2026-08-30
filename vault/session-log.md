@@ -4,6 +4,24 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Workspace Account support-history placement release
+
+- Moved **Support access history** from the top of the Account stack to its
+  bottom without altering its fetch contract, audit entries, visibility, or
+  support-mode restrictions. Added a source-order regression contract.
+- Focused `control-center-operator-support-access-ui` coverage passed (14
+  tests), followed by local and Vercel production builds. The branch guard
+  passed before test, build, and push.
+- Pushed `4183c8b9` and manually deployed Vercel production
+  `dpl_FG4CmNA9z2RrTf5XQx1vNg9hDrFz`; alias inspection confirms both Suite
+  domains. Read-only live checks passed for `/` and `/nic-nac`.
+- Did not enter a reviewer session because the safe reviewer sign-in path was
+  not opened. The existing signed-in Lindsey customer Workspace was not used
+  for verification. No customer or production data changed beyond deploying
+  the layout code. Open Brain capture succeeded.
+
+---
+
 ## August 30, 2026 - Consolidated session memory closeout
 
 - Completed Kim's pre-onboarding readiness repair, Workspace parity audit,

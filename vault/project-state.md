@@ -1,5 +1,26 @@
 # Project State
 
+## August 30, 2026 Session - Workspace Account support-history placement
+
+- Moved the read-only **Support access history** panel to the bottom of the
+  Workspace Account page, after billing, security, referral, and any available
+  Wallet/Analytics cards. The panel's data source, content, access policy, and
+  support restrictions were not changed.
+- Pushed application commit `4183c8b9` and manually released it as Vercel
+  production deployment `dpl_FG4CmNA9z2RrTf5XQx1vNg9hDrFz`. Both Suite domains
+  are aliases of this Ready deployment; no DNS record changed.
+- Focused UI coverage passed 14 tests and the local/remote production builds
+  passed. Live HTTP checks passed for both Suite domains and `/nic-nac`.
+  Authenticated visual reviewer smoke was not run because no safe reviewer
+  session was entered; the existing Lindsey customer session was not used.
+- No support session, account, billing, password, Live Queue, customer-site,
+  or communication action was performed. `artifacts/` and `test-results/`
+  remain untracked and preserved.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Session - Consolidated Kim onboarding, Workspace, and public-site closeout
 
 - Kim remains a durable `customer` in Customer Database. Her existing account
