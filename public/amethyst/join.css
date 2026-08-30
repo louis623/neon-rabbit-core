@@ -78,7 +78,8 @@ body.joinpage .hp-saturate {
   gap: 10px;
   justify-content: center;
 }
-.jp-hero-eyebrow::before {
+.jp-hero-eyebrow::before,
+.jp-hero-eyebrow::after {
   content: "";
   width: 24px;
   height: 1px;

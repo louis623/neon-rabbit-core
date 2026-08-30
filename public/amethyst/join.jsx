@@ -769,6 +769,11 @@ function SpotCard({ ctaUrl, ctaText }) {
 }
 
 function TeamSection({ rep, members, ctaUrl, ctaText }) {
+  const leaderAlreadyAppearsInRoster = members.some((member) =>
+    member.name?.trim().toLowerCase() === rep.name?.trim().toLowerCase() &&
+    member.business?.trim().toLowerCase() === rep.business?.trim().toLowerCase(),
+  );
+
   return (
     <section className="jp-section" id="team">
       <div className="jp-container">
@@ -778,7 +783,7 @@ function TeamSection({ rep, members, ctaUrl, ctaText }) {
           <p className="jp-section-sub">A growing crew of independent reps doing this their way - full-time, side-hustle, and everywhere in between.</p>
         </div>
         <div className="jp-team-grid">
-          <TeamCard member={rep} isLeader />
+          {!leaderAlreadyAppearsInRoster && <TeamCard member={rep} isLeader />}
           {members.map((member, index) => <TeamCard key={`${member.name}-${index}`} member={member} />)}
           <SpotCard ctaUrl={ctaUrl} ctaText={ctaText} />
         </div>

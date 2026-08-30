@@ -132,6 +132,21 @@ describe('Amethyst join page template data wiring', () => {
     expect(jsx).toContain('"/amethyst/Homepage.html"')
   })
 
+  it('does not render a duplicate leader card when the editable roster already includes the rep', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.css'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('const leaderAlreadyAppearsInRoster')
+    expect(jsx).toContain('{!leaderAlreadyAppearsInRoster && <TeamCard member={rep} isLeader />}')
+    expect(css).toContain('.jp-hero-eyebrow::after')
+  })
+
   it('renders the sticky live reveal queue strip below the ticker on the join page', () => {
     const jsx = readFileSync(
       resolve(process.cwd(), 'public/amethyst/join.jsx'),
