@@ -592,6 +592,8 @@ export interface SiteSettingsDashboardResult {
   teamName: string
   /** The upline or other team this rep belongs to, if any. */
   memberTeamName?: string
+  /** Operator-provisioned early access for the public Join Team feature. */
+  joinTeamAccessEnabled?: boolean
   showJoinPage: boolean
   customerSiteTemplate: CustomerSiteTemplate
   appearancePreset: SiteAppearancePreset

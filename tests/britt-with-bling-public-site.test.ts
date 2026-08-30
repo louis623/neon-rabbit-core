@@ -33,6 +33,7 @@ const brittWithBlingSettings: SiteSettingsDashboardResult = {
   heroImageUrl: '',
   heroAnimationType: 'sparkle_rise',
   teamName: 'The Virtuous Fizzers',
+  joinTeamAccessEnabled: true,
   showJoinPage: true,
   customerSiteTemplate: 'amethyst',
   appearancePreset: 'black_diamond',

@@ -33,6 +33,7 @@ const demoSettings: SiteSettingsDashboardResult = {
   heroAnimationType: 'sparkle_rise',
   teamName: 'Sparkle Demo Circle',
   memberTeamName: 'North Star Team',
+  joinTeamAccessEnabled: true,
   showJoinPage: true,
   customerSiteTemplate: 'amethyst',
   appearancePreset: 'sparkle_suite_morganite',
@@ -289,6 +290,22 @@ describe('Amethyst preview template data', () => {
     const settings: SiteSettingsDashboardResult = {
       ...demoSettings,
       showJoinPage: false,
+    }
+
+    const homepage = mapPreviewSettingsToHomepageTemplateData(settings, repExtras)
+    const trade = mapPreviewSettingsToTradeTemplateData(settings, repExtras)
+
+    expect(homepage.showJoinPage).toBe(false)
+    expect(homepage.joinTeamUrl).toBe('')
+    expect(homepage.footerLinks.joinTeam).toBeUndefined()
+    expect(trade.footerLinks.joinTeam).toBeUndefined()
+  })
+
+  it('keeps Join Team hidden until an operator grants early access', () => {
+    const settings: SiteSettingsDashboardResult = {
+      ...demoSettings,
+      joinTeamAccessEnabled: false,
+      showJoinPage: true,
     }
 
     const homepage = mapPreviewSettingsToHomepageTemplateData(settings, repExtras)

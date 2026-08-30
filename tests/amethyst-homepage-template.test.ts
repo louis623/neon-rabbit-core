@@ -1048,7 +1048,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('hp-signup-status')
     expect(jsx).toContain('role={submitState.status === "error" ? "alert" : "status"}')
     expect(jsx).toContain('Saving...')
-    expect(jsx).toContain('Proud member of team {CONTENT.memberTeamName}')
+    expect(jsx).toContain('Proud member of the {CONTENT.memberTeamName} team')
   })
 
   it('keeps signup submission state scoped to the signup form so the homepage can fresh-load', () => {

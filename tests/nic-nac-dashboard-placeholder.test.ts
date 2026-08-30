@@ -1061,7 +1061,7 @@ describe('DashboardPlaceholder', () => {
     expect(recipesEffectSource).not.toContain('}, [activeSection, recipesState.status])')
   })
 
-  it('renders the Team Management add-on prompt without SMS invite tooling', () => {
+  it('renders Team Management as coming soon without SMS invite tooling', () => {
     const html = renderToStaticMarkup(
       createElement(TeamManagementCard, {
         state: {
@@ -1072,9 +1072,9 @@ describe('DashboardPlaceholder', () => {
     )
 
     expect(html).toContain('Team Management')
-    expect(html).toContain('Paid add-on')
-    expect(html).toContain('Team Management is a paid upgrade.')
-    expect(html).toContain('Stripe upgrade can unlock this workspace later.')
+    expect(html).toContain('Coming soon')
+    expect(html).toContain('Team Management is coming soon.')
+    expect(html).not.toContain('Stripe upgrade')
     expect(html).toContain('Create onboarding link')
     expect(html).not.toContain('Send text')
     expect(html).not.toContain('SMS')
@@ -2740,7 +2740,8 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain(
       'Applies only to your public customer-facing site.',
     )
-    expect(html).toContain('Show the “Join My Team” recruiting page on your public site')
+    expect(html).toContain('Join Team: Coming soon.')
+    expect(html).not.toContain('Show the “Join My Team” recruiting page on your public site')
     expect(html).toContain('Announcement ticker messages')
     expect(html).toContain('Use one announcement per line. Add emojis, then highlight only the words you want to link.')
     expect(html).toContain('Add an emoji')

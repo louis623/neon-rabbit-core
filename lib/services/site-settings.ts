@@ -23,6 +23,7 @@ type SiteSettingsRow = {
   hero_animation_type: string | null
   team_name: string | null
   member_team_name: string | null
+  join_team_access_enabled: boolean | null
   show_join_page: boolean | null
   customer_site_template: string | null
   appearance_preset: string | null
@@ -41,7 +42,7 @@ type RepProfileRow = {
 }
 
 const SITE_SETTINGS_SELECT =
-  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_headline, hero_image_url, hero_animation_type, team_name, member_team_name, show_join_page, customer_site_template, appearance_preset, about_heading, about_subheading, about_narrative, homepage_media_slots'
+  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_headline, hero_image_url, hero_animation_type, team_name, member_team_name, join_team_access_enabled, show_join_page, customer_site_template, appearance_preset, about_heading, about_subheading, about_narrative, homepage_media_slots'
 const REP_PROFILE_SELECT =
   'display_name, business_name, email, phone, social_handles'
 
@@ -268,6 +269,7 @@ function buildDashboardResult(args: {
     ),
     teamName: normalizeText(args.siteSettings?.team_name),
     memberTeamName: normalizeText(args.siteSettings?.member_team_name),
+    joinTeamAccessEnabled: args.siteSettings?.join_team_access_enabled === true,
     showJoinPage: args.siteSettings?.show_join_page ?? true,
     customerSiteTemplate: normalizeCustomerSiteTemplate(
       args.siteSettings?.customer_site_template,

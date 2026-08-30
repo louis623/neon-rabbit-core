@@ -1962,7 +1962,7 @@ function Footer({ businessName }) {
             {CONTENT.footerTagline || "Live jewelry reveals every Tuesday at 8pm CST. Real pieces, real sparkle."}
           </p>
           {CONTENT.memberTeamName ? (
-            <p className="hp-footer-team">Proud member of team {CONTENT.memberTeamName}</p>
+            <p className="hp-footer-team">Proud member of the {CONTENT.memberTeamName} team</p>
           ) : null}
           <div className="hp-footer-socials">
             {footerSocials.map((social) => (

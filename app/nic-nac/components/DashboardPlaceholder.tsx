@@ -8450,18 +8450,25 @@ export function SiteSettingsCard({
               }
             />
           </label>
-          <label className={styles.walletToggleRow}>
-            <span className={styles.searchLabel}>
-              Show the “Join My Team” recruiting page on your public site
-            </span>
-            <input
-              type="checkbox"
-              checked={draft.showJoinPage}
-              onChange={(event) =>
-                onDraftChange?.({ showJoinPage: event.target.checked })
-              }
-            />
-          </label>
+          {state.status === 'ready' && state.settings?.joinTeamAccessEnabled ? (
+            <label className={styles.walletToggleRow}>
+              <span className={styles.searchLabel}>
+                Show the “Join My Team” recruiting page on your public site
+              </span>
+              <input
+                type="checkbox"
+                checked={draft.showJoinPage}
+                onChange={(event) =>
+                  onDraftChange?.({ showJoinPage: event.target.checked })
+                }
+              />
+            </label>
+          ) : (
+            <div className={styles.helperNote} role="status">
+              <strong>Join Team: Coming soon.</strong> This recruiting page is
+              currently available only to selected early-access team leaders.
+            </div>
+          )}
         </div>
       </div>
 
@@ -9984,29 +9991,26 @@ export function TeamManagementCard({
           <div>
             <div className={styles.cardTitle}>Team Management</div>
             <div className={styles.cardSubtitle}>
-              Team Management is a paid upgrade. Stripe upgrade can unlock this
-              workspace later.
+              Team Management is coming soon. It is not available to this
+              workspace yet.
             </div>
           </div>
-          <span className={styles.rosterTag}>Paid add-on</span>
+          <span className={styles.rosterTag}>Coming soon</span>
         </div>
 
         <div className={styles.teamUpgradeNotice}>
           <span>
             Create onboarding links, track rep progress, and answer onboarding
-            questions after the add-on is active.
+            questions when Team Management opens for more reps.
           </span>
-          <Link className={styles.helperLink} href="/prelaunch">
-            View upgrade options
-          </Link>
         </div>
 
         <div className={styles.teamManagementGrid}>
           <section className={styles.teamManagementPanel}>
             <div className={styles.walletSettingsTitle}>Create onboarding link</div>
             <div className={styles.helperNote}>
-              Future upgrade flow: open Team Management, confirm the paid add-on
-              in Stripe, then this panel unlocks for the rep workspace.
+              This workspace will unlock when Team Management is available for
+              your team.
             </div>
             <label className={styles.searchField}>
               <span className={styles.searchLabel}>Rep name</span>
@@ -10017,13 +10021,13 @@ export function TeamManagementCard({
               />
             </label>
             <button type="button" className={styles.actionButton} disabled>
-              Create link after upgrade
+              Coming soon
             </button>
           </section>
           <section className={styles.teamManagementPanel}>
             <div className={styles.walletSettingsTitle}>Progress tracking</div>
             <div className={styles.emptyState}>
-              New-rep progress appears here after the add-on is active.
+              New-rep progress will appear here when Team Management opens.
             </div>
           </section>
           <section
@@ -10032,7 +10036,7 @@ export function TeamManagementCard({
             <div className={styles.walletSettingsTitle}>Public Team Cards</div>
             <div className={styles.emptyState}>
               Team member cards can be added to the public Join Team page after
-              the add-on is active.
+              Team Management opens.
             </div>
           </section>
           <section className={styles.teamManagementPanel}>

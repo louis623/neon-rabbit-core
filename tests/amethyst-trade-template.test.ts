@@ -375,7 +375,7 @@ describe('Amethyst trade page template wiring', () => {
     expect(jsx).toContain('function SocialLogo')
     expect(jsx).toContain('<SocialLogo {...social} />')
     expect(jsx).toContain('aria-label={social.label}')
-    expect(jsx).toContain('Proud member of team {CONTENT.memberTeamName}')
+    expect(jsx).toContain('Proud member of the {CONTENT.memberTeamName} team')
     expect(jsx).not.toContain('className="hp-footer-social">{social.shortLabel}</a>')
     expect(jsx).toContain('window.AMETHYST_TRADE_BOARD_LISTINGS')
     expect(jsx).toContain('deriveTradeBoardFilterOptions')

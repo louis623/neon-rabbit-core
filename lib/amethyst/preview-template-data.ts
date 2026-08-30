@@ -508,7 +508,8 @@ export function mapPreviewSettingsToHomepageTemplateData(
   const tagline = firstText(settings.tagline, defaultAmethystHomepageTemplateData.tagline)
   const heroHeadlineOverride = settings.heroHeadline?.trim() || ''
   const streamLinks = resolveStreamingLinks(settings, extras)
-  const showJoinPage = settings.showJoinPage !== false
+  const showJoinPage =
+    settings.joinTeamAccessEnabled === true && settings.showJoinPage !== false
   const homepageMediaSlots = settings.homepageMediaSlots ?? []
   const showcaseMedia = homepageMediaSlots.find(
     (slot) => slot.key === 'showcase',
@@ -596,7 +597,8 @@ export function mapPreviewSettingsToTradeTemplateData(
     defaultAmethystTradeTemplateData.businessName,
   )
   const shopUrl = resolveShopUrl(extras)
-  const showJoinPage = settings.showJoinPage !== false
+  const showJoinPage =
+    settings.joinTeamAccessEnabled === true && settings.showJoinPage !== false
 
   const repName = getPublicRepName(
     firstText(settings.displayName, defaultAmethystTradeTemplateData.repName),

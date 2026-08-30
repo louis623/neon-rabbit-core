@@ -37,6 +37,7 @@ const blingKitchenSettings: SiteSettingsDashboardResult = {
   heroImageUrl: '',
   heroAnimationType: 'sparkle_rise',
   teamName: BLING_KITCHEN_PROFILE.teamName,
+  joinTeamAccessEnabled: true,
   showJoinPage: true,
   customerSiteTemplate: 'amethyst',
   appearancePreset: 'amethyst',

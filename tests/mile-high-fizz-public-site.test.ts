@@ -26,6 +26,7 @@ const mileHighFizzSettings: SiteSettingsDashboardResult = {
   heroImageUrl: '',
   heroAnimationType: 'sparkle_rise',
   teamName: 'Diamond Peak Society',
+  joinTeamAccessEnabled: true,
   showJoinPage: true,
   customerSiteTemplate: 'amethyst',
   appearancePreset: 'alpine_opal',
