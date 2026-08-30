@@ -1856,3 +1856,13 @@ Reason: Grok Bot persona instructions cannot enforce permissions. Reusing the ex
 Decision: Cross-product gaps remain explicit. Suite directly probes both public domains, but Finder runtime usage/operator counts and deployment history stay `null` or coverage holes until an approved read contract exists across the separate Finder data and Vercel boundaries. Nic-Nac credit balance also remains `null` because current telemetry does not record it.
 
 Reason: A Guardian is only useful if absence of evidence is not silently converted into a healthy zero. Truthful holes are safer than invented spend, credit, deployment, or Finder counts.
+
+## 2026-08-30 - Private onboarding belongs to the saved team card
+
+Decision: A Team Management onboarding link is created and managed from the intended saved private Workspace roster card. A new person is saved as a hidden card first; public visibility remains a separate deliberate choice. Historical participants that cannot be matched unambiguously stay in a compact fallback area.
+
+Reason: The rep card is the clearest identity anchor and avoids a detached creator that can produce duplicate or misattributed onboarding records. Separating private onboarding from public visibility prevents an administrative action from unexpectedly publishing a person.
+
+Decision: Onboarding access tokens remain hash-only. The raw link is shown only immediately after creation or rotation. A fresh link rotates the same participant's token, invalidates the old link, and preserves progress and conversation history.
+
+Reason: Persisting recoverable raw invite links would weaken the existing private-link boundary. Rotation provides a truthful recovery path without duplicating a participant or discarding their onboarding record.

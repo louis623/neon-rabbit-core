@@ -2371,3 +2371,12 @@ Verification passed:
 - Added the operator-authenticated `/control-center/guardian` page and an additive Guardian link in the existing Control Center navigation. The page is server-rendered and shows the same health, usage, Lab guardrails, and holes exposed to Hale through the MCP.
 - Verification passed 14 focused Guardian/Remy/MCP/Lab files (48 tests), changed-file ESLint, and the Next.js production build including `/control-center/guardian`. Standalone full-repo `tsc --noEmit` still reports the previously documented stale test-fixture errors; the production build's TypeScript gate passes.
 - This slice is source-only. No deployment, DNS change, Support send, broadcast, money action, suspension, profile/lead/report mutation, Chrome extension/live-queue change, or Sparkle Lab run occurred. Lab flags were not changed.
+
+### August 30, 2026 Team-card onboarding links
+
+- Team Management no longer uses a separate active onboarding-link creator. Each saved private Workspace team card now owns its onboarding action, link state, progress, Message Center entry, and archive control. Public Join Team cards never receive these private links or controls.
+- New team members must be saved as hidden cards before an onboarding link can be created. This keeps draft roster work separate from deliberate public publication.
+- Onboarding tokens remain hash-only. A displayed link is available only in the browser session that created or refreshed it; after reload, **Create fresh link** rotates the token on the same participant, invalidates the previous link, and preserves progress and conversation history.
+- Existing active participants are attached only when an unambiguous roster-card match exists. Unmatched historical participants remain in a compact **Earlier onboarding links** area instead of being silently reassigned or removed.
+- Application commit `3aecc69046549ce413c4df03c1740b4a29c` is live as manual Vercel production deployment `dpl_3qts9BFA9cArPGVo7ogfxxcfHNp9`. Both Suite domains resolve to it; the canonical Workspace returned 200 and the apex retained its expected 307 redirect.
+- Verification passed 129 focused tests and standalone TypeScript. The Vercel production build is Ready. Live browser smoke confirmed Rayna's card contains the private onboarding action, the legacy standalone creator is absent, client-only editing loads the correct card, reload restores unchanged state, and the console is clean. No onboarding link or other customer data was created or changed during smoke.

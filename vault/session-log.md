@@ -5300,3 +5300,15 @@ Lessons retained:
 - Sparkle Lab remains recommendations-only. The Guardian read path imports only the existing Lab read model, never the runner or POST route, and changes no Lab environment flag.
 - Final focused verification: 14 files / 48 tests passed, changed-file ESLint passed, and the full local production build passed. Full standalone `tsc --noEmit` remains red only on established repository test-fixture errors; the production build's TypeScript phase is green.
 - No deployment or production/business mutation was performed.
+
+---
+
+# August 30, 2026 - Team-card onboarding workflow release
+
+- Replaced the standalone Team Management onboarding-link creator with private onboarding controls inside each saved Workspace roster card. Link creation, current progress, Message Center navigation, refresh, and archive now stay with the intended rep card and are never rendered on the public Join Team site.
+- Kept the new-person flow compact and guarded: save a hidden team card first, then create its onboarding link. Publishing the card remains a separate deliberate action.
+- Extended the participant model with an optional roster-card relationship. The migration backfills only unambiguous active name matches and preserves unmatched historical onboarding records in **Earlier onboarding links**. The first migration attempt failed transactionally on an unsupported UUID aggregate; the corrected UUID-safe migration was committed and applied successfully.
+- Preserved token safety: only token hashes are stored. Refreshing rotates the token for the same participant, invalidates the previous link, and preserves onboarding progress and conversation history.
+- Pushed application commits `d8da42e7` and `3aecc690`; manually released exact tip `3aecc69046549ce413c4df03c1740b4a29c` as Ready deployment `dpl_3qts9BFA9cArPGVo7ogfxxcfHNp9`. Both Suite aliases resolve to the deployment.
+- Verification passed 129 focused tests and standalone TypeScript. Changed-file lint introduced no new errors but still reports two pre-existing unrelated component errors and existing warnings. The local build runner hit its known final-footer/lock anomaly; the authoritative Vercel production build completed Ready.
+- Read-only live browser smoke verified Rayna's private onboarding card, absence of the standalone creator, safe client-only Edit population and reset, and a clean console. No link was created, refreshed, copied, opened, or archived; no message, billing, DNS, Live Queue, authentication, or customer-data change occurred during smoke.
