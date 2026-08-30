@@ -1,5 +1,36 @@
 # Decision Log
 
+## August 30, 2026 - Workspace parity excludes special entitlements, and Nic-Nac personalization is subject-aware
+
+**Customer Workspace parity means ordinary product access, not copying every
+account-specific flag.** Kim's active onboarding trial provides the same
+ordinary Workspace surface Brittany receives through her subscription.
+Brittany's `manual_beta` Team Management entitlement is a deliberate special
+beta and must not be granted to Kim merely to make the accounts look identical.
+Incomplete onboarding steps remain incomplete until Kim actually completes
+them.
+
+**One durable source must render an assigned Live Queue code everywhere.** The
+Workspace header and Live Queue tool may present the existing assignment, but
+support access must never create or rotate it. A second nullable profile source
+must not contradict the authoritative setup-state read.
+
+**Plain conversation should not evaluate the full Workspace tool catalog.** If
+there is no routed product intent or active workflow, Nic-Nac's first model
+step uses `toolChoice: none`. Routed optional work remains `auto`; required and
+workflow work retains pinned or required tools and the existing approval gates.
+The visible empty-output guard stays as a last-resort customer-safe recovery,
+not as the expected answer path.
+
+**Rep-name personalization uses the subject's sanitized profile data.** Simple
+greetings are deterministic so `Hello` reliably receives the rep's natural
+given name. During later work, Nic-Nac may use the name occasionally for a
+professional personal touch, but not in every reply or mechanically. In
+transparent support mode the subject rep is addressed; the operator is never
+substituted.
+
+---
+
 ## August 30, 2026 - Onboarding readiness requires a usable account and live site
 
 **Classification and setup progress are not readiness evidence.** A real rep

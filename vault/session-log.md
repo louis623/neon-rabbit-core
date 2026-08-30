@@ -4,6 +4,43 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Kim Workspace parity and personalized Nic-Nac release
+
+- Compared Kim's real customer Workspace with Brittany's live baseline without
+  copying Brittany's special `manual_beta` Team Management entitlement. Kim's
+  active onboarding trial supplies full ordinary Workspace access, and her
+  still-incomplete setup checklist remains correct for the scheduled guided
+  onboarding.
+- Confirmed both reps already had exactly one Live Queue assignment. Repaired
+  the support UI so the Workspace header and Live Queue tool use the same
+  assigned-code source; no code was created, rotated, or changed.
+- Proved the Nic-Nac failure was real and not merely support-mode display lag:
+  the assistant completed with no text and zero tokens. An exact local
+  diagnostic showed the full 47-tool prompt works, but streaming with automatic
+  tool choice on a plain greeting ends at `length` with zero usage. Tool-free
+  streaming answered normally.
+- Released a customer-safe empty-output fallback, then routed genuinely
+  conversational first steps with tools disabled while retaining optional and
+  required tool routing for real Workspace work. Added sanitized subject-rep
+  name context for occasional professional personalization.
+- A live reviewer-safe response still omitted the name despite the prompt, so
+  simple greetings were made deterministic: for example, a subject rep named
+  Britt now receives `Hello, Britt! How can I help you today?`. Greetings that
+  also request Workspace work are not intercepted and continue through normal
+  model/tool routing.
+- Tests passed at 51 focused cases and all production builds passed. Final
+  pushed tip `db801a8ebe45843aed611aab3b748dcffb067c77` was manually released as
+  `dpl_9G6wf3bzgXiJP2cv2ndhoetMd4QN`; every existing alias points to it, both
+  Suite domains and Kim's public routes passed live checks, and no DNS record
+  changed.
+- Final in-app browser smoke used only a disclosed synthetic demo support
+  session. Nic-Nac returned the personalized subject-rep greeting with no
+  fallback or operator-name leakage, and the session was explicitly ended with
+  no account changes. No message, credential, payment, checkout, customer-data
+  edit, or Kim account mutation was performed.
+
+---
+
 ## August 30, 2026 - Kim onboarding account readiness production repair
 
 - Reproduced Louis's live failure in the exact Control Center account. Kim was

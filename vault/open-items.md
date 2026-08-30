@@ -5,6 +5,21 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [x] **Audit Kim's Workspace parity and repair Nic-Nac** - completed August
+  30 in final application tip `db801a8e` and production deployment
+  `dpl_9G6wf3bzgXiJP2cv2ndhoetMd4QN`. The existing Live Queue assignment now
+  renders consistently, plain Nic-Nac turns no longer fail with zero-token
+  automatic tool selection, and simple greetings reliably use the subject
+  rep's name. Brittany's special Team Management beta was intentionally not
+  copied to Kim.
+
+- [ ] **Reconcile Kim's legacy Customer Waitlist entries** - the live Control
+  Center still shows two historical Kim waitlist records with the old
+  `Account activated` checkbox unset even though her durable customer account
+  is active and in Customer Database. Determine the intended archival/linkage
+  treatment before changing or deleting either historical record; do not let
+  waitlist state affect durable customer classification or Workspace access.
+
 - [x] **Repair Kim's live onboarding account readiness** - completed August 30.
   Her existing customer account now has an active five-day onboarding trial and
   the Sparkle Suite slug `goforthebling`. The live Home, Dance Floor, and Join
@@ -59,7 +74,12 @@ future work.
 
 - [x] **Harden Nic-Nac dancer variants, duplicate quantity, and full public inventory** - completed through `be67fc4e`, `720cdd74`, `bba85805`, `83ae90fe`, and final exact release `f81eed6`. Legacy `RBP` is accepted; same-item/different-stone designs remain separate; identical physical copies consolidate to quantity; public inventory is not server-capped; recovery, idempotency, and trade-swap resume are durable. Production deployment is `dpl_BUemZRh5njwHqj3XQQHyRfc2gMoV`, with all seven session migrations present remotely and synthetic cleanup verified.
 
-- [ ] **Design the Control Center admin account-assistance flow** - this is already recorded in the live Control Center Task List and is not implemented yet. Define explicit operator authorization, rep search/selection, read-only versus action scopes, a conspicuous **Acting as [rep]** banner, immutable audit records, reason/expiry, safe exit/revocation, and which sensitive actions remain prohibited or require separate confirmation. Never obtain or expose a rep password, and never let support-mode sign-in create checkout.
+- [x] **Design and release the Control Center admin account-assistance flow** -
+  completed August 29 through transparent, password-free operator support with
+  the normal rep Workspace, frozen actor/subject identity, conspicuous banner,
+  notices, expiry, durable audit, and safe completion. Billing, payments,
+  wallet funding, authentication, security, ownership, and Live Queue code
+  creation/rotation remain blocked.
 
 - [ ] **Have Heather confirm her repaired real Dance Floor inventory** - ask Heather to refresh customer view and confirm all expected necklaces are visible, the older `RBP` necklace appears, ER59000 Ruby and Rose Quartz display as separate variants with the correct photos/descriptions, and identical duplicates show one card with the right quantity. Also obtain the exact item number/details meant by **“You are a reflection of love”** before changing catalog data. Do not inspect or mutate Heather's authenticated account as a shortcut.
 

@@ -1,5 +1,45 @@
 # Project State
 
+## August 30, 2026 Session - Kim Workspace parity audit and Nic-Nac repair
+
+- Audited Kim's real customer Workspace against Brittany's live baseline. Kim
+  has full Workspace access through her active five-day onboarding trial, one
+  existing Live Queue assignment, and live customer-site settings. Brittany's
+  Team Management access is a separate `manual_beta` entitlement and is not a
+  standard customer capability to copy onto Kim. Kim's incomplete onboarding
+  checklist remains intentional for the guided meeting and was not falsified.
+- Fixed a support-mode Live Queue inconsistency: the Workspace header and Live
+  Queue tool now read the same already-assigned code. Support still cannot
+  create or rotate a code, and no Live Queue assignment changed.
+- Reproduced Nic-Nac's silent greeting failure in support mode. The full
+  47-tool streaming request returned an immediate `length` completion with
+  zero tokens when automatic tool selection was used for a plain
+  conversational turn; the same model, prompt, and tools answered normally
+  with tools disabled. Purely conversational turns are now tool-free while
+  routed and required tool work retains its normal capabilities and approvals.
+- Added a visible empty-output recovery guard, then made simple greetings
+  deterministic and personalized from the subject rep's sanitized display
+  name. Nic-Nac is also instructed to use the rep's name occasionally during
+  natural transitions, confirmations, encouragement, or meaningful
+  completions without repeating it mechanically. Transparent support always
+  addresses the subject rep, not the operator.
+- Released application commits `6975a12f`, `99c4a35a`, and final
+  `db801a8ebe45843aed611aab3b748dcffb067c77`. Final production deployment
+  `dpl_9G6wf3bzgXiJP2cv2ndhoetMd4QN` is Ready and owns both Sparkle Suite
+  domains plus all existing customer/project aliases; no DNS record changed.
+- Final verification passed 51 focused tests, multiple local production
+  builds, the Vercel production build, exact alias inspection, live HTTP checks
+  for both Suite domains and Kim's Home/Join/Trade routes, and a disclosed
+  synthetic support smoke in which a plain greeting received the correct
+  subject-rep name. The synthetic session was ended with no account changes.
+- Kim's billing, credentials, account ownership, classification, setup
+  progress, site content, Team entitlement, and existing Live Queue assignment
+  were not changed. `artifacts/` and `test-results/` remain preserved.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Session - Kim onboarding account readiness repaired
 
 - Repaired Kim's existing real-customer account after live Control Center
