@@ -1,5 +1,33 @@
 # Project State
 
+## August 30, 2026 Release - Workspace store link and Join Team early access
+
+- Released exact application commit `6ff80793b6730e8ea000f93b0368e73fc11bf487`
+  as Vercel production deployment `dpl_7fZrkcuVwWt3sWSL64KDihqVQr8Z`.
+  Both `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to this
+  Ready deployment; no DNS record changed.
+- Customer-facing site setup now exposes an editable **Bomb Party rep store
+  link**. It validates complete HTTP(S) URLs, saves to the existing rep-owned
+  `shop_link` field, and supplies every public customer-site Shop action. No
+  customer link was added or changed during the release.
+- Applied production migration `20260830120000_join_team_early_access`: Join
+  Team is default-off, enabled only for Lindsey, Heather, and Brittany, and
+  guarded against direct-route access. Kim and future reps receive Coming
+  soon; Team Management remains independently controlled and Brittany's
+  manual-beta entitlement is unchanged.
+- Release gate: 273 focused tests, TypeScript, and local production build
+  passed. Live browser proof on Kim's public Home confirmed the revised
+  membership footer, visible Shop action, and absent Join Team navigation;
+  HTTP confirmed Home `200` and Kim's direct Join Team route `404`.
+  Protected reviewer-smoke controls were unavailable without their secret
+  review token, so no real customer/admin session was used to test the
+  authenticated Workspace field. `artifacts/` and `test-results/` remain
+  untracked and preserved.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Session - Join Team early-access staging
 
 - Local-only application commit `6e5748c7` makes **Join Team** an

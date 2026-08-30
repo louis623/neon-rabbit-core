@@ -4,6 +4,27 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Workspace store link and Join Team early-access release
+
+- Added and released Workspace maintenance for the existing rep-owned
+  `shop_link` value. Customer-facing site setup now has an editable **Bomb
+  Party rep store link** field with HTTP(S) validation; public Shop actions
+  already consume this value. No real customer's store destination changed.
+- Pushed the complete approved batch through
+  `6ff80793b6730e8ea000f93b0368e73fc11bf487` and manually deployed it as
+  `dpl_7fZrkcuVwWt3sWSL64KDihqVQr8Z`. Both Suite domains alias that Ready
+  deployment. Applied `20260830120000_join_team_early_access` remotely: only
+  Lindsey, Heather, and Brittany are provisioned; Kim/future reps remain
+  Coming soon and cannot use the direct Join Team route.
+- Combined focused gate passed 273 tests, TypeScript, and a local production
+  build. Kim's public Home visibly had the revised membership footer and Shop
+  action with Join Team navigation absent; HTTP returned `200` for Home and
+  `404` for the direct Join route. Reviewer-smoke controls remained protected
+  by a required secret token, so no existing customer or admin session was
+  used for authenticated Workspace verification.
+
+---
+
 ## August 30, 2026 - Join Team early-access staging
 
 - Committed local-only application change `6e5748c7`: Join Team is now gated
