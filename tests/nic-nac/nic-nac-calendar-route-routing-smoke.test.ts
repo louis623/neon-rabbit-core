@@ -211,23 +211,26 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
     })
   })
 
-  it('passes the authenticated rep display name into a conversational greeting prompt', async () => {
+  it('returns a deterministic personalized greeting for the authenticated rep', async () => {
     const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
     try {
       const response = await POST(requestFor('Hello'))
-      await response.text()
+      const body = await response.text()
 
       expect(response.status).toBe(200)
-      const options = streamTextMock.mock.calls[0][0] as {
-        system: string
-        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
-      }
-      expect(options.system).toContain(
-        'Current rep display name (profile data only): "Brittany Smith"',
+      expect(body).toContain('Hello, Brittany! How can I help you today?')
+      expect(streamTextMock).not.toHaveBeenCalled()
+      expect(completeAssistantMock).toHaveBeenCalledWith(
+        supabaseMock,
+        expect.objectContaining({
+          conversationId: 'calendar-chaos-conversation',
+          parts: [
+            { type: 'text', text: 'Hello, Brittany! How can I help you today?' },
+          ],
+        }),
       )
-      expect(options.prepareStep({ steps: [] }).toolChoice).toBe('none')
     } finally {
       infoSpy.mockRestore()
       logSpy.mockRestore()

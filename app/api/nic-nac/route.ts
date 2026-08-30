@@ -87,6 +87,7 @@ import {
   isRenderableNicNacStreamChunk,
   NIC_NAC_EMPTY_RESPONSE_FALLBACK,
 } from '@/lib/nic-nac/core/stream-output-guard'
+import { buildPersonalizedRepGreeting } from '@/lib/nic-nac/core/rep-personalization'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -458,6 +459,85 @@ export async function POST(request: Request) {
 
     return createNicNacStaticTextStreamResponse({
       message: missionScope.message,
+      messageId: assistantMessageId,
+      headers: responseHeaders,
+    })
+  }
+
+  const personalizedGreeting = buildPersonalizedRepGreeting({
+    latestUserText: readTextFromMessage(
+      [...messages].reverse().find((message) => message.role === 'user'),
+    ),
+    repDisplayName: rep.display_name,
+  })
+  if (mode === 'workspace' && personalizedGreeting) {
+    const existingIds = new Set(existingHistory.map((message) => message.id))
+    for (const message of messages) {
+      if (message.role !== 'user' || existingIds.has(message.id)) continue
+      if (supportScope) {
+        await insertOperatorSupportConversationMessage(
+          supabase,
+          supportScope,
+          message,
+        )
+      } else {
+        await insertUserMessage(supabase, {
+          conversationId,
+          repId,
+          messageId: message.id,
+          parts: message.parts,
+        })
+      }
+    }
+
+    const assistantMessageId = randomUUID()
+    if (supportScope) {
+      await insertOperatorSupportConversationMessage(supabase, supportScope, {
+        id: assistantMessageId,
+        role: 'assistant',
+        parts: [],
+        status: 'pending',
+      })
+    } else {
+      await reserveAssistantMessage(supabase, {
+        conversationId,
+        repId,
+        messageId: assistantMessageId,
+      })
+    }
+    await completeAssistant(supabase, {
+      conversationId,
+      messageId: assistantMessageId,
+      parts: [{ type: 'text', text: personalizedGreeting }],
+    })
+    await logNicNacRun({
+      runId,
+      repId,
+      conversationId,
+      model: 'personalized_greeting',
+      status: 'complete',
+      latencyMs: Date.now() - runStartedAt,
+      intents: [],
+      toolNames: [],
+      productContext,
+      modelContext: {
+        originalMessageCount: messages.length,
+        modelMessageCount: 0,
+        droppedMessageCount: 0,
+        estimatedTokens: 0,
+        wasCompacted: false,
+      },
+      usage: {
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        estimatedCostCents: 0,
+      },
+      errorMessage: 'personalized_greeting',
+    })
+
+    return createNicNacStaticTextStreamResponse({
+      message: personalizedGreeting,
       messageId: assistantMessageId,
       headers: responseHeaders,
     })

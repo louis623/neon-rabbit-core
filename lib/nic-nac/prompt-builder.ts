@@ -7,6 +7,7 @@ import {
 } from '@/lib/nic-nac/core/prompt'
 import { buildRequiredSetupPrompt } from '@/lib/nic-nac/required-setup-prompt'
 import type { NicNacToolIntent } from '@/lib/nic-nac/tools'
+import { normalizeRepDisplayName } from '@/lib/nic-nac/core/rep-personalization'
 
 type BuildPromptInput = {
   intents: NicNacToolIntent[]
@@ -27,11 +28,7 @@ const ACTIVE_WORKFLOW_RULES = `Active workflow rules:
 - Do not tell a rep that a workspace tool is unavailable merely because the latest message is short, corrective, or conversational.`
 
 function buildRepGreetingPrompt(repDisplayName: string | undefined) {
-  const normalizedName = repDisplayName
-    ?.replace(/[\u0000-\u001f\u007f]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 80)
+  const normalizedName = normalizeRepDisplayName(repDisplayName)
   if (!normalizedName) return ''
 
   return `Current rep display name (profile data only): ${JSON.stringify(normalizedName)}
