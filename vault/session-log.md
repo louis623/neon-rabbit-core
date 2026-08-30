@@ -4,6 +4,25 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Britt with Bling Join Team polish release
+
+- Corrected the visual duplicate on Brittany's public team roster. The Join
+  Team template now suppresses its separate generic leader card only when the
+  editable roster already contains the same rep/show identity, leaving the
+  roster-backed photo card intact. Teams without that roster entry retain the
+  leader card.
+- Balanced the `Join the team` hero eyebrow with a trailing divider, matching
+  the page's other section eyebrows. No copy, offer, CTA, or roster data
+  changed.
+- Pushed application commit `bf3d3b754c43226d385257673521ab19cd27db26` and
+  manually released `dpl_4syF6CbjyQQkRjssweCVny7KzMp1`. Both Suite domains
+  resolve to the Ready deployment without a DNS or alias change. Live browser
+  smoke at `/brittwithbling/join` confirmed one Brittany card and both
+  eyebrow dividers; focused Join Team coverage passed 15 tests and the local
+  production build completed.
+
+---
+
 ## August 30, 2026 - Britt with Bling roster parity release
 
 - Read the live Ready.ai-published Join Team roster at `brittwithbling.com`

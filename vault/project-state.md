@@ -1,5 +1,27 @@
 # Project State
 
+## August 30, 2026 Release - Britt with Bling Join Team polish
+
+- Removed the redundant generic Brittany leader card when Brittany already
+  appears in her editable roster. This preserves the roster-backed photo card
+  as the sole Brittany card while retaining the generic leader card for teams
+  whose editable roster does not include their leader.
+- Made the Join Team eyebrow match the balanced section-kicker treatment used
+  elsewhere on the page by adding the matching trailing divider. Copy,
+  recruitment offer, calls to action, and roster data were not changed.
+- Released application commit `bf3d3b754c43226d385257673521ab19cd27db26` as
+  Vercel production deployment `dpl_4syF6CbjyQQkRjssweCVny7KzMp1`. Both
+  `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to the Ready
+  deployment; no DNS or alias change was made.
+- Focused Join Team coverage passed (15 tests) and the local production build
+  completed. Live public smoke on `/brittwithbling/join` confirmed exactly one
+  Brittany roster card and matching leading/trailing eyebrow dividers. The
+  broader existing TypeScript/test-fixture drift remains outside this change.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Release - Britt with Bling roster parity
 
 - Compared Brittany's currently published `brittwithbling.com/join-team` roster
