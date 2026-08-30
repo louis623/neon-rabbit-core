@@ -1,5 +1,25 @@
 # Project State
 
+## August 30, 2026 Session - Kim trial-date adjustment and checkout terms copy
+
+- At Louis's explicit request, Kim's verified active five-day Workspace trial
+  was shifted from August 30–September 4 to August 31–September 5. The exact
+  update was guarded by her durable customer record, published slug, active
+  trial state, existing duration, and original dates. No subscription, charge,
+  Stripe object, classification, Workspace setting, public site, Live Queue,
+  support session, or communication changed.
+- Local application commit `b31c35c8` makes clear that reading the **Terms and
+  Conditions** is optional while retaining the required checkout
+  acknowledgment checkbox. It is intentionally committed but not pushed or
+  deployed while Louis batches rapid follow-up updates.
+- Focused billing/trial coverage passed 128 tests and the local production
+  build passed. Open Brain capture succeeded. `artifacts/` and
+  `test-results/` remain untracked and preserved.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Session - Workspace Account support-history placement
 
 - Moved the read-only **Support access history** panel to the bottom of the

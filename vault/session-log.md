@@ -4,6 +4,22 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Kim trial-date adjustment and checkout terms copy
+
+- Shifted only Kim's verified active five-day Workspace trial one day forward
+  (August 31 through September 5), using a conditionally guarded production
+  update against her durable customer identity, active status, existing trial
+  duration, and prior dates. Her billing and all other account state remain
+  untouched.
+- Committed local-only application change `b31c35c8`: the checkout copy now
+  calls them **Terms and Conditions**, explicitly says their review is
+  optional, and retains the separate required acknowledgement checkbox.
+- Focused billing and trial suite: 128 passed; local production build passed.
+  The commit is deliberately not pushed or deployed while follow-up updates
+  are being batched. Open Brain capture succeeded.
+
+---
+
 ## August 30, 2026 - Workspace Account support-history placement release
 
 - Moved **Support access history** from the top of the Account stack to its
