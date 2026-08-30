@@ -3741,12 +3741,16 @@ body.bg-black-velvet .hp-ticker-row:not(.reverse) {
 
 body.bg-black-velvet .hp-ticker-label {
   box-sizing: border-box;
-  width: 170px;
-  min-width: 170px;
-  padding: 0 18px;
+  width: 120px;
+  min-width: 120px;
+  padding: 0 10px 0 18px;
   color: rgba(244, 194, 194, 0.9);
   background: #0b0908;
   border-right: 1px solid rgba(212, 175, 55, 0.45);
+}
+
+body.bg-black-velvet .hp-ticker-track {
+  padding-left: 120px;
 }
 
 body.bg-black-velvet .hp-ticker-row:not(.reverse) .hp-ticker-label {
@@ -4082,12 +4086,16 @@ body.bg-moonstone-charcoal .hp-ticker-row:not(.reverse) {
 
 body.bg-moonstone-charcoal .hp-ticker-label {
   box-sizing: border-box;
-  width: 170px;
-  min-width: 170px;
-  padding: 0 18px;
+  width: 120px;
+  min-width: 120px;
+  padding: 0 10px 0 18px;
   color: #cbd5e1;
   background: #15121d;
   border-right: 1px solid rgba(196, 181, 253, 0.48);
+}
+
+body.bg-moonstone-charcoal .hp-ticker-track {
+  padding-left: 120px;
 }
 
 body.bg-moonstone-charcoal .hp-ticker-row:not(.reverse) .hp-ticker-label {
