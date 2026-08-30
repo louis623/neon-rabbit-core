@@ -1,5 +1,20 @@
 # Decision Log
 
+## August 30, 2026 - Join Team is explicitly provisioned early access
+
+**Join Team is not ordinary customer parity.** It stays unavailable by
+default, even when a customer has enabled the ordinary page preference. An
+operator-provisioned entitlement is required at every public entry point and
+in Workspace presentation; direct URLs must not bypass it. The approved first
+cohort is Lindsey, Heather, and Brittany. Future customers, including Kim,
+remain on a clear **Coming soon** state until explicitly admitted.
+
+**Team Management is separately controlled.** Its unavailable state must not
+suggest a paid upgrade or checkout path. Brittany's `manual_beta` entitlement
+is independent of the Join Team cohort and remains untouched.
+
+---
+
 ## August 30, 2026 - Membership-team identity is a shared customer-site footer contract
 
 **Team membership and team management remain separate identities.** The saved
@@ -10,7 +25,7 @@ fallback for the other.
 
 **Every Amethyst customer page must honor the same footer identity.** Homepage,
 Dance Floor, and Join Team all consume the same optional membership-team value
-and render the same `Proud member of team {name}` line. New skins and future
+and render the same `Proud member of the {name} team` line. New skins and future
 accounts inherit this through shared template data mapping rather than
 customer-specific profile code or static name lists.
 

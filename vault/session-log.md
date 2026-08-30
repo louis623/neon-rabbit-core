@@ -4,6 +4,25 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Join Team early-access staging
+
+- Committed local-only application change `6e5748c7`: Join Team is now gated
+  by a default-off, operator-provisioned site setting. Its staged migration
+  enables only Lindsey, Heather, and Brittany; Kim and future reps receive a
+  Coming soon Workspace state, no public navigation link, and a guarded 404
+  for the direct route.
+- Team Management's locked state now says **Coming soon** rather than implying
+  a paid upgrade. Brittany's existing `manual_beta` path remains intact.
+- Standardized each public footer to `Proud member of the {team name} team`.
+  Focused coverage passed 270 tests plus 2 direct route tests, TypeScript was
+  clean, and the local production build passed. An unrelated existing
+  Britt-with-Bling roster social-link assertion remains outside this change.
+- Per Louis's batching instruction, nothing was pushed, deployed, or applied
+  to production. No customer, billing, support, message, Live Queue, or
+  production data changed.
+
+---
+
 ## August 30, 2026 - Kim trial-date adjustment and checkout terms copy
 
 - Shifted only Kim's verified active five-day Workspace trial one day forward

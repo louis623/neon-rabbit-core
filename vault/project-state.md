@@ -1,5 +1,26 @@
 # Project State
 
+## August 30, 2026 Session - Join Team early-access staging
+
+- Local-only application commit `6e5748c7` makes **Join Team** an
+  operator-provisioned, default-off early-access feature. The staged migration
+  grants the approved first cohort (Lindsey, Heather, and Brittany) access;
+  Kim and future reps see **Coming soon** in the Workspace and have no public
+  header/footer link or direct-route bypass. Brittany's separate manual-beta
+  Team Management entitlement remains unchanged.
+- The membership footer wording now reads `Proud member of the {team name}
+  team` on Homepage, Dance Floor, and Join Team.
+- This commit and migration are intentionally not pushed, deployed, or applied
+  while Louis batches follow-up changes. No live customer, billing, support,
+  Live Queue, or production state changed. Focused regression coverage passed
+  270 tests plus 2 direct-route tests; TypeScript and the local production
+  build passed. Existing untracked `artifacts/` and `test-results/` remain
+  preserved.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Session - Kim trial-date adjustment and checkout terms copy
 
 - At Louis's explicit request, Kim's verified active five-day Workspace trial
