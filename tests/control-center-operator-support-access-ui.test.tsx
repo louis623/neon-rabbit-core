@@ -82,6 +82,24 @@ describe('Control Center transparent operator support access UI', () => {
     expect(supportClientSource).not.toContain('customerReadUrl')
   })
 
+  it('places the rep support-access history after all Account tools', () => {
+    const dashboardSource = readFileSync(
+      'app/nic-nac/components/DashboardPlaceholder.tsx',
+      'utf8',
+    )
+    const accountSection = dashboardSource.slice(
+      dashboardSource.indexOf("if (activeSection === 'account')"),
+      dashboardSource.indexOf('    return null', dashboardSource.indexOf("if (activeSection === 'account')")),
+    )
+
+    expect(accountSection.indexOf('<SupportAccessHistoryCard />')).toBeGreaterThan(
+      accountSection.indexOf('<AccountSecurityCard mutationsDisabled={operatorSupportMode} />'),
+    )
+    expect(accountSection.indexOf('<SupportAccessHistoryCard />')).toBeGreaterThan(
+      accountSection.indexOf('<SiteAnalyticsCard state={analyticsState} />'),
+    )
+  })
+
   it('keeps every rep tool discoverable from More during support access', () => {
     const html = renderToStaticMarkup(
       <DashboardPlaceholder

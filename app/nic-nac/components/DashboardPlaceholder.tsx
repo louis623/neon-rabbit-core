@@ -6113,7 +6113,6 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     if (activeSection === 'account') {
       return (
         <div className={styles.workspaceSectionStack}>
-          <SupportAccessHistoryCard />
           <AccountBillingCard
             state={accountBillingState}
             actionState={accountBillingActionState}
@@ -6146,6 +6145,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
               <SiteAnalyticsCard state={analyticsState} />
             </>
           ) : null}
+          <SupportAccessHistoryCard />
         </div>
       )
     }
