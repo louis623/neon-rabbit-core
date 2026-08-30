@@ -5876,7 +5876,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     if (canRenderWorkspaceSections && activeSection === 'live-queue') {
       return (
         <LiveQueueTool
-          liveQueueSyncCode={repProfileState.liveQueueSyncCode ?? null}
+          liveQueueSyncCode={currentLiveQueueSyncCode}
           customerSiteHref={customerSparkleSiteHref}
           onOpenHelp={() => setActiveSection('help-resources')}
         />

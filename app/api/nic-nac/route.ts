@@ -13,6 +13,7 @@ import {
   createUIMessageStream,
   createUIMessageStreamResponse,
   type UIMessage,
+  type UIMessageChunk,
 } from 'ai'
 import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
@@ -82,6 +83,10 @@ import {
   type ActiveNicNacWorkflowContext,
 } from '@/lib/nic-nac/workflows/active-tool-context'
 import { summarizeHardFailDetection } from '@/lib/nic-nac/workflows/trade-board-intake-eval'
+import {
+  isRenderableNicNacStreamChunk,
+  NIC_NAC_EMPTY_RESPONSE_FALLBACK,
+} from '@/lib/nic-nac/core/stream-output-guard'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -775,6 +780,7 @@ export async function POST(request: Request) {
   })
   let runUsage: NicNacRunUsage | undefined
   let streamErrorMessage: string | undefined
+  let emptyOutputRecovered = false
 
   // Server-owned ThinkingIndicator phase stream. The route emits transient
   // `data-thinking` signals so the client never has to sniff `parts`. State:
@@ -791,6 +797,9 @@ export async function POST(request: Request) {
       let activeToolCalls = 0
       let currentlyVisible = false
       let toolEverFired = false
+      let sawRenderableOutput = false
+      let streamAborted = false
+      let pendingFinishChunk: Extract<UIMessageChunk, { type: 'finish' }> | null = null
 
       const emitHide = (reason: 'plain-text' | 'final-text' | 'finish' | 'error') => {
         if (!currentlyVisible) return
@@ -898,6 +907,16 @@ export async function POST(request: Request) {
       // try/finally guarantees a terminal hide even if iteration throws.
       try {
         for await (const chunk of result.toUIMessageStream({ sendStart: false })) {
+          if (chunk.type === 'finish') {
+            pendingFinishChunk = chunk
+            continue
+          }
+          if (chunk.type === 'abort' || chunk.type === 'error') {
+            streamAborted = true
+          }
+          if (isRenderableNicNacStreamChunk(chunk)) {
+            sawRenderableOutput = true
+          }
           if (
             chunk.type === 'text-delta' &&
             /\S/.test(chunk.delta) &&
@@ -908,6 +927,18 @@ export async function POST(request: Request) {
           }
           writer.write(chunk)
         }
+        if (!streamAborted && !streamErrorMessage && !sawRenderableOutput) {
+          emptyOutputRecovered = true
+          const fallbackTextId = randomUUID()
+          writer.write({ type: 'text-start', id: fallbackTextId })
+          writer.write({
+            type: 'text-delta',
+            id: fallbackTextId,
+            delta: NIC_NAC_EMPTY_RESPONSE_FALLBACK,
+          })
+          writer.write({ type: 'text-end', id: fallbackTextId })
+        }
+        if (pendingFinishChunk) writer.write(pendingFinishChunk)
       } finally {
         emitHide('finish')
       }
@@ -976,7 +1007,9 @@ export async function POST(request: Request) {
           },
           contextAssembly: assembledContext.telemetry,
           usage: runUsage,
-          errorMessage: streamErrorMessage,
+          errorMessage:
+            streamErrorMessage ??
+            (emptyOutputRecovered ? 'empty_model_output_recovered' : undefined),
           workflow: activeTradeBoardWorkflow
             ? {
                 id: activeTradeBoardWorkflow.id,

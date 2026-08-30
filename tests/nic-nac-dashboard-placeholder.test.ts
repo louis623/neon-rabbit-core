@@ -3384,6 +3384,15 @@ describe('DashboardPlaceholder', () => {
       'Ask Nic-Nac or support to retrieve your assigned code',
     )
     expect(html).toContain('disabled=""')
+
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    expect(source).toContain('liveQueueSyncCode={currentLiveQueueSyncCode}')
+    expect(source).not.toContain(
+      'liveQueueSyncCode={repProfileState.liveQueueSyncCode ?? null}',
+    )
   })
 
   it('formats wallet amounts and estimated texts for display', () => {
