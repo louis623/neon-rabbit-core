@@ -5,7 +5,7 @@ ALTER TABLE public.team_onboarding_participants
 WITH unambiguous_member_matches AS (
   SELECT
     participant.id AS participant_id,
-    MIN(member.id) AS member_id
+    MIN(member.id::text)::uuid AS member_id
   FROM public.team_onboarding_participants AS participant
   JOIN public.join_team_members AS member
     ON member.rep_id = participant.owner_rep_id
@@ -17,7 +17,7 @@ WITH unambiguous_member_matches AS (
 ),
 unique_participant_matches AS (
   SELECT
-    MIN(participant_id) AS participant_id,
+    MIN(participant_id::text)::uuid AS participant_id,
     member_id
   FROM unambiguous_member_matches
   GROUP BY member_id
