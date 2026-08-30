@@ -3745,8 +3745,8 @@ body.bg-black-velvet .hp-ticker-label {
 }
 
 body.bg-black-velvet .hp-ticker-row:not(.reverse) .hp-ticker-label {
-  color: #5f5048;
-  background: linear-gradient(90deg, #f3f1ed 0%, #f3f1ed 70%, rgba(243, 241, 237, 0) 100%);
+  color: #22180a;
+  background: linear-gradient(90deg, #d4af37 0%, #d4af37 70%, rgba(212, 175, 55, 0) 100%);
 }
 
 body.bg-black-velvet .hp-ticker-row.reverse .hp-ticker-label {
@@ -4081,8 +4081,8 @@ body.bg-moonstone-charcoal .hp-ticker-label {
 }
 
 body.bg-moonstone-charcoal .hp-ticker-row:not(.reverse) .hp-ticker-label {
-  color: #51475f;
-  background: linear-gradient(90deg, #ececf1 0%, #ececf1 70%, rgba(236, 236, 241, 0) 100%);
+  color: #ffffff;
+  background: linear-gradient(90deg, #7c3aed 0%, #7c3aed 70%, rgba(124, 58, 237, 0) 100%);
 }
 
 body.bg-moonstone-charcoal .hp-ticker-row.reverse .hp-ticker-label {
