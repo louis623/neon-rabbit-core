@@ -84,6 +84,14 @@ function rosterRow(overrides: Partial<JoinTeamMember> = {}): JoinTeamMember {
 }
 
 describe('Britt With Bling hybrid public site contract', () => {
+  it('keeps Beverly’s public roster portrait straight like the other team cards', () => {
+    const beverly = BRITT_WITH_BLING_TEAM_MEMBERS.find(
+      (member) => member.name === 'Beverly' && member.business === 'Bev with Bling',
+    )
+
+    expect(beverly?.imageClassName).toBeUndefined()
+  })
+
   it('maps Brittany to the BWB homepage instead of a generic Sparkle shell', () => {
     const homepage = mapPreviewSettingsToHomepageTemplateData(
       brittWithBlingSettings,

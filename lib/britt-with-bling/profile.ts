@@ -114,7 +114,6 @@ export const BRITT_WITH_BLING_TEAM_MEMBERS: AmethystJoinTeamMember[] = [
     business: 'Bev with Bling',
     state: 'Tennessee',
     imageUrl: '/britt-with-bling/team-09-beverly.png',
-    imageClassName: 'object-left rotate-left',
     socialLinks: {
       tiktok: 'https://www.tiktok.com/@bevwithbling',
       facebook: 'https://www.facebook.com/groups/181XwEFtDQ/',
