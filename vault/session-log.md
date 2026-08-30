@@ -4,6 +4,26 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Beverly public roster portrait correction
+
+- Diagnosed Beverly's visibly tilted Britt with Bling Join Team portrait as a
+  single saved `object-left rotate-left` class, not a changed photo asset.
+- Removed that class from the source roster and guarded future behavior with a
+  focused public-site regression test. The focused test passed.
+- Applied one exact production-row update only after confirming Brittany's
+  `brittwithbling` rep and Beverly / `Bev with Bling` card identity. It cleared
+  only `image_class_name`; no photo, card text, order, or social link changed.
+- Application commit `79fff57c32cb5891ba3a83dde93b1fae4f8914c5` was pushed
+  and manually released as Ready deployment `dpl_CejZdc34r7VbVzsm4XPWkbwXppS5`.
+  Vercel lists both Sparkle Suite aliases on it. Live read-only browser smoke
+  confirmed the Beverly card now has `transform: none` and normal centered
+  positioning; `www` returned 200 and the apex redirects canonically. The
+  local build runner produced its output but did not return its normal final
+  summary; Vercel's production build completed Ready. `artifacts/` and
+  `test-results/` remain untracked and preserved.
+
+---
+
 ## August 30, 2026 - Public Team Cards upload-only correction
 
 - Removed the **Photo URL or saved path** input immediately after Louis noted

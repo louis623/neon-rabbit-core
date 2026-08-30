@@ -1,5 +1,24 @@
 # Project State
 
+## August 30, 2026 Release - Beverly roster portrait straightened
+
+- Removed Beverly's one-off `object-left rotate-left` presentation class from
+  the Britt with Bling roster seed and added a focused regression test so a
+  future reseed keeps her public card consistent with the other team cards.
+- Corrected exactly one existing production row, guarded by Brittany's
+  `brittwithbling` public-site slug and Beverly's saved display/business names.
+  The update cleared only the rotation class; her photo, identity, location,
+  and social links were not changed.
+- Released application commit `79fff57c32cb5891ba3a83dde93b1fae4f8914c5` as
+  Vercel production deployment `dpl_CejZdc34r7VbVzsm4XPWkbwXppS5`. The Ready
+  deployment owns both Sparkle Suite aliases; the apex canonically redirects
+  to `www`. Read-only live smoke on `/brittwithbling/join` confirmed Beverly's
+  image transform is `none` and the card still renders normally.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Release - Public Team Cards are upload-only
 
 - Removed the unauthorized **Photo URL or saved path** fallback from Public Team
