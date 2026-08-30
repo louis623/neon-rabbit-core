@@ -300,6 +300,14 @@ export const OPERATOR_SUPPORT_ROUTE_INVENTORY = [
     rationale: 'Non-communication team roster setup is approved with audit.',
   },
   {
+    file: 'app/api/nic-nac/join-team-roster/photo/route.ts',
+    path: '/api/nic-nac/join-team-roster/photo',
+    methods: ['POST'],
+    classification: 'support_allowed_write',
+    capabilities: ['team.manage'],
+    rationale: 'Validated public team-card photo upload is approved with audit.',
+  },
+  {
     file: 'app/api/nic-nac/me/route.ts',
     path: '/api/nic-nac/me',
     methods: ['GET'],

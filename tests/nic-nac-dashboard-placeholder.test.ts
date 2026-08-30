@@ -1208,13 +1208,25 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Save to Join Team page')
     expect(html).toContain('First name')
     expect(html).toContain('Show name')
-    expect(html).toContain('Profile photo')
+    expect(html).toContain('Profile photo process')
+    expect(html).toContain('Save or download the team member&#x27;s profile photo')
+    expect(html).toContain('I have permission to publish this team member&#x27;s photo')
+    expect(html).toContain('Upload profile photo')
+    expect(html).toContain('Photo URL or saved path (optional fallback)')
+    expect(html).toContain('accept="image/jpeg,image/png,image/webp"')
     expect(html).toContain('Mile High Fizz')
     expect(html).toContain('Lindsey')
     expect(html).toContain('Visible on Join Team page')
     expect(html).toContain('Preview Join Team page')
     expect(html).toContain('Onboarding links do not publish public cards automatically.')
     expect(html).not.toContain('Send text')
+
+    const source = readFileSync(
+      resolve(process.cwd(), 'app/nic-nac/components/DashboardPlaceholder.tsx'),
+      'utf8',
+    )
+    expect(source).toContain("fetch('/api/nic-nac/join-team-roster/photo'")
+    expect(source).toContain('TEAM_PROFILE_PHOTO_MAX_BYTES = 3 * 1024 * 1024')
   })
 
   it('keeps onboarding usable if public team cards fail to load', () => {

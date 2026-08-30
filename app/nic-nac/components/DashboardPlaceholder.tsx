@@ -1876,6 +1876,13 @@ const DEFAULT_PORTRAIT_FRAMING = {
   portraitZoom: 1.18,
 }
 
+const TEAM_PROFILE_PHOTO_MAX_BYTES = 3 * 1024 * 1024
+const TEAM_PROFILE_PHOTO_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+])
+
 type BrowserFaceDetector = {
   detect: (image: HTMLImageElement) => Promise<Array<{ boundingBox: DOMRectReadOnly }>>
 }
@@ -5240,6 +5247,69 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
     setPublicTeamDraft((current) => ({ ...current, ...patch }))
   }
 
+  async function handlePublicTeamPhotoUpload(file: File | null) {
+    if (!file) return
+
+    if (!TEAM_PROFILE_PHOTO_TYPES.has(file.type)) {
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: 'Choose a JPG, PNG, or WebP image.',
+        helperMessage: null,
+      })
+      return
+    }
+
+    if (file.size > TEAM_PROFILE_PHOTO_MAX_BYTES) {
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: 'Profile photos must be 3 MB or smaller.',
+        helperMessage: null,
+      })
+      return
+    }
+
+    setTeamManagementActionState({
+      pendingKey: 'public-team:photo-upload',
+      error: null,
+      helperMessage: null,
+    })
+
+    try {
+      const base64Data = await readFileAsDataUrl(file)
+      const response = await fetch('/api/nic-nac/join-team-roster/photo', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ base64Data, filename: file.name }),
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string; imageUrl?: string }
+        | null
+      if (!response.ok || !payload?.imageUrl) {
+        throw new Error(payload?.error || 'Unable to upload that profile photo right now.')
+      }
+
+      setPublicTeamDraft((current) => ({
+        ...current,
+        photoUrl: payload.imageUrl ?? current.photoUrl,
+      }))
+      setTeamManagementActionState({
+        pendingKey: null,
+        error: null,
+        helperMessage: 'Photo uploaded. Review the preview, then save the team member card.',
+      })
+    } catch (error) {
+      setTeamManagementActionState({
+        pendingKey: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to upload that profile photo right now.',
+        helperMessage: null,
+      })
+    }
+  }
+
   async function handleSavePublicTeamMember() {
     if (!publicTeamDraft.displayName.trim()) {
       setTeamManagementActionState({
@@ -5924,6 +5994,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
             onCopyInvite={handleCopyTeamOnboardingInvite}
             onArchiveParticipant={handleArchiveTeamOnboardingParticipant}
             onPublicTeamDraftChange={handlePublicTeamDraftChange}
+            onUploadPublicTeamPhoto={handlePublicTeamPhotoUpload}
             onSavePublicTeamMember={handleSavePublicTeamMember}
             onEditPublicTeamMember={handleEditPublicTeamMember}
             onTogglePublicTeamMember={handleTogglePublicTeamMember}
@@ -9963,6 +10034,7 @@ export function TeamManagementCard({
   onCopyInvite,
   onArchiveParticipant,
   onPublicTeamDraftChange,
+  onUploadPublicTeamPhoto,
   onSavePublicTeamMember,
   onEditPublicTeamMember,
   onTogglePublicTeamMember,
@@ -9983,6 +10055,7 @@ export function TeamManagementCard({
   onCopyInvite?: (accessUrl?: string) => void
   onArchiveParticipant?: (participantId: string) => void
   onPublicTeamDraftChange?: (patch: Partial<JoinTeamRosterDraft>) => void
+  onUploadPublicTeamPhoto?: (file: File | null) => void
   onSavePublicTeamMember?: () => void
   onEditPublicTeamMember?: (member: JoinTeamMember) => void
   onTogglePublicTeamMember?: (member: JoinTeamMember) => void
@@ -10165,6 +10238,7 @@ export function TeamManagementCard({
           joinTeamPreviewHref={joinTeamPreviewHref}
           isLoading={isLoading}
           onDraftChange={onPublicTeamDraftChange}
+          onUploadPhoto={onUploadPublicTeamPhoto}
           onSave={onSavePublicTeamMember}
           onEdit={onEditPublicTeamMember}
           onToggle={onTogglePublicTeamMember}
@@ -10266,6 +10340,7 @@ function PublicTeamRosterPanel({
   joinTeamPreviewHref,
   isLoading,
   onDraftChange,
+  onUploadPhoto,
   onSave,
   onEdit,
   onToggle,
@@ -10278,13 +10353,17 @@ function PublicTeamRosterPanel({
   joinTeamPreviewHref: string
   isLoading: boolean
   onDraftChange?: (patch: Partial<JoinTeamRosterDraft>) => void
+  onUploadPhoto?: (file: File | null) => void
   onSave?: () => void
   onEdit?: (member: JoinTeamMember) => void
   onToggle?: (member: JoinTeamMember) => void
   onMove?: (memberId: string, direction: 'up' | 'down') => void
   onRemove?: (memberId: string) => void
 }) {
+  const [photoPermissionConfirmed, setPhotoPermissionConfirmed] = useState(false)
   const saveLabel = draft.id ? 'Save card changes' : 'Save to Join Team page'
+  const isPhotoUploading =
+    actionState?.pendingKey === 'public-team:photo-upload'
 
   return (
     <section
@@ -10333,11 +10412,75 @@ function PublicTeamRosterPanel({
                 }
               />
             </label>
+          </div>
+
+          <div className={styles.teamPhotoWorkflow}>
+            <div className={styles.teamPhotoInstructions}>
+              <strong>Profile photo process</strong>
+              <ol>
+                <li>Save or download the team member&apos;s profile photo to your device.</li>
+                <li>Confirm you have permission to publish it.</li>
+                <li>Upload it, review the square preview, then save the card.</li>
+              </ol>
+              <span>
+                Use JPG, PNG, or WebP up to 3 MB. A TikTok page link is not a
+                photo file.
+              </span>
+            </div>
+
+            <div className={styles.teamPhotoControls}>
+              <div className={styles.teamPhotoPreview} aria-label="Profile photo preview">
+                {draft.photoUrl ? (
+                  <img src={draft.photoUrl} alt="Team member card preview" />
+                ) : (
+                  <span>No photo selected</span>
+                )}
+              </div>
+              <div className={styles.teamPhotoActions}>
+                <label className={styles.teamPhotoPermission}>
+                  <input
+                    type="checkbox"
+                    checked={photoPermissionConfirmed}
+                    onChange={(event) =>
+                      setPhotoPermissionConfirmed(event.target.checked)
+                    }
+                  />
+                  <span>
+                    I have permission to publish this team member&apos;s photo on
+                    the public Join Team page.
+                  </span>
+                </label>
+                <label
+                  className={`${styles.helperButton} ${styles.teamPhotoUploadButton} ${
+                    !photoPermissionConfirmed || isPhotoUploading
+                      ? styles.teamPhotoUploadButtonDisabled
+                      : ''
+                  }`}
+                >
+                  {isPhotoUploading ? 'Uploading photo...' : 'Upload profile photo'}
+                  <input
+                    className={styles.visuallyHiddenFileInput}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={!photoPermissionConfirmed || isPhotoUploading}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] ?? null
+                      onUploadPhoto?.(file)
+                      event.target.value = ''
+                      setPhotoPermissionConfirmed(false)
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+
             <label className={styles.searchField}>
-              <span className={styles.searchLabel}>Profile photo</span>
+              <span className={styles.searchLabel}>
+                Photo URL or saved path (optional fallback)
+              </span>
               <input
                 className={`${styles.searchInput} ph-no-capture`}
-                placeholder="/team/lindsey.jpg"
+                placeholder="https://example.com/team-member.jpg"
                 value={draft.photoUrl}
                 onChange={(event) =>
                   onDraftChange?.({ photoUrl: event.target.value })

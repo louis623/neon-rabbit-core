@@ -4705,6 +4705,113 @@
   gap: 12px;
 }
 
+.teamPhotoWorkflow {
+  display: grid;
+  gap: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(238, 44, 155, 0.18);
+  background: rgba(255, 255, 255, 0.66);
+  padding: 13px;
+}
+
+.teamPhotoInstructions {
+  display: grid;
+  gap: 6px;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.teamPhotoInstructions strong {
+  color: var(--nic-nac-text-primary);
+  font-size: 13px;
+}
+
+.teamPhotoInstructions ol {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.teamPhotoControls {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.teamPhotoPreview {
+  width: 88px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--nic-nac-border);
+  background: var(--nic-nac-surface-primary);
+  display: grid;
+  place-items: center;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.teamPhotoPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.teamPhotoActions {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.teamPhotoPermission {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--nic-nac-text-secondary);
+  font-family: var(--font-prelaunch-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.teamPhotoPermission input {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  accent-color: var(--nic-nac-accent);
+}
+
+.teamPhotoUploadButton {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.teamPhotoUploadButtonDisabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.visuallyHiddenFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .teamSocialGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

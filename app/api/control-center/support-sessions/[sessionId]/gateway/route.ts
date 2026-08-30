@@ -16,6 +16,7 @@ import * as customerAudience from '@/app/api/nic-nac/customer-audience/route'
 import * as fulfillmentQueue from '@/app/api/nic-nac/fulfillment-queue/route'
 import * as jewelryLibrary from '@/app/api/nic-nac/jewelry-library/route'
 import * as joinTeamRoster from '@/app/api/nic-nac/join-team-roster/route'
+import * as joinTeamRosterPhoto from '@/app/api/nic-nac/join-team-roster/photo/route'
 import * as me from '@/app/api/nic-nac/me/route'
 import * as messages from '@/app/api/nic-nac/messages/route'
 import * as nicNac from '@/app/api/nic-nac/route'
@@ -79,6 +80,7 @@ const STATIC_ROUTE_MODULES = new Map<string, RouteModule>([
   ['/api/nic-nac/fulfillment-queue', fulfillmentQueue as unknown as RouteModule],
   ['/api/nic-nac/jewelry-library', jewelryLibrary as unknown as RouteModule],
   ['/api/nic-nac/join-team-roster', joinTeamRoster as unknown as RouteModule],
+  ['/api/nic-nac/join-team-roster/photo', joinTeamRosterPhoto as unknown as RouteModule],
   ['/api/nic-nac/messages', messages as unknown as RouteModule],
   ['/api/nic-nac/resources', resources as unknown as RouteModule],
   ['/api/nic-nac/resource-library', resourceLibrary as unknown as RouteModule],
