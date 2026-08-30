@@ -1,5 +1,32 @@
 # Project State
 
+## August 30, 2026 Session - Customer-site membership footer parity
+
+- Standardized the saved `member_team_name` / **Team I belong to** identity
+  across every reusable Amethyst customer-site footer. Homepage, Dance Floor,
+  and Join Team now all render `Proud member of team {name}` when the value is
+  present; **Team I manage** remains the distinct recruiting/onboarding
+  identity.
+- Confirmed Kim's live settings already contained `Fizz City`. Her homepage
+  rendered it before this release; the defect was that Trade and Join template
+  contracts never received or rendered the field.
+- Released exact application commit
+  `5fd9b6f07b34068a2f30000ca28bc3b5d739ad75` as Vercel production deployment
+  `dpl_4C628hAHKzdy3Mo9uf3TY2hWn8gT`. Both Sparkle Suite domains and all
+  existing project/customer aliases point to the Ready deployment; no DNS
+  record changed.
+- Verification passed 72 focused mapping/template tests, the 87-test Amethyst
+  template gate, local and Vercel production builds, alias inspection, live
+  HTTP checks, and visible in-app browser proof on Kim's Home, Dance Floor,
+  and Join Team footers.
+- No account settings, support session, message, credential, billing, payment,
+  subscription, Live Queue assignment, or customer data was changed. Existing
+  `artifacts/` and `test-results/` remain preserved.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Session - Kim Workspace parity audit and Nic-Nac repair
 
 - Audited Kim's real customer Workspace against Brittany's live baseline. Kim

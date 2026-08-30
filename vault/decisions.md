@@ -1,5 +1,21 @@
 # Decision Log
 
+## August 30, 2026 - Membership-team identity is a shared customer-site footer contract
+
+**Team membership and team management remain separate identities.** The saved
+**Team I belong to** value is the upline/member identity and appears in the
+customer-facing footer. **Team I manage** continues to drive recruiting,
+Join Team ownership, and New Rep Onboarding. One must never be used as a
+fallback for the other.
+
+**Every Amethyst customer page must honor the same footer identity.** Homepage,
+Dance Floor, and Join Team all consume the same optional membership-team value
+and render the same `Proud member of team {name}` line. New skins and future
+accounts inherit this through shared template data mapping rather than
+customer-specific profile code or static name lists.
+
+---
+
 ## August 30, 2026 - Workspace parity excludes special entitlements, and Nic-Nac personalization is subject-aware
 
 **Customer Workspace parity means ordinary product access, not copying every

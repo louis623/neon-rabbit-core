@@ -4,6 +4,31 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Customer-site membership footer parity release
+
+- Reproduced the shared contract gap against Kim's live customer site. The
+  public homepage payload and footer already contained `Fizz City`, but the
+  Dance Floor and Join Team template data types, mappings, and renderers did
+  not carry **Team I belong to** at all.
+- Extended the reusable Amethyst Trade and Join contracts and footers to match
+  Homepage. Current and future accounts now show the saved membership team on
+  all three customer-facing pages without conflating it with the separately
+  saved managed-team identity.
+- Regression coverage passed 72 focused tests and the 87-test Amethyst
+  template gate. The local Next.js build and Vercel production build passed;
+  the local-link portion of `qa:amethyst` reported its expected unavailable
+  localhost server because that command does not start one.
+- Pushed application commit
+  `5fd9b6f07b34068a2f30000ca28bc3b5d739ad75` and manually released it as
+  `dpl_4C628hAHKzdy3Mo9uf3TY2hWn8gT`. Alias inspection confirmed both Suite
+  domains and all existing customer/project aliases on the Ready deployment.
+- Live HTTP and in-app browser checks confirmed Kim's Home, Dance Floor, and
+  Join Team footers each visibly say `Proud member of team Fizz City`. No
+  production data, DNS, billing, message, credential, or support-session state
+  changed.
+
+---
+
 ## August 30, 2026 - Kim Workspace parity and personalized Nic-Nac release
 
 - Compared Kim's real customer Workspace with Brittany's live baseline without
