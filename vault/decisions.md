@@ -1,5 +1,26 @@
 # Decision Log
 
+## August 30, 2026 - Onboarding readiness requires a usable account and live site
+
+**Classification and setup progress are not readiness evidence.** A real rep
+can be correctly classified as `customer` and marked `dashboard_unlocked` while
+their onboarding trial remains pending and their Sparkle Suite public-site slug
+is absent. Those states must be verified independently.
+
+**A scheduled onboarding walkthrough has an explicit readiness gate.** Before
+closeout, confirm the intended Workspace subscription or onboarding trial, the
+reserved `yoursparklesuite.com/{showname}` slug, prepared site settings, live
+Home/Dance Floor/Join routes, and the Control Center customer-site/support
+actions. Unknown personal content remains for the rep to supply during
+onboarding.
+
+**Pre-meeting trial activation is a narrow repair, not billing.** When Louis
+explicitly needs to proof an already-prepared account before the rep's first
+sign-in, only the exact existing pending onboarding trial may be activated.
+Do not create a subscription, Stripe object, checkout, or charge as a shortcut.
+
+---
+
 ## August 29, 2026 - Customer status is durable metadata, not a name whitelist
 
 **A real approved rep is classified as a customer from account creation.** The

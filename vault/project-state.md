@@ -1,5 +1,34 @@
 # Project State
 
+## August 30, 2026 Session - Kim onboarding account readiness repaired
+
+- Repaired Kim's existing real-customer account after live Control Center
+  proof showed that Customer Database placement and `dashboard_unlocked` had
+  hidden two missing readiness outcomes: her pending onboarding trial had not
+  activated and no Sparkle Suite public-site slug was assigned.
+- Preserved the existing account, `customer` classification, site settings,
+  credentials, billing state, and lack of custom domain. Activated only the
+  existing five-day onboarding trial and assigned the source-backed Sparkle
+  Suite slug `goforthebling`; no subscription, Stripe object, charge, checkout,
+  DNS change, or duplicate account was created.
+- Kim's live customer site is now published at
+  `https://www.yoursparklesuite.com/goforthebling`. Home, Dance Floor, and Join
+  routes were verified live. A false seeded promo-code ticker was replaced with
+  a neutral onboarding message; unknown story, schedule, photos, shop, and
+  other personal content remain for Kim's onboarding walkthrough.
+- Live Control Center readback confirmed Kim remains in Customer Database and
+  now shows both `Open customer site` and `Open Workspace as Support`. No
+  support session was started, so no new Message Center support notice was
+  published during the repair.
+- Updated the reusable rep-welcome skill so future onboarding readiness checks
+  require the Workspace access row, public slug, prepared settings, and live
+  Home/Dance Floor/Join proof rather than treating classification or setup
+  progress as sufficient.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 29, 2026 Session - Durable customer classification released
 
 - Replaced the Control Center's legacy three-name customer whitelist with a

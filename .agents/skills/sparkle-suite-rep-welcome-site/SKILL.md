@@ -35,6 +35,19 @@ Use only the pieces the user asks for. Do not make one request imply every exter
 - Confirm whether the account is a real customer or an intentional demo/reviewer account before creation. Real approved rep onboarding must persist `account_classification=customer`; demo, reviewer, smoke, and sample accounts must explicitly persist `account_classification=demo`. Never infer demo status from incomplete onboarding, missing billing, a missing public-site slug, or absence from a name whitelist.
 - After account preparation, verify the rep appears in the correct Control Center database. A real customer must appear in **Customer Database** even before setup, billing, or site customization is complete. Treat placement in **Demo Database** as a classification defect and repair the durable classification before closeout.
 - Prepopulate only fields supplied by the rep’s intake or explicitly confirmed by the user. Leave unknown settings empty and identify the coverage hole.
+- Before a live onboarding walkthrough, verify the existing account has the
+  intended Workspace access row (subscription or onboarding trial), a reserved
+  Sparkle Suite public-site slug, prepared site settings, and a reachable live
+  `yoursparklesuite.com/{showname}` page. A `dashboard_unlocked` setup row or
+  Customer Database placement does not prove the account or site is ready.
+- If a pending onboarding trial must be active before the rep's first sign-in
+  so an authorized operator can proof the Workspace and published site, obtain
+  explicit approval, activate only that exact rep's existing trial, and verify
+  its fixed expiration. Do not create a subscription or Stripe object as a
+  workaround.
+- Proof the published Home, Dance Floor, and Join routes before the meeting.
+  Remove false seeded promotions or sample claims, but leave unknown personal
+  story, schedule, shop, photo, and business details for the rep to supply.
 - Generate or set a temporary password, private Live Queue code, or other credential only through the approved product flow. Treat it as sensitive: never put it on the public guide or in durable memory, and confirm immediately before transmitting it to the rep.
 - Do not mutate billing, pricing reservations, subscription records, Stripe, DNS, production configuration, or the Live Queue extension unless the user explicitly asks for that exact action.
 

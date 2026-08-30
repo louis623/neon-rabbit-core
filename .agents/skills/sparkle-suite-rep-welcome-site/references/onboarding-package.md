@@ -17,7 +17,7 @@ Use this reference only when a request includes more than the public starter gui
 ## Suggested package order
 
 1. Read-only discovery: verify identity, waitlist/intake details, existing account, feature readiness, price, and fulfillment status.
-2. Prepare the requested account shell and non-sensitive settings using only confirmed intake values. Persist real onboarding as `customer`, reserve `demo` for deliberate reviewer/test accounts, and verify the resulting Control Center database placement.
+2. Prepare the requested account shell and non-sensitive settings using only confirmed intake values. Persist real onboarding as `customer`, reserve `demo` for deliberate reviewer/test accounts, and verify the resulting Control Center database placement. For a live walkthrough, also verify the intended Workspace subscription/trial row, Sparkle Suite public-site slug, site settings, and reachable Home, Dance Floor, and Join routes; `dashboard_unlocked` alone is not readiness evidence.
 3. Create or update the public guide from the tokenized template. Keep it educational: welcome, overview, self-paced checklist, tools, Nic-Nac, help, Live Queue, Coming soon, fulfillment, and transparent pricing.
 4. Build and publish the guide only after explicit authorization; validate the actual public URL.
 5. Prepare the unsent welcome-email draft. Include the guide link high in the message, sign-in instructions, and the official Live Queue Store link if relevant. Add private credentials, payment links, or meeting links only with their specific approval.

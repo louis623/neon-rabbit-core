@@ -4,6 +4,33 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Kim onboarding account readiness production repair
+
+- Reproduced Louis's live failure in the exact Control Center account. Kim was
+  correctly active, `dashboard_unlocked`, and classified as a customer, but
+  support access rejected her because the existing five-day onboarding trial
+  was still pending, and the customer-site action was unavailable because no
+  public slug had been assigned.
+- Used an exact identity-guarded production transaction to activate only the
+  existing onboarding trial and assign the unused, intake-backed slug
+  `goforthebling`. The account, auth identity, classification, billing,
+  subscription, custom-domain state, and credentials were otherwise preserved.
+- Published and verified
+  `https://www.yoursparklesuite.com/goforthebling`, including the Home, Dance
+  Floor, and Join routes. Replaced a false default promo-code announcement with
+  a neutral onboarding message and confirmed it disappeared from the live
+  page.
+- Refreshed Control Center and confirmed Kim remains in Customer Database with
+  `Open customer site` and `Open Workspace as Support` available. No support
+  session was started and no support notice, email, SMS, checkout, payment,
+  subscription, DNS change, or custom-domain change occurred.
+- Strengthened the reusable onboarding skill and reference: a live walkthrough
+  now requires verified Workspace access, public slug, prepared settings, and
+  reachable Home/Dance Floor/Join routes. `dashboard_unlocked` and correct
+  database placement are necessary but not sufficient readiness evidence.
+
+---
+
 ## August 29, 2026 - Kim and future-customer classification correction
 
 - Diagnosed that Kim's active, dashboard-unlocked account appeared in Demo

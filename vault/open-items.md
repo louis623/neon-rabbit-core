@@ -5,6 +5,13 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [x] **Repair Kim's live onboarding account readiness** - completed August 30.
+  Her existing customer account now has an active five-day onboarding trial and
+  the Sparkle Suite slug `goforthebling`. The live Home, Dance Floor, and Join
+  routes passed proofing, the false seeded promo ticker was removed, and
+  Control Center now exposes both customer-site and support-access actions. No
+  support session or communication was started during the repair.
+
 - [x] **Release transparent operator support access with full rep Workspace
   parity** - completed August 29 in exact application commit
   `bbc1283b4b79c9cc7b29ff3ccd97383930bcea93`, production deployment
