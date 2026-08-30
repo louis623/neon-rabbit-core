@@ -4,6 +4,27 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Consolidated session memory closeout
+
+- Completed Kim's pre-onboarding readiness repair, Workspace parity audit,
+  support-mode Live Queue consistency correction, Nic-Nac personalization and
+  zero-output repair, and shared customer-site membership-footer parity.
+- Durable operating decisions: real customer classification is independent of
+  onboarding progress; support is transparent delegated access rather than
+  impersonation; special beta entitlements are not customer-parity defaults;
+  member-team and managed-team identities remain distinct; and every reusable
+  customer-site page must honor the same footer identity.
+- All completed work is recorded in the dated Project State, Decision Log, and
+  individual Session Log sections directly below. The only related follow-up
+  remains the already-tracked reconciliation of two historical Kim Customer
+  Waitlist records; it must not alter Kim's customer classification or
+  Workspace access.
+- Open Brain contains a verified consolidated, credential-free capture for
+  cross-session retrieval. `artifacts/` and `test-results/` remain untracked
+  and preserved.
+
+---
+
 ## August 30, 2026 - Customer-site membership footer parity release
 
 - Reproduced the shared contract gap against Kim's live customer site. The

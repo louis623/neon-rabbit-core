@@ -1,5 +1,34 @@
 # Project State
 
+## August 30, 2026 Session - Consolidated Kim onboarding, Workspace, and public-site closeout
+
+- Kim remains a durable `customer` in Customer Database. Her existing account
+  was narrowly repaired for the scheduled walkthrough by activating its
+  existing onboarding trial and assigning the Sparkle Suite public-site slug;
+  no duplicate account, checkout, charge, subscription, DNS, or custom-domain
+  change was made.
+- Transparent support now reaches Kim's normal Workspace with one
+  authoritative existing Live Queue assignment and without a rep password.
+  The support policy still blocks financial, account-control, and Live Queue
+  code creation/rotation actions. Brittany's special Team Management beta was
+  not copied to Kim.
+- Nic-Nac's plain-conversation zero-output failure was corrected. Simple
+  greetings reliably use the sanitized subject rep's natural given name, and
+  later conversational turns may use it naturally without mechanical
+  repetition or operator/rep identity leakage.
+- The membership footer contract now spans Homepage, Dance Floor, and Join
+  Team. Kim's saved member team, `Fizz City`, is visibly correct on all three
+  public routes; the managed-team identity remains separate.
+- The relevant app releases are `db801a8e` / `dpl_9G6wf3bzgXiJP2cv2ndhoetMd4QN`
+  for Workspace/Nic-Nac parity and `5fd9b6f0` /
+  `dpl_4C628hAHKzdy3Mo9uf3TY2hWn8gT` for footer parity. Both Suite domains
+  point to the current Ready deployment. No secrets, credentials, private
+  links, payment data, or access codes are recorded here.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Session - Customer-site membership footer parity
 
 - Standardized the saved `member_team_name` / **Team I belong to** identity
