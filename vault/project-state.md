@@ -1,5 +1,31 @@
 # Project State
 
+## August 30, 2026 Release - Britt with Bling roster parity
+
+- Compared Brittany's currently published `brittwithbling.com/join-team` roster
+  against Sparkle Suite's live public Join Team page. The four newly published
+  cards absent from Sparkle Suite were Kyndal (Texas), Kristin (Florida),
+  Samantha (Indiana), and Angela (Kentucky).
+- Added their verified public names, show names, locations, TikTok destinations,
+  and locally hosted portraits to Brittany's existing 23-card roster. The
+  insert was constrained to Brittany's exact existing rep record and public
+  slug, idempotent by name/show-name pair, and appended at sort positions
+  23--26. Existing roster cards and all non-roster customer data were left
+  unchanged.
+- Released application commit `f173347c3ab71181d2ed1e71456895aa901ef982` as
+  Vercel production deployment `dpl_9cMPczAD4YnpUVZJ3N3z5GU2pFZx`. Both
+  `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to the Ready
+  deployment; no DNS or alias change was made.
+- Focused roster contracts, TypeScript, branch safety, and local production
+  build passed. Live public smoke on `/brittwithbling/join` confirmed 27
+  roster cards and the four additions with loaded Sparkle-hosted portraits and
+  matching TikTok links. The broader Britt-with-Bling test file retains its
+  known unrelated empty-`whatnot` link-key assertion; it was not changed.
+
+**Last updated:** August 30, 2026
+
+---
+
 ## August 30, 2026 Release - Workspace store link and Join Team early access
 
 - Released exact application commit `6ff80793b6730e8ea000f93b0368e73fc11bf487`

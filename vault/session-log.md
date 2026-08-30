@@ -4,6 +4,28 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 30, 2026 - Britt with Bling roster parity release
+
+- Read the live Ready.ai-published Join Team roster at `brittwithbling.com`
+  and compared it against Sparkle Suite's public Brittany route. Kyndal,
+  Kristin, Samantha, and Angela were the four source cards not yet present in
+  Sparkle Suite.
+- Added each card to Brittany's existing Join Team roster with the source
+  display/show name, state, public TikTok destination, and a local copy of the
+  public portrait. The production insert is idempotent and guarded by the
+  exact Brittany rep identity plus `brittwithbling` slug; it appended only the
+  four missing cards.
+- Pushed application commit `f173347c3ab71181d2ed1e71456895aa901ef982` and
+  manually released Vercel deployment `dpl_9cMPczAD4YnpUVZJ3N3z5GU2pFZx`.
+  Both Suite domains alias that Ready deployment with no DNS change. Live
+  public browser smoke confirmed all 27 cards and the four local portraits and
+  TikTok links at `/brittwithbling/join`.
+- Targeted roster tests, TypeScript, branch safety, and local production build
+  passed. The established unrelated failure in the broader Britt-with-Bling
+  suite (an empty `whatnot` link-key expectation) remains unchanged.
+
+---
+
 ## August 30, 2026 - Workspace store link and Join Team early-access release
 
 - Added and released Workspace maintenance for the existing rep-owned
