@@ -4629,7 +4629,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .teamManagementPanel {
@@ -4656,6 +4656,10 @@
 
 .teamManagementPanel > .helperNote {
   max-width: 62ch;
+}
+
+.teamManagementGrid > .teamManagementPanel:first-child {
+  justify-content: space-between;
 }
 
 .teamInputGrid {

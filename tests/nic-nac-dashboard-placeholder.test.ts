@@ -1143,8 +1143,12 @@ describe('DashboardPlaceholder', () => {
     expect(css).toMatch(
       /\.teamManagementGrid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\);/,
     )
+    expect(css).toContain('align-items: stretch;')
+    expect(css).toContain(
+      '.teamManagementGrid > .teamManagementPanel:first-child',
+    )
     expect(css).toContain('.teamPublicCardsPanel {')
-    expect(css).not.toContain('.teamManagementPanel:first-child')
+    expect(css).not.toContain('grid-row: span 2;')
   })
 
   it('renders public team card management separately from onboarding links', () => {
