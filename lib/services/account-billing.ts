@@ -9,11 +9,18 @@ import type {
   AccountBillingGrandfatheredCheckout,
   AccountBillingInvoiceSummary,
   AccountBillingPaymentMethodSummary,
+  AccountBillingPricingSummary,
   AccountBillingReferralSummary,
   AccountBillingSubscriptionStatus,
 } from '@/lib/services/types'
 import { generateUniqueSparkleSuiteReferralCode } from '@/lib/services/sparkle-suite-referrals'
 import { resolveWorkspaceAccess } from '@/lib/services/workspace-access'
+import {
+  FOUNDER_RATE_MONTHS,
+  SPARKLE_SUITE_FOUNDER_MONTHLY_CENTS,
+  SPARKLE_SUITE_SETUP_FEE_CENTS,
+  SPARKLE_SUITE_STANDARD_MONTHLY_CENTS,
+} from '@/lib/stripe/sparkle-suite-pricing'
 
 type SubscriptionRow = {
   status: AccountBillingSubscriptionStatus
@@ -24,8 +31,10 @@ type SubscriptionRow = {
   stripe_livemode: boolean | null
 }
 
-type RepReferralCodeRow = {
+type RepBillingPlanRow = {
   referral_code: string | null
+  pricing_tier: 'founder' | 'standard' | null
+  founder_sequence: number | null
 }
 
 type RepReferralStatusRow = {
@@ -230,31 +239,36 @@ export async function getAccountBillingDashboard(args: {
 
   const subscriptionRow = (data as SubscriptionRow | null) ?? null
   let referral = mapReferralSummary({ code: null, rows: [] })
+  const { data: repBillingPlanData, error: repBillingPlanError } =
+    await args.supabase
+      .from('reps')
+      .select('referral_code, pricing_tier, founder_sequence')
+      .eq('id', args.repId)
+      .maybeSingle()
+
+  if (repBillingPlanError || !repBillingPlanData) {
+    throw toServiceError(
+      'ACCOUNT_BILLING_PLAN_LOOKUP_FAILED',
+      'failed to load the rep billing plan',
+      "I couldn't load the account's pricing details right now.",
+      repBillingPlanError,
+    )
+  }
+
+  const repBillingPlan = repBillingPlanData as RepBillingPlanRow
 
   try {
-    const [
-      { data: repReferralCodeRow, error: repReferralCodeError },
-      { data: referralRows, error: referralRowsError },
-    ] = await Promise.all([
-      args.supabase
-        .from('reps')
-        .select('referral_code')
-        .eq('id', args.repId)
-        .maybeSingle(),
-      args.supabase
-        .from('rep_referrals')
-        .select('reward_status')
-        .eq('referrer_rep_id', args.repId),
-    ])
+    const { data: referralRows, error: referralRowsError } = await args.supabase
+      .from('rep_referrals')
+      .select('reward_status')
+      .eq('referrer_rep_id', args.repId)
 
-    if (repReferralCodeError || referralRowsError) {
-      throw repReferralCodeError ?? referralRowsError
-    }
+    if (referralRowsError) throw referralRowsError
 
     const referralCode = await ensureAccountReferralCode(
       args.supabase,
       args.repId,
-      (repReferralCodeRow as RepReferralCodeRow | null)?.referral_code ?? null,
+      repBillingPlan?.referral_code ?? null,
     )
 
     referral = mapReferralSummary({
@@ -265,6 +279,22 @@ export async function getAccountBillingDashboard(args: {
     console.warn('[account-billing] Referral summary unavailable:', cause)
   }
   const stripeConfigured = getAccountBillingStripeConfigured()
+
+  const pricingTier = repBillingPlan?.pricing_tier === 'founder'
+    ? 'founder'
+    : 'standard'
+  const pricing: AccountBillingPricingSummary = {
+    tier: pricingTier,
+    founderSequence:
+      pricingTier === 'founder' ? repBillingPlan?.founder_sequence ?? null : null,
+    setupFeeCents: SPARKLE_SUITE_SETUP_FEE_CENTS,
+    monthlyAmountCents:
+      pricingTier === 'founder'
+        ? SPARKLE_SUITE_FOUNDER_MONTHLY_CENTS
+        : SPARKLE_SUITE_STANDARD_MONTHLY_CENTS,
+    founderRateMonths: FOUNDER_RATE_MONTHS,
+    standardMonthlyAmountCents: SPARKLE_SUITE_STANDARD_MONTHLY_CENTS,
+  }
 
   let paymentMethod: AccountBillingPaymentMethodSummary | null = null
   let invoices: AccountBillingInvoiceSummary[] = []
@@ -326,6 +356,7 @@ export async function getAccountBillingDashboard(args: {
       trialStartsAt: workspaceAccess.trialStartsAt,
       trialEndsAt: workspaceAccess.trialEndsAt,
     },
+    pricing,
     grandfatheredCheckout: getGrandfatheredCheckout(
       args.repId,
       args.stripeCustomerId,

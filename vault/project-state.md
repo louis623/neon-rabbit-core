@@ -2503,3 +2503,15 @@ Verification passed:
 - Existing active participants are attached only when an unambiguous roster-card match exists. Unmatched historical participants remain in a compact **Earlier onboarding links** area instead of being silently reassigned or removed.
 - Application commit `3aecc69046549ce413c4df03c1740b4a29c` is live as manual Vercel production deployment `dpl_3qts9BFA9cArPGVo7ogfxxcfHNp9`. Both Suite domains resolve to it; the canonical Workspace returned 200 and the apex retained its expected 307 redirect.
 - Verification passed 129 focused tests and standalone TypeScript. The Vercel production build is Ready. Live browser smoke confirmed Rayna's card contains the private onboarding action, the legacy standalone creator is absent, client-only editing loads the correct card, reload restores unchanged state, and the console is clean. No onboarding link or other customer data was created or changed during smoke.
+
+### August 31, 2026 founder billing state
+
+- Founder sequence 1 now belongs to the verified first paying founder customer;
+  cancelled demo/onboarding history no longer consumes a founder slot.
+- That customer has a linked live Stripe Customer with no subscription, invoice,
+  payment method, checkout, payment link, or charge yet.
+- The founder contract is $49.99 one-time setup plus $49.99 for paid month 1,
+  then $49.99 for paid months 2-12, followed automatically by $74.99/month from
+  month 13 onward through the existing subscription-schedule webhook flow.
+- `TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED` must remain unset/false in production
+  until the pending custom-domain DNS/SSL work is separately approved.

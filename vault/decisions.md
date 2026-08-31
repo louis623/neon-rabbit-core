@@ -1951,3 +1951,15 @@ Reason: The rep card is the clearest identity anchor and avoids a detached creat
 Decision: Onboarding access tokens remain hash-only. The raw link is shown only immediately after creation or rotation. A fresh link rotates the same participant's token, invalidates the old link, and preserves progress and conversation history.
 
 Reason: Persisting recoverable raw invite links would weaken the existing private-link boundary. Rotation provides a truthful recovery path without duplicating a participant or discarding their onboarding record.
+
+## 2026-08-31 - Founder billing begins with the first real paying founder
+
+Decision: Founder slots count real customers on the current founder contract,
+not grandfathered accounts or cancelled demo/onboarding subscriptions. The first
+verified paying founder customer owns sequence 1. Their first checkout itemizes
+the $49.99 setup fee and first $49.99 month; months 2-12 remain $49.99 and month
+13 onward is $74.99 through a Stripe subscription schedule.
+
+Reason: This matches the approved first-20 offer, prevents synthetic history
+from consuming a scarce founder slot, and keeps initial payment and later
+automatic billing explicit.

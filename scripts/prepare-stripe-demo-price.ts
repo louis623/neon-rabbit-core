@@ -10,7 +10,7 @@ export const DEFAULT_STRIPE_DEMO_PRICES = [
     key: 'buildFee',
     envName: 'STRIPE_PRICE_BUILD_FEE',
     lookupKey: 'sparkle_suite_launch_demo_build_fee_test',
-    productName: 'Sparkle Suite build fee (test only)',
+    productName: 'Sparkle Suite setup fee (test only)',
     amountCents: 4999,
     currency: 'usd',
     interval: null,

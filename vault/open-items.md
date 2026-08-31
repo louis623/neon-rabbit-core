@@ -518,3 +518,9 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 ## Team Management
 
 - [x] Move private New Rep Onboarding creation and status into each saved Workspace team card while keeping it off the public Join Team site. Released August 30 in `3aecc690` as deployment `dpl_3qts9BFA9cArPGVo7ogfxxcfHNp9`; focused tests and safe live browser smoke passed without creating or exposing an invite link.
+
+## Live Queue meeting proof
+
+- [ ] Have the first paying founder customer install the supported Chrome
+  extension, enter the assigned sync code, and complete one real queue
+  sync/readback before treating the device handoff as fully proven.

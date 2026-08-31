@@ -48,6 +48,7 @@ import { POST as POST_MESSAGE } from '@/app/api/nic-nac/team-onboarding/particip
 
 describe('/api/nic-nac/team-onboarding/participants', () => {
   beforeEach(() => {
+    process.env.TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED = 'true'
     getPaidNicNacContextMock.mockReset()
     getTeamOnboardingAccessMock.mockReset()
     getTeamOnboardingTeamNameMock.mockReset()
@@ -57,6 +58,38 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
     refreshTeamOnboardingParticipantAccessMock.mockReset()
     archiveTeamOnboardingParticipantMock.mockReset()
     sendTeamOnboardingMessageMock.mockReset()
+  })
+
+  it('keeps the legacy onboarding host active while the custom domain flag is off', async () => {
+    delete process.env.TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED
+    getPaidNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-britt',
+      supabase: { marker: 'supabase' },
+    })
+    getTeamOnboardingAccessMock.mockResolvedValueOnce({ enabled: true })
+    createTeamOnboardingParticipantMock.mockResolvedValueOnce({
+      participant: { id: 'participant-legacy' },
+      accessUrl:
+        'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=legacy-token',
+    })
+
+    await POST_PARTICIPANTS(
+      new Request('http://localhost/api/nic-nac/team-onboarding/participants', {
+        method: 'POST',
+        body: JSON.stringify({ displayName: 'Participant' }),
+      }),
+    )
+
+    expect(createTeamOnboardingParticipantMock).toHaveBeenCalledWith(
+      adminClient,
+      'rep-britt',
+      expect.objectContaining({
+        baseUrl:
+          'https://brittwithbling-start-strong.louis526569.chatgpt.site',
+        teamName: undefined,
+      }),
+    )
+    expect(getTeamOnboardingTeamNameMock).not.toHaveBeenCalled()
   })
 
   it('lists participants only when the paid add-on entitlement is enabled', async () => {

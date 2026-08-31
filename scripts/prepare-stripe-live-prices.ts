@@ -12,7 +12,7 @@ export const STRIPE_LIVE_PRICE_SPECS = [
     envName: 'STRIPE_PRICE_BUILD_FEE',
     approvedEnvName: 'STRIPE_LIVE_APPROVED_BUILD_FEE_PRICE_ID',
     lookupKey: 'sparkle_suite_build_fee_live',
-    productName: 'Sparkle Suite build fee',
+    productName: 'Sparkle Suite setup fee',
     amountCents: 4999,
     currency: 'usd',
     interval: null,

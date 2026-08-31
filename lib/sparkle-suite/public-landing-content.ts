@@ -60,7 +60,7 @@ export const sparkleSuitePublicLandingContent = {
     body:
       'If you have been waiting for a sign to stop piecing it together, this is it.',
     buildFee: {
-      label: 'Sparkle Suite build fee',
+      label: 'Sparkle Suite setup fee',
       price: '$49.99',
       body: 'One-time and non-refundable, itemized separately at checkout.',
     },

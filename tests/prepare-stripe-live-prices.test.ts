@@ -127,7 +127,7 @@ describe('Stripe live price setup', () => {
       expect.objectContaining({
         currency: 'usd',
         unit_amount: 4999,
-        product_data: { name: 'Sparkle Suite build fee' },
+        product_data: { name: 'Sparkle Suite setup fee' },
         metadata: expect.objectContaining({
           production_pricing: 'true',
           sparkle_suite_price_role: 'buildFee',

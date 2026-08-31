@@ -64,6 +64,9 @@ export type SparkleSuiteCheckoutPricing =
 export const TEST_BUYER_CHECKOUT_AMOUNT_CENTS = 50
 export const FOUNDER_PRICING_REP_LIMIT = 20
 export const FOUNDER_RATE_MONTHS = 12
+export const SPARKLE_SUITE_SETUP_FEE_CENTS = 4999
+export const SPARKLE_SUITE_FOUNDER_MONTHLY_CENTS = 4999
+export const SPARKLE_SUITE_STANDARD_MONTHLY_CENTS = 7499
 
 export interface SparkleSuiteTestBuyerCheckoutPricing {
   ok: true

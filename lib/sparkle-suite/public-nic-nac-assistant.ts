@@ -129,7 +129,7 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
   ) {
     return {
       kind: 'answer',
-      message: `${pricing.standard.firstCheckout} Sparkle Suite Standard is ${pricing.standard.price}, and the one-time build fee is ${pricing.buildFee.price}.`,
+      message: `${pricing.standard.firstCheckout} Sparkle Suite Standard is ${pricing.standard.price}, and the one-time setup fee is ${pricing.buildFee.price}.`,
     }
   }
 

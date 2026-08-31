@@ -12,9 +12,19 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const DEFAULT_ONBOARDING_BASE_URL =
-  process.env.TEAM_ONBOARDING_BASE_URL ??
-  'https://onboarding.yoursparklesuite.com'
+const LEGACY_ONBOARDING_BASE_URL =
+  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
+
+function customOnboardingDomainEnabled() {
+  return process.env.TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED === 'true'
+}
+
+function getDefaultOnboardingBaseUrl() {
+  return customOnboardingDomainEnabled()
+    ? process.env.TEAM_ONBOARDING_BASE_URL ??
+        'https://onboarding.yoursparklesuite.com'
+    : LEGACY_ONBOARDING_BASE_URL
+}
 
 function serviceErrorResponse(error: ServiceError) {
   return NextResponse.json(
@@ -53,16 +63,16 @@ export async function PATCH(
 
     const admin = createAdminClient()
     const teamName =
-      body.action === 'refresh_access'
+      body.action === 'refresh_access' && customOnboardingDomainEnabled()
         ? await getTeamOnboardingTeamName(admin, repId)
-        : null
+        : undefined
     const result =
       body.action === 'refresh_access'
         ? await refreshTeamOnboardingParticipantAccess(
             admin,
             repId,
             participantId,
-            { baseUrl: DEFAULT_ONBOARDING_BASE_URL, teamName },
+            { baseUrl: getDefaultOnboardingBaseUrl(), teamName },
           )
         : await archiveTeamOnboardingParticipant(
             admin,

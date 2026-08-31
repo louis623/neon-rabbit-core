@@ -122,7 +122,7 @@ function PricingSection() {
         </div>
         <dl className="sl2-pricing-breakdown">
           <div className="sl2-pricing-line">
-            <dt>One-time build fee</dt>
+            <dt>One-time setup fee</dt>
             <dd>{pricing.buildFee.price}</dd>
           </div>
           <div className="sl2-pricing-line">
@@ -139,7 +139,7 @@ function PricingSection() {
           <p>{firstCheckoutNote}.</p>
         </div>
         <p className="sl2-pricing-note">
-          Build fee is one-time and non-refundable. Monthly subscription starts from
+          Setup fee is one-time and non-refundable. Monthly subscription starts from
           checkout.
         </p>
       </article>

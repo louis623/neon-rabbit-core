@@ -94,7 +94,7 @@ describe('Sparkle Suite public landing page', () => {
       body:
         'If you have been waiting for a sign to stop piecing it together, this is it.',
       buildFee: {
-        label: 'Sparkle Suite build fee',
+        label: 'Sparkle Suite setup fee',
         price: '$49.99',
         body: 'One-time and non-refundable, itemized separately at checkout.',
       },
@@ -171,10 +171,10 @@ describe('Sparkle Suite public landing page', () => {
     expect(html).toContain('first checkout')
     expect(html).toContain('Tax is not included in this price.')
     expect(html).not.toContain('Stripe-calculated extras')
-    expect(html).toContain('One-time build fee')
+    expect(html).toContain('One-time setup fee')
     expect(html).toContain('Monthly subscription')
     expect(html).toContain(
-      'Build fee is one-time and non-refundable. Monthly subscription starts from checkout.',
+      'Setup fee is one-time and non-refundable. Monthly subscription starts from checkout.',
     )
     expect(html).not.toContain('class="sl2-build-fee"')
     expect(html).not.toContain('class="sl2-pricing-card sl2-pricing-card--standard"')

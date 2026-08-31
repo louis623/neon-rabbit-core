@@ -130,7 +130,7 @@ const PRIVATE_PARTICIPANT_SELECT = `${PARTICIPANT_SELECT}, access_token_hash`
 const PROGRESS_SELECT = 'participant_id, step_id, status, completed_at, updated_at'
 const MESSAGE_SELECT = 'id, participant_id, sender_type, body, read_at, created_at'
 const DEFAULT_ONBOARDING_BASE_URL =
-  'https://onboarding.yoursparklesuite.com'
+  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
 
 function normalizeText(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
@@ -226,8 +226,10 @@ function buildAccessUrl(
   teamName: unknown,
 ) {
   const url = new URL(baseUrl || DEFAULT_ONBOARDING_BASE_URL)
-  const basePath = url.pathname.replace(/\/+$/, '')
-  url.pathname = `${basePath}/${createTeamOnboardingUrlSlug(teamName)}`
+  if (normalizeText(teamName)) {
+    const basePath = url.pathname.replace(/\/+$/, '')
+    url.pathname = `${basePath}/${createTeamOnboardingUrlSlug(teamName)}`
+  }
   url.hash = ''
   url.searchParams.set('invite', token)
   return url.toString()

@@ -17,12 +17,14 @@ export function getTeamOnboardingAllowedOrigins() {
     .map((value) => normalizedOrigin(value.trim()))
     .filter((value): value is string => Boolean(value))
   const configuredBaseUrl = normalizedOrigin(process.env.TEAM_ONBOARDING_BASE_URL ?? '')
+  const customDomainEnabled =
+    process.env.TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED === 'true'
 
   return new Set([
-    DEFAULT_TEAM_ONBOARDING_ORIGIN,
+    ...(customDomainEnabled ? [DEFAULT_TEAM_ONBOARDING_ORIGIN] : []),
     LEGACY_TEAM_ONBOARDING_ORIGIN,
     ...configured,
-    ...(configuredBaseUrl ? [configuredBaseUrl] : []),
+    ...(customDomainEnabled && configuredBaseUrl ? [configuredBaseUrl] : []),
   ])
 }
 

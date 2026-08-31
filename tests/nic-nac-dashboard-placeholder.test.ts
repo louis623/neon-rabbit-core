@@ -3069,11 +3069,11 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('Build fee + monthly plan')
+    expect(html).toContain('Setup fee + monthly plan')
     expect(html).toContain('Before checkout')
     expect(html).toContain('Review your Sparkle Suite plan')
-    expect(html).toContain('$49.99 build fee + $74.99/month first month')
-    expect(html).toContain('Stripe itemizes the build fee and monthly subscription')
+    expect(html).toContain('$49.99 setup fee + $74.99 first month = $124.98')
+    expect(html).toContain('These charges are due only when you complete Stripe checkout')
     expect(html).toContain('$74.99/month after the first checkout until cancelled.')
     expect(html).toContain('Cancel anytime from billing.')
     expect(html).toContain('After checkout unlocks')
@@ -3085,7 +3085,7 @@ describe('DashboardPlaceholder', () => {
     )
     expect(html).toContain('Read Terms and Conditions')
     expect(html).toContain(
-      'I understand today&#x27;s charge, the monthly renewal, and the cancel policy',
+      'I understand the charge at checkout, the monthly renewal, and the cancel policy',
     )
     expect(html).toContain('I accept the Sparkle Suite Terms and Conditions.')
     expect(html).toContain('_termsLink_')
@@ -3120,6 +3120,37 @@ describe('DashboardPlaceholder', () => {
     expect(html.match(/disabled=""/g)?.length).toBeGreaterThanOrEqual(2)
   })
 
+  it('renders the assigned founder rate for twelve months before the standard step-up', () => {
+    const html = renderToStaticMarkup(
+      createElement(AccountBillingCard, {
+        state: {
+          status: 'ready',
+          summary: {
+            ...ACCOUNT_BILLING_READY_STATE.summary,
+            subscription: null,
+            canStartSubscription: true,
+            canManageBilling: true,
+            pricing: {
+              tier: 'founder',
+              founderSequence: 1,
+              setupFeeCents: 4999,
+              monthlyAmountCents: 4999,
+              founderRateMonths: 12,
+              standardMonthlyAmountCents: 7499,
+            },
+          },
+        },
+      }),
+    )
+
+    expect(html).toContain('Founding rep #1')
+    expect(html).toContain('$49.99 setup fee + $49.99 first month = $99.98')
+    expect(html).toContain('Months 2–12: $49.99/month')
+    expect(html).toContain('Month 13 onward: $74.99/month')
+    expect(html).toContain('At checkout')
+    expect(html).not.toContain('Due today')
+  })
+
   it('renders Brianna\'s grandfathered Stripe link without the standard build-fee checkout', () => {
     const html = renderToStaticMarkup(
       createElement(AccountBillingCard, {
@@ -3137,11 +3168,11 @@ describe('DashboardPlaceholder', () => {
       }),
     )
 
-    expect(html).toContain('$39/month grandfathered plan - no build fee')
+    expect(html).toContain('$39/month grandfathered plan - no setup fee')
     expect(html).toContain('Grandfathered Sparkle Suite membership')
-    expect(html).toContain('$39.00 per month with no build fee')
+    expect(html).toContain('$39.00 per month with no setup fee')
     expect(html).toContain('eVq00l4TT7Xu0nX7sod7q02')
-    expect(html).not.toContain('Build fee + monthly plan')
+    expect(html).not.toContain('Setup fee + monthly plan')
     expect(html).not.toContain('Payment method')
     expect(html).not.toContain('Billing history')
     expect(html).not.toContain('No card on file yet.')

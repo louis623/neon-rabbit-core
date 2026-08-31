@@ -67,7 +67,7 @@ export const PUBLIC_NIC_NAC_KNOWLEDGE = {
     firstCheckout: '$124.98',
     taxNote: 'Tax is not included in the listed first checkout price.',
     feeNote:
-      'The build fee is one-time and non-refundable. Approved reps receive a five-day trial and complete billing through their workspace before it expires.',
+      'The setup fee is one-time and non-refundable. Approved reps receive a five-day trial and complete billing through their workspace before it expires.',
   },
   tools: [...NIC_NAC_CORE_KNOWLEDGE.publicToolNames],
   toolDetails: {
@@ -104,7 +104,7 @@ export function buildPublicNicNacKnowledgeText() {
     `LiveQ troubleshooting boundary: ${PUBLIC_NIC_NAC_KNOWLEDGE.liveQTroubleshooting}`,
     `Calendar: ${PUBLIC_NIC_NAC_KNOWLEDGE.calendar}`,
     `Email and SMS consent rules: ${PUBLIC_NIC_NAC_KNOWLEDGE.updateConsentRules}`,
-    `Pricing: build fee ${PUBLIC_NIC_NAC_KNOWLEDGE.pricing.buildFee}; monthly ${PUBLIC_NIC_NAC_KNOWLEDGE.pricing.monthly}; first checkout ${PUBLIC_NIC_NAC_KNOWLEDGE.pricing.firstCheckout}; ${PUBLIC_NIC_NAC_KNOWLEDGE.pricing.taxNote}; ${PUBLIC_NIC_NAC_KNOWLEDGE.pricing.feeNote}`,
+    `Pricing: setup fee ${PUBLIC_NIC_NAC_KNOWLEDGE.pricing.buildFee}; monthly ${PUBLIC_NIC_NAC_KNOWLEDGE.pricing.monthly}; first checkout ${PUBLIC_NIC_NAC_KNOWLEDGE.pricing.firstCheckout}; ${PUBLIC_NIC_NAC_KNOWLEDGE.pricing.taxNote}; ${PUBLIC_NIC_NAC_KNOWLEDGE.pricing.feeNote}`,
     `Included tools: ${PUBLIC_NIC_NAC_KNOWLEDGE.tools.join(', ')}`,
     `Tool details: ${Object.values(PUBLIC_NIC_NAC_KNOWLEDGE.toolDetails).join(' ')}`,
     `Affiliation: ${PUBLIC_NIC_NAC_KNOWLEDGE.affiliation}`,

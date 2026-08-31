@@ -5427,3 +5427,27 @@ Lessons retained:
 - Pushed application commits `d8da42e7` and `3aecc690`; manually released exact tip `3aecc69046549ce413c4df03c1740b4a29c` as Ready deployment `dpl_3qts9BFA9cArPGVo7ogfxxcfHNp9`. Both Suite aliases resolve to the deployment.
 - Verification passed 129 focused tests and standalone TypeScript. Changed-file lint introduced no new errors but still reports two pre-existing unrelated component errors and existing warnings. The local build runner hit its known final-footer/lock anomaly; the authoritative Vercel production build completed Ready.
 - Read-only live browser smoke verified Rayna's private onboarding card, absence of the standalone creator, safe client-only Edit population and reset, and a clean console. No link was created, refreshed, copied, opened, or archived; no message, billing, DNS, Live Queue, authentication, or customer-data change occurred during smoke.
+
+---
+
+# August 31, 2026 - Founder billing correction and first-customer Stripe setup
+
+- Exact-guarded production review confirmed the first paying founder customer is
+  an active real customer with an active five-day workspace trial and no prior
+  subscription or Stripe customer. A cancelled demo/onboarding subscription was
+  the only record consuming founder slot 1.
+- Released the cancelled demo placeholder from founder slot 1 without deleting
+  its historical Stripe subscription, then assigned the verified customer the
+  durable founder contract at sequence 1.
+- Created and visibly confirmed one live Stripe Customer in the Neon Rabbit
+  account and linked it to the exact Sparkle Suite rep row. No checkout session,
+  subscription, payment method, invoice, payment link, or charge was created.
+- Corrected the Account review contract to show a $49.99 setup fee plus the first
+  $49.99 month at checkout, $49.99 for months 2-12, and $74.99 beginning month
+  13. The existing webhook schedule remains the automatic step-up mechanism.
+- Renamed the live Stripe one-time product from build fee to setup fee. The
+  existing live $49.99 one-time, $49.99 monthly, and $74.99 monthly prices were
+  preserved.
+- Kept the pending onboarding custom domain dormant behind
+  `TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED`; the legacy onboarding host remains
+  the default until DNS/SSL and a separate release are approved.

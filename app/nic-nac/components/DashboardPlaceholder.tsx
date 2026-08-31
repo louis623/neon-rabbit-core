@@ -10889,28 +10889,47 @@ function isSparkleSuiteTestBuyerPreview() {
 
 function getSparkleSuiteCheckoutReview(
   checkoutMode?: AccountBillingDashboardResult['checkoutMode'],
+  pricingSummary?: AccountBillingDashboardResult['pricing'],
 ) {
-  const { pricing } = sparkleSuitePublicLandingContent
+  const { pricing: publicPricing } = sparkleSuitePublicLandingContent
   const testBuyerPreview =
     checkoutMode === 'test_buyer' ||
     (checkoutMode === undefined && isSparkleSuiteTestBuyerPreview())
+  const pricing = pricingSummary ?? {
+    tier: 'standard' as const,
+    founderSequence: null,
+    setupFeeCents: 4999,
+    monthlyAmountCents: 7499,
+    founderRateMonths: 12,
+    standardMonthlyAmountCents: 7499,
+  }
+  const setupFee = formatCalculatorMoney(pricing.setupFeeCents / 100)
+  const monthlyAmount = formatCalculatorMoney(pricing.monthlyAmountCents / 100)
+  const standardMonthlyAmount = formatCalculatorMoney(
+    pricing.standardMonthlyAmountCents / 100,
+  )
+  const firstCheckoutTotal = formatCalculatorMoney(
+    (pricing.setupFeeCents + pricing.monthlyAmountCents) / 100,
+  )
 
   return {
     dueToday: testBuyerPreview
       ? '50 cents in Stripe test mode. No real money moves.'
-      : `${pricing.buildFee.price} build fee + ${pricing.standard.price} first month before taxes or Stripe-calculated extras.`,
+      : `${setupFee} setup fee + ${monthlyAmount} first month = ${firstCheckoutTotal} before taxes or Stripe-calculated extras.`,
     dueTodayNote: testBuyerPreview
       ? 'Use this local-only path to feel the buyer flow before real checkout is turned on.'
-      : 'Stripe itemizes the build fee and monthly subscription before you pay.',
+      : 'These charges are due only when you complete Stripe checkout during your active trial. Stripe itemizes both before you pay.',
     renewal: testBuyerPreview
       ? '50 cents per month in Stripe test mode until cancelled.'
-      : `${pricing.standard.price} after the first checkout until cancelled.`,
+      : pricing.tier === 'founder'
+        ? `Months 2–${pricing.founderRateMonths}: ${monthlyAmount}/month. Month ${pricing.founderRateMonths + 1} onward: ${standardMonthlyAmount}/month until cancelled.`
+        : `${monthlyAmount}/month after the first checkout until cancelled.`,
     cancellation: 'Cancel anytime from billing. Access continues through the paid billing period.',
     included: [
       'Customer-facing site',
       'Dance Floor / dance floor',
       'LiveQ',
-      ...pricing.included.slice(3),
+      ...publicPricing.included.slice(3),
     ],
   }
 }
@@ -10966,7 +10985,10 @@ export function AccountBillingCard({
     : summary.subscription
     ? subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)
     : 'Not active yet'
-  const checkoutReview = getSparkleSuiteCheckoutReview(summary.checkoutMode)
+  const checkoutReview = getSparkleSuiteCheckoutReview(
+    summary.checkoutMode,
+    summary.pricing,
+  )
 
   return (
     <div className={styles.accountBillingCard}>
@@ -10975,9 +10997,11 @@ export function AccountBillingCard({
           <div className={styles.cardTitle}>Account</div>
           <div className={styles.accountMuted}>
             {grandfatheredCheckout
-              ? '$39/month grandfathered plan - no build fee'
+              ? '$39/month grandfathered plan - no setup fee'
               : summary.canStartSubscription
-                ? 'Build fee + monthly plan - cancel anytime'
+                ? summary.pricing?.tier === 'founder'
+                  ? `Founding rep #${summary.pricing.founderSequence ?? '—'} · setup fee + founder monthly plan`
+                  : 'Setup fee + monthly plan - cancel anytime'
                 : 'Billing, payment methods, invoices, and cancellations are managed in Stripe.'}
           </div>
         </div>
@@ -11009,7 +11033,7 @@ export function AccountBillingCard({
               Grandfathered Sparkle Suite membership
             </h3>
             <p className={styles.checkoutReviewCopy}>
-              Your grandfathered rate is $39.00 per month with no build fee.
+              Your grandfathered rate is $39.00 per month with no setup fee.
             </p>
           </div>
           <a
@@ -11055,7 +11079,7 @@ export function AccountBillingCard({
 
             <div className={styles.checkoutReviewList}>
               <div className={styles.checkoutReviewItem}>
-                <span className={styles.checkoutReviewLabel}>Due today</span>
+                <span className={styles.checkoutReviewLabel}>At checkout</span>
                 <span className={styles.checkoutReviewValue}>
                   {checkoutReview.dueToday}
                 </span>
@@ -11108,7 +11132,7 @@ export function AccountBillingCard({
               }
             />
             <span>
-              I understand today&apos;s charge, the monthly renewal, and the
+              I understand the charge at checkout, the monthly renewal, and the
               cancel policy, and I accept the Sparkle Suite Terms and
               Conditions.
             </span>

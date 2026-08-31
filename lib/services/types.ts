@@ -688,6 +688,15 @@ export interface AccountBillingGrandfatheredCheckout {
   buildFeeCents: 0
 }
 
+export interface AccountBillingPricingSummary {
+  tier: 'founder' | 'standard'
+  founderSequence: number | null
+  setupFeeCents: number
+  monthlyAmountCents: number
+  founderRateMonths: number
+  standardMonthlyAmountCents: number
+}
+
 export interface AccountBillingDashboardResult {
   stripeConfigured: boolean
   checkoutMode: 'standard' | 'test_buyer'
@@ -696,6 +705,7 @@ export interface AccountBillingDashboardResult {
   invoices: AccountBillingInvoiceSummary[]
   referral: AccountBillingReferralSummary
   workspaceAccess?: AccountWorkspaceAccessSummary
+  pricing?: AccountBillingPricingSummary
   grandfatheredCheckout: AccountBillingGrandfatheredCheckout | null
   canStartSubscription: boolean
   canManageBilling: boolean

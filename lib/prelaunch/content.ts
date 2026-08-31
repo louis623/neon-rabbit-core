@@ -156,7 +156,7 @@ export const prelaunchContent = {
     body:
       'The first 20 paid reps get the same Sparkle Suite package at the founding monthly rate before standard pricing begins.',
     buildFee: {
-      label: 'Sparkle Suite build fee',
+      label: 'Sparkle Suite setup fee',
       price: '$49.99',
       body: 'One-time and non-refundable, itemized separately at checkout.',
     },
@@ -185,7 +185,7 @@ export const prelaunchContent = {
     ],
     cta: { label: 'Join the waitlist', href: '#waitlist' },
     note:
-      'No free trials, no $1 first month, and no hidden build fee. Founder pricing is limited to the first 20 paid reps.',
+      'No free trials, no $1 first month, and no hidden setup fee. Founder pricing is limited to the first 20 paid reps.',
   },
   waitlistEyebrow: 'Join the Waitlist',
   waitlistHeading: 'Be first in line when Sparkle Suite opens.',

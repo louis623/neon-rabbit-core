@@ -43,6 +43,8 @@ function makeAccountBillingSupabase(args: {
   referralRows?: unknown[]
   repReferralCodeError?: unknown
   referralRowsError?: unknown
+  pricingTier?: 'founder' | 'standard' | null
+  founderSequence?: number | null
 }) {
   const referralsChain = makeSelectList({
     data: args.referralRows ?? [],
@@ -60,10 +62,12 @@ function makeAccountBillingSupabase(args: {
             eq: vi.fn(() => ({
               maybeSingle: vi.fn().mockResolvedValue({
                 data:
-                  columns === 'referral_code'
+                  columns === 'referral_code, pricing_tier, founder_sequence'
                     ? {
                         referral_code:
                           args.repCode === undefined ? 'SS-ABC234' : args.repCode,
+                        pricing_tier: args.pricingTier ?? null,
+                        founder_sequence: args.founderSequence ?? null,
                       }
                     : null,
                 error: args.repReferralCodeError ?? null,
@@ -152,6 +156,14 @@ describe('account billing service', () => {
         subscriptionStatus: null,
         trialStartsAt: null,
         trialEndsAt: null,
+      },
+      pricing: {
+        tier: 'standard',
+        founderSequence: null,
+        setupFeeCents: 4999,
+        monthlyAmountCents: 7499,
+        founderRateMonths: 12,
+        standardMonthlyAmountCents: 7499,
       },
       grandfatheredCheckout: null,
       canStartSubscription: true,
@@ -243,6 +255,31 @@ describe('account billing service', () => {
     expect(result.canStartSubscription).toBe(false)
     expect(result.canManageBilling).toBe(true)
     expect(result.checkoutMode).toBe('standard')
+  })
+
+  it('returns the founder contract and sequence assigned to a rep', async () => {
+    vi.mocked(stripeEnabled).mockReturnValue(false)
+    const subscriptionsChain = makeSelectSingle({ data: null, error: null })
+    const supabase = makeAccountBillingSupabase({
+      subscriptionsChain,
+      pricingTier: 'founder',
+      founderSequence: 1,
+    })
+
+    const result = await getAccountBillingDashboard({
+      supabase: supabase as never,
+      repId: 'rep-founder-1',
+      stripeCustomerId: null,
+    })
+
+    expect(result.pricing).toEqual({
+      tier: 'founder',
+      founderSequence: 1,
+      setupFeeCents: 4999,
+      monthlyAmountCents: 4999,
+      founderRateMonths: 12,
+      standardMonthlyAmountCents: 7499,
+    })
   })
 
   it('returns Brianna\'s approved grandfathered checkout only before a Stripe customer exists', async () => {

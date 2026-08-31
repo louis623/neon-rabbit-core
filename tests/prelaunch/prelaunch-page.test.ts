@@ -66,7 +66,7 @@ describe('Sparkle Suite prelaunch page', () => {
     expect(html).toContain('stand out.')
     expect(html).toContain('Founder pricing')
     expect(html).toContain('Join the waitlist while founder pricing is still in reach.')
-    expect(html).toContain('Sparkle Suite build fee')
+    expect(html).toContain('Sparkle Suite setup fee')
     expect(html).toContain('Founding rep monthly')
     expect(html).toContain('First 20 paid reps')
     expect(html).toContain('$49.99/month')

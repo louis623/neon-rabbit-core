@@ -25,11 +25,22 @@ import { OPTIONS as OPTIONS_MESSAGE, POST as POST_MESSAGE } from '@/app/api/team
 
 describe('/api/team-onboarding/access/[token]', () => {
   beforeEach(() => {
+    process.env.TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED = 'true'
     getTeamOnboardingParticipantByTokenMock.mockReset()
     recordTeamOnboardingProgressMock.mockReset()
     sendTeamOnboardingMessageMock.mockReset()
     createAdminClientMock.mockReset()
     createAdminClientMock.mockReturnValue({ marker: 'admin' })
+  })
+
+  it('does not allow the pending custom domain while its release flag is off', () => {
+    delete process.env.TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED
+    const request = new Request(
+      'http://localhost/api/team-onboarding/access/token-123',
+      { headers: { origin: 'https://onboarding.yoursparklesuite.com' } },
+    )
+
+    expect(OPTIONS_ACCESS(request).headers.get('access-control-allow-origin')).toBeNull()
   })
 
   it('returns the personalized onboarding state for a valid private link', async () => {

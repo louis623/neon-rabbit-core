@@ -12,9 +12,19 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const DEFAULT_ONBOARDING_BASE_URL =
-  process.env.TEAM_ONBOARDING_BASE_URL ??
-  'https://onboarding.yoursparklesuite.com'
+const LEGACY_ONBOARDING_BASE_URL =
+  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
+
+function customOnboardingDomainEnabled() {
+  return process.env.TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED === 'true'
+}
+
+function getDefaultOnboardingBaseUrl() {
+  return customOnboardingDomainEnabled()
+    ? process.env.TEAM_ONBOARDING_BASE_URL ??
+        'https://onboarding.yoursparklesuite.com'
+    : LEGACY_ONBOARDING_BASE_URL
+}
 
 function serviceErrorResponse(error: ServiceError) {
   return NextResponse.json(
@@ -59,12 +69,19 @@ export async function POST(request: Request) {
     if (!access.enabled) return addonRequiredResponse(access)
 
     const admin = createAdminClient()
-    const teamName = await getTeamOnboardingTeamName(admin, repId)
+    const useCustomDomain = customOnboardingDomainEnabled()
+    const teamName = useCustomDomain
+      ? await getTeamOnboardingTeamName(admin, repId)
+      : undefined
     const result = await createTeamOnboardingParticipant(admin, repId, {
       displayName: body?.displayName,
       contactEmail: body?.contactEmail,
       joinTeamMemberId: body?.joinTeamMemberId,
-      baseUrl: DEFAULT_ONBOARDING_BASE_URL,
+      baseUrl: useCustomDomain
+        ? getDefaultOnboardingBaseUrl()
+        : typeof body?.baseUrl === 'string' && body.baseUrl.trim()
+          ? body.baseUrl.trim()
+          : LEGACY_ONBOARDING_BASE_URL,
       teamName,
     })
 
