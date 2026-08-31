@@ -7,11 +7,12 @@ future work.
 
 - [x] **Simplify Brittany's onboarding guide and make Nic-Nac the first stop** -
   completed August 31 in Sites source commit
-  `a8d746a6e4e132798495fcfb6b9e6ba82e316e99`, version 7, and deployment
-  `appgdep_6a95af5857a88191aa500cf3a6d54173`. The Site now uses one expandable
-  six-step path, keeps supporting material collapsed, removes redundant help
-  and manual UI, and gives Nic-Nac curated current-rule guidance with privacy
-  and deliberate Brittany-handoff guardrails.
+  `ec82456a2e0f492520139649acf4fa308ad89fb5`, version 8, and deployment
+  `appgdep_6a95bf816d308191b345a2925c41abad`. The Site now uses one expandable
+  six-step path with one action list per step, keeps supporting material
+  collapsed, removes redundant help/manual UI, captures the team information
+  Brittany needs for a welcome and public team card, and gives Nic-Nac curated
+  current-rule guidance with privacy and deliberate Brittany-handoff guardrails.
 
 - [ ] **Confirm Brittany's current shipping and loyalty workflow for New Rep
   Onboarding** - the restored guide keeps the older Ship.com/$19 and

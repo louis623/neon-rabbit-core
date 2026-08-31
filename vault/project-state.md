@@ -1,5 +1,23 @@
 # Project State
 
+## August 31, 2026 - Brittany team-information first-step follow-up
+
+- Published Sites version 8 of Brittany's private New Rep Onboarding guide.
+  Every detailed step now uses one **Do this** list instead of redundant Quick
+  Check and action areas. The first step tells a new rep to send Brittany a
+  usable, permission-cleared photo; their email and best phone number; TikTok
+  and other public social links; state; and correct name/show details for the
+  team welcome and public Join Team card.
+- Sites source commit `ec82456a2e0f492520139649acf4fa308ad89fb5` passed
+  ESLint, production build, focused render tests, local visual QA, and the
+  production missing-link guard smoke. It was published as Sites version 8 /
+  deployment `appgdep_6a95bf816d308191b345a2925c41abad`. No private invite,
+  participant progress, Brittany message, or production customer data changed.
+
+**Last updated:** August 31, 2026
+
+---
+
 ## August 31, 2026 - Brittany onboarding simplified and Nic-Nac deepened
 
 - Published Sites version 7 of Brittany's private New Rep Onboarding guide at

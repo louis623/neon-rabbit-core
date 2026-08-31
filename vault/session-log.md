@@ -4,6 +4,23 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 31, 2026 - Brittany team-information onboarding follow-up
+
+- Replaced the redundant **Quick check** and **Do this** areas in all six
+  onboarding steps with one straightforward action list. The first step now
+  specifically asks for a current permission-cleared photo, email, phone,
+  TikTok and other intended-public social links, state, and correct personal /
+  show names so Brittany can welcome the rep and prepare the public Join Team
+  card accurately.
+- Committed and pushed Sites source
+  `ec82456a2e0f492520139649acf4fa308ad89fb5`, then published version 8 as
+  deployment `appgdep_6a95bf816d308191b345a2925c41abad`. ESLint, production
+  build, focused render tests, local visual QA, and the production missing-link
+  guard smoke passed. No private invite, participant progress, or message was
+  changed.
+
+---
+
 ## August 31, 2026 - Brittany onboarding simplification and Nic-Nac expansion
 
 - Reworked the standalone onboarding Site around one expandable six-step
