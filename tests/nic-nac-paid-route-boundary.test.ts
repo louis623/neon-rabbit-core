@@ -65,8 +65,8 @@ describe('Nic-Nac paid route boundary', () => {
     expect(source).toContain('isCheckoutRequiredMode')
     expect(source).toContain('isRequiredSetupMode')
     expect(source).toContain('<RequiredSetupHome')
-    expect(source).toContain("planType: 'monthly'")
-    expect(source).toContain('agreementAccepted: true')
+    expect(source).toContain('<WorkspaceAccessPending')
+    expect(source).not.toContain('/api/stripe/create-checkout')
     expect(source).not.toContain("onboarding') === 'self-serve-started'")
   })
 

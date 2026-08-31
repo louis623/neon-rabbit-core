@@ -47,7 +47,7 @@ describe('public Nic-Nac knowledge pack', () => {
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.pricing.monthly).toBe('$74.99/month')
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.setup).toContain('built-in support from Nic-Nac')
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tools).toContain('LiveQ')
-    expect(PUBLIC_NIC_NAC_KNOWLEDGE.tools).toContain('TradeBoard')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.tools).toContain('Dance Floor')
   })
 
   it('contains public Bomb Party rep workflow context', () => {
@@ -60,15 +60,15 @@ describe('public Nic-Nac knowledge pack', () => {
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.repContext).toContain('trade')
   })
 
-  it('contains public TradeBoard facilitation rules and boundaries', () => {
+  it('contains public Dance Floor facilitation rules and boundaries', () => {
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardRules).toContain(
-      'TradeBoard organizes trade interest',
+      'Dance Floor organizes trade interest',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardRules).toContain(
       'Sparkle Suite does not handle shipping',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardRules).toContain(
-      'The rep sets the final trade rules and approvals',
+      'The rep controls the Dance Floor',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardRules).toContain(
       'Sparkle Suite does not guarantee trades',
@@ -99,39 +99,39 @@ describe('public Nic-Nac knowledge pack', () => {
     )
   })
 
-  it('contains Bomb Party rep lingo for TradeBoard and trade jewelry', () => {
+  it('contains current Dance Floor and dancer terminology', () => {
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLingo).toContain(
-      'TradeBoard the dance floor',
+      'Dance Floor is the Sparkle Suite home',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLingo).toContain(
-      'jewelry that is up for trade dancers',
+      'Dancers are the rep-listed, trade-eligible jewelry',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLingo).toContain(
-      'Treat dance floor as TradeBoard',
+      'shown on the Dance Floor',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLingo).toContain(
-      'rep-listed trade-eligible jewelry',
+      'rep-listed, trade-eligible jewelry',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLingo).toContain(
       'Do not say customers add dancers',
     )
   })
 
-  it('defines the live-show TradeBoard flow without customer-added listings', () => {
+  it('defines the live-show Dance Floor flow without customer-added dancers', () => {
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow).toContain(
-      "TradeBoard shows the rep's available trade listings",
+      "Dance Floor shows the rep's available dancers",
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow).toContain(
-      'Customers do not add their own items',
+      'Customers do not add dancers to the Dance Floor',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow).toContain(
-      'request to trade for an available rep listing',
+      'request to trade for an available dancer',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow).toContain(
-      'item number just revealed for them',
+      'item just revealed for them',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow).toContain(
-      'customers do not ship or photograph a separate trade item',
+      'The rep has both pieces during the live show',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.tradeBoardLiveShowFlow).toContain(
       'can approve or decline each trade request',
@@ -180,35 +180,31 @@ describe('public Nic-Nac knowledge pack', () => {
     )
   })
 
-  it('contains public signup-page form and next-step guidance', () => {
+  it('contains public waitlist form and next-step guidance', () => {
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.purpose).toContain(
-      'creates the rep account first',
+      'does not create a rep account',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.purpose).toContain(
-      'No card is needed on this step',
+      'waitlist',
     )
-    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('name')
-    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('business name')
-    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('email')
-    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('password')
-    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('phone')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('contact')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('rep-context')
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain(
-      'primary live/social link',
-    )
-    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('shop link')
-    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.safety).toContain(
-      'does not text or email customers',
+      'coaching session',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.safety).toContain(
-      'does not charge',
+      'does not create login credentials',
+    )
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.safety).toContain(
+      'charge the rep',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.nextSteps).toContain(
-      'plan and terms',
+      'reviews the waitlist',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.nextSteps).toContain(
-      'Stripe checkout',
+      'five-day trial account',
     )
-    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.nextSteps).toContain('Nic-Nac')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.nextSteps).toContain('coaching')
   })
 
   it('does not include private or implementation-only context', () => {
@@ -306,12 +302,12 @@ describe('public Nic-Nac prompt', () => {
     expect(prompt).toContain('Do not lie, hallucinate, or make things up')
     expect(prompt).toContain('Use only the approved public facts below')
     expect(prompt).toContain('potential Bomb Party representatives')
-    expect(prompt).toContain('Answer normal public TradeBoard mechanics questions directly')
-    expect(prompt).toContain('Answer signup-page questions directly')
-    expect(prompt).toContain('No card is needed on this step')
-    expect(prompt).toContain('what happens after account creation')
-    expect(prompt).toContain('dance floor means TradeBoard')
-    expect(prompt).toContain('dancers means the rep-listed trade-eligible jewelry')
+    expect(prompt).toContain('Answer normal public Dance Floor mechanics questions directly')
+    expect(prompt).toContain('Answer waitlist questions directly')
+    expect(prompt).toContain('does not create an account, trial, checkout, or require a payment card')
+    expect(prompt).toContain('what happens after joining the waitlist')
+    expect(prompt).toContain('Dance Floor is the feature')
+    expect(prompt).toContain('dancers are the rep-listed trade-eligible jewelry')
     expect(prompt).toContain('never say customers add dancers to the dance floor')
     expect(prompt).toContain('Do not promise discounts, exceptions, outcomes, or future roadmap')
     expect(prompt).toContain('Do not use Markdown formatting')
@@ -324,11 +320,11 @@ describe('public Nic-Nac prompt', () => {
     expect(prompt).toContain('Sparkle Suite backend/workspace')
     expect(prompt).toContain('customer-facing website')
     expect(prompt).toContain('Sparkle Suite does not handle shipping')
-    expect(prompt).toContain('Customers do not add their own items')
-    expect(prompt).toContain('piece they just revealed')
+    expect(prompt).toContain('Customers do not add dancers to the Dance Floor')
+    expect(prompt).toContain('item just revealed')
     expect(prompt).toContain('customers do not ship or photograph a separate trade item')
     expect(prompt).toContain('Do not say customers add dancers to the dance floor')
-    expect(prompt).toContain('Treat dance floor as TradeBoard')
+    expect(prompt).toContain('Dance Floor is the Sparkle Suite home')
     expect(prompt).toContain('item-for-item only')
     expect(prompt).toContain('same collection')
     expect(prompt).toContain('same jewelry type')
@@ -337,10 +333,10 @@ describe('public Nic-Nac prompt', () => {
     expect(prompt).toContain('MSRP is reference only')
     expect(prompt).toContain('does not collect order IDs')
     expect(prompt).toContain('SMS consent is optional')
-    expect(prompt).toContain('does not text or email customers')
-    expect(prompt).toContain('Stripe checkout')
+    expect(prompt).toContain('does not create login credentials')
+    expect(prompt).toContain('five-day trial account')
     expect(prompt).toContain('cannot send texts or emails from the public page')
-    expect(prompt).toContain('The rep sets the final trade rules and approvals')
+    expect(prompt).toContain('The rep controls the Dance Floor')
     expect(prompt).toContain('$74.99/month')
     expect(prompt).not.toContain('Supabase')
     expect(prompt).not.toContain('SignWell')
@@ -351,8 +347,8 @@ describe('public Nic-Nac prompt', () => {
   it('public prompt renders shared Nic-Nac knowledge instead of a separate island', () => {
     const prompt = buildPublicNicNacPrompt()
 
-    expect(prompt).toContain('TradeBoard lingo')
-    expect(prompt).toContain('dance floor')
+    expect(prompt).toContain('Dance Floor terminology')
+    expect(prompt).toContain('Dance Floor')
     expect(prompt).toContain('dancers')
     expect(prompt).toContain('LiveQ data boundary')
     expect(prompt).toContain('Affiliation:')
@@ -361,26 +357,26 @@ describe('public Nic-Nac prompt', () => {
 })
 
 describe('public Nic-Nac postflight guardrails', () => {
-  it('corrects model output that says customers add their own TradeBoard items', () => {
+  it('corrects model output that says customers add their own Dance Floor items', () => {
     const sanitized = sanitizePublicNicNacAnswer(
       'Customers can browse trade interest and add their own items in real time.',
     )
 
     expect(sanitized.kind).toBe('answer')
-    expect(sanitized.message).toContain('Customers do not add their own items')
-    expect(sanitized.message).toContain('request to trade for an available rep listing')
-    expect(sanitized.message).toContain('piece they just revealed')
+    expect(sanitized.message).toContain('Customers do not add their own dancers')
+    expect(sanitized.message).toContain('request to trade for an available dancer')
+    expect(sanitized.message).toContain('item just revealed')
     expect(sanitized.message).not.toContain('add their own items in real time')
   })
 
-  it('corrects model output that says customers create TradeBoard listings', () => {
+  it('corrects model output that says customers create Dance Floor listings', () => {
     const sanitized = sanitizePublicNicNacAnswer(
       'Customers can create their own listings on the TradeBoard during a live show.',
     )
 
     expect(sanitized.kind).toBe('answer')
-    expect(sanitized.message).toContain('Customers do not create TradeBoard listings')
-    expect(sanitized.message).toContain('rep controls the board')
+    expect(sanitized.message).toContain('Customers do not add their own dancers')
+    expect(sanitized.message).toContain('rep has both pieces')
     expect(sanitized.message).not.toContain('create their own listings')
   })
 
@@ -390,10 +386,10 @@ describe('public Nic-Nac postflight guardrails', () => {
     )
 
     expect(sanitized.kind).toBe('answer')
-    expect(sanitized.message).toContain('Customers do not add their own items or dancers')
-    expect(sanitized.message).toContain('dance floor')
-    expect(sanitized.message).toContain('rep-listed trade-eligible pieces')
-    expect(sanitized.message).toContain('request a rep-listed dancer')
+    expect(sanitized.message).toContain('Customers do not add their own dancers')
+    expect(sanitized.message).toContain('Dance Floor')
+    expect(sanitized.message).toContain('rep-listed, trade-eligible jewelry')
+    expect(sanitized.message).toContain('request to trade for an available dancer')
     expect(sanitized.message).not.toContain('Customers can add dancers')
   })
 

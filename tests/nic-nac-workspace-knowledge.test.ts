@@ -12,7 +12,7 @@ describe('workspace Nic-Nac shared knowledge', () => {
 
     expect(prompt).toContain('Sparkle Suite')
     expect(prompt).toContain('Bomb Party')
-    expect(prompt).toContain('dance floor')
+    expect(prompt).toContain('Dance Floor')
     expect(prompt).toContain('dancers')
     expect(prompt).toContain('item-for-item only')
     expect(prompt).toContain('MSRP is reference only')
@@ -37,10 +37,10 @@ describe('workspace Nic-Nac shared knowledge', () => {
       activeToolNames: [],
     })
 
-    expect(prompt).toContain('dance floor')
+    expect(prompt).toContain('Dance Floor')
     expect(prompt).toContain('dancers')
-    expect(prompt).toContain('Customers do not add their own items or dancers')
-    expect(prompt).toContain('The rep controls the board')
+    expect(prompt).toContain('Customers do not add dancers to the Dance Floor')
+    expect(prompt).toContain('The rep controls the Dance Floor')
   })
 
   it('carries the trust-building personality and grounded uncertainty rules', () => {
@@ -93,18 +93,20 @@ describe('workspace Nic-Nac shared knowledge', () => {
     expect(routedPrompt).toContain('If unsure, skip the tag')
   })
 
-  it('teaches Nic-Nac support report filing and Help & Resources fallback', () => {
+  it('teaches Nic-Nac support draft preparation and Help & Resources fallback', () => {
     const routedPrompt = buildNicNacSystemPrompt({
       intents: ['resources'],
       activeToolNames: ['get_help_resources', 'submit_support_report'],
     })
 
     expect(routedPrompt).toContain('submit_support_report')
-    expect(routedPrompt).toContain('file support reports')
+    expect(routedPrompt).toContain('prepares an editable Support draft')
+    expect(routedPrompt).toContain('never files or sends')
     expect(routedPrompt).toContain('Help & Resources form')
     expect(routedPrompt).toContain('does not depend on Nic-Nac')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('submit_support_report')
-    expect(NIC_NAC_SYSTEM_PROMPT).toContain('file support reports')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('prepares an editable Support draft')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('never files or sends')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('Help & Resources form')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('does not depend on Nic-Nac')
   })

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   getNicNacToolOnlyRecoveryText,
+  getNicNacToolFailure,
   isRenderableNicNacStreamChunk,
   NIC_NAC_EMPTY_RESPONSE_FALLBACK,
 } from '@/lib/nic-nac/core/stream-output-guard'
@@ -91,5 +92,27 @@ describe('Nic-Nac stream output guard', () => {
     expect(
       getNicNacToolOnlyRecoveryText('list_my_shows', { events: [] }),
     ).toBeNull()
+  })
+
+  it('detects structured tool failures and never presents them as resolver success', () => {
+    const output = {
+      ok: false,
+      errorTier: 'escalate',
+      message: "Something unexpected happened. I've flagged this.",
+    }
+    expect(getNicNacToolFailure('prepare_trade_board_work', output)).toEqual({
+      toolName: 'prepare_trade_board_work',
+      errorTier: 'escalate',
+      code: null,
+      stage: null,
+      message: "Something unexpected happened. I've flagged this.",
+    })
+    const recovery = getNicNacToolOnlyRecoveryText(
+      'prepare_trade_board_work',
+      output,
+    )
+    expect(recovery).toContain('couldn’t check the Dance Floor catalog')
+    expect(recovery).toContain("haven’t changed anything")
+    expect(recovery).not.toContain('Send the item number')
   })
 })

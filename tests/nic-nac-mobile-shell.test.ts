@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 describe('Nic-Nac mobile shell launcher', () => {
-  it('keeps the closed launcher compact and tucked into the safe-area corner', () => {
+  it('keeps the closed launcher compact above mobile navigation and safe areas', () => {
     const css = readFileSync(
       resolve(
         process.cwd(),
@@ -12,13 +12,13 @@ describe('Nic-Nac mobile shell launcher', () => {
       'utf8',
     )
 
-    expect(css).toMatch(/\.bubble\s*\{[^}]*width:\s*52px/s)
-    expect(css).toMatch(/\.bubble\s*\{[^}]*height:\s*52px/s)
+    expect(css).toMatch(/\.bubble\s*\{[^}]*width:\s*48px/s)
+    expect(css).toMatch(/\.bubble\s*\{[^}]*height:\s*48px/s)
     expect(css).toContain(
-      'bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));',
+      'bottom: max(86px, calc(env(safe-area-inset-bottom) + 82px));',
     )
     expect(css).toContain(
-      'right: max(12px, calc(env(safe-area-inset-right) + 8px));',
+      'right: max(14px, calc(env(safe-area-inset-right) + 14px));',
     )
   })
 

@@ -5,6 +5,14 @@ export const NIC_NAC_EMPTY_RESPONSE_FALLBACK =
 
 type ToolOutputRecord = Record<string, unknown>
 
+export type NicNacToolFailure = {
+  toolName: string
+  errorTier: string
+  code: string | null
+  stage: string | null
+  message: string | null
+}
+
 function asRecord(output: unknown): ToolOutputRecord {
   return output && typeof output === 'object'
     ? (output as ToolOutputRecord)
@@ -16,11 +24,44 @@ function readString(record: ToolOutputRecord, key: string) {
   return typeof value === 'string' && value.trim() ? value.trim() : null
 }
 
+export function getNicNacToolFailure(
+  toolName: string,
+  output: unknown,
+): NicNacToolFailure | null {
+  const record = asRecord(output)
+  if (record.ok !== false) return null
+
+  return {
+    toolName,
+    errorTier: readString(record, 'errorTier') ?? 'unknown',
+    code: readString(record, 'code'),
+    stage: readString(record, 'stage'),
+    message: readString(record, 'message'),
+  }
+}
+
+function toolFailureRecoveryText(failure: NicNacToolFailure): string {
+  if (failure.message && failure.errorTier === 'explain') return failure.message
+  if (failure.toolName === 'prepare_trade_board_work') {
+    if (failure.message && /catalog check failed|paused this dancer add/i.test(failure.message)) {
+      return failure.message
+    }
+    return "I couldn’t check the Dance Floor catalog because Sparkle Suite hit a problem. I haven’t changed anything, and the issue has been logged for review."
+  }
+  if (failure.message && failure.errorTier === 'escalate' && failure.code) {
+    return failure.message
+  }
+  return failure.message ??
+    "Sparkle Suite hit a problem while I was checking that. I haven’t changed anything, and the issue has been logged for review."
+}
+
 export function getNicNacToolOnlyRecoveryText(
   toolName: string,
   output: unknown,
 ): string | null {
   const record = asRecord(output)
+  const failure = getNicNacToolFailure(toolName, output)
+  if (failure) return toolFailureRecoveryText(failure)
 
   if (toolName === 'prepare_trade_board_work') {
     const nextQuestion = readString(record, 'nextQuestion')

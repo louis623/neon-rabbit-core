@@ -21,6 +21,13 @@ export type NicNacRunUsage = {
   estimatedCostCents?: number | null
 }
 
+export type NicNacRunToolFailure = {
+  toolName: string
+  errorTier: string
+  code?: string | null
+  stage?: string | null
+}
+
 export type NicNacRunModelContext = {
   originalMessageCount: number
   modelMessageCount: number
@@ -75,6 +82,8 @@ export async function logNicNacRun(args: {
   latencyMs: number
   intents: NicNacToolIntent[]
   toolNames: string[]
+  executedToolNames?: string[]
+  toolFailures?: NicNacRunToolFailure[]
   modelContext: NicNacRunModelContext
   contextAssembly?: NicNacAssembledContext['telemetry']
   usage?: NicNacRunUsage
@@ -133,6 +142,10 @@ export async function logNicNacRun(args: {
       routed_intents: args.intents,
       tool_names: args.toolNames,
       tool_count: args.toolNames.length,
+      executed_tool_names: args.executedToolNames ?? [],
+      executed_tool_count: args.executedToolNames?.length ?? 0,
+      tool_failure_count: args.toolFailures?.length ?? 0,
+      tool_failures: args.toolFailures ?? [],
       model_message_count: args.modelContext.modelMessageCount,
       original_message_count: args.modelContext.originalMessageCount,
       dropped_message_count: args.modelContext.droppedMessageCount,

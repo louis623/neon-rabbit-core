@@ -509,6 +509,6 @@ describe('fulfillment registry and prompt wiring', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('get_fulfillment_queue')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('update_fulfillment_status')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('approved → shipped → completed')
-    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Want to add the piece you got')
+    expect(NIC_NAC_SYSTEM_PROMPT).toContain('Want to add the dancer you got')
   })
 })

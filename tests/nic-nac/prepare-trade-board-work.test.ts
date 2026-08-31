@@ -21,16 +21,38 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 
 import { makePrepareTradeBoardWorkTool } from '@/lib/nic-nac/tools/prepare-trade-board-work'
+import type { TradeBoardIntakeSessionState } from '@/lib/nic-nac/workflows/trade-board-intake-types'
 
 interface ToolDef {
   execute: (input: unknown) => Promise<Record<string, unknown>>
 }
 
-function makeTool(): ToolDef {
+function makeTool(activeTradeBoardWorkflow?: TradeBoardIntakeSessionState): ToolDef {
   return makePrepareTradeBoardWorkTool({
     repId: 'rep-1',
     supabase: { marker: 'rep-client' } as never,
+    activeTradeBoardWorkflow,
   }) as unknown as ToolDef
+}
+
+function activeWorkflow(
+  known: TradeBoardIntakeSessionState['known'] = {},
+): TradeBoardIntakeSessionState {
+  return {
+    id: 'workflow-1',
+    repId: 'rep-1',
+    conversationId: 'conversation-1',
+    workflowType: 'trade_board_add_listing',
+    catalogMode: 'item_number',
+    status: 'active',
+    phase: 'details_capture',
+    known,
+    missing: [],
+    blockers: [],
+    warnings: [],
+    metadata: {},
+    photos: [],
+  }
 }
 
 beforeEach(() => {
@@ -41,6 +63,40 @@ beforeEach(() => {
 })
 
 describe('prepare_trade_board_work', () => {
+  it('does not search a generic request or trust model-invented jewelry facts', async () => {
+    const result = await makeTool(activeWorkflow()).execute({
+      action: 'add_piece',
+      query: 'Nic-Nac. I need to add a dancer to my dance floor, please.',
+      catalogMode: 'item_number',
+      jewelryType: 'RG',
+    })
+
+    expect(searchJewelryDatabaseMock).not.toHaveBeenCalled()
+    expect(result).toMatchObject({
+      catalogStatus: 'needs_identifying_info',
+      allowedPath: 'ask_for_identifier',
+      requiredBeforeAction: ['itemNumberOrLabelOrDescription'],
+    })
+    expect(result.nextQuestion).toContain('three ways')
+  })
+
+  it('uses app-owned workflow facts instead of conflicting model arguments', async () => {
+    searchJewelryDatabaseMock.mockResolvedValueOnce([])
+
+    await makeTool(activeWorkflow({ itemNumber: 'ER13229', jewelryType: 'ER' })).execute({
+      action: 'add_piece',
+      query: 'untrusted sentence',
+      itemNumber: 'RG99999',
+      jewelryType: 'RG',
+    })
+
+    expect(searchJewelryDatabaseMock).toHaveBeenCalledWith(
+      { marker: 'admin-client' },
+      'rep-1',
+      { query: 'ER13229', limit: 5 },
+    )
+  })
+
   it('routes confirmed non-item-number adds without searching or creating catalog designs', async () => {
     const result = await makeTool().execute({
       action: 'add_piece',

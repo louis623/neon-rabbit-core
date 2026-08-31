@@ -52,7 +52,7 @@ function hasNestedDeclaration(
 function getTradeBoardSectionLabels(html: string) {
   return Array.from(
     html.matchAll(
-      />(Dance Floor|Today(?:&#x27;|')s trade work|Quick add|Browse board|Request inbox|Trade follow-up|Fulfillment queue)</g,
+      />(Dance Floor|Today(?:&#x27;|')s trade work|Quick add|Browse dancers|Request inbox|Trade follow-up|Fulfillment queue)</g,
     ),
     (match) => match[1].replace('&#x27;', "'"),
   )
@@ -200,14 +200,14 @@ describe('Nic-Nac dance floor surface reset', () => {
     expect(placeholderSource).not.toContain('styles.tradeRow')
     expect(placeholderSource).not.toContain('styles.tradeIdentity')
     expect(placeholderSource).toContain('styles.messageList')
-    expect(placeholderSource).toContain('styles.messageRow')
+    expect(placeholderSource).toContain('styles.messageCard')
     expect(placeholderSource).toContain('styles.customerIdentity')
 
     expect(placeholderCss).not.toContain('.tradeList')
     expect(placeholderCss).not.toContain('.tradeRow')
     expect(placeholderCss).not.toContain('.tradeIdentity')
     expect(hasSelectorBlock(placeholderCss, '.messageList')).toBe(true)
-    expect(hasSelectorBlock(placeholderCss, '.messageRow')).toBe(true)
+    expect(hasSelectorBlock(placeholderCss, '.messageCard')).toBe(true)
 
     for (const selector of [
       'cardTitle',
@@ -365,7 +365,7 @@ describe('Nic-Nac dance floor surface reset', () => {
       'Dance Floor',
       "Today's trade work",
       'Quick add',
-      'Browse board',
+      'Browse dancers',
       'Request inbox',
       'Trade follow-up',
       'Fulfillment queue',

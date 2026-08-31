@@ -45,6 +45,11 @@ import { createSupportReport } from '@/lib/services/support-reports'
 import type { ToolContext } from '../types'
 
 const TRANSIENT_RX = /ETIMEDOUT|ECONNRESET|ENOTFOUND|fetch failed|socket hang up|\b(408|429|502|503|504)\b/i
+const TRADE_BOARD_WORKFLOW_TOOLS = new Set([
+  'prepare_trade_board_work',
+  'search_jewelry_database',
+  'add_listing',
+])
 
 function isTransient(err: unknown): boolean {
   const msg = (err as Error)?.message ?? ''
@@ -151,7 +156,7 @@ async function escalate(
     | null = null
 
   if (
-    toolName === 'add_listing' &&
+    TRADE_BOARD_WORKFLOW_TOOLS.has(toolName) &&
     ctx.activeTradeBoardWorkflow &&
     ['active', 'needs_human_review'].includes(
       ctx.activeTradeBoardWorkflow.status,
@@ -208,6 +213,8 @@ async function escalate(
   }
 
   if (workflowFailure?.newlyEscalated) {
+    const operationLabel =
+      toolName === 'add_listing' ? 'backend save' : 'Dance Floor catalog check'
     try {
       await createSupportReport(createAdminClient(), {
         source: 'nic_nac',
@@ -219,11 +226,14 @@ async function escalate(
         pageOrWorkflow: 'Nic-Nac / Dance Floor add dancer',
         title: `Nic-Nac paused a dancer add (${classification.code})`,
         details:
-          `Two matching backend save failures paused workflow ${workflowFailure.workflowId}. ` +
+          `Two matching ${operationLabel} failures paused workflow ${workflowFailure.workflowId}. ` +
           `Stage: ${classification.stage}. Failure signature: ${failureSignature}. ` +
           'The rep-provided details and confirmed photo remain in the durable workflow.',
-        expectedResult: 'Save the dancer once and preserve the accepted variant and photo.',
-        actualResult: 'The backend save failed twice and the workflow was paused for human review.',
+        expectedResult:
+          toolName === 'add_listing'
+            ? 'Save the dancer once and preserve the accepted variant and photo.'
+            : 'Resolve the catalog path and continue the dancer intake.',
+        actualResult: `The ${operationLabel} failed twice and the workflow was paused for human review.`,
         contactOk: true,
       })
     } catch (supportError) {
@@ -242,7 +252,7 @@ async function escalate(
       stage: classification.stage,
       needsHumanReview: true,
       message:
-        'I paused this dancer add for the Neon Rabbit team to review. Your details and confirmed photo are still saved, so you do not need to upload them again.',
+        'I paused this dancer add for the Neon Rabbit team to review. Everything already captured in this intake is still saved, so you do not need to start over.',
     }
   }
 
@@ -254,7 +264,9 @@ async function escalate(
       stage: classification.stage,
       retryable: true,
       message:
-        'The save failed on the Sparkle Suite side. I kept your details and confirmed photo, so you can retry once without uploading it again.',
+        toolName === 'add_listing'
+          ? 'The save failed on the Sparkle Suite side. I kept your details and confirmed photo, so you can retry once without uploading it again.'
+          : 'The Dance Floor catalog check failed on the Sparkle Suite side. I kept the intake details, so you can retry once without starting over.',
     }
   }
   return {

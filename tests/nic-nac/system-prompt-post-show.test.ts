@@ -35,7 +35,7 @@ describe('Nic-Nac system prompt — post-show cleanup orchestration', () => {
       'Which item number was just revealed for the customer?',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
-      'The customer never has the just-revealed piece in their possession',
+      'The customer never has the just-revealed dancer in their possession',
     )
     expect(NIC_NAC_SYSTEM_PROMPT).toContain(
       'If the rep is too busy to capture the revealed item number now',

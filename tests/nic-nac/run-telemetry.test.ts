@@ -58,6 +58,15 @@ describe('Nic-Nac run telemetry', () => {
       latencyMs: 1234,
       intents: ['show_memory'],
       toolNames: ['get_show_session_context', 'record_show_session_event'],
+      executedToolNames: ['get_show_session_context'],
+      toolFailures: [
+        {
+          toolName: 'get_show_session_context',
+          errorTier: 'escalate',
+          code: 'PGRST100',
+          stage: 'database',
+        },
+      ],
       modelContext: {
         originalMessageCount: 50,
         modelMessageCount: 20,
@@ -118,6 +127,17 @@ describe('Nic-Nac run telemetry', () => {
       routed_intents: ['show_memory'],
       tool_names: ['get_show_session_context', 'record_show_session_event'],
       tool_count: 2,
+      executed_tool_names: ['get_show_session_context'],
+      executed_tool_count: 1,
+      tool_failure_count: 1,
+      tool_failures: [
+        {
+          toolName: 'get_show_session_context',
+          errorTier: 'escalate',
+          code: 'PGRST100',
+          stage: 'database',
+        },
+      ],
       model_message_count: 20,
       original_message_count: 50,
       dropped_message_count: 30,

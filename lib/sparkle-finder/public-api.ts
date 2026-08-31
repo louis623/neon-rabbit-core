@@ -4,6 +4,10 @@ import { PAID_WORKSPACE_STATUSES } from '@/lib/nic-nac/subscription-access'
 import { buildPublicSiteUrl, validatePublicSiteSlug } from '@/lib/public-site/show-link'
 import type { JewelryType } from '@/lib/services/types'
 import {
+  buildPostgrestIlikeAnyFilter,
+  escapePostgrestIlikePattern,
+} from '@/lib/services/postgrest-filter'
+import {
   buildFinderAvailabilityPage,
   decodeFinderAvailabilityCursor,
   FinderAvailabilityConfigurationError,
@@ -625,12 +629,14 @@ async function loadCatalogDesignRows(
     return ((data ?? []) as unknown as FinderDesignRow[])
   }
 
-  const pattern = `%${escapeIlikePattern(queryText)}%`
   let request = supabase
     .from('jewelry_designs')
     .select(FINDER_CATALOG_SELECT)
     .or(
-      `item_number.ilike.${pattern},design_name.ilike.${pattern},material.ilike.${pattern},main_stone.ilike.${pattern}`,
+      buildPostgrestIlikeAnyFilter(
+        ['item_number', 'design_name', 'material', 'main_stone'],
+        queryText,
+      ),
     )
   request = applyCatalogBrowseFilters(request, options, collectionIds)
   const { data, error } = await request.order('created_at', { ascending: false }).limit(limit)
@@ -691,10 +697,16 @@ function applyCatalogBrowseFilters<TRequest extends FinderCatalogBrowseFilterReq
     request = request.eq('type_prefix', TYPE_PREFIX_MAP[options.jewelryType])
   }
   if (options.material?.trim()) {
-    request = request.ilike('material', `%${escapeIlikePattern(options.material)}%`)
+    request = request.ilike(
+      'material',
+      `%${escapePostgrestIlikePattern(options.material)}%`,
+    )
   }
   if (options.mainStone?.trim()) {
-    request = request.ilike('main_stone', `%${escapeIlikePattern(options.mainStone)}%`)
+    request = request.ilike(
+      'main_stone',
+      `%${escapePostgrestIlikePattern(options.mainStone)}%`,
+    )
   }
   if (collectionIds) {
     request = request.in('collection_id', collectionIds)
@@ -714,7 +726,7 @@ async function loadCatalogFilterCollectionIds(
 
   let request = supabase.from('collections').select('id')
   if (collection) {
-    request = request.ilike('name', `%${escapeIlikePattern(collection)}%`)
+    request = request.ilike('name', `%${escapePostgrestIlikePattern(collection)}%`)
   }
   if (typeof options.collectionYear === 'number') {
     request = request.eq('collection_year', options.collectionYear)
@@ -730,7 +742,7 @@ async function loadFallbackCollectionIds(
   queryText: string,
   limit: number,
 ) {
-  const pattern = `%${escapeIlikePattern(queryText)}%`
+  const pattern = `%${escapePostgrestIlikePattern(queryText)}%`
   let request = supabase.from('collections').select('id').ilike('name', pattern)
   if (/^20[2-4]\d$/.test(queryText)) {
     request = supabase.from('collections').select('id').eq('collection_year', Number(queryText))
@@ -750,10 +762,6 @@ function filterCatalogRowsByLabel(
   return rows.filter((row) => {
     return deriveSparkleFinderCatalogLabel(row) === label
   })
-}
-
-function escapeIlikePattern(value: string) {
-  return value.trim().replace(/[%_]/g, (match) => `\\${match}`)
 }
 
 type FinderCatalogBrowseFilterRequest<TRequest> = {

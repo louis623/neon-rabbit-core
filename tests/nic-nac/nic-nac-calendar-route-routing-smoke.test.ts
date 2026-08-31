@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { TRADE_BOARD_GUIDED_START_RESPONSE } from '@/lib/nic-nac/workflows/trade-board-guided-start'
 
 const {
   streamTextMock,
@@ -22,6 +23,9 @@ const {
   getOrCreateTradeWorkflowContextMock,
   getOrCreateCalendarWorkflowContextMock,
   loadSuiteRepMemoryCardsMock,
+  loadOperatorSupportConversationMock,
+  insertOperatorSupportConversationMessageMock,
+  recordOperatorSupportApprovalEventMock,
 } = vi.hoisted(() => ({
   streamTextMock: vi.fn(),
   supabaseMock: {},
@@ -44,6 +48,9 @@ const {
   getOrCreateTradeWorkflowContextMock: vi.fn(),
   getOrCreateCalendarWorkflowContextMock: vi.fn(),
   loadSuiteRepMemoryCardsMock: vi.fn(),
+  loadOperatorSupportConversationMock: vi.fn(),
+  insertOperatorSupportConversationMessageMock: vi.fn(),
+  recordOperatorSupportApprovalEventMock: vi.fn(),
 }))
 
 vi.mock('ai', async (importOriginal) => {
@@ -113,7 +120,20 @@ vi.mock('@/lib/nic-nac/core/memory/rep-memory-cards', () => ({
   loadSuiteRepMemoryCards: loadSuiteRepMemoryCardsMock,
 }))
 
+vi.mock('@/lib/nic-nac/support-conversation', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('@/lib/nic-nac/support-conversation')>()
+  return {
+    ...actual,
+    loadOperatorSupportConversation: loadOperatorSupportConversationMock,
+    insertOperatorSupportConversationMessage:
+      insertOperatorSupportConversationMessageMock,
+    recordOperatorSupportApprovalEvent: recordOperatorSupportApprovalEventMock,
+  }
+})
+
 import { POST } from '@/app/api/nic-nac/route'
+import { runWithOperatorSupportRequestContext } from '@/lib/operator-support/request-context'
 
 function requestFor(text: string) {
   return requestForMessages([
@@ -133,6 +153,24 @@ function requestForMessages(messages: unknown[]) {
       conversationId: 'calendar-chaos-conversation',
       mode: 'workspace',
       messages,
+    }),
+  })
+}
+
+function supportRequestFor(text: string) {
+  return new Request('http://localhost/api/nic-nac', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      conversationId: 'support-session-1',
+      mode: 'workspace',
+      messages: [
+        {
+          id: 'support-user-1',
+          role: 'user',
+          parts: [{ type: 'text', text }],
+        },
+      ],
     }),
   })
 }
@@ -160,6 +198,9 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
     recordApprovalEventMock.mockResolvedValue({ replayed: false })
     createAdminClientMock.mockReturnValue(supabaseMock)
     loadSuiteRepMemoryCardsMock.mockResolvedValue([])
+    loadOperatorSupportConversationMock.mockResolvedValue([])
+    insertOperatorSupportConversationMessageMock.mockResolvedValue(undefined)
+    recordOperatorSupportApprovalEventMock.mockResolvedValue({ replayed: false })
     getOrCreateTradeBoardIntakeContextMock.mockResolvedValue({
       sessionBefore: null,
       sessionAfter: null,
@@ -229,6 +270,152 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
           parts: [
             { type: 'text', text: 'Hello, Brittany! How can I help you today?' },
           ],
+        }),
+      )
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
+
+  it('returns the exact guided Dance Floor starter without invoking the model or resolver', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    getOrCreateTradeBoardIntakeContextMock.mockResolvedValueOnce({
+      sessionBefore: null,
+      sessionAfter: {
+        id: 'trade-board-workflow-1',
+        repId: '11111111-1111-4111-8111-111111111111',
+        conversationId: 'calendar-chaos-conversation',
+        workflowType: 'trade_board_add_listing',
+        catalogMode: 'item_number',
+        status: 'active',
+        phase: 'details_capture',
+        known: {},
+        missing: ['itemNumber'],
+        blockers: [],
+        warnings: [],
+        metadata: {},
+        photos: [],
+      },
+      workflowIntents: ['trade_board'],
+      toolPolicySource: 'latest_turn_intent',
+      workflowPromptState: '',
+    })
+
+    try {
+      const response = await POST(
+        requestFor(
+          'Nic-Nac. I need to add a dancer to my dance floor, please.',
+        ),
+      )
+      const body = await response.text()
+
+      expect(response.status).toBe(200)
+      expect(body).toContain('1. Type the item number.')
+      expect(body).toContain('2. Upload a clear photo')
+      expect(body).toContain('3. Tell me you don’t have an item number.')
+      expect(streamTextMock).not.toHaveBeenCalled()
+      expect(completeAssistantMock).toHaveBeenCalledWith(
+        supabaseMock,
+        expect.objectContaining({
+          conversationId: 'calendar-chaos-conversation',
+          parts: [{ type: 'text', text: TRADE_BOARD_GUIDED_START_RESPONSE }],
+        }),
+      )
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'guided_trade_board_start',
+          status: 'complete',
+          toolNames: [],
+          usage: {
+            inputTokens: 0,
+            outputTokens: 0,
+            totalTokens: 0,
+            estimatedCostCents: 0,
+          },
+        }),
+      )
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
+
+  it('uses the same deterministic starter in an isolated operator-support conversation', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    getOrCreateTradeBoardIntakeContextMock.mockResolvedValueOnce({
+      sessionBefore: null,
+      sessionAfter: {
+        id: 'support-trade-board-workflow-1',
+        repId: '11111111-1111-4111-8111-111111111111',
+        conversationId: 'support-session-1',
+        workflowType: 'trade_board_add_listing',
+        catalogMode: 'item_number',
+        status: 'active',
+        phase: 'details_capture',
+        known: {},
+        missing: ['itemNumber'],
+        blockers: [],
+        warnings: [],
+        metadata: {},
+        photos: [],
+      },
+      workflowIntents: ['trade_board'],
+      toolPolicySource: 'latest_turn_intent',
+      workflowPromptState: '',
+    })
+
+    try {
+      const response = await runWithOperatorSupportRequestContext(
+        {
+          actor: {
+            mode: 'operator_support',
+            operatorRepId: 'operator-rep-1',
+            subjectRepId: '11111111-1111-4111-8111-111111111111',
+          },
+          session: {
+            id: 'support-session-1',
+            operatorRepId: 'operator-rep-1',
+            targetRepId: '11111111-1111-4111-8111-111111111111',
+            capabilities: ['nic_nac_chat'],
+          },
+          supabase: supabaseMock,
+          targetRep: {
+            id: '11111111-1111-4111-8111-111111111111',
+            auth_user_id: 'user-1',
+            email: 'kim@example.com',
+            display_name: 'Kim',
+            business_name: 'Kim’s Sparkle Site',
+            stripe_customer_id: null,
+            public_site_slug: 'kim',
+            time_zone: 'America/New_York',
+            status: 'active',
+          },
+        } as never,
+        () =>
+          POST(
+            supportRequestFor(
+              'Nic-Nac. I need to add a dancer to my dance floor, please.',
+            ),
+          ),
+      )
+      const body = await response.text()
+
+      expect(response.status).toBe(200)
+      expect(body).toContain('Absolutely—let’s add a dancer to your Dance Floor.')
+      expect(body).toContain('1. Type the item number.')
+      expect(body).toContain('3. Tell me you don’t have an item number.')
+      expect(streamTextMock).not.toHaveBeenCalled()
+      expect(loadOperatorSupportConversationMock).toHaveBeenCalled()
+      expect(insertOperatorSupportConversationMessageMock).toHaveBeenCalledTimes(2)
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'guided_trade_board_start',
+          productContext: expect.objectContaining({
+            surface: 'operator_support_workspace',
+          }),
         }),
       )
     } finally {
@@ -897,6 +1084,77 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
         expect.objectContaining({
           status: 'complete',
           errorMessage: 'empty_model_output_recovered',
+        }),
+      )
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
+
+  it('surfaces a resolver failure and records the run as error instead of complete', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    streamTextMock.mockImplementation((options: {
+      onFinish?: (event: { totalUsage: unknown }) => void
+    }) => {
+      options.onFinish?.({ totalUsage: { inputTokens: 10, outputTokens: 5 } })
+      return {
+        toUIMessageStream: async function* () {
+          yield {
+            type: 'tool-input-available',
+            toolCallId: 'tool-failed-1',
+            toolName: 'prepare_trade_board_work',
+            input: { action: 'add_piece' },
+          }
+          yield {
+            type: 'tool-output-available',
+            toolCallId: 'tool-failed-1',
+            output: {
+              ok: false,
+              errorTier: 'escalate',
+              code: 'PGRST100',
+              stage: 'database',
+              message: "Something unexpected happened. I've flagged this.",
+            },
+          }
+          yield { type: 'text-start', id: 'bad-success-text' }
+          yield {
+            type: 'text-delta',
+            id: 'bad-success-text',
+            delta: 'Great news—everything worked and your dancer is ready!',
+          }
+          yield { type: 'text-end', id: 'bad-success-text' }
+          yield {
+            type: 'finish',
+            finishReason: { unified: 'tool-calls', raw: undefined },
+          }
+        },
+      }
+    })
+
+    try {
+      const response = await POST(requestFor('Check Dance Floor piece ER13229'))
+      const body = await response.text()
+
+      expect(response.status).toBe(200)
+      expect(body).toContain('couldn’t check the Dance Floor catalog')
+      expect(body).toContain("haven’t changed anything")
+      expect(body).not.toContain('everything worked')
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'error',
+          executedToolNames: ['prepare_trade_board_work'],
+          toolFailures: [
+            {
+              toolName: 'prepare_trade_board_work',
+              errorTier: 'escalate',
+              code: 'PGRST100',
+              stage: 'database',
+            },
+          ],
+          errorMessage: 'tool_failure:prepare_trade_board_work:PGRST100',
         }),
       )
     } finally {

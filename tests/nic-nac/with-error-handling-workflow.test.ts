@@ -78,6 +78,29 @@ function makeWrapped(runId: string) {
   }
 }
 
+function makeResolverWrapped(runId: string) {
+  return withErrorHandling(
+    {
+      name: 'prepare_trade_board_work',
+      readOnly: true,
+      ctx: {
+        repId: 'rep-1',
+        conversationId: 'conversation-1',
+        runId,
+        supabase: {} as never,
+        activeTradeBoardWorkflow: workflow,
+      },
+    },
+    {
+      execute: async () => {
+        throw new Error('PGRST100 failed to parse logic tree')
+      },
+    } as never,
+  ) as unknown as {
+    execute: (input: unknown) => Promise<Record<string, unknown>>
+  }
+}
+
 describe('add_listing durable failure escalation', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -129,8 +152,34 @@ describe('add_listing durable failure escalation', () => {
     })
 
     expect(result).toMatchObject({ needsHumanReview: true })
-    expect(String(result.message)).toContain('confirmed photo are still saved')
+    expect(String(result.message)).toContain('still saved')
     expect(mocks.createSupportReport).toHaveBeenCalledTimes(1)
+  })
+
+  it('records resolver failures against the durable workflow instead of only logging an incident', async () => {
+    mocks.recordFailure.mockResolvedValue({
+      workflowId: 'workflow-1',
+      failureCount: 1,
+      workflowStatusAfter: 'active',
+      newlyEscalated: false,
+      sameRunReplay: false,
+    })
+
+    const result = await makeResolverWrapped('run-resolver-1').execute({
+      action: 'add_piece',
+      query: 'Dance Floor, please.',
+    })
+
+    expect(mocks.recordFailure).toHaveBeenCalledWith(
+      { admin: true },
+      expect.objectContaining({
+        sessionId: 'workflow-1',
+        toolName: 'prepare_trade_board_work',
+        runId: 'run-resolver-1',
+      }),
+    )
+    expect(result).toMatchObject({ ok: false, errorTier: 'escalate' })
+    expect(String(result.message)).toContain('catalog check failed')
   })
 
   it('does not duplicate the operator report for a replayed terminal run', async () => {

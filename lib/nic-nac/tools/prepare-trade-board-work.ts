@@ -13,6 +13,8 @@ import { getMyBoard } from '@/lib/services/trade-board'
 import { getTradeListingDisplayFields } from '@/lib/services/trade-listing-display'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { ToolDefinition } from './types'
+import type { TradeBoardIntakeSessionState } from '@/lib/nic-nac/workflows/trade-board-intake-types'
+import { TRADE_BOARD_GUIDED_START_RESPONSE } from '@/lib/nic-nac/workflows/trade-board-guided-start'
 
 const inputSchema = z.object({
   action: z.enum([
@@ -26,6 +28,7 @@ const inputSchema = z.object({
   query: z.string().optional(),
   catalogMode: z.enum(['item_number', 'non_item_number']).optional(),
   itemNumber: z.string().optional(),
+  designName: z.string().optional(),
   jewelryType: z.enum(['RG', 'NK', 'ER', 'ST', 'BR']).optional(),
   collectionFamily: z.string().optional(),
   material: z.string().optional(),
@@ -36,7 +39,26 @@ const inputSchema = z.object({
 type ToolInput = z.infer<typeof inputSchema>
 
 function searchQuery(input: ToolInput) {
-  return input.itemNumber?.trim() || input.query?.trim() || ''
+  return input.itemNumber?.trim() || input.designName?.trim() || input.query?.trim() || ''
+}
+
+function appOwnedInput(
+  input: ToolInput,
+  workflow: TradeBoardIntakeSessionState | null | undefined,
+): ToolInput {
+  if (!workflow || input.action !== 'add_piece') return input
+
+  return {
+    action: input.action,
+    catalogMode: workflow.catalogMode,
+    itemNumber: workflow.known.itemNumber,
+    designName: workflow.known.designName,
+    jewelryType: workflow.known.jewelryType,
+    collectionFamily: workflow.known.collectionFamily,
+    material: workflow.known.material,
+    mainStone: workflow.known.mainStone,
+    ringSize: workflow.known.ringSize,
+  }
 }
 
 function variantCandidate(result: Awaited<ReturnType<typeof searchJewelryDatabase>>[number]) {
@@ -107,12 +129,14 @@ function resolveCatalogMatch(
 export function makePrepareTradeBoardWorkTool(ctx: {
   repId: string
   supabase: SupabaseClient
+  activeTradeBoardWorkflow?: TradeBoardIntakeSessionState | null
 }) {
   return tool({
     description:
       'Read-only resolver for Dance Floor and jewelry database work. Use this first when the rep wants to add, remove, view, facilitate, or correct Dance Floor/jewelry database work. It decides whether the item is an existing catalog design, a new catalog intake, a dancer-management action, or a trade-request workflow before write tools run.',
     inputSchema,
-    execute: async (input) => {
+    execute: async (modelInput) => {
+      const input = appOwnedInput(modelInput, ctx.activeTradeBoardWorkflow)
       if (input.action === 'remove_piece') {
         const board = await getMyBoard(ctx.supabase, ctx.repId, {
           statusFilter: 'available',
@@ -208,8 +232,7 @@ export function makePrepareTradeBoardWorkTool(ctx: {
           catalogStatus: 'needs_identifying_info',
           allowedPath: 'ask_for_identifier',
           requiredBeforeAction: ['itemNumberOrLabelOrDescription'],
-          nextQuestion:
-            'Send the item number, a label/details photo, or a short description so I can check the jewelry database first.',
+          nextQuestion: TRADE_BOARD_GUIDED_START_RESPONSE,
           catalogDeletionAllowed: false,
         }
       }
@@ -342,5 +365,6 @@ export const prepareTradeBoardWorkTool: ToolDefinition = {
     makePrepareTradeBoardWorkTool({
       repId: ctx.repId,
       supabase: ctx.supabase,
+      activeTradeBoardWorkflow: ctx.activeTradeBoardWorkflow,
     }),
 }

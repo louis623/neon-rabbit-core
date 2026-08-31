@@ -16,6 +16,10 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import {
+  buildPostgrestIlikeAnyFilter,
+  escapePostgrestIlikePattern,
+} from '@/lib/services/postgrest-filter'
+import {
   type JewelryType,
   type SearchJewelryInput,
   type JewelryDatabaseResult,
@@ -89,10 +93,6 @@ export function normalizeJewelryMainStoneKey(
   return normalized || null
 }
 
-function escapeIlikePattern(value: string): string {
-  return value.replace(/[%_\\]/g, (match) => `\\${match}`)
-}
-
 function hasJewelryBrowseFilters(input: SearchJewelryInput): boolean {
   return Boolean(
     input.jewelryType ||
@@ -133,7 +133,7 @@ async function loadJewelryCollectionFilterIds(
 
   let request = supabase.from('collections').select('id')
   if (collection) {
-    request = request.ilike('name', `%${escapeIlikePattern(collection)}%`)
+    request = request.ilike('name', `%${escapePostgrestIlikePattern(collection)}%`)
   }
   if (typeof input.collectionYear === 'number') {
     request = request.eq('collection_year', input.collectionYear)
@@ -153,10 +153,10 @@ function applyJewelryBrowseFilters<TRequest extends JewelryBrowseFilterRequest<T
     request = request.eq('type_prefix', input.jewelryType)
   }
   if (input.material?.trim()) {
-    request = request.ilike('material', `%${escapeIlikePattern(input.material)}%`)
+    request = request.ilike('material', `%${escapePostgrestIlikePattern(input.material)}%`)
   }
   if (input.mainStone?.trim()) {
-    request = request.ilike('main_stone', `%${escapeIlikePattern(input.mainStone)}%`)
+    request = request.ilike('main_stone', `%${escapePostgrestIlikePattern(input.mainStone)}%`)
   }
   if (collectionIds) {
     request = request.in('collection_id', collectionIds)
@@ -537,14 +537,16 @@ export async function searchJewelryDatabase(
   }
 
   if (hasQuery && designs.length === 0) {
-    const pattern = `%${escapeIlikePattern(q)}%`
     let request = supabase
       .from('jewelry_designs')
       .select(
         'id, item_number, design_name, material, main_stone, bp_msrp, canonical_photo_url, type_prefix, search_tags, collection:collections(name, collection_year)'
       )
       .or(
-        `design_name.ilike.${pattern},material.ilike.${pattern},main_stone.ilike.${pattern},item_number.ilike.${pattern}`
+        buildPostgrestIlikeAnyFilter(
+          ['design_name', 'material', 'main_stone', 'item_number'],
+          q,
+        ),
       )
     request = applyJewelryBrowseFilters(request, input, collectionIds)
     const { data, error } = await request.limit(limit)

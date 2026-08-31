@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getAuthenticatedNicNacContext, AuthError } from '@/lib/nic-nac/auth'
+import { getPaidNicNacContext, AuthError } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
 import {
   updateRepWorkspaceMessageDelivery,
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
       ? viewValue as 'all' | 'team' | 'rep_network' | 'support' | 'sparkle_suite' | 'archived'
       : viewValue ? null : 'all'
     if (view === null) return NextResponse.json({ error: 'view is invalid.' }, { status: 400 })
-    const { repId } = await getAuthenticatedNicNacContext()
+    const { repId } = await getPaidNicNacContext()
     const result = await listRepWorkspaceInbox(createAdminClient(), repId, {
       limit,
       cursor,
@@ -127,7 +127,7 @@ export async function PATCH(request: Request) {
       )
     }
 
-    const { repId, supabase } = await getAuthenticatedNicNacContext()
+    const { repId, supabase } = await getPaidNicNacContext()
     const result = await updateRepWorkspaceMessageDelivery(supabase, repId, {
       deliveryId,
       read,

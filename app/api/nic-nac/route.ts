@@ -87,10 +87,15 @@ import { arbitrateNicNacWorkflowTurn } from '@/lib/nic-nac/workflows/workflow-tu
 import { summarizeHardFailDetection } from '@/lib/nic-nac/workflows/trade-board-intake-eval'
 import {
   getNicNacToolOnlyRecoveryText,
+  getNicNacToolFailure,
   isRenderableNicNacStreamChunk,
   NIC_NAC_EMPTY_RESPONSE_FALLBACK,
 } from '@/lib/nic-nac/core/stream-output-guard'
 import { buildPersonalizedRepGreeting } from '@/lib/nic-nac/core/rep-personalization'
+import {
+  shouldUseTradeBoardGuidedStart,
+  TRADE_BOARD_GUIDED_START_RESPONSE,
+} from '@/lib/nic-nac/workflows/trade-board-guided-start'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -666,6 +671,68 @@ export async function POST(request: Request) {
         workflowPromptState: '',
       }
   const activeTradeBoardWorkflow = tradeBoardWorkflowContext.sessionAfter
+  if (
+    mode === 'workspace' &&
+    activeTradeBoardWorkflow &&
+    shouldUseTradeBoardGuidedStart({
+      latestUserText,
+      workflow: activeTradeBoardWorkflow,
+    })
+  ) {
+    await completeAssistant(supabase, {
+      conversationId,
+      messageId: assistantMessageId,
+      parts: [{ type: 'text', text: TRADE_BOARD_GUIDED_START_RESPONSE }],
+    })
+    await logNicNacRun({
+      runId,
+      repId,
+      conversationId,
+      model: 'guided_trade_board_start',
+      productContext,
+      status: 'complete',
+      latencyMs: Date.now() - runStartedAt,
+      intents: ['trade_board'],
+      toolNames: [],
+      modelContext: {
+        originalMessageCount: messages.length,
+        modelMessageCount: 0,
+        droppedMessageCount: 0,
+        estimatedTokens: 0,
+        wasCompacted: false,
+      },
+      contextAssembly: assembledContext.telemetry,
+      usage: {
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        estimatedCostCents: 0,
+      },
+      errorMessage: 'guided_trade_board_start',
+      workflow: {
+        id: activeTradeBoardWorkflow.id,
+        type: activeTradeBoardWorkflow.workflowType,
+        phaseBefore:
+          tradeBoardWorkflowContext.sessionBefore?.phase ??
+          activeTradeBoardWorkflow.phase,
+        phaseAfter: activeTradeBoardWorkflow.phase,
+        statusBefore:
+          tradeBoardWorkflowContext.sessionBefore?.status ??
+          activeTradeBoardWorkflow.status,
+        statusAfter: activeTradeBoardWorkflow.status,
+        toolPolicySource: tradeBoardWorkflowContext.toolPolicySource,
+        photoRoles: [],
+        hardFailPhraseCount: 0,
+        hardFailPhrases: [],
+      },
+    })
+
+    return createNicNacStaticTextStreamResponse({
+      message: TRADE_BOARD_GUIDED_START_RESPONSE,
+      messageId: assistantMessageId,
+      headers: responseHeaders,
+    })
+  }
   const activeWorkflowContexts: ActiveNicNacWorkflowContext[] = []
   if (
     tradeBoardWorkflowContext.sessionAfter?.status === 'active' &&
@@ -889,6 +956,13 @@ export async function POST(request: Request) {
   let runUsage: NicNacRunUsage | undefined
   let streamErrorMessage: string | undefined
   let emptyOutputRecovered = false
+  const executedToolNames: string[] = []
+  const toolFailures: Array<{
+    toolName: string
+    errorTier: string
+    code: string | null
+    stage: string | null
+  }> = []
 
   // Server-owned ThinkingIndicator phase stream. The route emits transient
   // `data-thinking` signals so the client never has to sniff `parts`. State:
@@ -910,6 +984,7 @@ export async function POST(request: Request) {
       let pendingFinishChunk: Extract<UIMessageChunk, { type: 'finish' }> | null = null
       const toolNamesByCallId = new Map<string, string>()
       let toolOnlyRecoveryText: string | null = null
+      let toolFailureRecoveryText: string | null = null
 
       const emitHide = (reason: 'plain-text' | 'final-text' | 'finish' | 'error') => {
         if (!currentlyVisible) return
@@ -1031,10 +1106,29 @@ export async function POST(request: Request) {
           if (chunk.type === 'tool-output-available') {
             const toolName = toolNamesByCallId.get(chunk.toolCallId)
             if (toolName) {
+              executedToolNames.push(toolName)
+              const failure = getNicNacToolFailure(toolName, chunk.output)
+              if (failure) {
+                toolFailures.push({
+                  toolName: failure.toolName,
+                  errorTier: failure.errorTier,
+                  code: failure.code,
+                  stage: failure.stage,
+                })
+                toolFailureRecoveryText =
+                  getNicNacToolOnlyRecoveryText(toolName, chunk.output) ??
+                  NIC_NAC_EMPTY_RESPONSE_FALLBACK
+              }
               toolOnlyRecoveryText =
                 getNicNacToolOnlyRecoveryText(toolName, chunk.output) ??
                 toolOnlyRecoveryText
             }
+          }
+          if (
+            toolFailureRecoveryText &&
+            ['text-start', 'text-delta', 'text-end'].includes(chunk.type)
+          ) {
+            continue
           }
           if (isRenderableNicNacStreamChunk(chunk)) {
             sawRenderableOutput = true
@@ -1049,7 +1143,16 @@ export async function POST(request: Request) {
           }
           writer.write(chunk)
         }
-        if (!streamAborted && !streamErrorMessage && !sawRenderableOutput) {
+        if (!streamAborted && !streamErrorMessage && toolFailureRecoveryText) {
+          const fallbackTextId = randomUUID()
+          writer.write({ type: 'text-start', id: fallbackTextId })
+          writer.write({
+            type: 'text-delta',
+            id: fallbackTextId,
+            delta: toolFailureRecoveryText,
+          })
+          writer.write({ type: 'text-end', id: fallbackTextId })
+        } else if (!streamAborted && !streamErrorMessage && !sawRenderableOutput) {
           emptyOutputRecovered = true
           const fallbackTextId = randomUUID()
           writer.write({ type: 'text-start', id: fallbackTextId })
@@ -1116,10 +1219,17 @@ export async function POST(request: Request) {
           modelProvider: modelPolicy.provider,
           reasoningLevel: modelPolicy.reasoning,
           productContext,
-          status: streamErrorMessage ? 'error' : isAborted ? 'aborted' : 'complete',
+          status:
+            streamErrorMessage || toolFailures.length > 0
+              ? 'error'
+              : isAborted
+                ? 'aborted'
+                : 'complete',
           latencyMs: Date.now() - runStartedAt,
           intents: toolIntents,
           toolNames: activeToolNames,
+          executedToolNames,
+          toolFailures,
           modelContext: {
             originalMessageCount: messages.length,
             modelMessageCount: modelContext.messages.length,
@@ -1131,6 +1241,14 @@ export async function POST(request: Request) {
           usage: runUsage,
           errorMessage:
             streamErrorMessage ??
+            (toolFailures.length > 0
+              ? `tool_failure:${toolFailures
+                  .map(
+                    (failure) =>
+                      `${failure.toolName}:${failure.code ?? failure.errorTier}`,
+                  )
+                  .join(',')}`
+              : undefined) ??
             (emptyOutputRecovered ? 'empty_model_output_recovered' : undefined),
           workflow: activeTradeBoardWorkflow
             ? {
