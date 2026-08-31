@@ -4,6 +4,30 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 31, 2026 - Brittany onboarding guide content restoration
+
+- Audited all four published Sites versions and the richer historical
+  `apps/rep-onboarding` materials after Louis reported that the clean current
+  guide had lost useful depth. The published versions themselves were all
+  similarly brief; the substantive source material lived in the archived app
+  data and design notes.
+- Rebuilt the current Site without replacing its six-step flow or durable
+  progress IDs. Each step now expands into an at-a-glance summary, concrete
+  actions, rationale, and a clear **Ask Brittany when** boundary. Added the
+  official-source hierarchy, realistic startup guardrails, six official
+  resource links, and retained the private Brittany question thread.
+- Removed ambiguity around aging advice: historical Ship.com pricing and the
+  older 15-point/free-original loyalty example are explicitly examples to
+  confirm with Brittany, not current promises. No unnecessary-purchase links,
+  copied private media, credentials, or invite URLs were added.
+- Published Sites version 5 from source commit
+  `21598f8ea5441739c8c846733d7108fb1f0366d0` at the existing stable Site URL.
+  ESLint, production build, two focused render tests, desktop/mobile visual QA,
+  and read-only live invite smoke passed. No participant progress or message
+  was changed, and the main Sparkle Suite app was not deployed.
+
+---
+
 ## August 30, 2026 - Beverly public roster portrait correction
 
 - Diagnosed Beverly's visibly tilted Britt with Bling Join Team portrait as a

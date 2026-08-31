@@ -1,5 +1,27 @@
 # Decision Log
 
+## August 31, 2026 - New Rep Onboarding is layered, source-aware guidance
+
+**Keep the six-step overview, put depth behind it.** A new rep should be able
+to scan the whole path first, then open detailed instructions one step at a
+time. The six existing progress IDs remain the durable contract so a content
+upgrade does not discard participant state.
+
+**Official sources control; Brittany supplies current team practice.** Bomb
+Party University and current official policies govern training, account,
+payment, shipping, return, and income information. Brittany may add current
+team workflow and practical coaching. The Site organizes those sources and
+routes uncertainty to Brittany; it must not silently elevate historical team
+examples into current policy or promises.
+
+**A richer guide must keep privacy and spending guardrails visible.** Do not
+collect passwords, verification codes, banking details, government IDs, or
+other sensitive account information in the team thread. Recommend supply
+categories and readiness checks, not unnecessary purchases or unverified
+vendor/pricing claims.
+
+---
+
 ## August 30, 2026 - Public Team Card photos use staged, rep-confirmed uploads
 
 **A profile-photo upload is not the same as publishing a card.** The team lead

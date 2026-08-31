@@ -1,5 +1,31 @@
 # Project State
 
+## August 31, 2026 - Brittany New Rep Onboarding guide restored
+
+- Published Sites version 5 of Brittany's private-link New Rep Onboarding guide
+  at `https://brittwithbling-start-strong.louis526569.chatgpt.site`. The public
+  site URL remains stable; private invite tokens were neither recorded nor
+  changed.
+- Preserved the six durable progress-step IDs and the clean overview while
+  restoring a detailed playbook beneath it: action lists, reasons, escalation
+  prompts, official-resource links, realistic first-live guardrails, and the
+  existing private Ask Brittany thread.
+- The guide now states the source hierarchy explicitly: current Bomb Party
+  University and official policy control; Brittany supplies current team
+  workflow; the guide organizes rather than replaces either. Historical
+  shipping-cost and loyalty-point examples are labeled as unverified until
+  Brittany confirms them.
+- Sites source commit `21598f8ea5441739c8c846733d7108fb1f0366d0`
+  passed ESLint, a production vinext build, focused server-render tests, and
+  desktop/mobile visual review. Read-only live smoke on an existing invite
+  confirmed all six detail panels, official resources, progress controls, and
+  the private question surface. No progress, question, customer record,
+  Sparkle Suite production deployment, DNS, or billing state changed.
+
+**Last updated:** August 31, 2026
+
+---
+
 ## August 30, 2026 Release - Beverly roster portrait straightened
 
 - Removed Beverly's one-off `object-left rotate-left` presentation class from

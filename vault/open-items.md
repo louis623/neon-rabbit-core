@@ -5,6 +5,12 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Confirm Brittany's current shipping and loyalty workflow for New Rep
+  Onboarding** - the restored guide keeps the older Ship.com/$19 and
+  15-point/free-original references only as clearly labeled historical examples.
+  Replace or remove those examples after Brittany confirms the current team
+  process; current Bomb Party policy remains controlling in the meantime.
+
 - [x] **Audit Kim's Workspace parity and repair Nic-Nac** - completed August
   30 in final application tip `db801a8e` and production deployment
   `dpl_9G6wf3bzgXiJP2cv2ndhoetMd4QN`. The existing Live Queue assignment now
