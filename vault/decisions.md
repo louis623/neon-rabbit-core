@@ -1,5 +1,26 @@
 # Decision Log
 
+## August 31, 2026 - Onboarding Nic-Nac is scoped guidance with deliberate handoff
+
+**Nic-Nac answers from the onboarding guide, not from an unrestricted model.**
+The standalone New Rep Onboarding Site uses curated answers and section links
+for common setup questions. This keeps the helper predictable, cost-free, and
+aligned with the same official-source hierarchy as the guide.
+
+**Escalation prepares; the participant sends.** Unknown or sensitive questions
+populate the existing Ask Brittany composer so the participant can review the
+wording and deliberately send it. Nic-Nac must never silently contact Brittany,
+claim that a handoff occurred, or collect passwords, verification codes,
+banking data, government IDs, or other sensitive information.
+
+**Supply links are optional comparisons, not a prescribed purchase cart.** The
+historical Amazon examples may remain as convenient starting points only when
+the Site labels them by timing, encourages use of suitable items already owned,
+and tells reps to confirm uncertain or expensive purchases with Brittany.
+Availability, price, seller, and current Bomb Party requirements may change.
+
+---
+
 ## August 31, 2026 - New Rep Onboarding is layered, source-aware guidance
 
 **Keep the six-step overview, put depth behind it.** A new rep should be able

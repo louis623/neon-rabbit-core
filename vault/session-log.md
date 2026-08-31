@@ -4,6 +4,32 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 31, 2026 - Brittany onboarding helper and supply binder restoration
+
+- Restored the two historical onboarding features Louis remembered: the
+  floating Nic-Nac question helper and the detailed supply resource list. The
+  current six-step flow, durable progress IDs, and private Ask Brittany thread
+  remain intact.
+- Implemented Nic-Nac as bounded guide retrieval with six quick questions and
+  one prompt on every step. Known questions receive curated guide answers;
+  unknown or sensitive questions are copied into the existing Ask Brittany
+  composer for the participant to review and deliberately send. No AI call,
+  background message, or automatic escalation occurs.
+- Restored all 12 saved historical Amazon examples and organized them by setup
+  timing. Buying guardrails identify them as comparison links rather than a
+  required cart, encourage reuse of suitable supplies, and require confirmation
+  before uncertain or expensive purchases. Amazon blocked most automated page
+  reads, so the release does not claim every saved listing is currently active.
+- Committed and pushed Sites source
+  `e109ed8d1669d2e8df4eb10b9bac4d668ebb6ed8`, published Sites version 6 as
+  deployment `appgdep_6a955f2f54288191a07660c617eda53a`, and confirmed the
+  stable live Site renders 12 supply cards, 12 links, six step prompts, and the
+  helper. ESLint, production build, focused tests, local interaction smoke, and
+  live read-only smoke passed. No participant progress or Brittany message was
+  changed, and the main Sparkle Suite app was not deployed.
+
+---
+
 ## August 31, 2026 - Brittany onboarding guide content restoration
 
 - Audited all four published Sites versions and the richer historical

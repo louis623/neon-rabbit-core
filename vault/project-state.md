@@ -1,5 +1,32 @@
 # Project State
 
+## August 31, 2026 - Brittany onboarding Nic-Nac and supply binder restored
+
+- Published Sites version 6 of Brittany's private-link New Rep Onboarding guide
+  at the existing stable Site URL. The release restores the older onboarding
+  Nic-Nac helper and a 12-item categorized supply binder without changing any
+  invite token, participant progress, or private Brittany message.
+- Nic-Nac is intentionally a scoped, deterministic guide assistant rather than
+  an autonomous model. It answers from the onboarding content, links back to
+  the relevant guide section, and prepares unknown or sensitive questions for
+  review in Ask Brittany; it never silently sends them.
+- The supply binder preserves the 12 saved Amazon examples from the historical
+  onboarding app, groups them by timing, and states that they are comparison
+  examples rather than a required cart. Reps are told to use suitable items
+  they already own and confirm uncertain or expensive purchases before buying.
+  Current Amazon listing availability was not independently confirmed for every
+  saved example.
+- Sites source commit `e109ed8d1669d2e8df4eb10b9bac4d668ebb6ed8`
+  passed ESLint, production build, focused render tests, local interaction QA,
+  and live read-only smoke. Published Sites deployment
+  `appgdep_6a955f2f54288191a07660c617eda53a` visibly served all 12 supply
+  cards, 12 Amazon links, six step prompts, and the restored helper. The main
+  Sparkle Suite application, DNS, billing, and customer data were not changed.
+
+**Last updated:** August 31, 2026
+
+---
+
 ## August 31, 2026 - Brittany New Rep Onboarding guide restored
 
 - Published Sites version 5 of Brittany's private-link New Rep Onboarding guide

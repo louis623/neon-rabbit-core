@@ -9,7 +9,10 @@ future work.
   Onboarding** - the restored guide keeps the older Ship.com/$19 and
   15-point/free-original references only as clearly labeled historical examples.
   Replace or remove those examples after Brittany confirms the current team
-  process; current Bomb Party policy remains controlling in the meantime.
+  process; current Bomb Party policy remains controlling in the meantime. The
+  12 restored Amazon supply links are also saved comparison examples, not a
+  required cart; review their continued usefulness with Brittany and replace
+  any stale listing rather than promising current availability or price.
 
 - [x] **Audit Kim's Workspace parity and repair Nic-Nac** - completed August
   30 in final application tip `db801a8e` and production deployment
