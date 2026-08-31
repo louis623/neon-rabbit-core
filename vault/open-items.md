@@ -5,6 +5,15 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Activate and release team-branded onboarding links** - Codex Sites
+  version 9 and application commit `4913f93a` are ready. Sign in to GoDaddy,
+  add the custom-domain CNAME and validation TXT records requested by Codex
+  Sites for `onboarding.yoursparklesuite.com`, wait for SSL/hostname activation,
+  then manually deploy the exact active-branch tip and smoke-test a safe
+  Team Management link creation. Confirm new links use
+  `/virtuous-fizzers?invite=<opaque-code>` and that the old Sites origin stays
+  valid for existing private invitations. Never record or expose invite tokens.
+
 - [x] **Simplify Brittany's onboarding guide and make Nic-Nac the first stop** -
   completed August 31 in Sites source commit
   `ec82456a2e0f492520139649acf4fa308ad89fb5`, version 8, and deployment

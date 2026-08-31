@@ -1,5 +1,28 @@
 # Project State
 
+## August 31, 2026 - Team-branded onboarding address prepared
+
+- New Rep Onboarding links are now designed to use the Sparkle Suite-owned
+  address `https://onboarding.yoursparklesuite.com/<team-slug>?invite=<opaque-code>`.
+  For Brittany, the managed team name **The Virtuous Fizzers** normalizes to
+  `virtuous-fizzers`. The individual invite remains an opaque private code;
+  no person name, email address, or phone number is placed in the URL.
+- Application commit `4913f93a35a703cf4b029b58815e3800bc7c7d33` is pushed on
+  `codex/nic-nac-trade-hardening`. It resolves the managed team name
+  server-side, ignores caller-supplied base URLs, supports the new origin in
+  CORS, and keeps the legacy Codex Sites origin allowed so existing links
+  continue to work.
+- Sites version 9 was published from source commit
+  `086bc88128f7a84c58a958c50c0eddfa3f73ccef`; it supports the team-slug route.
+  The custom domain has been registered with Codex Sites but is pending the
+  required GoDaddy DNS records and SSL activation. Do not deploy the main
+  Sparkle Suite application until that hostname resolves, or newly generated
+  links would lead to an inactive address.
+
+**Last updated:** August 31, 2026
+
+---
+
 ## August 31, 2026 - Brittany team-information first-step follow-up
 
 - Published Sites version 8 of Brittany's private New Rep Onboarding guide.

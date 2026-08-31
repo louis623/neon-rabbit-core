@@ -1,5 +1,25 @@
 # Decision Log
 
+## August 31, 2026 - Team onboarding links use a Sparkle Suite-owned host
+
+**Use one Sparkle Suite-owned onboarding host with a managed-team path.** New
+Rep Onboarding remains hosted through Codex Sites, but its public address must
+not contain Louis's personal Sites workspace identifier. The durable pattern is
+`onboarding.yoursparklesuite.com/<team-slug>?invite=<opaque-code>`.
+
+**The team owns the readable portion; the invite owns access.** Normalize the
+managed team name to a URL-safe slug (dropping a leading “The” for readability)
+and use a cryptographically opaque per-participant invite code for distinction.
+Never put a new rep's name, email, phone, or other personal information into
+the link.
+
+**Generate the address only from trusted server-side team data.** Team
+Management must ignore any caller-provided base URL. Keep the older Codex Sites
+origin in CORS while invites using it remain valid, then retire it only after a
+separate migration/expiration decision.
+
+---
+
 ## August 31, 2026 - New Rep Onboarding uses one progressive path and Nic-Nac first
 
 **Show one journey, reveal depth when the rep asks for it.** The six durable

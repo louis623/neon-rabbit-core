@@ -4,6 +4,27 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 31, 2026 - Team-branded onboarding link foundation
+
+- Chose a Sparkle Suite-owned URL pattern for all Team Management onboarding
+  links: `onboarding.yoursparklesuite.com/<team-slug>?invite=<opaque-code>`.
+  This removes the personal Codex workspace identifier while preserving Codex
+  Sites hosting and an opaque per-participant invite.
+- Published Codex Sites version 9 from source commit
+  `086bc88128f7a84c58a958c50c0eddfa3f73ccef`, adding the route that accepts a
+  team slug. The existing legacy host remains live for current invitations.
+- Application commit `4913f93a35a703cf4b029b58815e3800bc7c7d33` was committed
+  and pushed. It derives the managed team server-side, produces the branded
+  path, rejects arbitrary client base URLs, and allows both old and new Site
+  origins for the private-token API.
+- Focused application tests, application production build, Site lint, Site
+  production build, and Site render tests passed. Codex Sites accepted the
+  custom hostname; activation remains blocked only on adding its verification
+  and CNAME records at GoDaddy. The main application was intentionally not
+  deployed before DNS activation so no live Workspace creates a broken link.
+
+---
+
 ## August 31, 2026 - Brittany team-information onboarding follow-up
 
 - Replaced the redundant **Quick check** and **Do this** areas in all six
