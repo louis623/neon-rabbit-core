@@ -5,6 +5,14 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [x] **Simplify Brittany's onboarding guide and make Nic-Nac the first stop** -
+  completed August 31 in Sites source commit
+  `a8d746a6e4e132798495fcfb6b9e6ba82e316e99`, version 7, and deployment
+  `appgdep_6a95af5857a88191aa500cf3a6d54173`. The Site now uses one expandable
+  six-step path, keeps supporting material collapsed, removes redundant help
+  and manual UI, and gives Nic-Nac curated current-rule guidance with privacy
+  and deliberate Brittany-handoff guardrails.
+
 - [ ] **Confirm Brittany's current shipping and loyalty workflow for New Rep
   Onboarding** - the restored guide keeps the older Ship.com/$19 and
   15-point/free-original references only as clearly labeled historical examples.

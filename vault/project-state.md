@@ -1,5 +1,34 @@
 # Project State
 
+## August 31, 2026 - Brittany onboarding simplified and Nic-Nac deepened
+
+- Published Sites version 7 of Brittany's private New Rep Onboarding guide at
+  the existing stable Site URL. The six durable progress steps remain, but the
+  duplicate overview/manual structure is now one compact, expandable journey;
+  all six help-request buttons, the redundant source-hierarchy section, and the
+  suggested-question chips were removed.
+- Nic-Nac is now the clearly labeled first stop for common onboarding questions.
+  His curated knowledge covers BPU, PayQuicker safety, first-live setup,
+  supplies, Party Rep shipping responsibility, returns and replacements,
+  customer privacy, income-claim guardrails, and current official resources.
+  Sensitive account details are refused, and an unknown question is prepared
+  for Brittany to review rather than sent automatically.
+- Supplies are grouped into three collapsed sections and all 12 historical
+  comparison links remain. Current official Bomb Party shipping, return,
+  customer replacement, and 2025 income-disclosure sources were used for the
+  rule-sensitive guidance.
+- Sites source commit `a8d746a6e4e132798495fcfb6b9e6ba82e316e99`
+  passed ESLint, production build, focused render tests, desktop/mobile visual
+  QA, Nic-Nac interaction checks, and the production missing-link guard smoke.
+  It was published as Sites version 7 / deployment
+  `appgdep_6a95af5857a88191aa500cf3a6d54173`. No participant progress,
+  Brittany message, invite token, Sparkle Suite application deployment, or
+  production customer data changed.
+
+**Last updated:** August 31, 2026
+
+---
+
 ## August 31, 2026 - Brittany onboarding Nic-Nac and supply binder restored
 
 - Published Sites version 6 of Brittany's private-link New Rep Onboarding guide

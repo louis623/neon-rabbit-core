@@ -4,6 +4,33 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 31, 2026 - Brittany onboarding simplification and Nic-Nac expansion
+
+- Reworked the standalone onboarding Site around one expandable six-step
+  journey so a new rep sees a simple starting path without losing the detailed
+  checks, actions, rationale, progress tracking, supply links, official
+  resources, or private Ask Brittany thread.
+- Implemented all nine annotations: plain welcome and section copy; removed the
+  six help-request controls, duplicate Detailed Guide, source-hierarchy block,
+  backend/history wording, and suggested-question chips; grouped the 12 supply
+  cards under three collapsed headings; and added prominent Ask Nic-Nac-first
+  guidance in both the path and Brittany sections.
+- Expanded curated Nic-Nac answers using current official Bomb Party shipping,
+  return, customer-replacement, and 2025 income-disclosure material. He now
+  handles common BPU, payout-safety, setup, supplies, shipping, returns,
+  customer-care, privacy, and income-claim questions; refuses private account
+  details; and prepares unknown questions for deliberate review instead of
+  sending them.
+- Committed and pushed Sites source
+  `a8d746a6e4e132798495fcfb6b9e6ba82e316e99`, saved version 7, and published
+  deployment `appgdep_6a95af5857a88191aa500cf3a6d54173` at the stable Site
+  URL. ESLint, production build, two focused tests, desktop/mobile visual QA,
+  guided-answer/privacy/handoff interaction checks, and a live missing-link
+  guard smoke passed. The private invite was not recorded or changed, and no
+  participant progress or message was submitted.
+
+---
+
 ## August 31, 2026 - Brittany onboarding helper and supply binder restoration
 
 - Restored the two historical onboarding features Louis remembered: the

@@ -1,5 +1,27 @@
 # Decision Log
 
+## August 31, 2026 - New Rep Onboarding uses one progressive path and Nic-Nac first
+
+**Show one journey, reveal depth when the rep asks for it.** The six durable
+progress steps are both the overview and the detailed guide. Each step expands
+in place, while supporting tips and supplies stay collapsed until needed. Do
+not add a second manual that repeats the same sequence.
+
+**Nic-Nac is the first line for routine onboarding, not a replacement for
+official support or Brittany.** Curated answers should cover the common setup,
+training, supplies, shipping, returns, replacements, privacy, and income-claim
+questions that create avoidable team-lead work. Rule-sensitive answers must
+point to current official Bomb Party material. Private account data stays out
+of the guide, and an unknown question is prepared for the rep to review rather
+than silently sent to Brittany.
+
+**Keep all useful material without putting it all on the first screen.** Supply
+examples, official links, safety reminders, and step details remain available,
+but concise headings and closed disclosure panels protect a new rep from the
+technical-manual effect.
+
+---
+
 ## August 31, 2026 - Onboarding Nic-Nac is scoped guidance with deliberate handoff
 
 **Nic-Nac answers from the onboarding guide, not from an unrestricted model.**
