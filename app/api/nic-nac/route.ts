@@ -86,6 +86,7 @@ import {
 import { arbitrateNicNacWorkflowTurn } from '@/lib/nic-nac/workflows/workflow-turn-arbitration'
 import { summarizeHardFailDetection } from '@/lib/nic-nac/workflows/trade-board-intake-eval'
 import {
+  getNicNacToolOnlyRecoveryText,
   isRenderableNicNacStreamChunk,
   NIC_NAC_EMPTY_RESPONSE_FALLBACK,
 } from '@/lib/nic-nac/core/stream-output-guard'
@@ -907,6 +908,8 @@ export async function POST(request: Request) {
       let sawRenderableOutput = false
       let streamAborted = false
       let pendingFinishChunk: Extract<UIMessageChunk, { type: 'finish' }> | null = null
+      const toolNamesByCallId = new Map<string, string>()
+      let toolOnlyRecoveryText: string | null = null
 
       const emitHide = (reason: 'plain-text' | 'final-text' | 'finish' | 'error') => {
         if (!currentlyVisible) return
@@ -1022,6 +1025,17 @@ export async function POST(request: Request) {
           if (chunk.type === 'abort' || chunk.type === 'error') {
             streamAborted = true
           }
+          if (chunk.type === 'tool-input-available') {
+            toolNamesByCallId.set(chunk.toolCallId, chunk.toolName)
+          }
+          if (chunk.type === 'tool-output-available') {
+            const toolName = toolNamesByCallId.get(chunk.toolCallId)
+            if (toolName) {
+              toolOnlyRecoveryText =
+                getNicNacToolOnlyRecoveryText(toolName, chunk.output) ??
+                toolOnlyRecoveryText
+            }
+          }
           if (isRenderableNicNacStreamChunk(chunk)) {
             sawRenderableOutput = true
           }
@@ -1042,7 +1056,7 @@ export async function POST(request: Request) {
           writer.write({
             type: 'text-delta',
             id: fallbackTextId,
-            delta: NIC_NAC_EMPTY_RESPONSE_FALLBACK,
+            delta: toolOnlyRecoveryText ?? NIC_NAC_EMPTY_RESPONSE_FALLBACK,
           })
           writer.write({ type: 'text-end', id: fallbackTextId })
         }

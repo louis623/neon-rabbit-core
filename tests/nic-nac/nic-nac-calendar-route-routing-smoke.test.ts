@@ -873,7 +873,11 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
           yield {
             type: 'tool-output-available',
             toolCallId: 'tool-1',
-            output: { allowedPath: 'ask_for_identifier' },
+            output: {
+              allowedPath: 'ask_for_identifier',
+              nextQuestion:
+                'Send the item number or a label/details photo so I can check it first.',
+            },
           }
           yield {
             type: 'finish',
@@ -888,7 +892,7 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
       const body = await response.text()
 
       expect(response.status).toBe(200)
-      expect(body).toContain('Please send that again')
+      expect(body).toContain('Send the item number or a label/details photo')
       expect(logNicNacRunMock).toHaveBeenCalledWith(
         expect.objectContaining({
           status: 'complete',

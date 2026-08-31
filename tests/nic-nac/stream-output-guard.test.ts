@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
+  getNicNacToolOnlyRecoveryText,
   isRenderableNicNacStreamChunk,
   NIC_NAC_EMPTY_RESPONSE_FALLBACK,
 } from '@/lib/nic-nac/core/stream-output-guard'
@@ -69,5 +70,26 @@ describe('Nic-Nac stream output guard', () => {
     expect(routeSource).toContain('!sawRenderableOutput')
     expect(routeSource).toContain('NIC_NAC_EMPTY_RESPONSE_FALLBACK')
     expect(routeSource).toContain("'empty_model_output_recovered'")
+  })
+
+  it('turns resolver-only Dance Floor and Calendar completions into useful next questions', () => {
+    expect(
+      getNicNacToolOnlyRecoveryText('prepare_trade_board_work', {
+        requiredBeforeAction: [
+          'itemNumber',
+          'designName',
+          'collectionName',
+          'jewelryFrontPhoto',
+        ],
+      }),
+    ).toContain('Send the item number')
+    expect(
+      getNicNacToolOnlyRecoveryText('prepare_calendar_work', {
+        intent: 'add_show',
+      }),
+    ).toContain('title, date and start time')
+    expect(
+      getNicNacToolOnlyRecoveryText('list_my_shows', { events: [] }),
+    ).toBeNull()
   })
 })
