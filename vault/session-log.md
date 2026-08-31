@@ -5475,3 +5475,21 @@ Lessons retained:
   fixtures; the production build TypeScript gate is green.
 - Kim's account, conversation rows, workflow rows, calendar, Dance Floor, and
   all other customer data were inspected read-only and were not changed.
+- Final release `b7101c08` added resolver-aware recovery text, then passed the
+  exact live sequence that failed in the meeting: a Dance Floor request followed
+  by a Calendar request in the same conversation. Both replies were visible;
+  Calendar used its own workflow rather than the stale Dance Floor workflow.
+
+**Lessons learned:**
+- A provider run marked `complete` is not sufficient evidence of a usable
+  Nic-Nac reply. The output guard must define visibility from the chat
+  renderer's contract, not from internal stream protocol events.
+- A plain-conversation smoke cannot prove tool-backed reliability. Regression
+  coverage for durable workflows must include a multi-turn product switch so a
+  stale workflow cannot silently capture the next explicit request.
+- Deterministic server-side recovery is required for empty or resolver-only
+  model output; client hydration recovery remains a separate safeguard for a
+  saved visible reply that the browser has not rendered.
+- The remaining operational gap is continuous assurance: the exact synthetic
+  two-turn workflow replay is verified at release time but is not yet a
+  scheduled canary.

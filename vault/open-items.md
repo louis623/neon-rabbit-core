@@ -524,3 +524,13 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [ ] Have the first paying founder customer install the supported Chrome
   extension, enter the assigned sync code, and complete one real queue
   sync/readback before treating the device handoff as fully proven.
+
+## Nic-Nac reliability
+
+- [ ] **Add a scheduled, isolated Nic-Nac cross-workflow canary** — run a
+  disposable reviewer conversation through a Dance Floor intake followed by an
+  explicit Calendar request, assert that both replies contain visible
+  customer-facing output and that Calendar does not reuse stale Dance Floor
+  workflow state, then clean up all synthetic records. Alert on failure. Do
+  not use Louis's or any customer's account, and do not create customer-facing
+  changes, provider actions, or Live Queue state as part of the canary.

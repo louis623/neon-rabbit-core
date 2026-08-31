@@ -2527,5 +2527,15 @@ Verification passed:
 - Durable workflow state is turn-arbitrated: explicit Calendar, Dance Floor,
   or other new product intents suspend unrelated active workflows for that
   turn, while passive continuation replies can resume the applicable workflow.
-- The change has passed 194 focused Nic-Nac tests, changed-file lint, and the
-  full production build. No customer data repair or reset was required.
+- The first repair exposed a resolver-only edge: an internal tool result had
+  incorrectly been treated as customer-visible output. The final repair makes
+  resolver-only Dance Floor and Calendar completions produce an actionable,
+  deterministic follow-up question before the assistant response is completed.
+- Final application tip `b7101c08` was manually released after `90e4bbec`.
+  The exact live two-turn replay (Dance Floor followed by an explicit Calendar
+  request in the same conversation) returned visible replies and selected the
+  correct Calendar workflow rather than stale Dance Floor state.
+- The change has passed 195 focused Nic-Nac tests, changed-file lint, and the
+  full production build. No customer data repair or reset was required. There
+  is not yet a scheduled synthetic canary for this exact cross-workflow path;
+  that remaining assurance gap is tracked in `vault/open-items.md`.

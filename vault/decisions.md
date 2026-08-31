@@ -1963,3 +1963,21 @@ the $49.99 setup fee and first $49.99 month; months 2-12 remain $49.99 and month
 Reason: This matches the approved first-20 offer, prevents synthetic history
 from consuming a scarce founder slot, and keeps initial payment and later
 automatic billing explicit.
+
+## 2026-08-31 - Nic-Nac must complete with a customer-visible response
+
+Decision: Nic-Nac's completion contract is defined by content the chat can
+actually render: substantive text, a visible approval request, or a supported
+interactive card. Internal tool protocol and tool-output chunks do not satisfy
+that contract. If a provider or resolver ends without customer-visible output,
+the server emits a safe deterministic recovery reply before the turn completes.
+Explicit new product requests also arbitrate durable workflow state for that
+turn, suspending unrelated active workflows while allowing passive replies to
+continue their current work.
+
+Reason: The production meeting incident showed that a `complete` assistant row
+containing only internal resolver output is functionally blank, and that stale
+Dance Floor state can otherwise capture an explicit Calendar request. This
+server-side invariant protects the customer independently of browser hydration
+and model follow-through; release proof must include a tool-backed, multi-turn
+product-switch replay.
