@@ -91,6 +91,13 @@ describe('/api/team-onboarding/access/[token]', () => {
     expect(allowed.headers.get('access-control-allow-origin')).toBe(
       'https://brittwithbling-start-strong.louis526569.chatgpt.site',
     )
+    const brandedRequest = new Request(
+      'http://localhost/api/team-onboarding/access/token-123',
+      { headers: { origin: 'https://onboarding.yoursparklesuite.com' } },
+    )
+    expect(OPTIONS_ACCESS(brandedRequest).headers.get('access-control-allow-origin')).toBe(
+      'https://onboarding.yoursparklesuite.com',
+    )
     expect(progress.headers.get('access-control-allow-methods')).toContain('POST')
     expect(message.headers.get('access-control-allow-headers')).toBe('Content-Type')
     expect(rejected.headers.get('access-control-allow-origin')).toBeNull()

@@ -130,7 +130,7 @@ const PRIVATE_PARTICIPANT_SELECT = `${PARTICIPANT_SELECT}, access_token_hash`
 const PROGRESS_SELECT = 'participant_id, step_id, status, completed_at, updated_at'
 const MESSAGE_SELECT = 'id, participant_id, sender_type, body, read_at, created_at'
 const DEFAULT_ONBOARDING_BASE_URL =
-  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
+  'https://onboarding.yoursparklesuite.com'
 
 function normalizeText(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
@@ -209,10 +209,64 @@ export function createTeamOnboardingToken() {
   return randomBytes(24).toString('base64url')
 }
 
-function buildAccessUrl(baseUrl: string | undefined, token: string) {
+export function createTeamOnboardingUrlSlug(teamName: unknown) {
+  return (
+    normalizeText(teamName)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .replace(/^the-/, '')
+      .slice(0, 64) || 'team'
+  )
+}
+
+function buildAccessUrl(
+  baseUrl: string | undefined,
+  token: string,
+  teamName: unknown,
+) {
   const url = new URL(baseUrl || DEFAULT_ONBOARDING_BASE_URL)
+  const basePath = url.pathname.replace(/\/+$/, '')
+  url.pathname = `${basePath}/${createTeamOnboardingUrlSlug(teamName)}`
+  url.hash = ''
   url.searchParams.set('invite', token)
   return url.toString()
+}
+
+export async function getTeamOnboardingTeamName(
+  supabase: SupabaseClient,
+  ownerRepId: string,
+) {
+  const [settingsResult, repResult] = await Promise.all([
+    supabase
+      .from('site_settings')
+      .select('team_name')
+      .eq('rep_id', ownerRepId)
+      .maybeSingle(),
+    supabase
+      .from('reps')
+      .select('business_name')
+      .eq('id', ownerRepId)
+      .maybeSingle(),
+  ])
+
+  if (settingsResult.error || repResult.error) {
+    throw toServiceError(
+      'TEAM_ONBOARDING_TEAM_NAME_LOOKUP_FAILED',
+      'failed to load the onboarding team name',
+      "I couldn't prepare that team's onboarding address right now.",
+      settingsResult.error ?? repResult.error,
+    )
+  }
+
+  const teamName = normalizeText(
+    (settingsResult.data as { team_name?: unknown } | null)?.team_name,
+  )
+  const businessName = normalizeText(
+    (repResult.data as { business_name?: unknown } | null)?.business_name,
+  )
+
+  return teamName || businessName || 'Team'
 }
 
 async function touchParticipantActivity(
@@ -265,6 +319,7 @@ export async function createTeamOnboardingParticipant(
     contactEmail?: unknown
     joinTeamMemberId?: unknown
     baseUrl?: string
+    teamName?: unknown
     tokenFactory?: () => string
   },
 ) {
@@ -333,7 +388,7 @@ export async function createTeamOnboardingParticipant(
 
   return {
     participant: mapParticipantRow(data as ParticipantRow),
-    accessUrl: buildAccessUrl(input.baseUrl, token),
+    accessUrl: buildAccessUrl(input.baseUrl, token, input.teamName),
   }
 }
 
@@ -343,6 +398,7 @@ export async function refreshTeamOnboardingParticipantAccess(
   participantId: string,
   input: {
     baseUrl?: string
+    teamName?: unknown
     tokenFactory?: () => string
   } = {},
 ) {
@@ -376,7 +432,7 @@ export async function refreshTeamOnboardingParticipantAccess(
 
   return {
     participant: mapParticipantRow(data as ParticipantRow),
-    accessUrl: buildAccessUrl(input.baseUrl, token),
+    accessUrl: buildAccessUrl(input.baseUrl, token, input.teamName),
   }
 }
 

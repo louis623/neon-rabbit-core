@@ -3,6 +3,7 @@ import { ServiceError, errors } from '@/lib/services/errors'
 
 const getPaidNicNacContextMock = vi.fn()
 const getTeamOnboardingAccessMock = vi.fn()
+const getTeamOnboardingTeamNameMock = vi.fn()
 const listTeamOnboardingParticipantsMock = vi.fn()
 const createTeamOnboardingParticipantMock = vi.fn()
 const refreshTeamOnboardingParticipantAccessMock = vi.fn()
@@ -23,6 +24,8 @@ vi.mock('@/lib/nic-nac/auth', () => ({
 vi.mock('@/lib/services/team-onboarding', () => ({
   getTeamOnboardingAccess: (...args: unknown[]) =>
     getTeamOnboardingAccessMock(...args),
+  getTeamOnboardingTeamName: (...args: unknown[]) =>
+    getTeamOnboardingTeamNameMock(...args),
   listTeamOnboardingParticipants: (...args: unknown[]) =>
     listTeamOnboardingParticipantsMock(...args),
   createTeamOnboardingParticipant: (...args: unknown[]) =>
@@ -47,6 +50,8 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
   beforeEach(() => {
     getPaidNicNacContextMock.mockReset()
     getTeamOnboardingAccessMock.mockReset()
+    getTeamOnboardingTeamNameMock.mockReset()
+    getTeamOnboardingTeamNameMock.mockResolvedValue('The Virtuous Fizzers')
     listTeamOnboardingParticipantsMock.mockReset()
     createTeamOnboardingParticipantMock.mockReset()
     refreshTeamOnboardingParticipantAccessMock.mockReset()
@@ -132,7 +137,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
         status: 'invited',
       },
       accessUrl:
-        'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=visible-token',
+        'https://onboarding.yoursparklesuite.com/virtuous-fizzers?invite=visible-token',
     })
 
     const response = await POST_PARTICIPANTS(
@@ -143,6 +148,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
           displayName: 'Lindsey',
           contactEmail: 'lindsey@example.com',
           joinTeamMemberId: 'member-lindsey',
+          baseUrl: 'https://untrusted.example',
           delivery: 'copy_link',
         }),
       }),
@@ -155,7 +161,8 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
         displayName: 'Lindsey',
         contactEmail: 'lindsey@example.com',
         joinTeamMemberId: 'member-lindsey',
-        baseUrl: 'https://brittwithbling-start-strong.louis526569.chatgpt.site',
+        baseUrl: 'https://onboarding.yoursparklesuite.com',
+        teamName: 'The Virtuous Fizzers',
       }),
     )
     expect(JSON.stringify(createTeamOnboardingParticipantMock.mock.calls)).not.toContain(
@@ -170,7 +177,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
         status: 'invited',
       },
       accessUrl:
-        'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=visible-token',
+        'https://onboarding.yoursparklesuite.com/virtuous-fizzers?invite=visible-token',
       delivery: 'copy_link',
     })
   })
@@ -189,7 +196,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
         status: 'started',
       },
       accessUrl:
-        'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=fresh-token',
+        'https://onboarding.yoursparklesuite.com/virtuous-fizzers?invite=fresh-token',
     })
 
     const response = await PATCH_PARTICIPANT(
@@ -208,7 +215,8 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
       'rep-britt',
       'participant-1',
       expect.objectContaining({
-        baseUrl: 'https://brittwithbling-start-strong.louis526569.chatgpt.site',
+        baseUrl: 'https://onboarding.yoursparklesuite.com',
+        teamName: 'The Virtuous Fizzers',
       }),
     )
     expect(response.status).toBe(200)
@@ -216,7 +224,7 @@ describe('/api/nic-nac/team-onboarding/participants', () => {
       expect.objectContaining({
         ok: true,
         accessUrl:
-          'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=fresh-token',
+          'https://onboarding.yoursparklesuite.com/virtuous-fizzers?invite=fresh-token',
       }),
     )
   })

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   createTeamOnboardingParticipant,
+  createTeamOnboardingUrlSlug,
   getTeamOnboardingAccess,
   listTeamOnboardingParticipants,
   refreshTeamOnboardingParticipantAccess,
@@ -29,6 +30,15 @@ function createQueryResult(data: unknown, error: unknown = null) {
 }
 
 describe('team onboarding service', () => {
+  it('creates a URL-safe team name without exposing a person name', () => {
+    expect(createTeamOnboardingUrlSlug('The Virtuous Fizzers')).toBe(
+      'virtuous-fizzers',
+    )
+    expect(createTeamOnboardingUrlSlug('  Sparkle & Shine!  ')).toBe(
+      'sparkle-shine',
+    )
+  })
+
   it('creates a private participant invite without storing the raw access token', async () => {
     const participantRow = {
       id: 'participant-1',
@@ -51,7 +61,8 @@ describe('team onboarding service', () => {
     const result = await createTeamOnboardingParticipant(supabase, 'rep-britt', {
       displayName: ' Lindsey ',
       contactEmail: ' lindsey@example.com ',
-      baseUrl: 'https://brittwithbling-start-strong.louis526569.chatgpt.site',
+      baseUrl: 'https://onboarding.yoursparklesuite.com',
+      teamName: 'The Virtuous Fizzers',
       tokenFactory: () => 'visible-token-for-lindsey',
     })
 
@@ -69,7 +80,7 @@ describe('team onboarding service', () => {
       'visible-token-for-lindsey',
     )
     expect(result.accessUrl).toBe(
-      'https://brittwithbling-start-strong.louis526569.chatgpt.site/?invite=visible-token-for-lindsey',
+      'https://onboarding.yoursparklesuite.com/virtuous-fizzers?invite=visible-token-for-lindsey',
     )
     expect(result.participant.displayName).toBe('Lindsey')
   })
@@ -101,6 +112,7 @@ describe('team onboarding service', () => {
     const result = await createTeamOnboardingParticipant(supabase, 'rep-britt', {
       displayName: 'Ignored client name',
       joinTeamMemberId: 'member-rayna',
+      teamName: 'The Virtuous Fizzers',
       tokenFactory: () => 'rayna-visible-token',
     })
 
@@ -140,7 +152,10 @@ describe('team onboarding service', () => {
       supabase,
       'rep-britt',
       'participant-rayna',
-      { tokenFactory: () => 'fresh-visible-token' },
+      {
+        teamName: 'The Virtuous Fizzers',
+        tokenFactory: () => 'fresh-visible-token',
+      },
     )
 
     expect(participantQuery.update).toHaveBeenCalledWith(
@@ -151,6 +166,7 @@ describe('team onboarding service', () => {
     expect(participantQuery.neq).toHaveBeenCalledWith('status', 'archived')
     expect(result.participant.id).toBe('participant-rayna')
     expect(result.accessUrl).toContain('invite=fresh-visible-token')
+    expect(result.accessUrl).toContain('/virtuous-fizzers?')
   })
 
   it('lists participants with progress and unread message counts for the owning rep', async () => {

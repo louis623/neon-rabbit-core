@@ -1,4 +1,6 @@
 const DEFAULT_TEAM_ONBOARDING_ORIGIN =
+  'https://onboarding.yoursparklesuite.com'
+const LEGACY_TEAM_ONBOARDING_ORIGIN =
   'https://brittwithbling-start-strong.louis526569.chatgpt.site'
 
 function normalizedOrigin(value: string) {
@@ -18,6 +20,7 @@ export function getTeamOnboardingAllowedOrigins() {
 
   return new Set([
     DEFAULT_TEAM_ONBOARDING_ORIGIN,
+    LEGACY_TEAM_ONBOARDING_ORIGIN,
     ...configured,
     ...(configuredBaseUrl ? [configuredBaseUrl] : []),
   ])

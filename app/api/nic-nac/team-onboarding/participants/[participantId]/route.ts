@@ -4,6 +4,7 @@ import { ServiceError } from '@/lib/services/errors'
 import {
   archiveTeamOnboardingParticipant,
   getTeamOnboardingAccess,
+  getTeamOnboardingTeamName,
   refreshTeamOnboardingParticipantAccess,
 } from '@/lib/services/team-onboarding'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -13,7 +14,7 @@ export const dynamic = 'force-dynamic'
 
 const DEFAULT_ONBOARDING_BASE_URL =
   process.env.TEAM_ONBOARDING_BASE_URL ??
-  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
+  'https://onboarding.yoursparklesuite.com'
 
 function serviceErrorResponse(error: ServiceError) {
   return NextResponse.json(
@@ -50,16 +51,21 @@ export async function PATCH(
       )
     }
 
+    const admin = createAdminClient()
+    const teamName =
+      body.action === 'refresh_access'
+        ? await getTeamOnboardingTeamName(admin, repId)
+        : null
     const result =
       body.action === 'refresh_access'
         ? await refreshTeamOnboardingParticipantAccess(
-            createAdminClient(),
+            admin,
             repId,
             participantId,
-            { baseUrl: DEFAULT_ONBOARDING_BASE_URL },
+            { baseUrl: DEFAULT_ONBOARDING_BASE_URL, teamName },
           )
         : await archiveTeamOnboardingParticipant(
-            createAdminClient(),
+            admin,
             repId,
             participantId,
           )

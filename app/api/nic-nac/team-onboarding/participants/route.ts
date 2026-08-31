@@ -4,6 +4,7 @@ import { ServiceError } from '@/lib/services/errors'
 import {
   createTeamOnboardingParticipant,
   getTeamOnboardingAccess,
+  getTeamOnboardingTeamName,
   listTeamOnboardingParticipants,
 } from '@/lib/services/team-onboarding'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -13,7 +14,7 @@ export const dynamic = 'force-dynamic'
 
 const DEFAULT_ONBOARDING_BASE_URL =
   process.env.TEAM_ONBOARDING_BASE_URL ??
-  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
+  'https://onboarding.yoursparklesuite.com'
 
 function serviceErrorResponse(error: ServiceError) {
   return NextResponse.json(
@@ -57,14 +58,14 @@ export async function POST(request: Request) {
     const access = await getTeamOnboardingAccess(supabase, repId)
     if (!access.enabled) return addonRequiredResponse(access)
 
-    const result = await createTeamOnboardingParticipant(createAdminClient(), repId, {
+    const admin = createAdminClient()
+    const teamName = await getTeamOnboardingTeamName(admin, repId)
+    const result = await createTeamOnboardingParticipant(admin, repId, {
       displayName: body?.displayName,
       contactEmail: body?.contactEmail,
       joinTeamMemberId: body?.joinTeamMemberId,
-      baseUrl:
-        typeof body?.baseUrl === 'string' && body.baseUrl.trim()
-          ? body.baseUrl.trim()
-          : DEFAULT_ONBOARDING_BASE_URL,
+      baseUrl: DEFAULT_ONBOARDING_BASE_URL,
+      teamName,
     })
 
     return NextResponse.json({
