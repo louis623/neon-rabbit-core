@@ -40,6 +40,7 @@ export type NicNacStepToolChoice =
       toolName:
         | 'add_listing'
         | 'prepare_trade_board_work'
+        | 'prepare_calendar_work'
         | 'add_show'
         | 'remove_listing'
         | 'get_trade_requests'
@@ -55,6 +56,7 @@ export function chooseNicNacToolChoiceForStep(args: {
   requireToolCall: boolean
   stepsLength: number
   activeToolNames: string[]
+  latestToolIntents?: NicNacToolIntent[]
   routedToolIntents?: NicNacToolIntent[]
   activeTradeBoardWorkflow?: TradeBoardWorkflowForToolChoice
   activeTradeWorkflow?: GenericTradeWorkflowForToolChoice
@@ -102,6 +104,13 @@ export function chooseNicNacToolChoiceForStep(args: {
     calendarWorkflowIsReadyToAdd(args.activeCalendarWorkflow)
   ) {
     return { type: 'tool', toolName: 'add_show' }
+  }
+  if (
+    args.activeToolNames.includes('prepare_calendar_work') &&
+    args.latestToolIntents?.includes('calendar') &&
+    !args.latestToolIntents.includes('trade_board')
+  ) {
+    return { type: 'tool', toolName: 'prepare_calendar_work' }
   }
   if (
     args.activeToolNames.includes('get_trade_requests') &&

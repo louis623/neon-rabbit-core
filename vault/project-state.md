@@ -2515,3 +2515,17 @@ Verification passed:
   month 13 onward through the existing subscription-schedule webhook flow.
 - `TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED` must remain unset/false in production
   until the pending custom-domain DNS/SSL work is separately approved.
+
+### August 31, 2026 Nic-Nac response reliability
+
+- A production incident in Kim's customer Workspace proved that invisible
+  internal tool output could be persisted as a `complete` assistant response,
+  leaving the UI blank after the thinking indicator stopped.
+- Nic-Nac now treats only chat-rendered content as visible stream output and
+  emits a customer-safe recovery reply plus telemetry when a provider finishes
+  without visible text.
+- Durable workflow state is turn-arbitrated: explicit Calendar, Dance Floor,
+  or other new product intents suspend unrelated active workflows for that
+  turn, while passive continuation replies can resume the applicable workflow.
+- The change has passed 194 focused Nic-Nac tests, changed-file lint, and the
+  full production build. No customer data repair or reset was required.

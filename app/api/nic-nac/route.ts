@@ -29,6 +29,7 @@ import {
 import {
   addWorkspaceBaselineToolIntents,
   buildToolsForIntents,
+  getToolIntentsForText,
   getToolIntentsForMessages,
   shouldRequireToolCallForMessages,
   type NicNacToolIntent,
@@ -82,6 +83,7 @@ import {
   renderActiveWorkflowPromptStates,
   type ActiveNicNacWorkflowContext,
 } from '@/lib/nic-nac/workflows/active-tool-context'
+import { arbitrateNicNacWorkflowTurn } from '@/lib/nic-nac/workflows/workflow-turn-arbitration'
 import { summarizeHardFailDetection } from '@/lib/nic-nac/workflows/trade-board-intake-eval'
 import {
   isRenderableNicNacStreamChunk,
@@ -639,16 +641,29 @@ export async function POST(request: Request) {
     mode === 'required_setup'
       ? ['required_setup']
       : getToolIntentsForMessages(messages)
-  const tradeBoardWorkflowContext = await getOrCreateTradeBoardIntakeContext({
-    supabase,
-    workflowSupabase: createAdminClient(),
-    repId,
-    conversationId,
-    messages,
-    latestUserMessageId: latestUserMessage?.id,
-    mode,
-    nowIso: new Date().toISOString(),
-  })
+  const latestTurnIntents =
+    mode === 'required_setup'
+      ? latestToolIntents
+      : getToolIntentsForText(latestUserText)
+  const workflowTurn = arbitrateNicNacWorkflowTurn(latestTurnIntents)
+  const tradeBoardWorkflowContext = workflowTurn.tradeBoard
+    ? await getOrCreateTradeBoardIntakeContext({
+        supabase,
+        workflowSupabase: createAdminClient(),
+        repId,
+        conversationId,
+        messages,
+        latestUserMessageId: latestUserMessage?.id,
+        mode,
+        nowIso: new Date().toISOString(),
+      })
+    : {
+        sessionBefore: null,
+        sessionAfter: null,
+        workflowIntents: [] as NicNacToolIntent[],
+        toolPolicySource: 'latest_turn_intent' as const,
+        workflowPromptState: '',
+      }
   const activeTradeBoardWorkflow = tradeBoardWorkflowContext.sessionAfter
   const activeWorkflowContexts: ActiveNicNacWorkflowContext[] = []
   if (
@@ -665,30 +680,41 @@ export async function POST(request: Request) {
       promptState: tradeBoardWorkflowContext.workflowPromptState,
     })
   }
-  const tradeWorkflowContext = await getOrCreateTradeWorkflowContext({
-    supabase: createAdminClient(),
-    repId,
-    conversationId,
-    latestUserText,
-    latestToolIntents,
-    messages,
-    latestUserMessageId: latestUserMessage?.id,
-    mode,
-    nowIso: new Date().toISOString(),
-  })
+  const tradeWorkflowContext = workflowTurn.trade
+    ? await getOrCreateTradeWorkflowContext({
+        supabase: createAdminClient(),
+        repId,
+        conversationId,
+        latestUserText,
+        latestToolIntents,
+        messages,
+        latestUserMessageId: latestUserMessage?.id,
+        mode,
+        nowIso: new Date().toISOString(),
+      })
+    : { sessionBefore: null, sessionAfter: null, activeWorkflow: null }
   if (tradeWorkflowContext.activeWorkflow) {
     activeWorkflowContexts.push(tradeWorkflowContext.activeWorkflow)
   }
-  const calendarWorkflowContext = await getOrCreateCalendarWorkflowContext({
-    supabase,
-    workflowSupabase: supabase,
-    repId,
-    conversationId,
-    messages,
-    latestUserMessageId: latestUserMessage?.id,
-    mode,
-    nowIso: new Date().toISOString(),
-  })
+  const calendarWorkflowContext = workflowTurn.calendar
+    ? await getOrCreateCalendarWorkflowContext({
+        supabase,
+        workflowSupabase: supabase,
+        repId,
+        conversationId,
+        messages,
+        latestUserMessageId: latestUserMessage?.id,
+        mode,
+        nowIso: new Date().toISOString(),
+      })
+    : {
+        sessionBefore: null,
+        sessionAfter: null,
+        activeWorkflow: null,
+        workflowIntents: [] as NicNacToolIntent[],
+        toolPolicySource: 'latest_turn_intent' as const,
+        workflowPromptState: '',
+      }
   if (calendarWorkflowContext.activeWorkflow) {
     activeWorkflowContexts.push(calendarWorkflowContext.activeWorkflow)
   }
@@ -913,6 +939,7 @@ export async function POST(request: Request) {
             requireToolCall,
             stepsLength: steps.length,
             activeToolNames,
+            latestToolIntents,
             routedToolIntents,
             activeTradeBoardWorkflow,
             activeTradeWorkflow: tradeWorkflowContext.sessionAfter

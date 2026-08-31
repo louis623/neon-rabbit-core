@@ -5451,3 +5451,27 @@ Lessons retained:
 - Kept the pending onboarding custom domain dormant behind
   `TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED`; the legacy onboarding host remains
   the default until DNS/SSL and a separate release are approved.
+
+---
+
+# August 31, 2026 - Nic-Nac blank-response incident diagnosis and hardening
+
+- Exact-guarded read-only production evidence from Kim's active customer rep
+  showed two meeting turns recorded as `complete` with no visible assistant
+  text. The Dance Floor turn produced only internal
+  `prepare_trade_board_work` output; its still-active workflow then ingested
+  and hijacked the explicit Calendar turn.
+- Added application-owned workflow-turn arbitration. Explicit new product
+  intents suspend unrelated durable workflows for that turn without deleting
+  them; passive replies may continue an active workflow. Explicit Calendar
+  work is pinned to `prepare_calendar_work` ahead of stale Dance Floor state.
+- Aligned the stream-output guard with the actual chat renderer. Internal tool
+  protocol/output no longer counts as a visible answer; if the provider ends
+  without text, an observable customer-safe recovery reply is streamed and
+  telemetry records `empty_model_output_recovered`.
+- Verification passed 10 Nic-Nac files / 194 tests, changed-file ESLint, and
+  the full Next.js production build. The full standalone TypeScript command
+  remains red only on the repository's previously documented stale test
+  fixtures; the production build TypeScript gate is green.
+- Kim's account, conversation rows, workflow rows, calendar, Dance Floor, and
+  all other customer data were inspected read-only and were not changed.

@@ -107,6 +107,24 @@ describe('Nic-Nac tool choice policy', () => {
     ).toEqual({ type: 'tool', toolName: 'add_show' })
   })
 
+  it('pins an explicit Calendar request ahead of stale Dance Floor workflow context', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: true,
+        stepsLength: 0,
+        activeToolNames: ['prepare_trade_board_work', 'prepare_calendar_work'],
+        latestToolIntents: ['show_memory', 'calendar'],
+        routedToolIntents: ['show_memory', 'calendar', 'trade_board'],
+        activeTradeBoardWorkflow: {
+          status: 'active',
+          phase: 'photo_capture',
+          missing: ['jewelryFrontPhoto'],
+          blockers: [],
+        },
+      }),
+    ).toEqual({ type: 'tool', toolName: 'prepare_calendar_work' })
+  })
+
   it('forces get_trade_requests for request inbox reads instead of generic board prep', () => {
     expect(
       chooseNicNacToolChoiceForStep({

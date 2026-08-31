@@ -27,7 +27,7 @@ describe('Nic-Nac stream output guard', () => {
     ).toBe(false)
   })
 
-  it('recognizes visible text and interactive tool output', () => {
+  it('recognizes only response parts the chat UI actually renders', () => {
     expect(
       isRenderableNicNacStreamChunk({
         type: 'text-delta',
@@ -41,6 +41,19 @@ describe('Nic-Nac stream output guard', () => {
         approvalId: 'approval-1',
         toolCallId: 'tool-1',
       }),
+    ).toBe(true)
+    expect(
+      isRenderableNicNacStreamChunk({
+        type: 'tool-output-available',
+        toolCallId: 'tool-1',
+        output: { nextAction: 'internal-only' },
+      }),
+    ).toBe(false)
+    expect(
+      isRenderableNicNacStreamChunk({
+        type: 'data-trade-request-card',
+        data: { requestId: 'request-1' },
+      } as never),
     ).toBe(true)
   })
 

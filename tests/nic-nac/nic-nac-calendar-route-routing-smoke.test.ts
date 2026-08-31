@@ -848,4 +848,56 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
       errorSpy.mockRestore()
     }
   })
+
+  it('returns a visible recovery reply when an internal tool finishes without text', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    streamTextMock.mockImplementation((options: {
+      onFinish?: (event: { totalUsage: unknown }) => void
+    }) => {
+      options.onFinish?.({ totalUsage: { inputTokens: 10, outputTokens: 5 } })
+      return {
+        toUIMessageStream: async function* () {
+          yield {
+            type: 'tool-input-start',
+            toolCallId: 'tool-1',
+            toolName: 'prepare_trade_board_work',
+          }
+          yield {
+            type: 'tool-input-available',
+            toolCallId: 'tool-1',
+            toolName: 'prepare_trade_board_work',
+            input: { action: 'add_piece' },
+          }
+          yield {
+            type: 'tool-output-available',
+            toolCallId: 'tool-1',
+            output: { allowedPath: 'ask_for_identifier' },
+          }
+          yield {
+            type: 'finish',
+            finishReason: { unified: 'stop', raw: undefined },
+          }
+        },
+      }
+    })
+
+    try {
+      const response = await POST(requestFor('Add a piece to Dance Floor'))
+      const body = await response.text()
+
+      expect(response.status).toBe(200)
+      expect(body).toContain('Please send that again')
+      expect(logNicNacRunMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'complete',
+          errorMessage: 'empty_model_output_recovered',
+        }),
+      )
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
 })
