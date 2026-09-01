@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 
 import NicNacClient from '@/app/nic-nac/_client'
@@ -22,6 +22,20 @@ export function SupportWorkspaceClient({
   const expiresAtMs = new Date(context.expiresAt).getTime()
   const expired = !Number.isFinite(expiresAtMs) || clock >= expiresAtMs
   const originalFetchRef = useRef<typeof window.fetch | null>(null)
+  const operatorSupportContext = useMemo(
+    () => ({
+      sessionId: context.sessionId,
+      operatorDisplayName: context.operator.displayName,
+      targetDisplayName: context.target.displayName,
+      expiresAt: context.expiresAt,
+    }),
+    [
+      context.expiresAt,
+      context.operator.displayName,
+      context.sessionId,
+      context.target.displayName,
+    ],
+  )
 
   useEffect(() => {
     const originalFetch = window.fetch.bind(window)
@@ -217,14 +231,7 @@ export function SupportWorkspaceClient({
           </div>
         </div>
       ) : null}
-      <NicNacClient
-        operatorSupport={{
-          sessionId: context.sessionId,
-          operatorDisplayName: context.operator.displayName,
-          targetDisplayName: context.target.displayName,
-          expiresAt: context.expiresAt,
-        }}
-      />
+      <NicNacClient operatorSupport={operatorSupportContext} />
     </div>
   )
 }

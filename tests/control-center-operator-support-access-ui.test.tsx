@@ -68,7 +68,7 @@ describe('Control Center transparent operator support access UI', () => {
       'utf8',
     )
 
-    expect(clientSource).toContain('operatorSupportMode={Boolean(operatorSupport)}')
+    expect(clientSource).toContain('operatorSupportMode={isOperatorSupport}')
     expect(clientSource).toContain('workspaceRoutePath')
     expect(clientSource).not.toMatch(/if \(operatorSupport\) \{\s*return \(/)
     expect(dashboardSource).toContain("const showConceptHome = activeSection === 'home'")
@@ -80,6 +80,24 @@ describe('Control Center transparent operator support access UI', () => {
     expect(dashboardSource).toContain('downloadCustomerExport')
     expect(dashboardSource).toContain("fetch('/api/nic-nac/customer-audience?format=csv'")
     expect(supportClientSource).not.toContain('customerReadUrl')
+  })
+
+  it('keeps support-session clock renders from restarting the Nic-Nac composer', () => {
+    const clientSource = readFileSync('app/nic-nac/_client.tsx', 'utf8')
+    const supportClientSource = readFileSync(
+      'app/control-center/support/[sessionId]/SupportWorkspaceClient.tsx',
+      'utf8',
+    )
+
+    expect(supportClientSource).toContain('const operatorSupportContext = useMemo(')
+    expect(supportClientSource).toContain(
+      '<NicNacClient operatorSupport={operatorSupportContext} />',
+    )
+    expect(clientSource).toContain(
+      'const operatorSupportSessionId = operatorSupport?.sessionId ?? null',
+    )
+    expect(clientSource).toContain('operatorSupportSessionId,')
+    expect(clientSource).not.toContain('    operatorSupport,')
   })
 
   it('places the rep support-access history after all Account tools', () => {
