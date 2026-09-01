@@ -4,6 +4,35 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## September 1, 2026 - Removed the transparent-support time limit
+
+- Louis rejected the fixed support timer because real support work may span a
+  lengthy session with navigation between tasks. Audited the complete expiry
+  chain rather than hiding the label: client clock and expired screen, server
+  access verification, creation duration, recurring expiration worker,
+  database expiry constraint/RPC/audit guard, history copy, disclosure copy,
+  and the one-hour support CSRF cookie.
+- Implemented explicit operator closeout in commit
+  `4a6c2e7875266b2de7a86bb1ad44f3fc21cda637`. New sessions store no expiry,
+  automatic expiration is a no-op, active authorization is status-based, the
+  support banner/history explain that access stays open until ended, and the
+  credential is retained for long-running work but still cleared by the
+  existing end route.
+- Applied production migration `20260901120000`. Read-only verification showed
+  the expiry constraint removed, `expires_at` nullable, automatic expiry
+  disabled, and the existing single active session still active. Historical
+  closed-session timestamps/statuses remain intact.
+- Verification passed 78 focused operator-support tests, final focused reruns,
+  selected-file ESLint, two local production builds, Vercel's production
+  build, migration dry run/apply/contract inspection, alias inspection, and
+  HTTP/browser health on the exact live Control Center login route. Released
+  deployment `dpl_EoMkRyRt8Q17bAv93iDFqS9cNr8t`; both Sparkle Suite domains
+  resolve to it. Authenticated visual replay was intentionally not performed
+  because only Louis's operator login was available and no customer or admin
+  account may be used as a reviewer substitute.
+
+---
+
 ## August 31, 2026 - Nic-Nac support-mode composer stability release
 
 - Reproduced Louis's report in Lindsey's live disclosed support session using

@@ -1,5 +1,27 @@
 # Project State
 
+## September 1, 2026 - Support access is operator-controlled
+
+- Removed the transparent-support time limit end to end. Active disclosed
+  support access now remains active until the operator explicitly completes
+  **End support access**; the UI no longer renders an expiry clock or countdown,
+  server authorization no longer rejects a session by timestamp, and the
+  recurring worker/database expiry path is disabled.
+- Preserved the existing safety model: exact operator/target identity,
+  capability restrictions, CSRF protection, visible support labeling,
+  customer start/completion notices, explicit completion summary, and
+  append-only audit history. The long-lived support credential remains scoped
+  to the Control Center path and is cleared when support is explicitly ended.
+- Released application commit `4a6c2e7875266b2de7a86bb1ad44f3fc21cda637`,
+  migration `20260901120000`, and Vercel deployment
+  `dpl_EoMkRyRt8Q17bAv93iDFqS9cNr8t`. Both Sparkle Suite domains resolve to the
+  Ready deployment. The one already-active production support session remained
+  active and was not rewritten, ended, or recreated.
+
+**Last updated:** September 1, 2026
+
+---
+
 ## August 31, 2026 - Nic-Nac support-mode draft reset fixed
 
 - Diagnosed the disappearing Nic-Nac composer draft in transparent operator

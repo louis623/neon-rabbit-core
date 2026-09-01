@@ -1,5 +1,27 @@
 # Decision Log
 
+## September 1, 2026 - Transparent support ends by operator choice, not a timer
+
+**An active disclosed support session has no product time limit.** It remains
+active across lengthy work and navigation until the operator explicitly uses
+**End support access**. Do not reintroduce countdowns, sliding expiration,
+background expiry jobs, or timestamp-based mutation denial as convenience
+features.
+
+**Safety is enforced by identity, capability, transparency, and deliberate
+closeout.** Keep the exact operator/target binding, one-open-session guards,
+CSRF credential, prohibited financial/account-control areas, visible banner,
+rep start/completion notices, explicit change summary, and append-only audit
+history. Authentication may still require the operator to sign in again, but
+that does not silently close the support session.
+
+**Legacy expiry data is historical evidence only.** Existing timestamps and
+expired statuses remain readable for old sessions, but `expires_at` is nullable
+for new sessions and must never control access. Automatic-expiry compatibility
+RPCs must remain harmless.
+
+---
+
 ## August 31, 2026 - Background refreshes must preserve Nic-Nac drafts
 
 **Treat a support session as changed only when its stable identity changes.**

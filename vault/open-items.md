@@ -5,6 +5,13 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [x] **Remove the transparent-support time limit** - completed September 1 in
+  application commit `4a6c2e7875266b2de7a86bb1ad44f3fc21cda637`, migration
+  `20260901120000`, and production deployment
+  `dpl_EoMkRyRt8Q17bAv93iDFqS9cNr8t`. Support now stays active until the
+  operator explicitly ends it; no countdown, server timestamp rejection, or
+  automatic expiry worker remains. The existing active session was preserved.
+
 - [ ] **Activate and release team-branded onboarding links** - Codex Sites
   version 9 and application commit `4913f93a` are ready. Sign in to GoDaddy,
   add the custom-domain CNAME and validation TXT records requested by Codex
