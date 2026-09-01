@@ -2,6 +2,13 @@
 
 ## September 1, 2026 - Support access is operator-controlled
 
+- This closes the connected Nic-Nac/support reliability work for the session:
+  earlier August 31 entries preserve the agent-response and draft-retention
+  evidence, while this entry preserves the policy change that support remains
+  active until the operator ends it. The still-open follow-up is only the
+  isolated scheduled cross-workflow Nic-Nac canary; do not implement it
+  without Louis's explicit authorization.
+
 - Removed the transparent-support time limit end to end. Active disclosed
   support access now remains active until the operator explicitly completes
   **End support access**; the UI no longer renders an expiry clock or countdown,

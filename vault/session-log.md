@@ -4,6 +4,33 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## September 1, 2026 - Nic-Nac and transparent-support reliability closeout
+
+- Consolidated this session's reliability work. The detailed August 31
+  Nic-Nac records below document the blank-response and stale-workflow fixes:
+  a workflow is not complete without customer-visible text, resolver-only
+  completions receive deterministic recovery copy, and an explicit product
+  request must outrank stale durable workflow state. Focused suites, replay,
+  pressure coverage, production builds, and live reviewer replays were used
+  for those releases.
+- The later disappearing-draft report was a separate support-shell lifecycle
+  fault, not a Nic-Nac model regression: the support expiry clock recreated
+  context and remounted the composer. Commit
+  `62d895b77d6455b5cdcc87b4396718888f7d8341` stabilized those boundaries and
+  the disclosed live replay retained unsent text across clock ticks.
+- Louis then rejected time-limited transparent support. Commit
+  `4a6c2e7875266b2de7a86bb1ad44f3fc21cda637` and migration `20260901120000`
+  made support operator-controlled until explicit end while retaining the
+  existing identity, capability, CSRF, notice, and audit safeguards. No
+  customer, billing, DNS, onboarding, or Stripe state was changed.
+- Key operating lesson: smoke the full composed surface—not only the agent
+  service—with sustained unsent input, stale workflow transitions, and
+  customer-visible response assertions. The remaining follow-up is the
+  scheduled isolated cross-workflow Nic-Nac canary; it is recorded as open and
+  must not be implemented without Louis's authorization.
+
+---
+
 ## September 1, 2026 - Removed the transparent-support time limit
 
 - Louis rejected the fixed support timer because real support work may span a
