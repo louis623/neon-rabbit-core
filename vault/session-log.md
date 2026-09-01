@@ -5493,3 +5493,57 @@ Lessons retained:
 - The remaining operational gap is continuous assurance: the exact synthetic
   two-turn workflow replay is verified at release time but is not yet a
   scheduled canary.
+
+---
+
+# August 31, 2026 - Nic-Nac deep audit, workflow pressure, and visible read recovery
+
+- Louis reported a third severe Nic-Nac failure in two days from the exact live
+  Control Center operator-support surface for Kim. The audit stayed read-only
+  for Kim and Louis's admin account and used only the isolated synthetic
+  reviewer for live mutations.
+- Exact persisted evidence showed the reported prompt, `Nic-Nac. I need to add
+  a dancer to my dance floor, please.`, reached
+  `prepare_trade_board_work`. Its catalog lookup embedded the whole sentence in
+  a raw PostgREST OR filter, failed with `PGRST100`, and completed after 6.1
+  seconds with recovery text. No customer row needed repair.
+- Release `ff33348c` removed the unsafe raw-filter construction, made the exact
+  Dance Floor starter deterministic, preserved app-owned resolver facts,
+  suppressed structured tool failures, and added executed-tool/failure
+  telemetry. The related production migration was applied.
+- Release `8b246314` added state-aware photo reconciliation, persisted resolver
+  design facts, and pinned explicit Trade/Dance Floor reads. The first full
+  paid pressure matrix exposed four more transition gaps rather than being
+  accepted as a pass.
+- Release `84e186b4` moved mutation-ready workflow pins ahead of broad reads,
+  added workflow-phase candidate reads, prevented a same-family explicit Trade
+  request from inheriting the wrong stale workflow, and made the post-completion
+  fulfillment Dance Floor question mandatory.
+- Live isolated replays then passed item intake, non-item intake, live swap,
+  swap cleanup, removal, approve/reject decisions, and catalog correction,
+  including approval gates, database/public assertions, and mandatory cleanup.
+  The fulfillment mutation/public-state path passed before the mandatory-copy
+  guard; its final copy guarantee is covered locally because the approved paid
+  request budget was nearly exhausted.
+- The replay diagnostics exposed successful read tools that could still save
+  the generic blank-response apology. The diagnostic JSON was emitted only by
+  the smoke reporter, not by the customer UI; the persisted customer defect was
+  the generic apology. Commit `4f599c8a` adds deterministic bounded summaries
+  for seven core read workflows and makes every relevant pressure smoke fail on
+  that apology.
+- Verification for `4f599c8a`: 162 Nic-Nac test files passed with one skipped;
+  1,313 tests passed with one skipped; full Next.js production build and its
+  TypeScript gate passed. Standalone `tsc --noEmit` still reports the known
+  unrelated stale test-fixture errors documented before this incident.
+
+**Lessons learned:**
+- Workflow/database correctness and customer-visible response quality are
+  separate release gates. A smoke must fail on wrong or generic copy even when
+  tool selection, approval, and database state are correct.
+- Explicit product reads need the same deterministic server-owned completion
+  contract as guided intake. Authoritative structured results should be
+  summarized by the app when model prose is absent, not thrown away behind a
+  retry request.
+- Pressure testing must cover full transitions—read, selection, approval,
+  mutation, public proof, and cleanup—across every workflow family. A single
+  happy-path replay is not credible Nic-Nac release evidence.

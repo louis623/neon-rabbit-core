@@ -1981,3 +1981,17 @@ Dance Floor state can otherwise capture an explicit Calendar request. This
 server-side invariant protects the customer independently of browser hydration
 and model follow-through; release proof must include a tool-backed, multi-turn
 product-switch replay.
+
+## 2026-08-31 - Core Nic-Nac reads have app-owned visible summaries
+
+Decision: Dance Floor inventory, incoming trade requests, fulfillment queue,
+swap cleanup, jewelry catalog search, trade history, and Calendar listing reads
+must have deterministic app-owned customer summaries when the model completes
+after a tool result without emitting visible text. Deployed smoke workflows
+must treat the generic blank-response apology as a hard failure.
+
+Reason: A tool can return correct structured data while the model produces no
+customer-facing prose. Retrying the same request is both frustrating and
+unnecessary because Sparkle Suite already owns the authoritative result. The
+server can safely format bounded, newline-sanitized summaries and preserve the
+generic apology only for truly unknown empty model responses.

@@ -2539,3 +2539,26 @@ Verification passed:
   full production build. No customer data repair or reset was required. There
   is not yet a scheduled synthetic canary for this exact cross-workflow path;
   that remaining assurance gap is tracked in `vault/open-items.md`.
+
+### August 31, 2026 Nic-Nac deep pressure audit and deterministic read replies
+
+- Read-only evidence from Kim's exact operator-support turn confirmed the
+  original failure at run `9e8e5de6-bd38-446a-82f6-0a11b2132803`: the raw
+  jewelry-catalog filter interpolated the whole prompt, PostgREST returned
+  `PGRST100`, and the turn took 6.1 seconds before recovery. No Kim/customer
+  data was changed during diagnosis.
+- The hardening sequence removed unsafe raw filters, aligned add-intent
+  classification with workflow creation, persisted resolver facts, made
+  workflow transitions deterministic, pinned read candidates ahead of guarded
+  mutations, and guarantees the received-piece Dance Floor follow-up after
+  fulfillment completion.
+- Core Dance Floor, trade request, fulfillment, swap cleanup, jewelry catalog,
+  trade history, and Calendar reads now have bounded app-owned summaries when
+  the model emits no visible prose after a successful tool result. The deployed
+  workflow smoke scripts treat the generic blank-response apology as a hard
+  failure instead of allowing a semantically correct tool run to pass.
+- Release candidate `4f599c8a` passed 162 Nic-Nac test files plus one skipped
+  file (1,313 passing tests, one skipped) and the full production build.
+  Synthetic live workflow fixtures were isolated to the reviewer identity and
+  cleaned after each replay; no personal/admin, Kim/customer, billing,
+  messaging, checkout, or external-provider mutation was used.
