@@ -14,6 +14,7 @@ import {
   isAboutNarrativeCopySubmission,
   isAboutSectionCorrection,
 } from '@/lib/nic-nac/site-editing-intent'
+import { isCalendarReadQueryText } from '@/lib/nic-nac/calendar-read-intent'
 import { listMyTradeBoardTool } from './list-my-trade-board'
 import { removeListingTool } from './remove-listing'
 import { restoreListingTool } from './restore-listing'
@@ -380,6 +381,7 @@ export function getToolIntentsForText(text: string): NicNacToolIntent[] {
   }
 
   if (
+    isCalendarReadQueryText(text) ||
     hasAny([
       /\bcalendar\b/,
       /\bschedule\b/,

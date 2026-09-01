@@ -489,6 +489,37 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
     }
   })
 
+  it.each([
+    'Hey Nic-Nac, do I have anything on my calendar right now?',
+    "What's on my schedule this week?",
+    'When is my next live?',
+    'Do I have a show tonight?',
+  ])('routes natural Calendar reads directly to list_my_shows: %s', async (text) => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    try {
+      const response = await POST(requestFor(text))
+      await response.text()
+
+      expect(response.status).toBe(200)
+      expect(streamTextMock).toHaveBeenCalledOnce()
+      const options = streamTextMock.mock.calls[0][0] as {
+        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
+        tools: Record<string, unknown>
+      }
+
+      expect(Object.keys(options.tools)).toContain('list_my_shows')
+      expect(options.prepareStep({ steps: [] }).toolChoice).toEqual({
+        type: 'tool',
+        toolName: 'list_my_shows',
+      })
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
+
   it('keeps calendar write tools active when a rep supplies missing show details on a follow-up', async () => {
     const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})

@@ -189,16 +189,36 @@ function summarizeShows(record: ToolOutputRecord) {
   if (count === 0) return 'You don’t have any matching shows on your Calendar right now.'
 
   return summarizeRows(
-    `I found ${count} matching ${count === 1 ? 'show' : 'shows'} on your Calendar.`,
+    `You have ${count} matching ${count === 1 ? 'show' : 'shows'} on your Calendar.`,
     events,
     (event, index) => {
       const title = compactLabel(event.title, 'Untitled show')
-      const when = compactLabel(event.eventTime, 'time unavailable')
+      const when = formatCalendarEventTime(event.eventTime, event.timeZone)
       const platform = compactLabel(event.platform, 'platform unavailable')
       const status = compactLabel(event.status, 'status unavailable')
       return `${index + 1}. ${title} — ${when} on ${platform} (${status}).`
     },
   )
+}
+
+function formatCalendarEventTime(eventTime: unknown, timeZone: unknown) {
+  if (typeof eventTime !== 'string') return 'time unavailable'
+  const parsed = new Date(eventTime)
+  if (Number.isNaN(parsed.getTime())) return compactLabel(eventTime, 'time unavailable')
+
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: typeof timeZone === 'string' && timeZone.trim() ? timeZone : 'UTC',
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    }).format(parsed)
+  } catch {
+    return compactLabel(eventTime, 'time unavailable')
+  }
 }
 
 export function getNicNacToolFailure(

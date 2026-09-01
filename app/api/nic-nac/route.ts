@@ -1043,6 +1043,7 @@ export async function POST(request: Request) {
               ? {
                   status: calendarWorkflowContext.sessionAfter.status,
                   phase: calendarWorkflowContext.sessionAfter.phase,
+                  intent: calendarWorkflowContext.sessionAfter.intent,
                   missing: calendarWorkflowContext.sessionAfter.missingFields,
                 }
               : null,

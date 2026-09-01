@@ -4,6 +4,7 @@ import {
   getToolIntentsForMessages,
   type NicNacToolIntent,
 } from '@/lib/nic-nac/tools'
+import { isCalendarReadQueryText } from '@/lib/nic-nac/calendar-read-intent'
 import type { ActiveNicNacWorkflowContext } from './active-tool-context'
 import {
   computeCalendarWorkflowReadiness,
@@ -62,7 +63,7 @@ function getLatestUserMessage(messages: UIMessage[]): UIMessage | undefined {
   return [...messages].reverse().find((message) => message.role === 'user')
 }
 
-function inferCalendarIntent(messages: UIMessage[]): CalendarWorkflowIntent {
+export function inferCalendarIntent(messages: UIMessage[]): CalendarWorkflowIntent {
   const latestUserText = getMessageText(getLatestUserMessage(messages)).toLowerCase()
   const recentText = messages
     .slice(-6)
@@ -70,6 +71,7 @@ function inferCalendarIntent(messages: UIMessage[]): CalendarWorkflowIntent {
     .join('\n')
     .toLowerCase()
 
+  if (isCalendarReadQueryText(latestUserText)) return 'list_shows'
   if (/\b(add|schedule|set up|create|put)\b[\s\S]{0,100}\b(show|live|event|calendar)\b/.test(recentText)) {
     return 'add_show'
   }

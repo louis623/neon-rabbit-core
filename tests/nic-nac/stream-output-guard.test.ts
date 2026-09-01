@@ -93,6 +93,23 @@ describe('Nic-Nac stream output guard', () => {
     expect(
       getNicNacToolOnlyRecoveryText('list_my_shows', { events: [] }),
     ).toBe('You don’t have any matching shows on your Calendar right now.')
+    expect(
+      getNicNacToolOnlyRecoveryText('list_my_shows', {
+        count: 1,
+        events: [
+          {
+            title: 'Coffee and Fizz',
+            eventTime: '2026-09-02T13:00:00.000Z',
+            timeZone: 'America/New_York',
+            platform: 'Facebook Live',
+            status: 'scheduled',
+          },
+        ],
+      }),
+    ).toBe(
+      'You have 1 matching show on your Calendar.\n' +
+        '1. Coffee and Fizz — Wednesday, September 2 at 9:00 AM EDT on Facebook Live (scheduled).',
+    )
   })
 
   it('renders deterministic customer-visible summaries for every Trade read workflow', () => {

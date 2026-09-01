@@ -2,6 +2,7 @@ import {
   isAboutNarrativeCopySubmission,
   isAboutSectionCorrection,
 } from '@/lib/nic-nac/site-editing-intent'
+import { isCalendarReadQueryText } from '@/lib/nic-nac/calendar-read-intent'
 import type { NicNacToolIntent } from '@/lib/nic-nac/tools'
 
 type TradeBoardWorkflowForToolChoice = {
@@ -19,6 +20,7 @@ type TradeBoardWorkflowForToolChoice = {
 type CalendarWorkflowForToolChoice = {
   status?: string
   phase?: string
+  intent?: string
   missing?: string[] | null
 } | null | undefined
 
@@ -44,6 +46,7 @@ export type NicNacStepToolChoice =
         | 'add_show'
         | 'remove_listing'
         | 'list_my_trade_board'
+        | 'list_my_shows'
         | 'search_jewelry_database'
         | 'get_trade_requests'
         | 'get_trade_swap_cleanup'
@@ -69,6 +72,13 @@ export function chooseNicNacToolChoiceForStep(args: {
   previousAssistantText?: string
 }): NicNacStepToolChoice {
   if (args.stepsLength > 0) return 'auto'
+  if (
+    args.activeToolNames.includes('list_my_shows') &&
+    (args.activeCalendarWorkflow?.intent === 'list_shows' ||
+      isCalendarReadQueryText(args.latestUserText ?? ''))
+  ) {
+    return { type: 'tool', toolName: 'list_my_shows' }
+  }
   const pinnedTradeTool = chooseGenericTradeWorkflowTool(
     args.activeTradeWorkflow,
     args.activeToolNames,

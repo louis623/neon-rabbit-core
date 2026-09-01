@@ -107,6 +107,49 @@ describe('Nic-Nac tool choice policy', () => {
     ).toEqual({ type: 'tool', toolName: 'add_show' })
   })
 
+  it.each([
+    'Hey Nic-Nac, do I have anything on my calendar right now?',
+    "What's on my schedule this week?",
+    'When is my next live?',
+    'Do I have a show tonight?',
+  ])('pins natural Calendar reads directly to list_my_shows: %s', (latestUserText) => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: false,
+        stepsLength: 0,
+        activeToolNames: [
+          'prepare_trade_board_work',
+          'prepare_calendar_work',
+          'list_my_shows',
+        ],
+        activeTradeBoardWorkflow: {
+          status: 'active',
+          phase: 'photo_capture',
+          missing: ['jewelryFrontPhoto'],
+          blockers: [],
+        },
+        latestUserText,
+      }),
+    ).toEqual({ type: 'tool', toolName: 'list_my_shows' })
+  })
+
+  it('retains Calendar reads for a natural follow-up through workflow intent', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: true,
+        stepsLength: 0,
+        activeToolNames: ['prepare_calendar_work', 'list_my_shows'],
+        activeCalendarWorkflow: {
+          status: 'active',
+          phase: 'details_capture',
+          intent: 'list_shows',
+          missing: [],
+        },
+        latestUserText: 'What about the earlier ones?',
+      }),
+    ).toEqual({ type: 'tool', toolName: 'list_my_shows' })
+  })
+
   it('pins an explicit Calendar request ahead of stale Dance Floor workflow context', () => {
     expect(
       chooseNicNacToolChoiceForStep({

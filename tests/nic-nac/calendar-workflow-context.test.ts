@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
-import { getOrCreateCalendarWorkflowContext } from '@/lib/nic-nac/workflows/calendar-workflow-context'
+import {
+  getOrCreateCalendarWorkflowContext,
+  inferCalendarIntent,
+} from '@/lib/nic-nac/workflows/calendar-workflow-context'
 
 const baseRow = {
   id: '11111111-1111-4111-8111-111111111111',
@@ -44,6 +47,41 @@ function makeSupabase(existingRow: unknown = null) {
 }
 
 describe('calendar workflow context', () => {
+  it.each([
+    'Hey Nic-Nac, do I have anything on my calendar right now?',
+    "What's on my schedule this week?",
+    'Do I have a show tonight?',
+    'When is my next live?',
+  ])('classifies a natural Calendar lookup as list_shows: %s', (text) => {
+    expect(
+      inferCalendarIntent([
+        { id: 'msg-1', role: 'user', parts: [{ type: 'text', text }] },
+      ] as never),
+    ).toBe('list_shows')
+  })
+
+  it('lets an explicit Calendar lookup supersede older add-show language for the turn', () => {
+    expect(
+      inferCalendarIntent([
+        {
+          id: 'msg-1',
+          role: 'user',
+          parts: [{ type: 'text', text: 'Add a show to my calendar Friday.' }],
+        },
+        {
+          id: 'msg-2',
+          role: 'assistant',
+          parts: [{ type: 'text', text: 'What time should I use?' }],
+        },
+        {
+          id: 'msg-3',
+          role: 'user',
+          parts: [{ type: 'text', text: 'First, what is on my calendar this week?' }],
+        },
+      ] as never),
+    ).toBe('list_shows')
+  })
+
   it('turns an existing active calendar workflow into retained calendar tools', async () => {
     const { supabase } = makeSupabase(baseRow)
 
