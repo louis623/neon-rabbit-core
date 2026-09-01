@@ -38,11 +38,13 @@ export class OperatorAuthError extends Error {
 
 function getOperatorEmails() {
   const configured = process.env.INTERNAL_OPERATOR_EMAILS
-  if (!configured) return ['louis@neonrabbit.net']
-  return configured
+  const internal = configured
+    ? configured
     .split(',')
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean)
+    : ['louis@neonrabbit.net']
+  return [...new Set([...internal, ...getSiteSupportOperatorEmails()])]
 }
 
 function isControlCenterDevAuthBypassEnabled() {
