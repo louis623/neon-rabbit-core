@@ -5719,3 +5719,44 @@ Lessons retained:
 - Deterministic recovery copy needs the user's current question as well as the
   structured tool result; otherwise safe fallbacks flatten distinct intents
   into one generic list.
+
+---
+
+# September 1, 2026 - Nic-Nac agent-harness rebuild plan
+
+- Louis clarified the intended product outcome: Nic-Nac is a live-show business
+  partner and expert helper for Bomb Party, live streaming, and Sparkle Suite.
+  Reps must be able to switch among Calendar, Dance Floor, questions, and other
+  allowed tasks in one conversation without learning scripted phrases.
+- Diagnosed the reported Calendar read-to-add failure at the architecture
+  boundary. The current app exposes the normal Workspace tool catalog but still
+  uses regex intent classification, durable active-workflow state, and exact
+  first-step tool forcing before the model reasons. Production policy currently
+  defaults human conversations to `gpt-5.4` medium, not GPT-5.6.
+- Confirmed the installed Vercel AI SDK 6 already supplies the appropriate
+  harness: `ToolLoopAgent`, automatic multi-step tool use, UI streaming,
+  stopping controls, approvals, and telemetry hooks. No new agent framework or
+  UI rewrite is required.
+- Created
+  `docs/superpowers/plans/2026-09-01-nic-nac-agent-harness-rebuild.md`.
+  The plan keeps proven tools, services, permissions, approvals, persistence,
+  UI, and telemetry; replaces top-level scripted steering; adds compact
+  current/paused task continuity and grounded expertise; and defines phased
+  Calendar, Dance Floor, cross-workflow, and controlled-release gates.
+- The exact same-conversation Calendar read-to-add failure is the first critical
+  acceptance case. Model-backed replays require a separate explicit request and
+  cost cap, and the scheduled isolated canary remains separately unauthorized.
+- This session changed documentation and repository memory only. It did not
+  modify Nic-Nac behavior, run paid model calls, use a browser, deploy, mutate
+  production/customer data, or touch billing, DNS, domains, aliases, or the Live
+  Queue extension. Existing untracked `artifacts/` and `test-results/` were
+  preserved.
+
+**Lessons learned:**
+- Application-owned business truth and safety do not require application-owned
+  conversational intent. The former should remain strict; the latter should be
+  model-led.
+- A durable workflow can preserve transaction facts without owning future
+  turns. An explicit new request must always get a fresh tool-selection decision.
+- Tool-switch reliability must be tested as a multi-turn conversation with one
+  conversation ID. Separate one-turn prompts do not prove the requested behavior.

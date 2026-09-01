@@ -2054,3 +2054,25 @@ customer-facing prose. Retrying the same request is both frustrating and
 unnecessary because Sparkle Suite already owns the authoritative result. The
 server can safely format bounded, newline-sanitized summaries and preserve the
 generic apology only for truly unknown empty model responses.
+
+## 2026-09-01 - Nic-Nac's top-level conversation becomes model-led
+
+Decision: The next Nic-Nac architecture should use the installed Vercel AI SDK
+`ToolLoopAgent` as the top-level conversation and tool-selection harness. The
+model owns current-goal interpretation, natural clarification, task switching,
+and tool choice. Sparkle Suite continues to own permissions, tenant identity,
+schemas, validation, approval gates, idempotency, audits, execution, and proof
+of success. Transaction-specific state may support a complex operation, but an
+old workflow may not select or force the next conversational tool.
+
+Decision: Nic-Nac's primary guardrail prompt becomes a concise user guide plus
+hard safety boundaries. Domain procedures move to tool contracts, service
+validation, and grounded knowledge. Implementation, paid replays, production
+cohort enablement, and the scheduled isolated canary remain separately
+authorized actions.
+
+Reason: The Calendar read-to-add failure proved that the current regex router,
+sticky workflow state, and forced first-step tool choice can override an
+unambiguous new request before the model gets to reason. Repeated phrase and
+workflow patches improve isolated cases while making open-ended rep language
+and mid-conversation task switching more fragile.
