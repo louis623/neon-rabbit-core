@@ -18,6 +18,7 @@ const MAX_HISTORY_WAIT_MS = 60_000
 const HISTORY_POLL_MS = 1_000
 
 export const HARD_FAIL_PHRASES = [
+  'I’m sorry—I didn’t produce a response that time. Please send that again.',
   "I can't actually add listings",
   'Log into your workspace and add it manually',
   'The photo of the earrings needs',

@@ -84,6 +84,7 @@ type LiveSwapSmokeResult = {
 }
 
 const HARD_FAIL_PATTERNS = [
+  /didn['’]t produce a response that time/i,
   /i can['’`]?t (?:actually )?(?:open|pull|look up|access|approve|swap|capture|add|update|change)/i,
   /i['’`]?m not able to (?:open|pull|look up|access|approve|swap|capture|add|update|change)/i,
   /not able to access (the )?(trade request|swap|dance floor) tool/i,

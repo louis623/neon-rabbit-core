@@ -92,7 +92,125 @@ describe('Nic-Nac stream output guard', () => {
     ).toContain('title, date and start time')
     expect(
       getNicNacToolOnlyRecoveryText('list_my_shows', { events: [] }),
-    ).toBeNull()
+    ).toBe('You don’t have any matching shows on your Calendar right now.')
+  })
+
+  it('renders deterministic customer-visible summaries for every Trade read workflow', () => {
+    expect(
+      getNicNacToolOnlyRecoveryText('list_my_trade_board', {
+        count: 1,
+        totalMsrp: 54,
+        listings: [
+          {
+            designName: 'The Starlight Earrings',
+            itemNumber: 'ER12345',
+            status: 'available',
+            quantityAvailable: 2,
+          },
+        ],
+      }),
+    ).toBe(
+      'Your Dance Floor has 1 matching dancer with $54 total MSRP.\n' +
+        '1. The Starlight Earrings (ER12345) — available, quantity 2.',
+    )
+
+    expect(
+      getNicNacToolOnlyRecoveryText('get_trade_requests', {
+        count: 1,
+        requests: [
+          {
+            customerName: 'Synthetic Reviewer',
+            status: 'pending',
+            listing: {
+              design: {
+                designName: 'The Starlight Earrings',
+                itemNumber: 'ER12345',
+              },
+            },
+          },
+        ],
+      }),
+    ).toContain(
+      'Synthetic Reviewer requested The Starlight Earrings (ER12345) — pending.',
+    )
+
+    expect(
+      getNicNacToolOnlyRecoveryText('get_fulfillment_queue', {
+        count: 1,
+        needsAttentionCount: 1,
+        queue: [
+          {
+            customerName: 'Synthetic Reviewer',
+            designName: 'The Starlight Earrings',
+            status: 'approved',
+            suggestedNextAction: 'mark_shipped',
+          },
+        ],
+      }),
+    ).toContain('next: mark shipped')
+
+    expect(
+      getNicNacToolOnlyRecoveryText('get_trade_swap_cleanup', {
+        count: 1,
+        items: [
+          {
+            customerName: 'Synthetic Reviewer',
+            revealedItemNumber: 'RG98765',
+            revealedRingSize: '8',
+            replacementStatus: 'needs_catalog_match',
+          },
+        ],
+      }),
+    ).toContain('RG98765, ring size 8 — needs catalog match')
+
+    expect(
+      getNicNacToolOnlyRecoveryText('search_jewelry_database', {
+        count: 1,
+        results: [
+          {
+            designName: 'The Starlight Earrings',
+            itemNumber: 'ER12345',
+            msrp: 54,
+            isOnMyBoard: false,
+          },
+        ],
+      }),
+    ).toBe(
+      'I found 1 matching catalog record.\n' +
+        '1. The Starlight Earrings (ER12345) — MSRP $54; not currently on your Dance Floor.',
+    )
+
+    expect(
+      getNicNacToolOnlyRecoveryText('get_trade_history', {
+        count: 1,
+        items: [
+          {
+            customerName: 'Synthetic Reviewer',
+            status: 'approved',
+            design: { designName: 'The Starlight Earrings' },
+          },
+        ],
+      }),
+    ).toContain('The Starlight Earrings with Synthetic Reviewer — approved.')
+  })
+
+  it('returns truthful empty-state summaries instead of the generic blank-response apology', () => {
+    const cases = [
+      ['list_my_trade_board', { count: 0, listings: [] }],
+      ['get_trade_requests', { count: 0, requests: [] }],
+      ['get_fulfillment_queue', { count: 0, queue: [] }],
+      ['get_trade_swap_cleanup', { count: 0, items: [] }],
+      ['search_jewelry_database', { count: 0, results: [] }],
+      ['get_trade_history', { count: 0, items: [] }],
+      ['list_my_shows', { count: 0, events: [] }],
+    ] as const
+
+    for (const [toolName, output] of cases) {
+      const recovery = getNicNacToolOnlyRecoveryText(toolName, output)
+      expect(recovery).toBeTruthy()
+      expect(recovery).not.toBe(NIC_NAC_EMPTY_RESPONSE_FALLBACK)
+      expect(recovery).not.toContain('send that again')
+    }
   })
 
   it('requires the received-piece follow-up after completed fulfillment', () => {

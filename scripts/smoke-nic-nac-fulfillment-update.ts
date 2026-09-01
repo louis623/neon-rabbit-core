@@ -71,6 +71,7 @@ type FulfillmentSmokeResult = {
 }
 
 const HARD_FAIL_PATTERNS = [
+  /didn['’]t produce a response that time/i,
   /i can['’]t actually (mark|ship|complete|update|change)/i,
   /i['’]m not able to (mark|ship|complete|update|change)/i,
   /not able to access (the )?fulfillment tool/i,

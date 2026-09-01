@@ -79,6 +79,7 @@ type CatalogCorrectionSmokeResult = {
 }
 
 const HARD_FAIL_PATTERNS = [
+  /didn['’]t produce a response that time/i,
   /i can['’`]?t (?:actually )?(?:open|pull|look up|access|correct|fix|update|change)/i,
   /i['’`]?m not able to (?:open|pull|look up|access|correct|fix|update|change)/i,
   /not able to access (the )?(catalog|jewelry database|dance floor) tool/i,

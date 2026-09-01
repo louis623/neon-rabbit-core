@@ -83,6 +83,7 @@ type RemoveListingSmokeResult = {
 }
 
 export const REMOVE_LISTING_HARD_FAIL_PATTERNS = [
+  /didn['’]t produce a response that time/i,
   /i can['’]t actually (remove|delete|change|update)/i,
   /i['’]m not able to (remove|delete|change|update)/i,
   /not able to access (the )?dance floor tool/i,

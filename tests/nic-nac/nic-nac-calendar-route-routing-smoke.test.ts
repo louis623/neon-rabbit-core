@@ -1092,6 +1092,65 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
     }
   })
 
+  it('returns a useful Trade read summary instead of the generic blank-response apology', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    streamTextMock.mockImplementation((options: {
+      onFinish?: (event: { totalUsage: unknown }) => void
+    }) => {
+      options.onFinish?.({ totalUsage: { inputTokens: 10, outputTokens: 5 } })
+      return {
+        toUIMessageStream: async function* () {
+          yield {
+            type: 'tool-input-start',
+            toolCallId: 'tool-board-1',
+            toolName: 'list_my_trade_board',
+          }
+          yield {
+            type: 'tool-input-available',
+            toolCallId: 'tool-board-1',
+            toolName: 'list_my_trade_board',
+            input: {},
+          }
+          yield {
+            type: 'tool-output-available',
+            toolCallId: 'tool-board-1',
+            output: {
+              count: 1,
+              totalMsrp: 54,
+              listings: [
+                {
+                  designName: 'The Starlight Earrings',
+                  itemNumber: 'ER12345',
+                  status: 'available',
+                  quantityAvailable: 1,
+                },
+              ],
+            },
+          }
+          yield {
+            type: 'finish',
+            finishReason: { unified: 'stop', raw: undefined },
+          }
+        },
+      }
+    })
+
+    try {
+      const response = await POST(requestFor('What is on my Dance Floor?'))
+      const body = await response.text()
+
+      expect(response.status).toBe(200)
+      expect(body).toContain('Your Dance Floor has 1 matching dancer')
+      expect(body).toContain('The Starlight Earrings')
+      expect(body).not.toContain('Please send that again')
+    } finally {
+      infoSpy.mockRestore()
+      logSpy.mockRestore()
+    }
+  })
+
   it('surfaces a resolver failure and records the run as error instead of complete', async () => {
     const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})

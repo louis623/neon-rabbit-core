@@ -75,6 +75,7 @@ type SwapCleanupSmokeResult = {
 }
 
 const HARD_FAIL_PATTERNS = [
+  /didn['’]t produce a response that time/i,
   /i can['']t actually (add|update|fix|complete|change)/i,
   /i['']m not able to (add|update|fix|complete|change)/i,
   /not able to access (the )?(dance floor|swap cleanup|add listing) tool/i,

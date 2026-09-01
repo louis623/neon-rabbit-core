@@ -77,6 +77,7 @@ type CalendarPressureSmokeResult = {
 }
 
 const HARD_FAIL_PATTERNS = [
+  /didn['’]t produce a response that time/i,
   /i can['’]t actually (write|add|create|update|cancel)/i,
   /i['’]m not able to (write|add|create|update|cancel)/i,
   /not able to access (the )?calendar tool/i,

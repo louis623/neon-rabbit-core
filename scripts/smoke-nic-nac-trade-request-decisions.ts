@@ -86,6 +86,7 @@ type TradeRequestDecisionSmokeResult = {
 }
 
 const HARD_FAIL_PATTERNS = [
+  /didn['’]t produce a response that time/i,
   /i can['’]t actually (approve|reject|change|update)/i,
   /i['’]m not able to (approve|reject|change|update)/i,
   /not able to access (the )?trade request tool/i,
