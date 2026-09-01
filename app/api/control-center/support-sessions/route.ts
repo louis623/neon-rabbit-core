@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 
-import { DEFAULT_OPERATOR_SUPPORT_CAPABILITIES } from '@/lib/operator-support/capabilities'
+import {
+  DEFAULT_OPERATOR_SUPPORT_CAPABILITIES,
+  SITE_SUPPORT_OPERATOR_CAPABILITIES,
+} from '@/lib/operator-support/capabilities'
 import { enqueueMissingOperatorSupportCompletionNotices } from '@/lib/operator-support/completion-retry'
 import {
   mapOperatorSupportSessionSummary as summary,
@@ -42,7 +45,7 @@ function errorResponse(error: unknown) {
 
 export async function GET(request: Request) {
   try {
-    const access = await getControlCenterAccess()
+    const access = await getControlCenterAccess({ allowSiteSupport: true })
     const targetRepId = new URL(request.url).searchParams.get('targetRepId')?.trim()
     const admin = createAdminClient()
     await enqueueMissingOperatorSupportCompletionNotices(admin)
@@ -87,7 +90,7 @@ export async function POST(request: Request) {
     | null = null
   let startNoticePublished = false
   try {
-    const access = await getControlCenterAccess()
+    const access = await getControlCenterAccess({ allowSiteSupport: true })
     const body = (await request.json().catch(() => null)) as
       | {
           targetRepId?: unknown
@@ -151,7 +154,10 @@ export async function POST(request: Request) {
       reasonNote: typeof body.reasonNote === 'string' ? body.reasonNote : null,
       supportReportId:
         typeof body.supportReportId === 'string' ? body.supportReportId : null,
-      capabilities: DEFAULT_OPERATOR_SUPPORT_CAPABILITIES,
+      capabilities:
+        access.scope === 'site_support'
+          ? SITE_SUPPORT_OPERATOR_CAPABILITIES
+          : DEFAULT_OPERATOR_SUPPORT_CAPABILITIES,
       requestId: randomUUID(),
     })
     pending = {

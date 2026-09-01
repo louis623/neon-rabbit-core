@@ -54,7 +54,7 @@ export async function loadVerifiedOperatorSupportContext(
     supabase?: SupabaseClient
   },
 ) {
-  const access = await getControlCenterAccess()
+  const access = await getControlCenterAccess({ allowSiteSupport: true })
   const admin = input.supabase ?? createAdminClient()
   const mutation = input.mutation === true
   const headerToken = input.request?.headers.get('x-sparkle-support-csrf') ?? null

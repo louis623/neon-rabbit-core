@@ -15,6 +15,20 @@ type ControlCenterSession = {
   repId: string
 }
 
+export type ControlCenterOperatorScope = 'owner' | 'site_support'
+
+export type ControlCenterAccess = {
+  method: 'control_center_session'
+  operator: { email: string; repId: string }
+  scope: ControlCenterOperatorScope
+}
+
+type AdditionalControlCenterCredential = {
+  username: string
+  password: string
+  operatorEmail: string
+}
+
 export class OperatorAuthError extends Error {
   constructor(message: string) {
     super(message)
@@ -33,6 +47,61 @@ function getOperatorEmails() {
 
 function isControlCenterDevAuthBypassEnabled() {
   return process.env.NODE_ENV === 'development'
+}
+
+function getSiteSupportOperatorEmails() {
+  return (process.env.CONTROL_CENTER_SITE_SUPPORT_OPERATOR_EMAILS ?? '')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean)
+}
+
+function getControlCenterOwnerEmails() {
+  return (process.env.CONTROL_CENTER_OWNER_EMAILS ?? 'louis@neonrabbit.net')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean)
+}
+
+function getControlCenterOperatorScope(email: string): ControlCenterOperatorScope | null {
+  if (getSiteSupportOperatorEmails().includes(email)) return 'site_support'
+  if (getControlCenterOwnerEmails().includes(email)) return 'owner'
+  return null
+}
+
+function getAdditionalControlCenterCredentials(): AdditionalControlCenterCredential[] {
+  const raw = process.env.CONTROL_CENTER_ADDITIONAL_OPERATOR_CREDENTIALS?.trim()
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    if (!Array.isArray(parsed)) return []
+    return parsed.flatMap((entry) => {
+      if (!entry || typeof entry !== 'object') return []
+      const value = entry as Record<string, unknown>
+      const username = typeof value.username === 'string' ? value.username.trim().toLowerCase() : ''
+      const password = typeof value.password === 'string' ? value.password : ''
+      const operatorEmail = typeof value.operatorEmail === 'string' ? value.operatorEmail.trim().toLowerCase() : ''
+      return username && password && operatorEmail ? [{ username, password, operatorEmail }] : []
+    })
+  } catch {
+    return []
+  }
+}
+
+function getConfiguredControlCenterCredentials(): AdditionalControlCenterCredential[] {
+  const configuredUsername = process.env.CONTROL_CENTER_USERNAME?.trim().toLowerCase()
+  const configuredPassword = process.env.CONTROL_CENTER_PASSWORD
+  const configuredOperatorEmail = (process.env.CONTROL_CENTER_OPERATOR_EMAIL ?? configuredUsername)?.trim().toLowerCase()
+  const legacy = configuredUsername && configuredPassword && configuredOperatorEmail
+    ? [{ username: configuredUsername, password: configuredPassword, operatorEmail: configuredOperatorEmail }]
+    : []
+  return [...legacy, ...getAdditionalControlCenterCredentials()]
+}
+
+function credentialMatches(value: string, expected: string) {
+  const actual = Buffer.from(value)
+  const comparison = Buffer.from(expected)
+  return actual.length === comparison.length && timingSafeEqual(actual, comparison)
 }
 
 async function getDevBypassOperator() {
@@ -110,24 +179,22 @@ function decodeControlCenterSession(value: string, sessionSecret: string) {
 
 export async function authenticateControlCenterOperator(email: string, password: string): Promise<OperatorContext> {
   const username = email.trim().toLowerCase()
-  const configuredUsername = process.env.CONTROL_CENTER_USERNAME?.trim().toLowerCase()
-  const configuredPassword = process.env.CONTROL_CENTER_PASSWORD
   if (!username || !password) throw new AuthError('Username and password are required.')
-  if (!configuredUsername || !configuredPassword) {
+  const credentials = getConfiguredControlCenterCredentials()
+  if (credentials.length === 0) {
     throw new Error('Control Center credentials are not configured.')
   }
+  const matchingCredential = credentials.find((credential) =>
+    credentialMatches(username, credential.username) && credentialMatches(password, credential.password),
+  )
+  if (!matchingCredential) throw new AuthError('That username or password is not valid.')
 
-  const suppliedUsername = Buffer.from(username)
-  const expectedUsername = Buffer.from(configuredUsername)
-  const suppliedPassword = Buffer.from(password)
-  const expectedPassword = Buffer.from(configuredPassword)
-  const usernameMatches = suppliedUsername.length === expectedUsername.length && timingSafeEqual(suppliedUsername, expectedUsername)
-  const passwordMatches = suppliedPassword.length === expectedPassword.length && timingSafeEqual(suppliedPassword, expectedPassword)
-  if (!usernameMatches || !passwordMatches) throw new AuthError('That username or password is not valid.')
-
-  const operatorEmail = (process.env.CONTROL_CENTER_OPERATOR_EMAIL ?? configuredUsername).trim().toLowerCase()
+  const operatorEmail = matchingCredential.operatorEmail
   if (!getOperatorEmails().includes(operatorEmail)) {
     throw new OperatorAuthError('Control Center operator identity is not authorized.')
+  }
+  if (!getControlCenterOperatorScope(operatorEmail)) {
+    throw new OperatorAuthError('Control Center operator scope is not configured.')
   }
 
   const admin = createAdminClient()
@@ -163,7 +230,7 @@ export async function getControlCenterSession() {
   return value ? decodeControlCenterSession(value, sessionSecret) : null
 }
 
-export async function getControlCenterAccess() {
+async function getScopedControlCenterAccess(): Promise<ControlCenterAccess> {
   const session = await getControlCenterSession()
   if (!session) throw new AuthError('Control Center sign in is required.')
 
@@ -174,6 +241,8 @@ export async function getControlCenterAccess() {
   if (!getOperatorEmails().includes(email)) {
     throw new OperatorAuthError('Control Center operator identity is no longer authorized.')
   }
+  const scope = getControlCenterOperatorScope(email)
+  if (!scope) throw new OperatorAuthError('Control Center operator scope is not configured.')
   const admin = createAdminClient()
   const { data: rep, error } = await admin
     .from('reps')
@@ -189,7 +258,23 @@ export async function getControlCenterAccess() {
     throw new OperatorAuthError('Control Center operator identity is no longer authorized.')
   }
 
-  return { method: 'control_center_session' as const, operator: { email, repId: session.repId } }
+  return { method: 'control_center_session' as const, operator: { email, repId: session.repId }, scope }
+}
+
+// Owner-only is the safe default for existing Control Center pages and routes.
+// Site-support access must opt in through the narrow helper below.
+export async function getControlCenterAccess(
+  options: { allowSiteSupport?: boolean } = {},
+): Promise<ControlCenterAccess> {
+  const access = await getScopedControlCenterAccess()
+  return options.allowSiteSupport ? access : requireControlCenterOwner(access)
+}
+
+export function requireControlCenterOwner(access: ControlCenterAccess) {
+  if (access.scope !== 'owner') {
+    throw new OperatorAuthError('This Control Center operator is limited to customer-site support.')
+  }
+  return access
 }
 
 export const controlCenterSessionCookie = {

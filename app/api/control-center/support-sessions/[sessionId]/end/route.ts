@@ -22,7 +22,7 @@ export async function POST(
   const { sessionId } = await params
   try {
     const context = await loadVerifiedOperatorSupportContext(sessionId, {
-      capability: 'workspace.view',
+      capability: 'nic_nac.use',
       mutation: true,
       requireEligibleTarget: false,
       request,

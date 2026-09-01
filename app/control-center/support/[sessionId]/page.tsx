@@ -14,7 +14,7 @@ async function loadContextOrRedirect(sessionId: string) {
     return {
       ok: true as const,
       context: await loadVerifiedOperatorSupportContext(sessionId, {
-        capability: 'workspace.view',
+        capability: 'nic_nac.use',
         mutation: false,
       }),
     }
@@ -58,7 +58,7 @@ export default async function OperatorSupportWorkspacePage({
     targetRepId: context.session.targetRepId,
     eventType: 'workspace_area_viewed',
     workspaceArea: 'workspace',
-    capability: 'workspace.view',
+    capability: 'nic_nac.use',
     actionName: 'open_support_workspace',
     result: 'succeeded',
     idempotencyKey: `workspace-open:${context.session.id}`,

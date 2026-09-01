@@ -33,6 +33,7 @@ describe('operator auth security', () => {
   const originalNodeEnv = process.env.NODE_ENV
   const originalDevBypass = process.env.CONTROL_CENTER_DEV_AUTH_BYPASS
   const originalOperatorEmails = process.env.INTERNAL_OPERATOR_EMAILS
+  const originalOwnerEmails = process.env.CONTROL_CENTER_OWNER_EMAILS
   const originalSessionSecret = process.env.CONTROL_CENTER_SESSION_SECRET
 
   beforeEach(() => {
@@ -40,6 +41,7 @@ describe('operator auth security', () => {
     process.env.NODE_ENV = originalNodeEnv
     process.env.CONTROL_CENTER_DEV_AUTH_BYPASS = originalDevBypass
     process.env.INTERNAL_OPERATOR_EMAILS = originalOperatorEmails
+    process.env.CONTROL_CENTER_OWNER_EMAILS = originalOwnerEmails
     process.env.CONTROL_CENTER_SESSION_SECRET = originalSessionSecret
   })
 
@@ -55,6 +57,7 @@ describe('operator auth security', () => {
   it('revalidates the signed Control Center identity against the current operator record', async () => {
     process.env.CONTROL_CENTER_SESSION_SECRET = 'test-control-center-secret'
     process.env.INTERNAL_OPERATOR_EMAILS = 'louis@example.com'
+    process.env.CONTROL_CENTER_OWNER_EMAILS = 'louis@example.com'
     const operator = {
       repId: 'operator-1',
       rep: {

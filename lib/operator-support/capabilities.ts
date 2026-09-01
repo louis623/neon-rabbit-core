@@ -28,6 +28,15 @@ export const DEFAULT_OPERATOR_SUPPORT_CAPABILITIES = [
   ...OPERATOR_SUPPORT_CAPABILITIES,
 ] as const
 
+// Site-support operators can work only on a disclosed customer-site support
+// session. This intentionally excludes customer records, messages, calendar,
+// inventory, Live Queue, Nic-Nac, and every structural account area.
+export const SITE_SUPPORT_OPERATOR_CAPABILITIES = [
+  'site.view',
+  'site.manage',
+  'nic_nac.use',
+] as const satisfies readonly SupportCapability[]
+
 const capabilitySet = new Set<string>(OPERATOR_SUPPORT_CAPABILITIES)
 
 export function isSupportCapability(value: unknown): value is SupportCapability {
