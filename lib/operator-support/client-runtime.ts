@@ -1,7 +1,6 @@
 export type OperatorSupportClientContext = {
   sessionId: string
   csrfToken: string
-  expiresAt: string
   operator: { displayName: string }
   target: {
     repId: string

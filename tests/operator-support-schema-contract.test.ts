@@ -13,6 +13,10 @@ const nicNacProvenanceMigration = readFileSync(
   'supabase/migrations/20260829123000_ss_operator_support_nic_nac_provenance.sql',
   'utf8',
 )
+const operatorControlledMigration = readFileSync(
+  'supabase/migrations/20260901120000_ss_operator_support_operator_controlled.sql',
+  'utf8',
+)
 
 describe('operator support access schema contract', () => {
   it('creates frozen actor/subject sessions with concurrency and expiry guards', () => {
@@ -89,6 +93,25 @@ describe('operator support access schema contract', () => {
     )
     expect(nicNacProvenanceMigration).toMatch(
       /create policy approval_events_own_data[\s\S]*support_session_id is null/,
+    )
+  })
+
+  it('supersedes the original timer with explicit operator closeout', () => {
+    expect(operatorControlledMigration).toContain(
+      'drop constraint if exists operator_support_sessions_expiry_check',
+    )
+    expect(operatorControlledMigration).toContain('alter column expires_at drop not null')
+    expect(operatorControlledMigration).not.toMatch(
+      /update public\.operator_support_sessions[\s\S]*set expires_at/,
+    )
+    expect(operatorControlledMigration).toMatch(
+      /function public\.expire_operator_support_sessions\(\)[\s\S]*return 0;/,
+    )
+    expect(operatorControlledMigration).toContain(
+      "p_event_type = 'mutation_attempted' and v_session.status <> 'active'",
+    )
+    expect(operatorControlledMigration).not.toContain(
+      "p_event_type = 'mutation_attempted'\n    and (v_session.status <> 'active' or v_session.expires_at <= now())",
     )
   })
 })

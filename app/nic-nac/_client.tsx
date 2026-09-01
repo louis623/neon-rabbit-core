@@ -232,7 +232,6 @@ export default function NicNacClient({
     sessionId: string
     operatorDisplayName: string
     targetDisplayName: string
-    expiresAt: string
   }
 }) {
   const router = useRouter()

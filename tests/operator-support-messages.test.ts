@@ -20,7 +20,10 @@ vi.mock('@/lib/operator-support/audit', () => ({
 }))
 
 import { enqueueMissingOperatorSupportCompletionNotices } from '@/lib/operator-support/completion-retry'
-import { publishOperatorSupportEndNotice } from '@/lib/operator-support/messages'
+import {
+  publishOperatorSupportEndNotice,
+  publishOperatorSupportStartNotice,
+} from '@/lib/operator-support/messages'
 
 function endedSession(): OperatorSupportSession {
   return {
@@ -61,6 +64,25 @@ describe('operator support transparency messages', () => {
       deliveryCount: 1,
     })
     enqueueOutboxMock.mockResolvedValue({ id: 'outbox-1' })
+  })
+
+  it('tells the rep that support stays active until the operator ends it', async () => {
+    await publishOperatorSupportStartNotice(
+      {} as SupabaseClient,
+      { ...endedSession(), status: 'active', endedAt: null, endedReason: null },
+    )
+
+    expect(publishWorkspaceMessageMock).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        body: expect.stringContaining(
+          'The session stays active until Sparkle Suite Support ends it.',
+        ),
+      }),
+    )
+    expect(publishWorkspaceMessageMock.mock.calls.at(-1)?.[1]?.body).not.toContain(
+      'time-limited',
+    )
   })
 
   it('includes the customer-safe completion summary, reason, and ET close time', async () => {

@@ -116,14 +116,12 @@ export function OperatorSupportHistory({
             </div>
             <div>
               <dt className="font-semibold text-slate-500">
-                {session.status === 'active' ? 'Expires' : 'Ended'}
+                {session.status === 'active' ? 'Access' : 'Ended'}
               </dt>
               <dd className="mt-0.5">
-                {formatDate(
-                  session.status === 'active'
-                    ? session.expiresAt
-                    : session.endedAt ?? session.expiresAt,
-                )}
+                {session.status === 'active'
+                  ? 'Open until you end support access'
+                  : formatDate(session.endedAt ?? session.expiresAt)}
               </dd>
             </div>
           </dl>

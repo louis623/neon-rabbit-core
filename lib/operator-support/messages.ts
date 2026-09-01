@@ -51,7 +51,7 @@ export async function publishOperatorSupportStartNotice(
     senderKey: 'support_access_notifier',
     title: `${session.operatorDisplayNameSnapshot} opened support access`,
     summary: `Sparkle Suite Support entered your Workspace for ${safeReason(session)}.`,
-    body: `${session.operatorDisplayNameSnapshot} opened a time-limited support session to help with ${safeReason(session)}. Every access and change is logged. Billing, payments, passwords, account security, ownership, and outbound communications are unavailable in support mode.`,
+    body: `${session.operatorDisplayNameSnapshot} opened a support session to help with ${safeReason(session)}. The session stays active until Sparkle Suite Support ends it. Every access and change is logged. Billing, payments, passwords, account security, ownership, and outbound communications are unavailable in support mode.`,
     category: 'account_activity',
     priority: 'normal',
     actionLabel: 'View access details',

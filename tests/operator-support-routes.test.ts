@@ -16,7 +16,6 @@ const loadVerifiedContextMock = vi.fn()
 const appendAuditMock = vi.fn()
 const hasSuccessfulMutationMock = vi.fn()
 const enqueueRetryMock = vi.fn()
-const expireSessionsMock = vi.fn()
 const enqueueMissingCompletionMock = vi.fn()
 const resolveWorkspaceAccessMock = vi.fn()
 
@@ -42,7 +41,6 @@ vi.mock('@/lib/operator-support/session-service', () => ({
   listOperatorSupportSessions: (...args: unknown[]) => listSessionsMock(...args),
   endOperatorSupportSession: (...args: unknown[]) => endSessionMock(...args),
   recordOperatorSupportCompletionNotice: (...args: unknown[]) => recordCompletionMock(...args),
-  expireOperatorSupportSessions: (...args: unknown[]) => expireSessionsMock(...args),
 }))
 vi.mock('@/lib/operator-support/completion-retry', () => ({
   enqueueMissingOperatorSupportCompletionNotices: (...args: unknown[]) =>
@@ -147,7 +145,6 @@ describe('operator support session routes', () => {
     appendAuditMock.mockResolvedValue({})
     hasSuccessfulMutationMock.mockResolvedValue(false)
     enqueueRetryMock.mockResolvedValue({ id: 'outbox-1' })
-    expireSessionsMock.mockResolvedValue(0)
     enqueueMissingCompletionMock.mockResolvedValue(0)
     resolveWorkspaceAccessMock.mockResolvedValue({ hasFullAccess: true })
   })
@@ -170,6 +167,7 @@ describe('operator support session routes', () => {
       `sparkle_support_csrf_${session.id}=csrf-secret`,
     )
     expect(response.headers.get('set-cookie')).toContain('Path=/control-center')
+    expect(response.headers.get('set-cookie')).toContain('Max-Age=34560000')
     await expect(response.json()).resolves.toMatchObject({
       workspaceUrl: `/control-center/support/${session.id}`,
       session: { targetRepId: 'rep-kim', status: 'active' },

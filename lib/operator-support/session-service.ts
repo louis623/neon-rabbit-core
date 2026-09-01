@@ -19,9 +19,6 @@ import {
 } from './types'
 import { assertOperatorSupportCustomerSafeText } from './redaction'
 
-const DEFAULT_DURATION_MINUTES = 30
-const MAX_DURATION_MINUTES = 60
-
 const SESSION_SELECT = [
   'id',
   'operator_rep_id',
@@ -65,7 +62,7 @@ type SessionRow = {
   request_id: string
   started_at: string | null
   last_activity_at: string | null
-  expires_at: string
+  expires_at: string | null
   extended_at: string | null
   ended_at: string | null
   ended_reason: OperatorSupportEndedReason | null
@@ -228,7 +225,6 @@ export async function requestOperatorSupportSession(
     requestId?: string
     sessionId?: string
     csrfToken?: string
-    durationMinutes?: number
   },
 ): Promise<{ session: OperatorSupportSession; csrfToken: string }> {
   const operatorRepId = cleanRequired(input.operatorRepId, 'Operator identity', 100)
@@ -244,11 +240,6 @@ export async function requestOperatorSupportSession(
     throw new OperatorSupportError('SUPPORT_INVALID_INPUT', 'Support reason note is too long.', 400)
   }
   assertCustomerSafeText(reasonNote, 'Support reason')
-  const durationMinutes = input.durationMinutes ?? DEFAULT_DURATION_MINUTES
-  if (!Number.isInteger(durationMinutes) || durationMinutes < 1 || durationMinutes > MAX_DURATION_MINUTES) {
-    throw new OperatorSupportError('SUPPORT_INVALID_INPUT', 'Support session duration is invalid.', 400)
-  }
-
   const requestId = cleanRequired(input.requestId ?? randomUUID(), 'Request ID', 200)
   const sessionId = input.sessionId ?? deterministicSessionId(operatorRepId, requestId)
   const csrfToken = input.csrfToken ?? csrfTokenForRequest(operatorRepId, requestId)
@@ -266,7 +257,7 @@ export async function requestOperatorSupportSession(
     p_support_report_id: input.supportReportId ?? null,
     p_capabilities: capabilities,
     p_csrf_token_hash: hashOperatorSupportCsrfToken(csrfToken),
-    p_expires_at: new Date(Date.now() + durationMinutes * 60_000).toISOString(),
+    p_expires_at: null,
     p_request_id: requestId,
   })
   if (result.error || !result.data) rpcFailure('Support session could not be requested.', result.error)
@@ -326,20 +317,6 @@ export async function listOperatorSupportSessions(
   return (result.data ?? []).map(mapSession)
 }
 
-export async function extendOperatorSupportSession(
-  supabase: SupabaseClient,
-  input: { sessionId: string; operatorRepId: string; newExpiresAt: string; requestId?: string },
-) {
-  const result = await supabase.rpc('extend_operator_support_session', {
-    p_session_id: input.sessionId,
-    p_operator_rep_id: input.operatorRepId,
-    p_new_expires_at: input.newExpiresAt,
-    p_request_id: input.requestId ?? randomUUID(),
-  })
-  if (result.error || !result.data) rpcFailure('Support session could not be extended.', result.error)
-  return mapSession(result.data)
-}
-
 export async function endOperatorSupportSession(
   supabase: SupabaseClient,
   input: {
@@ -385,12 +362,6 @@ export async function recordOperatorSupportCompletionNotice(
   return mapSession(result.data)
 }
 
-export async function expireOperatorSupportSessions(supabase: SupabaseClient) {
-  const result = await supabase.rpc('expire_operator_support_sessions')
-  if (result.error) rpcFailure('Support sessions could not be expired.', result.error)
-  return Number(result.data ?? 0)
-}
-
 export async function verifyOperatorSupportSessionAccess(
   supabase: SupabaseClient,
   input: {
@@ -411,9 +382,6 @@ export async function verifyOperatorSupportSessionAccess(
   }
   if (input.targetRepId && session.targetRepId !== input.targetRepId) {
     throw new OperatorSupportError('SUPPORT_TARGET_MISMATCH', 'Support target does not match.', 403)
-  }
-  if (new Date(session.expiresAt).getTime() <= Date.now()) {
-    throw new OperatorSupportError('SUPPORT_SESSION_EXPIRED', 'Support session has expired.', 410)
   }
   if (session.status !== 'active') {
     throw new OperatorSupportError('SUPPORT_SESSION_INACTIVE', 'Support session is not active.', 410)

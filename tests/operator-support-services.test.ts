@@ -128,7 +128,7 @@ describe('operator support session service', () => {
     }))
   })
 
-  it('freezes operator, target, capability, status, expiry, and CSRF on access verification', async () => {
+  it('freezes operator, target, capability, active status, and CSRF on access verification', async () => {
     const token = 'known-csrf'
     const client = queryClient([
       { data: sessionRow(), error: null },
@@ -146,6 +146,22 @@ describe('operator support session service', () => {
       mode: 'operator_support',
       operatorDisplayName: 'Louis',
       subjectRepId: '33333333-3333-4333-8333-333333333333',
+    })
+  })
+
+  it('keeps an active session usable even when its legacy expiry timestamp is in the past', async () => {
+    const client = queryClient([
+      { data: sessionRow({ expires_at: '2020-01-01T00:00:00.000Z' }), error: null },
+    ])
+
+    await expect(verifyOperatorSupportSessionAccess(client, {
+      sessionId: '11111111-1111-4111-8111-111111111111',
+      operatorRepId: '22222222-2222-4222-8222-222222222222',
+      targetRepId: '33333333-3333-4333-8333-333333333333',
+      capability: 'workspace.view',
+    })).resolves.toMatchObject({
+      session: { status: 'active' },
+      actor: { mode: 'operator_support' },
     })
   })
 

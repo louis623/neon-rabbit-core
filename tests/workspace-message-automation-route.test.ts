@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const enqueueDue = vi.fn()
 const processAutomation = vi.fn()
-const expireSupport = vi.fn()
 const enqueueSupportCompletion = vi.fn()
 
 vi.mock('@/lib/services/workspace-message-automation', () => ({
@@ -11,9 +10,6 @@ vi.mock('@/lib/services/workspace-message-automation', () => ({
 }))
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({ marker: 'admin' }),
-}))
-vi.mock('@/lib/operator-support/session-service', () => ({
-  expireOperatorSupportSessions: (...args: unknown[]) => expireSupport(...args),
 }))
 vi.mock('@/lib/operator-support/completion-retry', () => ({
   enqueueMissingOperatorSupportCompletionNotices: (...args: unknown[]) =>
@@ -26,9 +22,7 @@ describe('workspace message automation route', () => {
   beforeEach(() => {
     enqueueDue.mockReset()
     processAutomation.mockReset()
-    expireSupport.mockReset()
     enqueueSupportCompletion.mockReset()
-    expireSupport.mockResolvedValue(0)
     enqueueSupportCompletion.mockResolvedValue(0)
     delete process.env.CRON_SECRET
   })

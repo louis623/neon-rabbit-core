@@ -124,7 +124,7 @@ export type OperatorSupportSession = {
   requestId: string
   startedAt: string | null
   lastActivityAt: string | null
-  expiresAt: string
+  expiresAt: string | null
   extendedAt: string | null
   endedAt: string | null
   endedReason: OperatorSupportEndedReason | null

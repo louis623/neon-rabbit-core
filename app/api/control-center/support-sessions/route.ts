@@ -15,7 +15,6 @@ import {
 import {
   activateOperatorSupportSession,
   endOperatorSupportSession,
-  expireOperatorSupportSessions,
   listOperatorSupportSessions,
   OperatorSupportError,
   recordOperatorSupportCompletionNotice,
@@ -46,7 +45,6 @@ export async function GET(request: Request) {
     const access = await getControlCenterAccess()
     const targetRepId = new URL(request.url).searchParams.get('targetRepId')?.trim()
     const admin = createAdminClient()
-    await expireOperatorSupportSessions(admin)
     await enqueueMissingOperatorSupportCompletionNotices(admin)
     const [sessions, openSessions] = await Promise.all([
       listOperatorSupportSessions(admin, {
@@ -103,7 +101,6 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient()
-    await expireOperatorSupportSessions(admin)
     await enqueueMissingOperatorSupportCompletionNotices(admin)
     const [{ data: operator, error: operatorError }, { data: target, error: targetError }] =
       await Promise.all([
@@ -178,7 +175,7 @@ export async function POST(request: Request) {
     })
     response.cookies.set(`${CSRF_COOKIE_PREFIX}${session.id}`, requested.csrfToken, {
       httpOnly: true,
-      maxAge: 60 * 60,
+      maxAge: 400 * 24 * 60 * 60,
       path: '/control-center',
       sameSite: 'strict',
       secure: process.env.NODE_ENV === 'production',

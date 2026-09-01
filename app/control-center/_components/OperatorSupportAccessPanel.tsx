@@ -308,8 +308,8 @@ export function OperatorSupportAccessPanel({
           </div>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Work in this rep&apos;s account without their password. Every session
-            is time-limited, logged, visibly labeled, and disclosed to the rep
-            in Message Center.
+            stays active until you end it, is logged and visibly labeled, and
+            is disclosed to the rep in Message Center.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -371,6 +371,11 @@ export function OperatorSupportAccessPanel({
           <p className="mt-1 text-sm text-emerald-800">
             Reason: {activeSession.reasonCode.replaceAll('_', ' ')}
           </p>
+          {activeSession.status === 'active' ? (
+            <p className="mt-1 text-sm font-semibold text-emerald-900">
+              This stays open until you choose End support access.
+            </p>
+          ) : null}
           {openWorkspaceHref && activeSession.status === 'active' ? (
             <a
               className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white"

@@ -82,7 +82,7 @@ describe('Control Center transparent operator support access UI', () => {
     expect(supportClientSource).not.toContain('customerReadUrl')
   })
 
-  it('keeps support-session clock renders from restarting the Nic-Nac composer', () => {
+  it('keeps support mode operator-controlled and removes the rerendering expiry clock', () => {
     const clientSource = readFileSync('app/nic-nac/_client.tsx', 'utf8')
     const supportClientSource = readFileSync(
       'app/control-center/support/[sessionId]/SupportWorkspaceClient.tsx',
@@ -98,6 +98,12 @@ describe('Control Center transparent operator support access UI', () => {
     )
     expect(clientSource).toContain('operatorSupportSessionId,')
     expect(clientSource).not.toContain('    operatorSupport,')
+    expect(supportClientSource).toContain(
+      'Access stays open until you choose End support access.',
+    )
+    expect(supportClientSource).not.toContain('setInterval')
+    expect(supportClientSource).not.toContain('Support access has expired')
+    expect(supportClientSource).not.toContain('expiresAt')
   })
 
   it('places the rep support-access history after all Account tools', () => {
@@ -180,6 +186,19 @@ describe('Control Center transparent operator support access UI', () => {
     expect(html).toContain('Open customer site')
     expect(html).toContain('href="/kim-sparkles"')
     expect(html).toContain('Checking secure access history')
+    expect(html).toContain('stays active until you end it')
+    expect(html).not.toContain('time-limited')
+  })
+
+  it('describes an active session as open until the operator ends it', () => {
+    const html = renderToStaticMarkup(
+      createElement(OperatorSupportHistory, {
+        sessions: [{ ...session, status: 'active', endedAt: null }],
+      }),
+    )
+
+    expect(html).toContain('Open until you end support access')
+    expect(html).not.toContain('>Expires<')
   })
 
   it('freezes the exact rep and discloses accountability before starting', () => {

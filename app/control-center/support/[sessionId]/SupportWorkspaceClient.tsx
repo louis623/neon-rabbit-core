@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Link from 'next/link'
 
 import NicNacClient from '@/app/nic-nac/_client'
 import type { OperatorSupportClientContext } from '@/lib/operator-support/client-runtime'
@@ -18,19 +17,14 @@ export function SupportWorkspaceClient({
   const [endDialogOpen, setEndDialogOpen] = useState(false)
   const [changedAnything, setChangedAnything] = useState<boolean | null>(null)
   const [completionSummary, setCompletionSummary] = useState('')
-  const [clock, setClock] = useState(() => Date.now())
-  const expiresAtMs = new Date(context.expiresAt).getTime()
-  const expired = !Number.isFinite(expiresAtMs) || clock >= expiresAtMs
   const originalFetchRef = useRef<typeof window.fetch | null>(null)
   const operatorSupportContext = useMemo(
     () => ({
       sessionId: context.sessionId,
       operatorDisplayName: context.operator.displayName,
       targetDisplayName: context.target.displayName,
-      expiresAt: context.expiresAt,
     }),
     [
-      context.expiresAt,
       context.operator.displayName,
       context.sessionId,
       context.target.displayName,
@@ -84,32 +78,8 @@ export function SupportWorkspaceClient({
     }
   }, [context.csrfToken, context.sessionId])
 
-  useEffect(() => {
-    const intervalId = window.setInterval(() => setClock(Date.now()), 15_000)
-    return () => window.clearInterval(intervalId)
-  }, [])
-
   if (!ready) {
     return <div className="p-6 text-sm text-slate-600">Securing support Workspace…</div>
-  }
-
-  if (expired) {
-    return (
-      <main className="grid min-h-screen place-items-center bg-slate-100 p-6">
-        <section className="w-full max-w-xl rounded-2xl border border-amber-300 bg-white p-6 shadow-lg">
-          <h1 className="text-2xl font-semibold text-slate-950">Support access has expired</h1>
-          <p className="mt-2 leading-6 text-slate-600">
-            This time-limited session is closed. Return to Control Center to review the log or start a new, disclosed session.
-          </p>
-          <Link
-            className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white"
-            href="/control-center"
-          >
-            Return to Control Center
-          </Link>
-        </section>
-      </main>
-    )
   }
 
   async function endSupportAccess() {
@@ -151,6 +121,9 @@ export function SupportWorkspaceClient({
           <p className="text-sm">
             Signed in as {context.operator.displayName}. Every action is logged; billing,
             payments, account ownership, sign-in, and security changes are disabled.
+          </p>
+          <p className="text-sm font-semibold">
+            Access stays open until you choose End support access.
           </p>
           {endError ? <p aria-live="assertive" className="text-sm font-semibold text-rose-700" role="alert">{endError}</p> : null}
         </div>

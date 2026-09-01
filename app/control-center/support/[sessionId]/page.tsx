@@ -68,7 +68,6 @@ export default async function OperatorSupportWorkspacePage({
       context={{
         sessionId: context.session.id,
         csrfToken: context.csrfToken,
-        expiresAt: context.session.expiresAt,
         operator: {
           displayName: context.session.operatorDisplayNameSnapshot,
         },

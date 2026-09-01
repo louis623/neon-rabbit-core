@@ -4,7 +4,6 @@ import {
   processWorkspaceMessageAutomation,
 } from '@/lib/services/workspace-message-automation'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { expireOperatorSupportSessions } from '@/lib/operator-support/session-service'
 import { enqueueMissingOperatorSupportCompletionNotices } from '@/lib/operator-support/completion-retry'
 
 export const runtime = 'nodejs'
@@ -29,7 +28,7 @@ export async function GET(request: Request) {
   if (authError) return authError
   const admin = createAdminClient()
   const now = new Date()
-  const expiredSupportSessions = await expireOperatorSupportSessions(admin)
+  const expiredSupportSessions = 0
   const supportCompletionNoticesQueued =
     await enqueueMissingOperatorSupportCompletionNotices(admin)
   const monthlyEnqueued = await enqueueDueMonthlyReports({ supabase: admin, now })
