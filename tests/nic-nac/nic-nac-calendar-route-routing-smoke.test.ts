@@ -23,6 +23,7 @@ const {
   insertOperatorSupportConversationMessageMock,
   recordOperatorSupportApprovalEventMock,
   createConfiguredNicNacAgentMock,
+  loadNicNacWorkflowTaskContinuityMock,
   agentStreamMock,
 } = vi.hoisted(() => ({
   supabaseMock: {},
@@ -47,6 +48,7 @@ const {
   insertOperatorSupportConversationMessageMock: vi.fn(),
   recordOperatorSupportApprovalEventMock: vi.fn(),
   createConfiguredNicNacAgentMock: vi.fn(),
+  loadNicNacWorkflowTaskContinuityMock: vi.fn(),
   agentStreamMock: vi.fn(),
 }))
 
@@ -119,6 +121,15 @@ vi.mock('@/lib/nic-nac/support-conversation', async (importOriginal) => {
 vi.mock('@/lib/nic-nac/agent', () => ({
   createConfiguredNicNacAgent: createConfiguredNicNacAgentMock,
 }))
+
+vi.mock('@/lib/nic-nac/agent/workflow-task-context', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('@/lib/nic-nac/agent/workflow-task-context')>()
+  return {
+    ...actual,
+    loadNicNacWorkflowTaskContinuity: loadNicNacWorkflowTaskContinuityMock,
+  }
+})
 
 import { POST } from '@/app/api/nic-nac/route'
 import { runWithOperatorSupportRequestContext } from '@/lib/operator-support/request-context'
@@ -207,6 +218,18 @@ describe('Nic-Nac agent route integration', () => {
     recordOperatorSupportApprovalEventMock.mockResolvedValue({ replayed: false })
     insertOperatorSupportConversationMessageMock.mockResolvedValue(undefined)
     createAdminClientMock.mockReturnValue(supabaseMock)
+    loadNicNacWorkflowTaskContinuityMock.mockResolvedValue({
+      context: {
+        schemaVersion: 1,
+        currentGoal: null,
+        pausedGoals: [],
+        immediateContinuation: null,
+      },
+      promptText: '',
+      calendarSession: null,
+      tradeBoardSession: null,
+      tradeSession: null,
+    })
     loadSuiteRepMemoryCardsMock.mockResolvedValue([])
     getOrCreateTradeBoardIntakeContextMock.mockResolvedValue({
       sessionBefore: null,
@@ -308,6 +331,45 @@ describe('Nic-Nac agent route integration', () => {
         abortSignal: expect.any(AbortSignal),
       }),
     )
+  })
+
+  it('supplies recoverable transaction facts without narrowing or forcing the agent catalog', async () => {
+    const pausedCalendar = {
+      id: 'calendar-workflow-1',
+      status: 'active',
+      intent: 'add_show',
+      knownFields: { title: 'Tonight Live', eventTime: '2026-09-01T23:00:00Z' },
+      missingFields: ['platform'],
+    }
+    loadNicNacWorkflowTaskContinuityMock.mockResolvedValueOnce({
+      context: {
+        schemaVersion: 1,
+        currentGoal: null,
+        pausedGoals: [{ id: 'calendar:calendar-workflow-1' }],
+        immediateContinuation: null,
+      },
+      promptText: 'Recoverable Calendar facts: title Tonight Live; missing platform.',
+      calendarSession: pausedCalendar,
+      tradeBoardSession: null,
+      tradeSession: null,
+    })
+
+    await (await POST(requestFor('Pause that. What is on my Dance Floor?'))).text()
+
+    expect(createConfiguredNicNacAgentMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskContext: expect.stringMatching(
+          /latest explicit request still wins[\s\S]*Tonight Live/,
+        ),
+        toolContext: expect.objectContaining({
+          activeCalendarWorkflow: pausedCalendar,
+        }),
+      }),
+    )
+    expect(agentStreamMock).toHaveBeenCalledWith({
+      messages: expect.any(Array),
+      abortSignal: expect.any(AbortSignal),
+    })
   })
 
   it('switches from a Calendar read to an add request in the same conversation without route pinning', async () => {
@@ -434,6 +496,38 @@ describe('Nic-Nac agent route integration', () => {
             capabilities: ['calendar.manage'],
           },
         }),
+      }),
+    )
+    expect(loadNicNacWorkflowTaskContinuityMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        access: { calendar: true, tradeBoard: false, trade: false },
+      }),
+    )
+  })
+
+  it('does not ingest an unauthorized Dance Floor workflow during Calendar-only support', async () => {
+    await runWithOperatorSupportRequestContext(
+      {
+        session: {
+          id: 'support-session-1',
+          targetRepId: '11111111-1111-4111-8111-111111111111',
+          capabilities: ['calendar.manage'],
+        },
+        actor: {
+          operatorRepId: '22222222-2222-4222-8222-222222222222',
+          subjectRepId: '11111111-1111-4111-8111-111111111111',
+        },
+      } as never,
+      async () => {
+        await (await POST(supportRequestFor('What is on the rep Dance Floor?'))).text()
+      },
+    )
+
+    expect(getOrCreateTradeBoardIntakeContextMock).not.toHaveBeenCalled()
+    expect(getOrCreateTradeWorkflowContextMock).not.toHaveBeenCalled()
+    expect(loadNicNacWorkflowTaskContinuityMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        access: { calendar: true, tradeBoard: false, trade: false },
       }),
     )
   })

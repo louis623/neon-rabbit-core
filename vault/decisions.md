@@ -2090,3 +2090,13 @@ policy. Outbound SMS and email require explicit approval.
 Reason: A capable model may select any tool it is given. Safety therefore must
 be complete and enforceable at the capability boundary rather than dependent on
 the model remembering a prompt or on a text router hiding most tools.
+
+Decision: Durable Calendar, Dance Floor, and trade workflow records may be
+shown to the agent only as bounded recoverable transaction facts. They must
+leave `currentGoal` unset, may not select or force a tool, and must be filtered
+to the exact workflow domains authorized for the current product or disclosed
+Support surface before those stores are queried.
+
+Reason: Useful facts should survive a natural interruption, but a stale task
+must not become another conversation-owning router or disclose unrelated rep
+work through a narrower Support capability.

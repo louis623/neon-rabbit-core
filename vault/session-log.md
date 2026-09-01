@@ -4,6 +4,28 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## September 1, 2026 - Nic-Nac completion audit and task continuity
+
+- Wired durable Calendar, Dance Floor, and trade transaction facts into the
+  new agent harness as bounded recoverable context. The latest request still
+  defines the current task; old records never force a tool. Reused preloaded
+  sessions to avoid duplicate reads.
+- Capability-scoped continuity for disclosed Support so unauthorized workflow
+  domains are neither queried nor disclosed. Added regression coverage for a
+  Calendar-only Support session receiving a Dance Floor question.
+- Removed Calendar/Dance Floor tool-description overlap, added explicit
+  read-then-write guidance, and added a recorded four-turn agent-loop replay
+  that switches across Calendar, Dance Floor, grounded guidance, and back to a
+  Calendar write with `toolChoice: auto` throughout.
+- Added six/eight step, 1,600-token, one-retry, and 75/35/25-second timeout
+  bounds. Final verification passed 1,388 Nic-Nac tests with one existing skip,
+  226 standard tests, 42/42 consecutive critical route replays, provider-free
+  smoke with zero paid calls, changed-file ESLint, diff checks, and the full
+  production build. Production remains default-off; no paid replay, cohort,
+  customer, billing, DNS, Live Queue, or scheduled-canary action occurred.
+
+---
+
 ## September 1, 2026 - Nic-Nac Support identity, Kim About update, and domain-access handoff
 
 - Provisioned and released a distinct Nic-Nac Support operator identity after

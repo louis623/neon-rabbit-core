@@ -76,6 +76,11 @@ import {
 import { buildPersonalizedRepGreeting } from '@/lib/nic-nac/core/rep-personalization'
 import { createConfiguredNicNacAgent } from '@/lib/nic-nac/agent'
 import {
+  buildNicNacWorkflowTaskContext,
+  loadNicNacWorkflowTaskContinuity,
+  renderNicNacWorkflowTaskContext,
+} from '@/lib/nic-nac/agent/workflow-task-context'
+import {
   canNicNacAgentHarnessBeEnabled,
   isNicNacAgentHarnessEnabled,
 } from '@/lib/nic-nac/agent/rollout'
@@ -656,16 +661,38 @@ export async function POST(request: Request) {
   // below is independent of this text classifier, so an old workflow can never
   // capture a new explicit request before the model reasons.
   const workflowTurn = arbitrateNicNacWorkflowTurn(latestTurnIntents)
-  const tradeBoardWorkflowContext = workflowTurn.tradeBoard
+  const workflowNowIso = new Date().toISOString()
+  const workflowSupabase = createAdminClient()
+  const supportCapabilities = supportContext?.session.capabilities
+  const workflowContinuityAccess = {
+    calendar:
+      !supportCapabilities || supportCapabilities.includes('calendar.manage'),
+    tradeBoard:
+      !supportCapabilities || supportCapabilities.includes('inventory.manage'),
+    trade:
+      !supportCapabilities || supportCapabilities.includes('inventory.manage'),
+  }
+  const workflowTaskContinuity = await loadNicNacWorkflowTaskContinuity({
+    mode,
+    supabase,
+    workflowSupabase,
+    repId,
+    conversationId,
+    nowIso: workflowNowIso,
+    access: workflowContinuityAccess,
+  })
+  const tradeBoardWorkflowContext =
+    workflowContinuityAccess.tradeBoard && workflowTurn.tradeBoard
     ? await getOrCreateTradeBoardIntakeContext({
         supabase,
-        workflowSupabase: createAdminClient(),
+        workflowSupabase,
         repId,
         conversationId,
         messages,
         latestUserMessageId: latestUserMessage?.id,
         mode,
-        nowIso: new Date().toISOString(),
+        nowIso: workflowNowIso,
+        preloadedSession: workflowTaskContinuity.tradeBoardSession,
       })
     : {
         sessionBefore: null,
@@ -674,10 +701,12 @@ export async function POST(request: Request) {
         toolPolicySource: 'latest_turn_intent' as const,
         workflowPromptState: '',
       }
-  const activeTradeBoardWorkflow = tradeBoardWorkflowContext.sessionAfter
-  const tradeWorkflowContext = workflowTurn.trade
+  const activeTradeBoardWorkflow =
+    tradeBoardWorkflowContext.sessionAfter ??
+    workflowTaskContinuity.tradeBoardSession
+  const tradeWorkflowContext = workflowContinuityAccess.trade && workflowTurn.trade
     ? await getOrCreateTradeWorkflowContext({
-        supabase: createAdminClient(),
+        supabase: workflowSupabase,
         repId,
         conversationId,
         latestUserText,
@@ -685,10 +714,12 @@ export async function POST(request: Request) {
         messages,
         latestUserMessageId: latestUserMessage?.id,
         mode,
-        nowIso: new Date().toISOString(),
+        nowIso: workflowNowIso,
+        preloadedSession: workflowTaskContinuity.tradeSession,
       })
     : { sessionBefore: null, sessionAfter: null, activeWorkflow: null }
-  const calendarWorkflowContext = workflowTurn.calendar
+  const calendarWorkflowContext =
+    workflowContinuityAccess.calendar && workflowTurn.calendar
     ? await getOrCreateCalendarWorkflowContext({
         supabase,
         workflowSupabase: supabase,
@@ -697,7 +728,8 @@ export async function POST(request: Request) {
         messages,
         latestUserMessageId: latestUserMessage?.id,
         mode,
-        nowIso: new Date().toISOString(),
+        nowIso: workflowNowIso,
+        preloadedSession: workflowTaskContinuity.calendarSession,
       })
     : {
         sessionBefore: null,
@@ -707,12 +739,23 @@ export async function POST(request: Request) {
         toolPolicySource: 'latest_turn_intent' as const,
         workflowPromptState: '',
       }
+  const activeTradeWorkflow =
+    tradeWorkflowContext.sessionAfter ?? workflowTaskContinuity.tradeSession
+  const activeCalendarWorkflow =
+    calendarWorkflowContext.sessionAfter ??
+    workflowTaskContinuity.calendarSession
+  const runtimeTaskContext = buildNicNacWorkflowTaskContext({
+    calendarSession: activeCalendarWorkflow,
+    tradeBoardSession: activeTradeBoardWorkflow,
+    tradeSession: activeTradeWorkflow,
+  })
   let runUsage: NicNacRunUsage | undefined
   const configuredAgent = createConfiguredNicNacAgent({
     mode,
     productContext,
     repDisplayName: rep.display_name,
     memoryContext: assembledContext.promptText,
+    taskContext: renderNicNacWorkflowTaskContext(runtimeTaskContext),
     modelPolicy,
     toolContext: {
       repId,
@@ -727,8 +770,8 @@ export async function POST(request: Request) {
             (part as { mediaType?: string }).mediaType?.startsWith('image/'),
         ) ?? false,
       activeTradeBoardWorkflow,
-      activeTradeWorkflow: tradeWorkflowContext.sessionAfter,
-      activeCalendarWorkflow: calendarWorkflowContext.sessionAfter,
+      activeTradeWorkflow,
+      activeCalendarWorkflow,
       operatorSupport: supportContext
         ? {
             supportSessionId: supportContext.session.id,
@@ -769,6 +812,10 @@ export async function POST(request: Request) {
     tools: activeToolNames,
     toolChoice: configuredAgent.agent.toolChoice,
     maxSteps: configuredAgent.agent.maxSteps,
+    maxOutputTokens: configuredAgent.agent.maxOutputTokens,
+    maxRetries: configuredAgent.agent.maxRetries,
+    timeout: configuredAgent.agent.timeout,
+    recoverableTaskCount: runtimeTaskContext.pausedGoals.length,
   })
 
   const modelContext = selectMessagesForModel(messages)

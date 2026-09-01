@@ -96,6 +96,7 @@ export async function getOrCreateTradeBoardIntakeContext(args: {
   latestUserMessageId?: string
   mode: 'workspace' | 'required_setup'
   nowIso: string
+  preloadedSession?: TradeBoardIntakeSessionState | null
 }): Promise<{
   sessionBefore: TradeBoardIntakeSessionState | null
   sessionAfter: TradeBoardIntakeSessionState | null
@@ -109,11 +110,14 @@ export async function getOrCreateTradeBoardIntakeContext(args: {
 
   try {
     const workflowSupabase = args.workflowSupabase ?? args.supabase
-    const existing = await getActiveTradeBoardIntakeSession(workflowSupabase, {
-      repId: args.repId,
-      conversationId: args.conversationId,
-      nowIso: args.nowIso,
-    })
+    const existing =
+      args.preloadedSession !== undefined
+        ? args.preloadedSession
+        : await getActiveTradeBoardIntakeSession(workflowSupabase, {
+            repId: args.repId,
+            conversationId: args.conversationId,
+            nowIso: args.nowIso,
+          })
     const shouldStart = existing !== null || hasTradeBoardIntakeSignal(args.messages)
     if (!shouldStart) {
       return emptyWorkflowContext('latest_turn_intent')

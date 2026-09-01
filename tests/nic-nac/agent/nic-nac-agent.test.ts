@@ -4,7 +4,10 @@ import { MockLanguageModelV3 } from 'ai/test'
 import { z } from 'zod'
 import {
   createNicNacAgent,
+  NIC_NAC_AGENT_DEFAULT_MAX_OUTPUT_TOKENS,
+  NIC_NAC_AGENT_DEFAULT_MAX_RETRIES,
   NIC_NAC_AGENT_DEFAULT_MAX_STEPS,
+  NIC_NAC_AGENT_DEFAULT_TIMEOUT,
   NIC_NAC_AGENT_HARD_MAX_STEPS,
 } from '@/lib/nic-nac/agent/nic-nac-agent'
 
@@ -76,6 +79,9 @@ describe('Nic-Nac ToolLoopAgent factory', () => {
     expect(agent.id).toBe('nic-nac-workspace-agent')
     expect(agent.toolChoice).toBe('auto')
     expect(agent.maxSteps).toBe(NIC_NAC_AGENT_DEFAULT_MAX_STEPS)
+    expect(agent.maxOutputTokens).toBe(NIC_NAC_AGENT_DEFAULT_MAX_OUTPUT_TOKENS)
+    expect(agent.maxRetries).toBe(NIC_NAC_AGENT_DEFAULT_MAX_RETRIES)
+    expect(agent.timeout).toEqual(NIC_NAC_AGENT_DEFAULT_TIMEOUT)
     expect(agent.tools).toBe(tools)
 
     const result = await agent.stream({
@@ -86,6 +92,9 @@ describe('Nic-Nac ToolLoopAgent factory', () => {
     await expect(result.text).resolves.toBe('Ready to help.')
     expect(model.doStreamCalls).toHaveLength(1)
     expect(model.doStreamCalls[0].toolChoice).toEqual({ type: 'auto' })
+    expect(model.doStreamCalls[0].maxOutputTokens).toBe(
+      NIC_NAC_AGENT_DEFAULT_MAX_OUTPUT_TOKENS,
+    )
     expect(onStepFinish).toHaveBeenCalledTimes(1)
     expect(onFinish).toHaveBeenCalledTimes(1)
   })
@@ -110,6 +119,24 @@ describe('Nic-Nac ToolLoopAgent factory', () => {
         maxSteps: 0,
       }),
     ).toThrow('maxSteps must be a positive integer')
+
+    expect(() =>
+      createNicNacAgent({
+        model,
+        instructions: 'test',
+        tools: {},
+        maxOutputTokens: 0,
+      }),
+    ).toThrow('maxOutputTokens must be a positive integer')
+
+    expect(() =>
+      createNicNacAgent({
+        model,
+        instructions: 'test',
+        tools: {},
+        maxRetries: -1,
+      }),
+    ).toThrow('maxRetries must be a non-negative integer')
   })
 
   it('can choose different tools on consecutive steps and finish naturally', async () => {
@@ -219,5 +246,140 @@ describe('Nic-Nac ToolLoopAgent factory', () => {
       { type: 'auto' },
       { type: 'auto' },
     ])
+  })
+
+  it('keeps the full catalog available while a conversation switches workflows between turns', async () => {
+    const executions: string[] = []
+    const script: Array<
+      | { toolName: string; input: Record<string, unknown> }
+      | { text: string }
+    > = [
+      { toolName: 'list_my_shows', input: {} },
+      { text: 'Your Calendar is clear tonight.' },
+      { toolName: 'list_my_trade_board', input: {} },
+      { text: 'You have three dancers on the Dance Floor.' },
+      { toolName: 'search_work_knowledge', input: { query: 'live opening' } },
+      { text: 'Start with a short welcome and preview the collection.' },
+      {
+        toolName: 'add_show',
+        input: { title: 'Bunny Ears Live', eventTime: '2026-09-01T23:00:00Z' },
+      },
+      { text: 'Done — Bunny Ears Live is on your Calendar.' },
+    ]
+    let scriptIndex = 0
+    const model = new MockLanguageModelV3({
+      doStream: async () => {
+        const step = script[scriptIndex++]
+        if (!step) throw new Error('Unexpected extra model step')
+        if ('toolName' in step) {
+          return {
+            stream: simulateReadableStream({
+              chunks: [
+                {
+                  type: 'tool-call',
+                  toolCallId: `tool-${scriptIndex}`,
+                  toolName: step.toolName,
+                  input: JSON.stringify(step.input),
+                },
+                {
+                  type: 'finish',
+                  finishReason: { unified: 'tool-calls', raw: undefined },
+                  usage: ZERO_USAGE,
+                },
+              ],
+            }),
+          }
+        }
+        return {
+          stream: simulateReadableStream({
+            chunks: [
+              { type: 'text-start', id: `text-${scriptIndex}` },
+              {
+                type: 'text-delta',
+                id: `text-${scriptIndex}`,
+                delta: step.text,
+              },
+              { type: 'text-end', id: `text-${scriptIndex}` },
+              {
+                type: 'finish',
+                finishReason: { unified: 'stop', raw: undefined },
+                usage: ZERO_USAGE,
+              },
+            ],
+          }),
+        }
+      },
+    })
+    const tools = {
+      list_my_shows: tool({
+        description: 'Direct Calendar read.',
+        inputSchema: z.object({}),
+        execute: async () => {
+          executions.push('list_my_shows')
+          return { events: [] }
+        },
+      }),
+      list_my_trade_board: tool({
+        description: 'Direct Dance Floor read.',
+        inputSchema: z.object({}),
+        execute: async () => {
+          executions.push('list_my_trade_board')
+          return { listings: [{}, {}, {}] }
+        },
+      }),
+      search_work_knowledge: tool({
+        description: 'Search grounded work knowledge.',
+        inputSchema: z.object({ query: z.string() }),
+        execute: async () => {
+          executions.push('search_work_knowledge')
+          return { results: [{ answer: 'Open with a welcome.' }] }
+        },
+      }),
+      add_show: tool({
+        description: 'Add a show after an explicit scheduling request.',
+        inputSchema: z.object({
+          title: z.string(),
+          eventTime: z.string(),
+        }),
+        execute: async ({ title, eventTime }) => {
+          executions.push('add_show')
+          return { event: { title, eventTime } }
+        },
+      }),
+    } satisfies ToolSet
+    const agent = createNicNacAgent({
+      model,
+      instructions: 'Follow the latest request and choose from the full catalog.',
+      tools,
+    })
+    const messages: Array<{ role: 'user' | 'assistant'; content: string }> = []
+    const turns = [
+      ['What shows do I have tonight?', 'Your Calendar is clear tonight.'],
+      ['Switch tasks. What is on my Dance Floor?', 'You have three dancers on the Dance Floor.'],
+      ['Pause that. How should I open tonight\'s live?', 'Start with a short welcome and preview the collection.'],
+      ['Now add Bunny Ears Live tonight at 7 Eastern.', 'Done — Bunny Ears Live is on your Calendar.'],
+    ] as const
+
+    for (const [userText, expectedText] of turns) {
+      messages.push({ role: 'user', content: userText })
+      const result = await agent.stream({ messages: [...messages] })
+      await expect(result.text).resolves.toBe(expectedText)
+      messages.push({ role: 'assistant', content: expectedText })
+    }
+
+    expect(executions).toEqual([
+      'list_my_shows',
+      'list_my_trade_board',
+      'search_work_knowledge',
+      'add_show',
+    ])
+    expect(model.doStreamCalls).toHaveLength(8)
+    expect(model.doStreamCalls.every((call) => call.toolChoice?.type === 'auto')).toBe(true)
+    const expectedToolNames = Object.keys(tools).sort()
+    for (const call of model.doStreamCalls) {
+      expect((call.tools ?? []).map((candidate) => candidate.name).sort()).toEqual(
+        expectedToolNames,
+      )
+    }
   })
 })

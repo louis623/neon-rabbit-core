@@ -30,6 +30,13 @@ import {
 
 export const NIC_NAC_AGENT_DEFAULT_MAX_STEPS = 6
 export const NIC_NAC_AGENT_HARD_MAX_STEPS = 8
+export const NIC_NAC_AGENT_DEFAULT_MAX_OUTPUT_TOKENS = 1_600
+export const NIC_NAC_AGENT_DEFAULT_MAX_RETRIES = 1
+export const NIC_NAC_AGENT_DEFAULT_TIMEOUT = {
+  totalMs: 75_000,
+  stepMs: 35_000,
+  chunkMs: 25_000,
+} satisfies TimeoutConfiguration
 
 export type NicNacAgentStreamInput = {
   messages: ModelMessage[]
@@ -57,6 +64,9 @@ export type NicNacAgentRunner = {
   readonly tools: ToolSet
   readonly toolChoice: 'auto'
   readonly maxSteps: number
+  readonly maxOutputTokens: number
+  readonly maxRetries: number
+  readonly timeout: TimeoutConfiguration
   stream: (input: NicNacAgentStreamInput) => ReturnType<
     ToolLoopAgent<never, ToolSet>['stream']
   >
@@ -90,6 +100,15 @@ export function createNicNacAgent({
   experimentalContext,
 }: CreateNicNacAgentInput): NicNacAgentRunner {
   const boundedMaxSteps = normalizeMaxSteps(maxSteps)
+  const boundedMaxOutputTokens =
+    maxOutputTokens ?? NIC_NAC_AGENT_DEFAULT_MAX_OUTPUT_TOKENS
+  const boundedMaxRetries = maxRetries ?? NIC_NAC_AGENT_DEFAULT_MAX_RETRIES
+  if (!Number.isInteger(boundedMaxOutputTokens) || boundedMaxOutputTokens < 1) {
+    throw new Error('[nic-nac] maxOutputTokens must be a positive integer')
+  }
+  if (!Number.isInteger(boundedMaxRetries) || boundedMaxRetries < 0) {
+    throw new Error('[nic-nac] maxRetries must be a non-negative integer')
+  }
   const agent = new ToolLoopAgent<never, ToolSet>({
     id,
     model,
@@ -98,8 +117,8 @@ export function createNicNacAgent({
     toolChoice: 'auto',
     stopWhen: stepCountIs(boundedMaxSteps),
     providerOptions,
-    maxOutputTokens,
-    maxRetries,
+    maxOutputTokens: boundedMaxOutputTokens,
+    maxRetries: boundedMaxRetries,
     onStepFinish,
     onFinish,
     experimental_context: experimentalContext,
@@ -110,11 +129,14 @@ export function createNicNacAgent({
     tools,
     toolChoice: 'auto',
     maxSteps: boundedMaxSteps,
+    maxOutputTokens: boundedMaxOutputTokens,
+    maxRetries: boundedMaxRetries,
+    timeout: NIC_NAC_AGENT_DEFAULT_TIMEOUT,
     stream: ({ messages, abortSignal, timeout, onStepFinish: callOnStepFinish }) =>
       agent.stream({
         messages,
         abortSignal,
-        timeout,
+        timeout: timeout ?? NIC_NAC_AGENT_DEFAULT_TIMEOUT,
         onStepFinish: callOnStepFinish,
       }),
   }

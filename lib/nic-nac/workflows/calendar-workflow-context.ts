@@ -187,6 +187,7 @@ export async function getOrCreateCalendarWorkflowContext(args: {
   latestUserMessageId?: string
   mode: Mode
   nowIso: string
+  preloadedSession?: CalendarWorkflowSessionState | null
 }): Promise<CalendarWorkflowContextResult> {
   if (args.mode !== 'workspace') {
     return emptyCalendarWorkflowContext('mode_required_setup')
@@ -194,11 +195,14 @@ export async function getOrCreateCalendarWorkflowContext(args: {
 
   try {
     const workflowSupabase = args.workflowSupabase ?? args.supabase
-    const existing = await getActiveCalendarWorkflowSession(workflowSupabase, {
-      repId: args.repId,
-      conversationId: args.conversationId,
-      nowIso: args.nowIso,
-    })
+    const existing =
+      args.preloadedSession !== undefined
+        ? args.preloadedSession
+        : await getActiveCalendarWorkflowSession(workflowSupabase, {
+            repId: args.repId,
+            conversationId: args.conversationId,
+            nowIso: args.nowIso,
+          })
     const latestIntent = inferCalendarIntent(args.messages)
     if (latestIntent === 'list_shows') {
       // A Calendar lookup can temporarily interrupt a mutation, but it must

@@ -25,8 +25,8 @@ function explainServiceError(err: unknown): never {
 export function makeListMyShowsTool(ctx: { repId: string; supabase: SupabaseClient }) {
   return tool({
     description:
-      "Get the rep's upcoming shows. Defaults to upcoming scheduled shows. " +
-      'Set upcoming=false to see past shows too.',
+      "Directly read the rep's Calendar for questions such as what is scheduled now, today, tonight, next, or upcoming. Defaults to upcoming scheduled shows. " +
+      'A Calendar read is complete after you answer from this result and must not control a later add, update, or unrelated request. Do not call prepare_calendar_work for a simple Calendar read. Set upcoming=false to see past shows too.',
     inputSchema,
     execute: async ({ upcoming, limit }) => {
       let result: Awaited<ReturnType<typeof listMyShows>>

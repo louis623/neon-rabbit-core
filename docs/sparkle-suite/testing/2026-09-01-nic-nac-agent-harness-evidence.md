@@ -17,19 +17,25 @@ The production rollout is deliberately default-off. With no rollout environment 
 - Every registered tool must have a safety-ledger classification before the agent can receive it. The ledger reconciles read/write behavior, approval metadata, side-effect risk, normal/setup surface access, and disclosed Support capability policy.
 - SMS and email sends retain explicit approval. Support remains restricted from owner, billing, Stripe, payment, authentication, entitlement, DNS, domain, and customer-domain authority.
 - Calendar reads finish as reads. A later explicit Calendar mutation replaces the read intent, while an unrelated explicit task can pause transaction context for that turn without being captured by it.
+- Durable unfinished Calendar, Dance Floor, and trade transactions are loaded once per turn and supplied as bounded recoverable facts. They never set the current goal or select a tool. In disclosed Support, only workflow domains covered by the session's exact capabilities are queried or disclosed.
+- Overlapping tool descriptions are now explicit: simple Calendar and Dance Floor questions call their direct read tools, while preflight tools are reserved for ambiguous mutations. An empty Calendar read cannot answer or block a later add request.
+- The agent loop is bounded to six steps by default (hard ceiling eight), 1,600 output tokens per model call, one retry, and total/step/chunk timeouts of 75/35/25 seconds.
 - Reviewed, versioned work knowledge is available for Sparkle Suite, live-show operation, live-stream troubleshooting, customer handling, closeout, and the boundary between general Bomb Party practice and current official policy.
 - The existing UI stream, assistant-row persistence, thinking indicator, approval continuation, tool-result recovery, run telemetry, and legacy rollback route are preserved.
 
 ## Deterministic verification
 
-- Critical same-conversation replay: Calendar read followed by add-show, plus Calendar/Dance Floor/site/guidance switches and recovery paths — 12 tests passed on each of three consecutive runs (36/36).
-- Focused harness, rollout, real multi-step tool-loop, safety-ledger, knowledge, and route suite — 32/32 passed.
-- Complete Nic-Nac regression suite — 1,271 passed, one existing skip across 168 files.
+- Critical same-conversation replay: Calendar read followed by add-show, Calendar/Dance Floor/site/guidance switches, Support capability isolation, approvals, and recovery paths — 14 tests passed on each of three consecutive final runs (42/42).
+- Recorded agent-loop replay: one conversation switched Calendar read → Dance Floor read → grounded live-show guidance → Calendar write; all eight model steps received the same four-tool catalog with `toolChoice: auto`, and the expected four tools executed in order.
+- Focused task-continuity, tool-contract, agent-loop, and route suite — 29/29 passed after the final safety change.
+- Complete Nic-Nac regression suite — 1,388 passed, one existing skip across 172 files.
 - Repository standard suite — 226/226 passed.
 - Provider-free harness smoke — passed with 53 registered tools, 48 Workspace agent tools, zero approval-ledger findings, production default-off, exact-cohort enablement, and zero paid model calls.
 - Changed-file ESLint — passed with no findings.
 - Next.js 16.2.1 production build, including TypeScript and static generation — passed.
 - `git diff --check` — passed.
+
+The standalone repository-wide `tsc --noEmit` command still reports pre-existing test-fixture typing errors outside this change. The production build's application TypeScript gate passed, and no changed-file lint or focused test errors remain.
 
 ## Still intentionally gated
 

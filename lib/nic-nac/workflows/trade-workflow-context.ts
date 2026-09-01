@@ -33,6 +33,7 @@ export async function getOrCreateTradeWorkflowContext(args: {
   latestUserMessageId?: string
   mode: 'workspace' | 'required_setup'
   nowIso: string
+  preloadedSession?: TradeWorkflowSessionState | null
 }): Promise<{
   sessionBefore: TradeWorkflowSessionState | null
   sessionAfter: TradeWorkflowSessionState | null
@@ -41,11 +42,14 @@ export async function getOrCreateTradeWorkflowContext(args: {
   if (args.mode !== 'workspace') return emptyContext()
 
   try {
-    const existing = await getActiveTradeWorkflowSession(args.supabase, {
-      repId: args.repId,
-      conversationId: args.conversationId,
-      nowIso: args.nowIso,
-    })
+    const existing =
+      args.preloadedSession !== undefined
+        ? args.preloadedSession
+        : await getActiveTradeWorkflowSession(args.supabase, {
+            repId: args.repId,
+            conversationId: args.conversationId,
+            nowIso: args.nowIso,
+          })
     const explicitWorkflowType = inferWorkflowTypeFromTurn(
       args.latestUserText,
       args.latestToolIntents,

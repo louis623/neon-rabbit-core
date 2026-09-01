@@ -143,7 +143,7 @@ export function makePrepareTradeBoardWorkTool(ctx: {
 }) {
   return tool({
     description:
-      'Read-only resolver for Dance Floor and jewelry database work. Use this first when the rep wants to add, remove, view, facilitate, or correct Dance Floor/jewelry database work. It decides whether the item is an existing catalog design, a new catalog intake, a dancer-management action, or a trade-request workflow before write tools run.',
+      'Read-only preflight for ambiguous Dance Floor mutations and jewelry-identification work. Use it before adding, removing, correcting, or facilitating a dancer when the next safe path depends on catalog identity, photo roles, duplicate physical inventory, ring size, or trade-request state. Do not use it for a simple request to view the current Dance Floor; call list_my_trade_board directly. Do not call it merely because an earlier turn involved Dance Floor work.',
     inputSchema,
     execute: async (modelInput) => {
       const input = appOwnedInput(

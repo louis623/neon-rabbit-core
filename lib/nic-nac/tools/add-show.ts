@@ -46,7 +46,7 @@ export function makeAddShowTool(ctx: {
 }) {
   return tool({
     description:
-      'Schedule a new show. Can schedule a one-time show or a recurring series. ' +
+      'Schedule a new show when the rep explicitly asks to add, create, put, or schedule one on the Calendar. Use this write tool even when the immediately preceding turn was a Calendar read; an empty read result does not answer or block a later add request. Ask only for a missing required scheduling fact and never repeat the earlier read as the answer to an add request. Can schedule a one-time show or a recurring series. ' +
       'For recurring: ask the rep how often (daily, weekly, or weekday/Monday-Friday) and how long (a specific number of times, one month, three months, or ongoing). ' +
       'If the rep says a bounded count like "twice" or "next two Tuesdays", pass recurring.occurrenceCount and create exactly that many entries. ' +
       'In the current build, ongoing schedules out about six months ahead. ' +

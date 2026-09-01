@@ -142,4 +142,26 @@ describe('Nic-Nac permission-scoped capability catalog', () => {
     expect((catalog.tools.send_email_notification as { needsApproval?: boolean }).needsApproval)
       .toBe(true)
   })
+
+  it('keeps overlapping Calendar and Dance Floor tool contracts unambiguous', () => {
+    const catalog = buildNicNacCapabilityCatalog({
+      productContext: createSuiteRepWorkspaceProductContext({ repId: 'rep-1' }),
+      toolContext: toolContext(),
+    })
+    const description = (toolName: string) =>
+      (catalog.tools[toolName] as { description?: string }).description ?? ''
+
+    expect(description('list_my_shows')).toMatch(/Directly read the rep's Calendar/i)
+    expect(description('list_my_shows')).toMatch(/must not control a later add/i)
+    expect(description('list_my_shows')).toMatch(/Do not call prepare_calendar_work/i)
+    expect(description('add_show')).toMatch(/immediately preceding turn was a Calendar read/i)
+    expect(description('add_show')).toMatch(/never repeat the earlier read/i)
+    expect(description('list_my_trade_board')).toMatch(/what they have up for trade/i)
+    expect(description('prepare_trade_board_work')).toMatch(
+      /Do not use it for a simple request to view the current Dance Floor/i,
+    )
+    expect(description('prepare_trade_board_work')).toMatch(
+      /Do not call it merely because an earlier turn involved Dance Floor work/i,
+    )
+  })
 })

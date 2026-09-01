@@ -557,8 +557,10 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [x] **Implement the approved slice of the Nic-Nac agent-harness rebuild** —
   completed September 1. The default-off `ToolLoopAgent` harness, complete
   permission-scoped catalog, concise employee guide, safety ledger, grounded
-  work knowledge, Calendar supersession, legacy rollback route, and exact
-  cohort/kill-switch controls are implemented. Deterministic evidence is in
+  work knowledge, Calendar supersession, capability-scoped recoverable task
+  continuity, disambiguated Calendar/Dance Floor tool contracts, bounded
+  output/retry/time controls, legacy rollback route, and exact cohort/kill-switch
+  controls are implemented. Deterministic evidence is in
   `docs/sparkle-suite/testing/2026-09-01-nic-nac-agent-harness-evidence.md`.
 - [ ] **Authorize and run the guarded Nic-Nac agent acceptance cohort** — set
   one exact synthetic reviewer identity only after Louis authorizes the

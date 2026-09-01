@@ -1,5 +1,30 @@
 # Project State
 
+## September 1, 2026 - Nic-Nac agent-harness completion audit
+
+- The guarded Nic-Nac rebuild now includes bounded recoverable task continuity:
+  unfinished Calendar, Dance Floor, and trade transactions preserve useful
+  facts across interruptions without selecting or forcing the next tool.
+  Disclosed Support sees and queries only transaction domains covered by its
+  exact capability list.
+- Calendar and Dance Floor tool contracts were disambiguated so direct reads
+  do not enter mutation preflights, and a completed Calendar read cannot block
+  a later add request. A recorded four-turn `ToolLoopAgent` replay switches
+  Calendar to Dance Floor to grounded guidance and back to a Calendar write
+  with the full safe catalog available at every step.
+- Final deterministic evidence: 14/14 critical route tests on three consecutive
+  runs, 1,388 Nic-Nac tests passed with one existing skip across 172 files,
+  226/226 standard tests, provider-free smoke with zero paid calls, changed-file
+  ESLint, diff checks, and the production build.
+- Production remains default-off. Exact synthetic-reviewer cohort enablement,
+  paid live-model replays, and the scheduled canary remain separately gated.
+  Do not deploy this follow-up until Louis explicitly authorizes the resulting
+  configured production-alias movement.
+
+**Last updated:** September 1, 2026
+
+---
+
 ## September 1, 2026 - Dedicated support operator and Kim domain handoff
 
 - A dedicated **Nic-Nac Support** Google Workspace and Sparkle Suite operator
