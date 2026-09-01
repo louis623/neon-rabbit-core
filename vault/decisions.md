@@ -1,5 +1,27 @@
 # Decision Log
 
+## September 1, 2026 - Dedicated support identity and least-privilege custom-domain access
+
+**Nic-Nac Support is a distinct, attributable operator identity, not a shared
+owner session.** Its authorization is intentionally limited to the
+customer-site support surface. Billing, Stripe, account control, and owner
+authority remain unavailable.
+
+**A delegated registrar role must include the explicit DNS capability before a
+custom-domain migration continues.** Viewing a domain or accepting a manager
+invitation is not permission to alter Host Records. Until that narrow access
+is granted, do not change DNS, nameservers, ownership, registrant contacts, or
+customer-domain mappings. After access arrives, inspect first, make the
+smallest necessary change, retain the customer's ownership, and prove the
+resolved custom-domain content and routes before completion.
+
+Reason: Attribution and least privilege keep support activity auditable and
+limit blast radius. Registrar delegation labels are not a safe substitute for
+verified DNS authority, and a successful-looking command without a readable
+result is not deployment or domain evidence.
+
+---
+
 ## September 1, 2026 - Transparent support ends by operator choice, not a timer
 
 **An active disclosed support session has no product time limit.** It remains

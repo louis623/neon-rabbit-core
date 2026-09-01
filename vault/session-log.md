@@ -4,6 +4,30 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## September 1, 2026 - Nic-Nac Support identity, Kim About update, and domain-access handoff
+
+- Provisioned and released a distinct Nic-Nac Support operator identity after
+  Louis approved a dedicated accountable support actor. Its customer-site-only
+  authorization boundary was implemented in `e334f144` and corrected in
+  `1215171c`; 15 focused authorization tests and the production build passed.
+  It has no billing, Stripe, account-control, or owner authority.
+- Published Kim's approved, concise About copy through disclosed support,
+  visually verified the customer-facing result, explicitly ended support, and
+  marked the related durable Control Center Task List item complete.
+- Accepted the delegated Namecheap manager invitation for Kim's domain. The
+  delegated account can view the domain but Advanced DNS / Host Records is
+  denied. A plain-English request for that one permission was drafted and
+  Louis sent it. No DNS, nameserver, ownership, contact, billing, or customer
+  site-domain database change occurred.
+- Handoff: wait for Kim's access update. Before continuing, inspect Vercel's
+  domain state because the earlier attachment attempt produced no verifiable
+  CLI result; then inspect existing DNS and apply only required records. Use
+  an exact guarded customer-domain update with an audit entry, and prove the
+  custom-domain root and `/trade` route live before calling the migration
+  complete. Do not record customer contact information or credentials.
+
+---
+
 ## September 1, 2026 - Control Center Task List priorities and requested work queue
 
 - Added the four-level durable priority model (Urgent, High, Medium, Low) to

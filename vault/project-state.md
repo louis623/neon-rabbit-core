@@ -1,5 +1,32 @@
 # Project State
 
+## September 1, 2026 - Dedicated support operator and Kim domain handoff
+
+- A dedicated **Nic-Nac Support** Google Workspace and Sparkle Suite operator
+  identity is now provisioned and released. It is deliberately limited to
+  customer-site support work; it is not an owner, billing, or account-control
+  identity. Application commits `e334f144` and `1215171c` are pushed and the
+  focused authorization suite (15 tests) plus the production build passed.
+- Kim approved the concise About copy. It is live on the customer-facing site
+  at the existing Sparkle Suite slug, was visually verified, and its related
+  Control Center Task List item was marked complete. The disclosed support
+  session used for the update was explicitly closed.
+- Kim's Namecheap manager invitation was accepted, but that delegation does
+  not include Advanced DNS / Host Records. A follow-up request for that
+  narrowly scoped access was sent; the custom domain is **not connected yet**.
+  No DNS records, nameservers, registrant/ownership details, domain contacts,
+  or Stripe/billing objects were changed.
+- Once the owner grants the missing DNS permission, first verify whether the
+  attempted Vercel domain attachment succeeded (the CLI result was blank and
+  therefore unverified), inspect the live records, make only the required
+  DNS changes, then update Kim's exact guarded `custom_domain` record with an
+  audit trail. Verify the public root and `/trade` on the custom domain; those
+  are the intended Home and Dance Floor paths on a customer domain.
+
+**Last updated:** September 1, 2026
+
+---
+
 ## September 1, 2026 - Control Center Task List priorities released
 
 - The live Control Center Task List now supports durable **Urgent**, **High**,

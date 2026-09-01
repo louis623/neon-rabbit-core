@@ -5,6 +5,26 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Connect Kim's custom domain after expanded Namecheap DNS access** -
+  Louis sent the request for Advanced DNS / Host Records permission after the
+  accepted manager invitation proved view-only for DNS. Wait for that access;
+  do not change ownership, contacts, nameservers, billing, or DNS meanwhile.
+  On resumption, first verify the Vercel attachment state (the previous CLI
+  result was blank and is unverified), inspect current records, make only the
+  necessary DNS changes, update the exact guarded customer-domain mapping with
+  an audit trail, and verify the custom-domain root plus `/trade` live.
+
+- [x] **Publish Kim's approved About section** - completed September 1 through
+  disclosed support. The concise approved copy was visually verified on the
+  customer-facing site, support was explicitly ended, and the durable Control
+  Center Task List item was completed.
+
+- [x] **Provision a dedicated Nic-Nac Support operator** - completed September
+  1 in `e334f144` and `1215171c`. The named operator is released with
+  customer-site-only support scope; focused authorization tests and the
+  production build passed. It has no billing, Stripe, account-control, or
+  owner authority.
+
 - [x] **Remove the transparent-support time limit** - completed September 1 in
   application commit `4a6c2e7875266b2de7a86bb1ad44f3fc21cda637`, migration
   `20260901120000`, and production deployment
