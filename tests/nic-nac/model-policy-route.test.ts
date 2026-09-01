@@ -13,8 +13,13 @@ describe('Suite Nic-Nac model routing', () => {
       const source = readFileSync(file, 'utf8')
       expect(source).not.toContain("claude-haiku-4-5-20251001")
       expect(source).toContain('getNicNacModelPolicy')
-      expect(source).toContain('getNicNacLanguageModel')
     }
+
+    const agentSource = readFileSync(
+      join(process.cwd(), 'lib/nic-nac/agent/nic-nac-agent.ts'),
+      'utf8',
+    )
+    expect(agentSource).toContain('getNicNacLanguageModel')
   })
 
   it('passes provider options through the shared model policy helper', () => {
@@ -27,7 +32,13 @@ describe('Suite Nic-Nac model routing', () => {
       'utf8',
     )
 
-    expect(workspaceRoute).toContain('getNicNacProviderOptions')
+    const agentSource = readFileSync(
+      join(process.cwd(), 'lib/nic-nac/agent/nic-nac-agent.ts'),
+      'utf8',
+    )
+
+    expect(workspaceRoute).toContain('createConfiguredNicNacAgent')
+    expect(agentSource).toContain('getNicNacProviderOptions')
     expect(publicRoute).toContain('getNicNacProviderOptions')
   })
 
@@ -43,15 +54,15 @@ describe('Suite Nic-Nac model routing', () => {
   })
 
   it('routes workspace tools through product context and surface policy', () => {
-    const workspaceRoute = readFileSync(
-      join(process.cwd(), 'app/api/nic-nac/route.ts'),
+    const capabilityCatalog = readFileSync(
+      join(process.cwd(), 'lib/nic-nac/agent/capability-catalog.ts'),
       'utf8',
     )
 
-    expect(workspaceRoute).toContain('createSuiteRepWorkspaceProductContext')
-    expect(workspaceRoute).toContain('filterNicNacToolIntentsForContext')
-    expect(workspaceRoute).toContain('requestedToolIntents')
-    expect(workspaceRoute).toContain('toolPolicy.allowedIntents')
+    expect(capabilityCatalog).toContain('filterNicNacToolIntentsForContext')
+    expect(capabilityCatalog).toContain('WORKSPACE_TOOL_INTENTS')
+    expect(capabilityCatalog).toContain('buildToolsForIntents')
+    expect(capabilityCatalog).not.toContain('getToolIntentsForText')
   })
 
   it('pins OpenAI traffic to the official API base URL by default', () => {

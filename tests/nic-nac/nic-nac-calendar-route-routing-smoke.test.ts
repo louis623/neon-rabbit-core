@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { TRADE_BOARD_GUIDED_START_RESPONSE } from '@/lib/nic-nac/workflows/trade-board-guided-start'
 
 const {
-  streamTextMock,
   supabaseMock,
   getPaidNicNacContextMock,
   loadCanonicalHistoryMock,
@@ -16,8 +14,6 @@ const {
   logIncidentMock,
   logNicNacRunMock,
   normalizeRunUsageMock,
-  getNicNacLanguageModelMock,
-  getNicNacProviderOptionsMock,
   createAdminClientMock,
   getOrCreateTradeBoardIntakeContextMock,
   getOrCreateTradeWorkflowContextMock,
@@ -26,8 +22,9 @@ const {
   loadOperatorSupportConversationMock,
   insertOperatorSupportConversationMessageMock,
   recordOperatorSupportApprovalEventMock,
+  createConfiguredNicNacAgentMock,
+  agentStreamMock,
 } = vi.hoisted(() => ({
-  streamTextMock: vi.fn(),
   supabaseMock: {},
   getPaidNicNacContextMock: vi.fn(),
   loadCanonicalHistoryMock: vi.fn(),
@@ -41,8 +38,6 @@ const {
   logIncidentMock: vi.fn(),
   logNicNacRunMock: vi.fn(),
   normalizeRunUsageMock: vi.fn(),
-  getNicNacLanguageModelMock: vi.fn(),
-  getNicNacProviderOptionsMock: vi.fn(),
   createAdminClientMock: vi.fn(),
   getOrCreateTradeBoardIntakeContextMock: vi.fn(),
   getOrCreateTradeWorkflowContextMock: vi.fn(),
@@ -51,15 +46,9 @@ const {
   loadOperatorSupportConversationMock: vi.fn(),
   insertOperatorSupportConversationMessageMock: vi.fn(),
   recordOperatorSupportApprovalEventMock: vi.fn(),
+  createConfiguredNicNacAgentMock: vi.fn(),
+  agentStreamMock: vi.fn(),
 }))
-
-vi.mock('ai', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('ai')>()
-  return {
-    ...actual,
-    streamText: (options: unknown) => streamTextMock(options),
-  }
-})
 
 vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
@@ -88,11 +77,6 @@ vi.mock('@/lib/nic-nac/guardian-telemetry', () => ({
 vi.mock('@/lib/nic-nac/run-telemetry', () => ({
   logNicNacRun: logNicNacRunMock,
   normalizeRunUsage: normalizeRunUsageMock,
-}))
-
-vi.mock('@/lib/nic-nac/core/model-provider', () => ({
-  getNicNacLanguageModel: getNicNacLanguageModelMock,
-  getNicNacProviderOptions: getNicNacProviderOptionsMock,
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -132,75 +116,98 @@ vi.mock('@/lib/nic-nac/support-conversation', async (importOriginal) => {
   }
 })
 
+vi.mock('@/lib/nic-nac/agent', () => ({
+  createConfiguredNicNacAgent: createConfiguredNicNacAgentMock,
+}))
+
 import { POST } from '@/app/api/nic-nac/route'
 import { runWithOperatorSupportRequestContext } from '@/lib/operator-support/request-context'
 
-function requestFor(text: string) {
-  return requestForMessages([
-    {
-      id: 'user-chaos-1',
-      role: 'user',
-      parts: [{ type: 'text', text }],
+const REPRESENTATIVE_TOOLS = [
+  'search_trade_board',
+  'list_my_trade_board',
+  'prepare_trade_board_add',
+  'add_trade_board_listing',
+  'list_my_shows',
+  'prepare_calendar_work',
+  'add_show',
+  'update_show',
+  'cancel_show',
+  'build_site_recipe_draft',
+  'manage_site_recipes',
+  'update_site_setting',
+  'get_help_resources',
+]
+
+type AgentChunk = Record<string, unknown>
+
+function resultFromChunks(chunks: AgentChunk[]) {
+  return {
+    toUIMessageStream: async function* () {
+      for (const chunk of chunks) yield chunk
     },
+  }
+}
+
+function textResult(text: string) {
+  return resultFromChunks([
+    { type: 'text-start', id: 'text-1' },
+    { type: 'text-delta', id: 'text-1', delta: text },
+    { type: 'text-end', id: 'text-1' },
+    { type: 'finish', finishReason: { unified: 'stop', raw: undefined } },
   ])
 }
 
-function requestForMessages(messages: unknown[]) {
+function requestForMessages(messages: unknown[], conversationId = 'agent-route-conversation') {
   return new Request('http://localhost/api/nic-nac', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      conversationId: 'calendar-chaos-conversation',
-      mode: 'workspace',
-      messages,
-    }),
+    body: JSON.stringify({ conversationId, mode: 'workspace', messages }),
   })
+}
+
+function requestFor(text: string, id = 'user-1') {
+  return requestForMessages([
+    { id, role: 'user', parts: [{ type: 'text', text }] },
+  ])
 }
 
 function supportRequestFor(text: string) {
-  return new Request('http://localhost/api/nic-nac', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      conversationId: 'support-session-1',
-      mode: 'workspace',
-      messages: [
-        {
-          id: 'support-user-1',
-          role: 'user',
-          parts: [{ type: 'text', text }],
-        },
-      ],
-    }),
-  })
+  return requestForMessages(
+    [{ id: 'support-user-1', role: 'user', parts: [{ type: 'text', text }] }],
+    'support-session-1',
+  )
 }
 
-describe('Nic-Nac calendar route chaotic routing smoke', () => {
+describe('Nic-Nac agent route integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.spyOn(console, 'info').mockImplementation(() => {})
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
 
     getPaidNicNacContextMock.mockResolvedValue({
       repId: '11111111-1111-4111-8111-111111111111',
       rep: {
         auth_user_id: 'user-1',
-        email: 'chaos-rep@example.com',
+        email: 'rep@example.com',
         display_name: 'Brittany Smith',
       },
       supabase: supabaseMock,
     })
     probeConversationOwnerMock.mockResolvedValue(null)
     loadCanonicalHistoryMock.mockResolvedValue([])
+    loadOperatorSupportConversationMock.mockResolvedValue([])
     insertUserMessageMock.mockResolvedValue(undefined)
     reserveAssistantMessageMock.mockResolvedValue(undefined)
     completeAssistantMock.mockResolvedValue(undefined)
     abortAssistantMock.mockResolvedValue(undefined)
     checkpointAssistantMock.mockResolvedValue(undefined)
     recordApprovalEventMock.mockResolvedValue({ replayed: false })
+    recordOperatorSupportApprovalEventMock.mockResolvedValue({ replayed: false })
+    insertOperatorSupportConversationMessageMock.mockResolvedValue(undefined)
     createAdminClientMock.mockReturnValue(supabaseMock)
     loadSuiteRepMemoryCardsMock.mockResolvedValue([])
-    loadOperatorSupportConversationMock.mockResolvedValue([])
-    insertOperatorSupportConversationMessageMock.mockResolvedValue(undefined)
-    recordOperatorSupportApprovalEventMock.mockResolvedValue({ replayed: false })
     getOrCreateTradeBoardIntakeContextMock.mockResolvedValue({
       sessionBefore: null,
       sessionAfter: null,
@@ -221,8 +228,6 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
       toolPolicySource: 'latest_turn_intent',
       workflowPromptState: '',
     })
-    getNicNacLanguageModelMock.mockReturnValue({ modelId: 'mock-nic-nac' })
-    getNicNacProviderOptionsMock.mockReturnValue(undefined)
     normalizeRunUsageMock.mockReturnValue({
       inputTokens: 10,
       outputTokens: 5,
@@ -230,1026 +235,339 @@ describe('Nic-Nac calendar route chaotic routing smoke', () => {
       estimatedCostCents: 0,
     })
     logNicNacRunMock.mockResolvedValue(undefined)
-    streamTextMock.mockImplementation((options: {
-      onFinish?: (event: { totalUsage: unknown }) => void
-    }) => {
-      options.onFinish?.({ totalUsage: { inputTokens: 10, outputTokens: 5 } })
+    agentStreamMock.mockResolvedValue(textResult('I handled the latest request.'))
+    createConfiguredNicNacAgentMock.mockImplementation((input) => {
+      input.onFinish?.({ totalUsage: { inputTokens: 10, outputTokens: 5 } })
+      const tools = Object.fromEntries(
+        REPRESENTATIVE_TOOLS.map((name) => [name, { description: name }]),
+      )
       return {
-        toUIMessageStream: async function* () {
-          yield { type: 'text-start', id: 'text-1' }
-          yield {
-            type: 'text-delta',
-            id: 'text-1',
-            delta: 'I found the calendar path and will use the approval dialog.',
-          }
-          yield { type: 'text-end', id: 'text-1' }
-          yield {
-            type: 'finish',
-            finishReason: { unified: 'stop', raw: undefined },
-          }
+        catalog: {
+          source: 'workspace_permissions',
+          mode: 'workspace',
+          tools,
+          toolNames: [...REPRESENTATIVE_TOOLS],
+          requestedIntents: ['trade_board', 'calendar', 'site_content', 'resources_support'],
+          allowedIntents: ['trade_board', 'calendar', 'site_content', 'resources_support'],
+          blockedIntents: [],
+          blockedToolNames: [],
+          operatorRestrictedToolNames: [],
+        },
+        agent: {
+          id: 'mock-agent',
+          tools,
+          toolChoice: 'auto',
+          maxSteps: 6,
+          stream: agentStreamMock,
         },
       }
     })
   })
 
-  it('returns a deterministic personalized greeting for the authenticated rep', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+  it('keeps the zero-cost personalized greeting fast path', async () => {
+    const response = await POST(requestFor('Hello'))
+    const body = await response.text()
 
-    try {
-      const response = await POST(requestFor('Hello'))
-      const body = await response.text()
-
-      expect(response.status).toBe(200)
-      expect(body).toContain('Hello, Brittany! How can I help you today?')
-      expect(streamTextMock).not.toHaveBeenCalled()
-      expect(completeAssistantMock).toHaveBeenCalledWith(
-        supabaseMock,
-        expect.objectContaining({
-          conversationId: 'calendar-chaos-conversation',
-          parts: [
-            { type: 'text', text: 'Hello, Brittany! How can I help you today?' },
-          ],
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
+    expect(response.status).toBe(200)
+    expect(body).toContain('Hello, Brittany! How can I help you today?')
+    expect(createConfiguredNicNacAgentMock).not.toHaveBeenCalled()
+    expect(agentStreamMock).not.toHaveBeenCalled()
   })
 
-  it('returns the exact guided Dance Floor starter without invoking the model or resolver', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    getOrCreateTradeBoardIntakeContextMock.mockResolvedValueOnce({
-      sessionBefore: null,
-      sessionAfter: {
-        id: 'trade-board-workflow-1',
-        repId: '11111111-1111-4111-8111-111111111111',
-        conversationId: 'calendar-chaos-conversation',
-        workflowType: 'trade_board_add_listing',
-        catalogMode: 'item_number',
-        status: 'active',
-        phase: 'details_capture',
-        known: {},
-        missing: ['itemNumber'],
-        blockers: [],
-        warnings: [],
-        metadata: {},
-        photos: [],
-      },
-      workflowIntents: ['trade_board'],
-      toolPolicySource: 'latest_turn_intent',
-      workflowPromptState: '',
-    })
+  it('lets the agent handle a Dance Floor starter instead of returning a scripted bypass', async () => {
+    agentStreamMock.mockResolvedValueOnce(
+      textResult('Absolutely—send the item number, a label photo, or tell me you do not have one.'),
+    )
 
-    try {
-      const response = await POST(
-        requestFor(
-          'Nic-Nac. I need to add a dancer to my dance floor, please.',
-        ),
-      )
-      const body = await response.text()
+    const response = await POST(requestFor('Nic-Nac, add a dancer'))
+    const body = await response.text()
 
-      expect(response.status).toBe(200)
-      expect(body).toContain('1. Type the item number.')
-      expect(body).toContain('2. Upload a clear photo')
-      expect(body).toContain('3. Tell me you don’t have an item number.')
-      expect(streamTextMock).not.toHaveBeenCalled()
-      expect(completeAssistantMock).toHaveBeenCalledWith(
-        supabaseMock,
-        expect.objectContaining({
-          conversationId: 'calendar-chaos-conversation',
-          parts: [{ type: 'text', text: TRADE_BOARD_GUIDED_START_RESPONSE }],
+    expect(response.status).toBe(200)
+    expect(body).toContain('send the item number')
+    expect(createConfiguredNicNacAgentMock).toHaveBeenCalledOnce()
+    expect(agentStreamMock).toHaveBeenCalledOnce()
+  })
+
+  it('passes the authenticated context to one permission-scoped agent catalog', async () => {
+    await (await POST(requestFor('What is on my calendar this week?'))).text()
+
+    expect(createConfiguredNicNacAgentMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'workspace',
+        repDisplayName: 'Brittany Smith',
+        toolContext: expect.objectContaining({
+          repId: '11111111-1111-4111-8111-111111111111',
+          conversationId: 'agent-route-conversation',
+          latestUserText: 'What is on my calendar this week?',
         }),
-      )
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          model: 'guided_trade_board_start',
-          status: 'complete',
-          toolNames: [],
-          usage: {
-            inputTokens: 0,
-            outputTokens: 0,
-            totalTokens: 0,
-            estimatedCostCents: 0,
+      }),
+    )
+    expect(agentStreamMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        messages: expect.any(Array),
+        abortSignal: expect.any(AbortSignal),
+      }),
+    )
+  })
+
+  it('switches from a Calendar read to an add request in the same conversation without route pinning', async () => {
+    const firstMessages = [
+      {
+        id: 'read-1',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Do I have any shows tonight?' }],
+      },
+    ]
+    await (await POST(requestForMessages(firstMessages))).text()
+
+    const secondMessages = [
+      ...firstMessages,
+      {
+        id: 'assistant-read-1',
+        role: 'assistant',
+        parts: [{ type: 'text', text: 'You do not have any shows tonight.' }],
+      },
+      {
+        id: 'add-1',
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: 'Cool, add one tonight at 7 Eastern for Bunny Ears with code AWESOME.',
+          },
+        ],
+      },
+    ]
+    await (await POST(requestForMessages(secondMessages))).text()
+
+    expect(createConfiguredNicNacAgentMock).toHaveBeenCalledTimes(2)
+    const secondConfig = createConfiguredNicNacAgentMock.mock.calls[1][0]
+    expect(secondConfig.toolContext.latestUserText).toContain('add one tonight')
+    expect(agentStreamMock).toHaveBeenCalledTimes(2)
+    const secondStreamInput = agentStreamMock.mock.calls[1][0]
+    expect(secondStreamInput).toEqual({
+      messages: expect.any(Array),
+      abortSignal: expect.any(AbortSignal),
+    })
+    expect(secondStreamInput).not.toHaveProperty('toolChoice')
+    expect(secondStreamInput).not.toHaveProperty('prepareStep')
+  })
+
+  it.each([
+    [
+      'Calendar to Dance Floor',
+      'What platform should I use for the show?',
+      'Pause that. What dancers are on my Dance Floor?',
+    ],
+    [
+      'Dance Floor to site content',
+      'Send the item number or a label photo.',
+      'Actually, update my homepage banner to Live tonight at 7.',
+    ],
+    [
+      'site content to Calendar',
+      'What should the About section say?',
+      'Before that, what shows do I have next week?',
+    ],
+    [
+      'general guidance to Calendar action',
+      'Here are three ways to make the live easier.',
+      'Thanks. Add a TikTok show tomorrow at 8 Eastern called Summer Stacks.',
+    ],
+  ])('honors the latest %s request instead of retaining the prior task', async (
+    _label,
+    priorAssistantText,
+    latestUserText,
+  ) => {
+    const messages = [
+      {
+        id: 'old-user',
+        role: 'user',
+        parts: [{ type: 'text', text: 'Help me with the previous task.' }],
+      },
+      {
+        id: 'old-assistant',
+        role: 'assistant',
+        parts: [{ type: 'text', text: priorAssistantText }],
+      },
+      {
+        id: 'latest-user',
+        role: 'user',
+        parts: [{ type: 'text', text: latestUserText }],
+      },
+    ]
+
+    await (await POST(requestForMessages(messages))).text()
+
+    const config = createConfiguredNicNacAgentMock.mock.calls[0][0]
+    expect(config.toolContext.latestUserText).toBe(latestUserText)
+    expect(agentStreamMock).toHaveBeenCalledWith({
+      messages: expect.any(Array),
+      abortSignal: expect.any(AbortSignal),
+    })
+  })
+
+  it('keeps support work isolated and passes the disclosed support capabilities', async () => {
+    await runWithOperatorSupportRequestContext(
+      {
+        session: {
+          id: 'support-session-1',
+          targetRepId: '11111111-1111-4111-8111-111111111111',
+          capabilities: ['calendar.manage'],
+        },
+        actor: {
+          operatorRepId: '22222222-2222-4222-8222-222222222222',
+          subjectRepId: '11111111-1111-4111-8111-111111111111',
+        },
+      } as never,
+      async () => {
+        await (await POST(supportRequestFor('What is on the rep calendar?'))).text()
+      },
+    )
+
+    expect(createConfiguredNicNacAgentMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        toolContext: expect.objectContaining({
+          operatorSupport: {
+            supportSessionId: 'support-session-1',
+            operatorRepId: '22222222-2222-4222-8222-222222222222',
+            capabilities: ['calendar.manage'],
           },
         }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
+      }),
+    )
   })
 
-  it('uses the same deterministic starter in an isolated operator-support conversation', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    getOrCreateTradeBoardIntakeContextMock.mockResolvedValueOnce({
-      sessionBefore: null,
-      sessionAfter: {
-        id: 'support-trade-board-workflow-1',
-        repId: '11111111-1111-4111-8111-111111111111',
-        conversationId: 'support-session-1',
-        workflowType: 'trade_board_add_listing',
-        catalogMode: 'item_number',
-        status: 'active',
-        phase: 'details_capture',
-        known: {},
-        missing: ['itemNumber'],
-        blockers: [],
-        warnings: [],
-        metadata: {},
-        photos: [],
+  it('resumes only the matching approval-gated tool and does not call the model again', async () => {
+    const executeCancel = vi.fn().mockResolvedValue({
+      event: { title: 'Synthetic Reviewer Show', status: 'cancelled' },
+    })
+    const tools = {
+      cancel_show: {
+        description: 'Cancel one show.',
+        needsApproval: true,
+        execute: executeCancel,
       },
-      workflowIntents: ['trade_board'],
-      toolPolicySource: 'latest_turn_intent',
-      workflowPromptState: '',
+    }
+    createConfiguredNicNacAgentMock.mockReturnValueOnce({
+      catalog: {
+        source: 'workspace_permissions',
+        mode: 'workspace',
+        tools,
+        toolNames: ['cancel_show'],
+        toolSafety: [],
+        requestedIntents: ['calendar'],
+        allowedIntents: ['calendar'],
+        blockedIntents: [],
+        blockedToolNames: [],
+        operatorRestrictedToolNames: [],
+      },
+      agent: {
+        id: 'mock-agent',
+        tools,
+        toolChoice: 'auto',
+        maxSteps: 6,
+        stream: agentStreamMock,
+      },
     })
 
-    try {
-      const response = await runWithOperatorSupportRequestContext(
+    const response = await POST(
+      requestForMessages([
         {
-          actor: {
-            mode: 'operator_support',
-            operatorRepId: 'operator-rep-1',
-            subjectRepId: '11111111-1111-4111-8111-111111111111',
-          },
-          session: {
-            id: 'support-session-1',
-            operatorRepId: 'operator-rep-1',
-            targetRepId: '11111111-1111-4111-8111-111111111111',
-            capabilities: ['nic_nac_chat'],
-          },
-          supabase: supabaseMock,
-          targetRep: {
-            id: '11111111-1111-4111-8111-111111111111',
-            auth_user_id: 'user-1',
-            email: 'kim@example.com',
-            display_name: 'Kim',
-            business_name: 'Kim’s Sparkle Site',
-            stripe_customer_id: null,
-            public_site_slug: 'kim',
-            time_zone: 'America/New_York',
-            status: 'active',
-          },
-        } as never,
-        () =>
-          POST(
-            supportRequestFor(
-              'Nic-Nac. I need to add a dancer to my dance floor, please.',
-            ),
-          ),
-      )
-      const body = await response.text()
-
-      expect(response.status).toBe(200)
-      expect(body).toContain('Absolutely—let’s add a dancer to your Dance Floor.')
-      expect(body).toContain('1. Type the item number.')
-      expect(body).toContain('3. Tell me you don’t have an item number.')
-      expect(streamTextMock).not.toHaveBeenCalled()
-      expect(loadOperatorSupportConversationMock).toHaveBeenCalled()
-      expect(insertOperatorSupportConversationMessageMock).toHaveBeenCalledTimes(2)
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          model: 'guided_trade_board_start',
-          productContext: expect.objectContaining({
-            surface: 'operator_support_workspace',
-          }),
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
-  })
-
-  it.each([
-    {
-      text: 'ugh i am sick tonight can you just skip whatever live i had',
-      expectedIntents: ['show_memory', 'calendar'],
-      expectedTools: [
-        'prepare_calendar_work',
-        'list_my_shows',
-        'skip_show_occurrence',
-        'cancel_show_series',
-        'pause_show_series',
-      ],
-    },
-    {
-      text: 'text my people 45 before every show',
-      expectedIntents: ['show_memory', 'notification'],
-      expectedTools: [
-        'prepare_calendar_work',
-        'get_notification_preferences',
-        'set_notification_preferences',
-      ],
-    },
-    {
-      text: 'turn off SMS reminders for tonight but keep email',
-      expectedIntents: ['calendar', 'notification'],
-      expectedTools: [
-        'prepare_calendar_work',
-        'list_my_shows',
-        'set_show_reminder_override',
-      ],
-    },
-  ])('exposes app-owned calendar tools for chaotic wording: $text', async ({
-    text,
-    expectedIntents,
-    expectedTools,
-  }) => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-    try {
-      const response = await POST(requestFor(text))
-      await response.text()
-
-      expect(response.status).toBe(200)
-      expect(streamTextMock).toHaveBeenCalledOnce()
-      const options = streamTextMock.mock.calls[0][0] as {
-        system: string
-        tools: Record<string, unknown>
-      }
-      const toolNames = Object.keys(options.tools)
-
-      expect(toolNames).toEqual(expect.arrayContaining(expectedTools))
-      expect(options.system).toContain('prepare_calendar_work is read-only')
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          conversationId: 'calendar-chaos-conversation',
-          intents: expect.arrayContaining(expectedIntents),
-          toolNames: expect.arrayContaining(expectedTools),
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
-  })
-
-  it.each([
-    'Hey Nic-Nac, do I have anything on my calendar right now?',
-    "What's on my schedule this week?",
-    'When is my next live?',
-    'Do I have a show tonight?',
-  ])('routes natural Calendar reads directly to list_my_shows: %s', async (text) => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-    try {
-      const response = await POST(requestFor(text))
-      await response.text()
-
-      expect(response.status).toBe(200)
-      expect(streamTextMock).toHaveBeenCalledOnce()
-      const options = streamTextMock.mock.calls[0][0] as {
-        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
-        tools: Record<string, unknown>
-      }
-
-      expect(Object.keys(options.tools)).toContain('list_my_shows')
-      expect(options.prepareStep({ steps: [] }).toolChoice).toEqual({
-        type: 'tool',
-        toolName: 'list_my_shows',
-      })
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
-  })
-
-  it('keeps calendar write tools active when a rep supplies missing show details on a follow-up', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-    try {
-      const response = await POST(
-        requestForMessages([
-          {
-            id: 'calendar-request',
-            role: 'user',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  'Add BlingKitchen Live to my calendar this Friday at 8pm with code Classy123 for 15% off 3+ items and July Birthday Collection featured.',
-              },
-            ],
-          },
-          {
-            id: 'assistant-calendar-details',
-            role: 'assistant',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  'I have the title, date, time, code, and featured collection. What platform, timezone, and duration should I use?',
-              },
-            ],
-          },
-          {
-            id: 'calendar-details',
-            role: 'user',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  "It will be on my TikTok Live, and it's Eastern Standard Time for two and a half hours.",
-              },
-            ],
-          },
-        ]),
-      )
-      await response.text()
-
-      expect(response.status).toBe(200)
-      expect(streamTextMock).toHaveBeenCalledOnce()
-      const options = streamTextMock.mock.calls[0][0] as {
-        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
-        tools: Record<string, unknown>
-      }
-      const toolNames = Object.keys(options.tools)
-
-      expect(toolNames).toEqual(
-        expect.arrayContaining(['prepare_calendar_work', 'add_show']),
-      )
-      expect(options.prepareStep({ steps: [] }).toolChoice).not.toBe('auto')
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          conversationId: 'calendar-chaos-conversation',
-          intents: expect.arrayContaining(['calendar']),
-          toolNames: expect.arrayContaining(['add_show']),
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
-  })
-
-  it('keeps calendar tools from active workflow state when the latest correction looks like memory', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-    getOrCreateCalendarWorkflowContextMock.mockResolvedValueOnce({
-      sessionBefore: {
-        id: 'calendar-workflow-1',
-        status: 'active',
-        phase: 'ready_to_add',
-        missingFields: [],
-      },
-      sessionAfter: {
-        id: 'calendar-workflow-1',
-        status: 'active',
-        phase: 'ready_to_add',
-        missingFields: [],
-      },
-      activeWorkflow: {
-        workflowId: 'calendar-workflow-1',
-        workflowType: 'calendar_event_work',
-        status: 'active',
-        phase: 'ready_to_add',
-        workflowIntents: ['calendar'],
-        toolPolicySource: 'active_workflow',
-        promptState:
-          'Active workflow: calendar_event_work\nWorkflow phase: ready_to_add\nDescription: optional; do not ask for description before add_show.',
-      },
-      workflowIntents: ['calendar'],
-      toolPolicySource: 'active_workflow',
-      workflowPromptState:
-        'Active workflow: calendar_event_work\nWorkflow phase: ready_to_add\nDescription: optional; do not ask for description before add_show.',
-    })
-
-    try {
-      const response = await POST(
-        requestForMessages([
-          {
-            id: 'calendar-request',
-            role: 'user',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  'Just a one-time show for this Friday night, July 3. Replace the current show with BlingKitchen Live at 8 p.m. EDT. Discount code bling123 for 15% off whole cart with 3+ items. Featured collection July Birthday Collection.',
-              },
-            ],
-          },
-          {
-            id: 'assistant-calendar-description',
-            role: 'assistant',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  'I still don’t see an existing upcoming show on the calendar to replace, so I’ll treat this as a new one-time show. Last thing I need: a short description for the event.',
-              },
-            ],
-          },
-          {
-            id: 'calendar-no-description',
-            role: 'user',
-            parts: [
-              {
-                type: 'text',
-                text: "No, you don't need a short description of the event.",
-              },
-            ],
-          },
-        ]),
-      )
-      await response.text()
-
-      expect(response.status).toBe(200)
-      expect(streamTextMock).toHaveBeenCalledOnce()
-      const options = streamTextMock.mock.calls[0][0] as {
-        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
-        system: string
-        tools: Record<string, unknown>
-      }
-      const toolNames = Object.keys(options.tools)
-
-      expect(toolNames).toEqual(
-        expect.arrayContaining(['prepare_calendar_work', 'add_show', 'list_my_shows']),
-      )
-      expect(options.system).toContain('Active workflow: calendar_event_work')
-      expect(options.system).toContain('Description: optional')
-      expect(options.prepareStep({ steps: [] }).toolChoice).toEqual({
-        type: 'tool',
-        toolName: 'add_show',
-      })
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          conversationId: 'calendar-chaos-conversation',
-          intents: expect.arrayContaining(['calendar']),
-          toolNames: expect.arrayContaining(['add_show']),
-          workflow: expect.objectContaining({
-            toolPolicySource: 'active_workflow',
-          }),
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
-  })
-
-  it('keeps calendar tools available for Louis final recurring split confirmation even without active workflow state', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-    try {
-      const response = await POST(
-        requestForMessages([
-          {
-            id: 'calendar-remove',
-            role: 'user',
-            parts: [
-              {
-                type: 'text',
-                text: 'Nic-Nac, please remove the shows from the calendar for both the 3rd and 4th of July.',
-              },
-            ],
-          },
-          {
-            id: 'assistant-cancelled',
-            role: 'assistant',
-            parts: [
-              {
-                type: 'text',
-                text: 'Done - I cancelled BlingKitchen Live.\n\nDone - I cancelled Fireworks Fizzing.',
-              },
-            ],
-          },
-          {
-            id: 'calendar-request',
-            role: 'user',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  'So Nic-Nac, I want to create a reoccurring show on Wednesday mornings for the foreseeable future that starts at 9 a.m. The show will be called Coffee and Fizz. It will be Eastern Standard Time. No discount codes, but the feature collection for the first two shows will be the July Birthday Collection.',
-              },
-            ],
-          },
-          {
-            id: 'assistant-platform-duration',
-            role: 'assistant',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  'Absolutely. What platform should Coffee and Fizz be on, and how long should each show run? The clean way is first 2 Wednesday shows with July Birthday Collection, then the ongoing weekly Wednesday series after that with no featured collection.',
-              },
-            ],
-          },
-          {
-            id: 'calendar-platform-duration',
-            role: 'user',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  'The show will be dual streamed on both Facebook Live and TikTok Live, and it will have a three-hour duration.',
-              },
-            ],
-          },
-          {
-            id: 'assistant-confirm-split',
-            role: 'assistant',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  'Perfect. Do you want this to start next Wednesday, and do you want me to split it like this: first 2 Wednesday shows with July Birthday Collection, then the ongoing weekly Wednesday series after that with no featured collection?',
-              },
-            ],
-          },
-          {
-            id: 'calendar-confirm-split',
-            role: 'user',
-            parts: [
-              {
-                type: 'text',
-                text: 'Yes, start next Wednesday, and yes to the split.',
-              },
-            ],
-          },
-        ]),
-      )
-      await response.text()
-
-      expect(response.status).toBe(200)
-      expect(streamTextMock).toHaveBeenCalledOnce()
-      const options = streamTextMock.mock.calls[0][0] as {
-        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
-        system: string
-        tools: Record<string, unknown>
-      }
-      const toolNames = Object.keys(options.tools)
-
-      expect(toolNames).toEqual(
-        expect.arrayContaining([
-          'prepare_calendar_work',
-          'add_show',
-          'list_my_shows',
-          'cancel_show',
-          'cancel_show_series',
-        ]),
-      )
-      expect(options.system).toContain('Calendar tools:')
-      expect(options.prepareStep({ steps: [] }).toolChoice).not.toBe('auto')
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          conversationId: 'calendar-chaos-conversation',
-          intents: expect.arrayContaining(['calendar']),
-          toolNames: expect.arrayContaining(['add_show', 'cancel_show']),
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
-  })
-
-  it('exposes the recipe draft and save tools through the real chat route', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-    try {
-      const response = await POST(
-        requestFor(
-          'Add a new Pantry recipe called Chocolate-Dipped Strawberries from these food and recipe-card photos.',
-        ),
-      )
-      await response.text()
-
-      expect(response.status).toBe(200)
-      expect(streamTextMock).toHaveBeenCalledOnce()
-      const options = streamTextMock.mock.calls[0][0] as {
-        system: string
-        tools: Record<string, unknown>
-      }
-      const toolNames = Object.keys(options.tools)
-
-      expect(toolNames).toEqual(
-        expect.arrayContaining([
-          'build_site_recipe_draft',
-          'list_site_recipes',
-          'manage_site_recipes',
-        ]),
-      )
-      expect(options.system).toContain('build_site_recipe_draft')
-      expect(options.system).toContain(
-        'Recipe-card photos are source material',
-      )
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          conversationId: 'calendar-chaos-conversation',
-          intents: expect.arrayContaining(['site']),
-          toolNames: expect.arrayContaining([
-            'build_site_recipe_draft',
-            'manage_site_recipes',
-          ]),
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
-  })
-
-  it('keeps recipe tools available for a photo-only recipe follow-up', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-    try {
-      const response = await POST(
-        requestForMessages([
-          {
-            id: 'recipe-request',
-            role: 'user',
-            parts: [
-              {
-                type: 'text',
-                text: 'Help me add a new Pantry recipe for Chocolate-Dipped Strawberries.',
-              },
-            ],
-          },
-          {
-            id: 'assistant-recipe-photos',
-            role: 'assistant',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  'Send the food/display photo and the recipe-card photo, then I can build the recipe draft.',
-              },
-            ],
-          },
-          {
-            id: 'recipe-photos',
-            role: 'user',
-            parts: [
-              {
-                type: 'file',
-                mediaType: 'image/jpeg',
-                url: 'data:image/jpeg;base64,RElTUExBWQ==',
-              },
-              {
-                type: 'file',
-                mediaType: 'image/jpeg',
-                url: 'data:image/jpeg;base64,Q0FSRA==',
-              },
-            ],
-          },
-        ]),
-      )
-      await response.text()
-
-      expect(response.status).toBe(200)
-      expect(streamTextMock).toHaveBeenCalledOnce()
-      const options = streamTextMock.mock.calls[0][0] as {
-        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
-        tools: Record<string, unknown>
-      }
-      const toolNames = Object.keys(options.tools)
-
-      expect(toolNames).toEqual(
-        expect.arrayContaining([
-          'build_site_recipe_draft',
-          'manage_site_recipes',
-        ]),
-      )
-      expect(options.prepareStep({ steps: [] }).toolChoice).not.toBe('none')
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          conversationId: 'calendar-chaos-conversation',
-          intents: expect.arrayContaining(['site']),
-          toolNames: expect.arrayContaining(['build_site_recipe_draft']),
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
-  })
-
-  it('routes a pasted About narrative through the real chat route and pins the site update tool', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-    try {
-      const response = await POST(
-        requestForMessages([
-          {
-            id: 'about-request',
-            role: 'user',
-            parts: [
-              {
-                type: 'text',
-                text: "Nic-Nac, I need to update the About section for Heather's site.",
-              },
-            ],
-          },
-          {
-            id: 'about-prompt',
-            role: 'assistant',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  "Got it — I have the updated About copy ready. I can't directly update the site content from the tools I have on this turn, but here's a clean version ready to paste into Heather's About section.",
-              },
-            ],
-          },
-          {
-            id: 'about-copy',
-            role: 'user',
-            parts: [
-              {
-                type: 'text',
-                text:
-                  'Meet Heather\n\nHeather is a Registered Nurse with a love for family, food, and live jewelry reveals. She built a welcoming community by sharing that passion live and brings the same warmth to every show.',
-              },
-            ],
-          },
-        ]),
-      )
-      await response.text()
-
-      expect(response.status).toBe(200)
-      const options = streamTextMock.mock.calls[0][0] as {
-        prepareStep: (input: { steps: unknown[] }) => { toolChoice: unknown }
-        tools: Record<string, unknown>
-      }
-
-      expect(options.tools).toHaveProperty('update_site_setting')
-      expect(options.prepareStep({ steps: [] }).toolChoice).toEqual({
-        type: 'tool',
-        toolName: 'update_site_setting',
-      })
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          intents: expect.arrayContaining(['site']),
-          toolNames: expect.arrayContaining(['update_site_setting']),
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
-  })
-
-  it('marks provider stream errors as aborted and logs the nested provider message', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-    streamTextMock.mockImplementation((options: {
-      onError?: (error: unknown) => void
-      onFinish?: (event: { totalUsage: unknown }) => void
-    }) => {
-      options.onError?.({
-        error: {
-          type: 'error',
-          sequence_number: 2,
-          error: {
-            type: 'insufficient_quota',
-            code: 'insufficient_quota',
-            message:
-              'You exceeded your current quota, please check your plan and billing details.',
-            param: null,
-          },
+          id: 'user-cancel',
+          role: 'user',
+          parts: [{ type: 'text', text: 'Cancel the synthetic reviewer show.' }],
         },
-      })
-      options.onFinish?.({ totalUsage: {} })
-      return {
-        toUIMessageStream: async function* () {
-          yield {
-            type: 'finish',
-            finishReason: { unified: 'error', raw: undefined },
-          }
-        },
-      }
-    })
-
-    try {
-      const response = await POST(requestFor('Add a piece to Dance Floor'))
-      await response.text()
-
-      expect(response.status).toBe(200)
-      expect(abortAssistantMock).toHaveBeenCalledWith(
-        supabaseMock,
-        expect.objectContaining({
-          conversationId: 'calendar-chaos-conversation',
-          parts: expect.any(Array),
-        }),
-      )
-      expect(completeAssistantMock).not.toHaveBeenCalled()
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          conversationId: 'calendar-chaos-conversation',
-          status: 'error',
-          errorMessage: expect.stringContaining('insufficient_quota'),
-        }),
-      )
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          errorMessage: expect.stringContaining('exceeded your current quota'),
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-      errorSpy.mockRestore()
-    }
-  })
-
-  it('returns a visible recovery reply when an internal tool finishes without text', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-    streamTextMock.mockImplementation((options: {
-      onFinish?: (event: { totalUsage: unknown }) => void
-    }) => {
-      options.onFinish?.({ totalUsage: { inputTokens: 10, outputTokens: 5 } })
-      return {
-        toUIMessageStream: async function* () {
-          yield {
-            type: 'tool-input-start',
-            toolCallId: 'tool-1',
-            toolName: 'prepare_trade_board_work',
-          }
-          yield {
-            type: 'tool-input-available',
-            toolCallId: 'tool-1',
-            toolName: 'prepare_trade_board_work',
-            input: { action: 'add_piece' },
-          }
-          yield {
-            type: 'tool-output-available',
-            toolCallId: 'tool-1',
-            output: {
-              allowedPath: 'ask_for_identifier',
-              nextQuestion:
-                'Send the item number or a label/details photo so I can check it first.',
-            },
-          }
-          yield {
-            type: 'finish',
-            finishReason: { unified: 'stop', raw: undefined },
-          }
-        },
-      }
-    })
-
-    try {
-      const response = await POST(requestFor('Add a piece to Dance Floor'))
-      const body = await response.text()
-
-      expect(response.status).toBe(200)
-      expect(body).toContain('Send the item number or a label/details photo')
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'complete',
-          errorMessage: 'empty_model_output_recovered',
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
-  })
-
-  it('returns a useful Trade read summary instead of the generic blank-response apology', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-    streamTextMock.mockImplementation((options: {
-      onFinish?: (event: { totalUsage: unknown }) => void
-    }) => {
-      options.onFinish?.({ totalUsage: { inputTokens: 10, outputTokens: 5 } })
-      return {
-        toUIMessageStream: async function* () {
-          yield {
-            type: 'tool-input-start',
-            toolCallId: 'tool-board-1',
-            toolName: 'list_my_trade_board',
-          }
-          yield {
-            type: 'tool-input-available',
-            toolCallId: 'tool-board-1',
-            toolName: 'list_my_trade_board',
-            input: {},
-          }
-          yield {
-            type: 'tool-output-available',
-            toolCallId: 'tool-board-1',
-            output: {
-              count: 1,
-              totalMsrp: 54,
-              listings: [
-                {
-                  designName: 'The Starlight Earrings',
-                  itemNumber: 'ER12345',
-                  status: 'available',
-                  quantityAvailable: 1,
-                },
-              ],
-            },
-          }
-          yield {
-            type: 'finish',
-            finishReason: { unified: 'stop', raw: undefined },
-          }
-        },
-      }
-    })
-
-    try {
-      const response = await POST(requestFor('What is on my Dance Floor?'))
-      const body = await response.text()
-
-      expect(response.status).toBe(200)
-      expect(body).toContain('Your Dance Floor has 1 matching dancer')
-      expect(body).toContain('The Starlight Earrings')
-      expect(body).not.toContain('Please send that again')
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
-  })
-
-  it('surfaces a resolver failure and records the run as error instead of complete', async () => {
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-    streamTextMock.mockImplementation((options: {
-      onFinish?: (event: { totalUsage: unknown }) => void
-    }) => {
-      options.onFinish?.({ totalUsage: { inputTokens: 10, outputTokens: 5 } })
-      return {
-        toUIMessageStream: async function* () {
-          yield {
-            type: 'tool-input-available',
-            toolCallId: 'tool-failed-1',
-            toolName: 'prepare_trade_board_work',
-            input: { action: 'add_piece' },
-          }
-          yield {
-            type: 'tool-output-available',
-            toolCallId: 'tool-failed-1',
-            output: {
-              ok: false,
-              errorTier: 'escalate',
-              code: 'PGRST100',
-              stage: 'database',
-              message: "Something unexpected happened. I've flagged this.",
-            },
-          }
-          yield { type: 'text-start', id: 'bad-success-text' }
-          yield {
-            type: 'text-delta',
-            id: 'bad-success-text',
-            delta: 'Great news—everything worked and your dancer is ready!',
-          }
-          yield { type: 'text-end', id: 'bad-success-text' }
-          yield {
-            type: 'finish',
-            finishReason: { unified: 'tool-calls', raw: undefined },
-          }
-        },
-      }
-    })
-
-    try {
-      const response = await POST(requestFor('Check Dance Floor piece ER13229'))
-      const body = await response.text()
-
-      expect(response.status).toBe(200)
-      expect(body).toContain('couldn’t check the Dance Floor catalog')
-      expect(body).toContain("haven’t changed anything")
-      expect(body).not.toContain('everything worked')
-      expect(logNicNacRunMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          executedToolNames: ['prepare_trade_board_work'],
-          toolFailures: [
+        {
+          id: 'assistant-cancel',
+          role: 'assistant',
+          parts: [
             {
-              toolName: 'prepare_trade_board_work',
-              errorTier: 'escalate',
-              code: 'PGRST100',
-              stage: 'database',
+              type: 'tool-cancel_show',
+              toolName: 'cancel_show',
+              toolCallId: 'cancel-call-1',
+              state: 'approval-responded',
+              input: { eventId: 'synthetic-event-1' },
+              approval: { id: 'approval-1', approved: true },
             },
           ],
-          errorMessage: 'tool_failure:prepare_trade_board_work:PGRST100',
-        }),
-      )
-    } finally {
-      infoSpy.mockRestore()
-      logSpy.mockRestore()
-    }
+        },
+      ]),
+    )
+    const body = await response.text()
+
+    expect(executeCancel).toHaveBeenCalledOnce()
+    expect(executeCancel).toHaveBeenCalledWith({
+      eventId: 'synthetic-event-1',
+    })
+    expect(agentStreamMock).not.toHaveBeenCalled()
+    expect(body).toContain('Done — I cancelled Synthetic Reviewer Show.')
+    expect(recordApprovalEventMock).toHaveBeenCalledWith(
+      supabaseMock,
+      expect.objectContaining({
+        approvalId: 'approval-1',
+        toolName: 'cancel_show',
+        approved: true,
+      }),
+    )
+  })
+
+  it('preserves a useful tool-result recovery when the model emits no final text', async () => {
+    agentStreamMock.mockResolvedValueOnce(
+      resultFromChunks([
+        {
+          type: 'tool-input-available',
+          toolCallId: 'tool-call-1',
+          toolName: 'list_my_trade_board',
+          input: {},
+        },
+        {
+          type: 'tool-output-available',
+          toolCallId: 'tool-call-1',
+          output: {
+            count: 1,
+            listings: [
+              {
+                designName: 'The Starlight Earrings',
+                itemNumber: 'ER12345',
+                status: 'available',
+              },
+            ],
+          },
+        },
+        { type: 'finish', finishReason: { unified: 'tool-calls', raw: undefined } },
+      ]),
+    )
+
+    const response = await POST(requestFor('What is on my Dance Floor?'))
+    const body = await response.text()
+
+    expect(body).toContain('Your Dance Floor has 1 matching dancer')
+    expect(body).toContain('The Starlight Earrings')
+    expect(body).not.toContain('Please send that again')
+    expect(logNicNacRunMock).toHaveBeenCalledWith(
+      expect.objectContaining({ executedToolNames: ['list_my_trade_board'] }),
+    )
+  })
+
+  it('records an agent-stream failure without claiming the task succeeded', async () => {
+    agentStreamMock.mockResolvedValueOnce({
+      toUIMessageStream: async function* () {
+        throw new Error('provider exploded')
+      },
+    })
+
+    const response = await POST(requestFor('Check the calendar'))
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toContain('error')
+    expect(logIncidentMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errorType: 'agent_stream_error',
+        details: expect.objectContaining({ message: 'provider exploded' }),
+      }),
+    )
+    expect(completeAssistantMock).not.toHaveBeenCalled()
   })
 })

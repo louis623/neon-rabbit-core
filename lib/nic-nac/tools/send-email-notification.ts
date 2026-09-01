@@ -36,6 +36,7 @@ export function makeSendEmailNotificationTool(_ctx?: {
     description:
       'Send a one-off email notification to a single customer email address. This is for direct emails, not subscriber blasts or show reminders.',
     inputSchema,
+    needsApproval: true,
     execute: async (input) => {
       try {
         return await sendEmailNotification(_ctx.repId, {

@@ -1,6 +1,6 @@
 # Nic-Nac Agent Harness Rebuild Plan
 
-**Status:** Proposed for Louis's approval. Planning only; this document does not authorize implementation, paid model replays, production changes, or the scheduled isolated canary.
+**Status:** Local implementation complete and deterministically verified on September 1, 2026. Production stays default-off behind an exact-cohort rollout gate with the legacy orchestrator preserved. Paid model replays, production cohort enablement, real-customer testing, and the scheduled isolated canary remain separately authorization-gated.
 
 **Goal:** Make Nic-Nac feel like a capable live-show business partner who can understand a rep's current request, choose the right Sparkle Suite tools, switch tasks naturally in the same conversation, ask a short clarification when needed, and complete safe work without being trapped by an earlier workflow.
 

@@ -24,7 +24,12 @@ function register(
 }
 
 register(
-  ['read_recent_rep_notes', 'write_rep_note', 'get_help_resources'],
+  [
+    'read_recent_rep_notes',
+    'write_rep_note',
+    'get_help_resources',
+    'search_work_knowledge',
+  ],
   'workspace.view',
   'workspace',
   ['write_rep_note'],

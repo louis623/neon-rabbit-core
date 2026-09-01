@@ -2076,3 +2076,17 @@ sticky workflow state, and forced first-step tool choice can override an
 unambiguous new request before the model gets to reason. Repeated phrase and
 workflow patches improve isolated cases while making open-ended rep language
 and mid-conversation task switching more fragile.
+
+Decision: The implemented harness is production default-off and must retain the
+legacy route until an exact synthetic-reviewer cohort passes capped model-backed
+replays and the kill switch is proven. Broad production enablement is not
+implied by deploying the guarded code.
+
+Decision: Every tool exposed to the agent must have an independently audited
+safety-ledger entry that agrees with runtime read/write behavior, approval
+metadata, side-effect risk, surface availability, and Support capability
+policy. Outbound SMS and email require explicit approval.
+
+Reason: A capable model may select any tool it is given. Safety therefore must
+be complete and enforceable at the capability boundary rather than dependent on
+the model remembering a prompt or on a text router hiding most tools.

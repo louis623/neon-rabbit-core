@@ -116,7 +116,7 @@ describe('Dance Floor deterministic guided start', () => {
     ).toBe(false)
   })
 
-  it('owns the exact three-option response and bypasses the model in the route', () => {
+  it('keeps the concise guidance reusable without bypassing agent reasoning', () => {
     expect(TRADE_BOARD_GUIDED_START_RESPONSE).toContain('1. Type the item number.')
     expect(TRADE_BOARD_GUIDED_START_RESPONSE).toContain(
       '2. Upload a clear photo of the item-info tag or label.',
@@ -129,10 +129,9 @@ describe('Dance Floor deterministic guided start', () => {
       resolve(process.cwd(), 'app/api/nic-nac/route.ts'),
       'utf8',
     )
-    const guardIndex = routeSource.indexOf('shouldUseTradeBoardGuidedStart')
-    const streamIndex = routeSource.indexOf('const result = streamText')
-    expect(guardIndex).toBeGreaterThan(-1)
-    expect(streamIndex).toBeGreaterThan(guardIndex)
-    expect(routeSource).toContain("model: 'guided_trade_board_start'")
+    expect(routeSource).not.toContain('shouldUseTradeBoardGuidedStart')
+    expect(routeSource).not.toContain("model: 'guided_trade_board_start'")
+    expect(routeSource).toContain('createConfiguredNicNacAgent({')
+    expect(routeSource).toContain('configuredAgent.agent.stream({')
   })
 })

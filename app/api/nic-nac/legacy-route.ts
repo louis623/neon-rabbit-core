@@ -7,6 +7,8 @@
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import {
+  streamText,
+  stepCountIs,
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
@@ -25,9 +27,14 @@ import {
   recordApprovalEvent,
 } from '@/lib/nic-nac/persistence'
 import {
+  addWorkspaceBaselineToolIntents,
+  buildToolsForIntents,
   getToolIntentsForText,
+  getToolIntentsForMessages,
+  shouldRequireToolCallForMessages,
   type NicNacToolIntent,
 } from '@/lib/nic-nac/tools'
+import { buildNicNacSystemPrompt } from '@/lib/nic-nac/prompt-builder'
 import { probeConversationOwner } from '@/lib/nic-nac/probe-conversation-owner'
 import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
 import {
@@ -41,6 +48,10 @@ import {
   type NicNacRunUsage,
 } from '@/lib/nic-nac/run-telemetry'
 import { getNicNacModelPolicy } from '@/lib/nic-nac/core/model-policy'
+import {
+  getNicNacLanguageModel,
+  getNicNacProviderOptions,
+} from '@/lib/nic-nac/core/model-provider'
 import { estimateNicNacRunCostCents } from '@/lib/nic-nac/core/model-cost'
 import {
   createSuiteOperatorSupportProductContext,
@@ -53,10 +64,12 @@ import {
   loadOperatorSupportConversation,
   recordOperatorSupportApprovalEvent,
 } from '@/lib/nic-nac/support-conversation'
+import { filterNicNacToolIntentsForContext } from '@/lib/nic-nac/core/tool-policy'
 import { assembleNicNacContext } from '@/lib/nic-nac/core/context-assembler'
 import { loadSuiteRepMemoryCards } from '@/lib/nic-nac/core/memory/rep-memory-cards'
 import { classifyNicNacMissionScopeForMessages } from '@/lib/nic-nac/core/mission-guard'
 import { createNicNacStaticTextStreamResponse } from '@/lib/nic-nac/core/static-stream'
+import { chooseNicNacToolChoiceForStep } from '@/lib/nic-nac/tool-choice-policy'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeNicNacAssistantParts } from '@/lib/nic-nac/message-normalize'
 import {
@@ -64,6 +77,12 @@ import {
 } from '@/lib/nic-nac/workflows/trade-board-intake-context'
 import { getOrCreateTradeWorkflowContext } from '@/lib/nic-nac/workflows/trade-workflow-context'
 import { getOrCreateCalendarWorkflowContext } from '@/lib/nic-nac/workflows/calendar-workflow-context'
+import {
+  activeWorkflowRequiresToolCall,
+  mergeActiveWorkflowToolIntents,
+  renderActiveWorkflowPromptStates,
+  type ActiveNicNacWorkflowContext,
+} from '@/lib/nic-nac/workflows/active-tool-context'
 import { arbitrateNicNacWorkflowTurn } from '@/lib/nic-nac/workflows/workflow-turn-arbitration'
 import { summarizeHardFailDetection } from '@/lib/nic-nac/workflows/trade-board-intake-eval'
 import {
@@ -74,12 +93,10 @@ import {
   NIC_NAC_EMPTY_RESPONSE_FALLBACK,
 } from '@/lib/nic-nac/core/stream-output-guard'
 import { buildPersonalizedRepGreeting } from '@/lib/nic-nac/core/rep-personalization'
-import { createConfiguredNicNacAgent } from '@/lib/nic-nac/agent'
 import {
-  canNicNacAgentHarnessBeEnabled,
-  isNicNacAgentHarnessEnabled,
-} from '@/lib/nic-nac/agent/rollout'
-import { POST as legacyNicNacPOST } from './legacy-route'
+  shouldUseTradeBoardGuidedStart,
+  TRADE_BOARD_GUIDED_START_RESPONSE,
+} from '@/lib/nic-nac/workflows/trade-board-guided-start'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -259,19 +276,10 @@ function formatApprovalContinuationText(toolName: string, output: unknown): stri
   return 'Done — I made that approved change.'
 }
 
-async function runLegacyNicNac(request: Request) {
-  const response = await legacyNicNacPOST(request)
-  response.headers.set('x-nic-nac-orchestrator', 'legacy')
-  return response
-}
-
 export async function POST(request: Request) {
-  if (!canNicNacAgentHarnessBeEnabled()) {
-    return runLegacyNicNac(request)
-  }
   const runId = randomUUID()
   const runStartedAt = Date.now()
-  const responseHeaders: Record<string, string> = { 'x-nic-nac-run-id': runId }
+  const responseHeaders = { 'x-nic-nac-run-id': runId }
   const modelPolicy = getNicNacModelPolicy('human_default')
 
   let ctx
@@ -298,18 +306,6 @@ export async function POST(request: Request) {
     throw err
   }
   const { repId, rep, supabase } = ctx
-  if (
-    !isNicNacAgentHarnessEnabled({
-      repId,
-      email: rep.email,
-    })
-  ) {
-    // Production-default-off rollback path. The legacy handler performs its
-    // own normal authentication and request processing; this preliminary
-    // identity read exists only to evaluate the exact rollout cohort.
-    return runLegacyNicNac(request)
-  }
-  responseHeaders['x-nic-nac-orchestrator'] = 'agent'
   const supportContext = getOperatorSupportRequestContext()
   const supportScope = supportContext
     ? {
@@ -611,9 +607,9 @@ export async function POST(request: Request) {
     }
   }
 
-  // Reserve the assistant row before the agent stream starts. The same ID is
-  // used by the outer UI stream so the DB row and client message stay in sync
-  // even if the model or a tool aborts.
+  // Reserve assistant row before streamText starts. Same ID is wired to the
+  // SDK via generateMessageId so the DB row and SDK-emitted message stay in
+  // sync even if the stream aborts.
   //
   // For HITL continuation (last message is an assistant turn carrying an
   // approval-responded part), reuse that turn's id instead of generating a
@@ -642,19 +638,20 @@ export async function POST(request: Request) {
   const latestUserMessage = [...messages]
     .reverse()
     .find((message) => message.role === 'user')
+  const previousAssistantMessage = [...messages]
+    .slice(0, -1)
+    .reverse()
+    .find((message) => message.role === 'assistant')
   const latestUserText = readTextFromMessage(latestUserMessage)
+  const previousAssistantText = readTextFromMessage(previousAssistantMessage)
   const latestToolIntents: NicNacToolIntent[] =
     mode === 'required_setup'
       ? ['required_setup']
-      : getToolIntentsForText(latestUserText)
+      : getToolIntentsForMessages(messages)
   const latestTurnIntents =
     mode === 'required_setup'
       ? latestToolIntents
       : getToolIntentsForText(latestUserText)
-  // Workflow arbitration now protects transaction state only. It does not
-  // choose, retain, remove, or force tools. The permission-scoped agent catalog
-  // below is independent of this text classifier, so an old workflow can never
-  // capture a new explicit request before the model reasons.
   const workflowTurn = arbitrateNicNacWorkflowTurn(latestTurnIntents)
   const tradeBoardWorkflowContext = workflowTurn.tradeBoard
     ? await getOrCreateTradeBoardIntakeContext({
@@ -675,6 +672,83 @@ export async function POST(request: Request) {
         workflowPromptState: '',
       }
   const activeTradeBoardWorkflow = tradeBoardWorkflowContext.sessionAfter
+  if (
+    mode === 'workspace' &&
+    activeTradeBoardWorkflow &&
+    shouldUseTradeBoardGuidedStart({
+      latestUserText,
+      workflow: activeTradeBoardWorkflow,
+    })
+  ) {
+    await completeAssistant(supabase, {
+      conversationId,
+      messageId: assistantMessageId,
+      parts: [{ type: 'text', text: TRADE_BOARD_GUIDED_START_RESPONSE }],
+    })
+    await logNicNacRun({
+      runId,
+      repId,
+      conversationId,
+      model: 'guided_trade_board_start',
+      productContext,
+      status: 'complete',
+      latencyMs: Date.now() - runStartedAt,
+      intents: ['trade_board'],
+      toolNames: [],
+      modelContext: {
+        originalMessageCount: messages.length,
+        modelMessageCount: 0,
+        droppedMessageCount: 0,
+        estimatedTokens: 0,
+        wasCompacted: false,
+      },
+      contextAssembly: assembledContext.telemetry,
+      usage: {
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        estimatedCostCents: 0,
+      },
+      errorMessage: 'guided_trade_board_start',
+      workflow: {
+        id: activeTradeBoardWorkflow.id,
+        type: activeTradeBoardWorkflow.workflowType,
+        phaseBefore:
+          tradeBoardWorkflowContext.sessionBefore?.phase ??
+          activeTradeBoardWorkflow.phase,
+        phaseAfter: activeTradeBoardWorkflow.phase,
+        statusBefore:
+          tradeBoardWorkflowContext.sessionBefore?.status ??
+          activeTradeBoardWorkflow.status,
+        statusAfter: activeTradeBoardWorkflow.status,
+        toolPolicySource: tradeBoardWorkflowContext.toolPolicySource,
+        photoRoles: [],
+        hardFailPhraseCount: 0,
+        hardFailPhrases: [],
+      },
+    })
+
+    return createNicNacStaticTextStreamResponse({
+      message: TRADE_BOARD_GUIDED_START_RESPONSE,
+      messageId: assistantMessageId,
+      headers: responseHeaders,
+    })
+  }
+  const activeWorkflowContexts: ActiveNicNacWorkflowContext[] = []
+  if (
+    tradeBoardWorkflowContext.sessionAfter?.status === 'active' &&
+    tradeBoardWorkflowContext.workflowIntents.length
+  ) {
+    activeWorkflowContexts.push({
+      workflowId: tradeBoardWorkflowContext.sessionAfter.id,
+      workflowType: 'trade_board_add_listing',
+      status: 'active',
+      phase: tradeBoardWorkflowContext.sessionAfter.phase,
+      workflowIntents: tradeBoardWorkflowContext.workflowIntents,
+      toolPolicySource: 'active_workflow',
+      promptState: tradeBoardWorkflowContext.workflowPromptState,
+    })
+  }
   const tradeWorkflowContext = workflowTurn.trade
     ? await getOrCreateTradeWorkflowContext({
         supabase: createAdminClient(),
@@ -688,6 +762,9 @@ export async function POST(request: Request) {
         nowIso: new Date().toISOString(),
       })
     : { sessionBefore: null, sessionAfter: null, activeWorkflow: null }
+  if (tradeWorkflowContext.activeWorkflow) {
+    activeWorkflowContexts.push(tradeWorkflowContext.activeWorkflow)
+  }
   const calendarWorkflowContext = workflowTurn.calendar
     ? await getOrCreateCalendarWorkflowContext({
         supabase,
@@ -707,14 +784,37 @@ export async function POST(request: Request) {
         toolPolicySource: 'latest_turn_intent' as const,
         workflowPromptState: '',
       }
-  let runUsage: NicNacRunUsage | undefined
-  const configuredAgent = createConfiguredNicNacAgent({
-    mode,
+  if (calendarWorkflowContext.activeWorkflow) {
+    activeWorkflowContexts.push(calendarWorkflowContext.activeWorkflow)
+  }
+  const routedToolIntents: NicNacToolIntent[] =
+    mode === 'required_setup'
+      ? latestToolIntents
+      : mergeActiveWorkflowToolIntents(latestToolIntents, activeWorkflowContexts)
+  const requestedToolIntents: NicNacToolIntent[] =
+    mode === 'required_setup'
+      ? routedToolIntents
+      : addWorkspaceBaselineToolIntents(routedToolIntents)
+  const toolPolicy = filterNicNacToolIntentsForContext(
     productContext,
-    repDisplayName: rep.display_name,
-    memoryContext: assembledContext.promptText,
-    modelPolicy,
-    toolContext: {
+    requestedToolIntents,
+  )
+  const toolIntents = toolPolicy.allowedIntents
+  const toolPolicySource =
+    mode === 'required_setup'
+      ? 'mode_required_setup'
+      : activeWorkflowContexts.length > 0
+        ? 'active_workflow'
+        : latestToolIntents.includes('resources')
+          ? 'fallback_resources'
+          : latestToolIntents.includes('memory')
+            ? 'fallback_memory'
+            : 'latest_turn_intent'
+  const requireToolCall =
+    shouldRequireToolCallForMessages(messages, routedToolIntents) ||
+    activeWorkflowRequiresToolCall(activeWorkflowContexts)
+  const tools = buildToolsForIntents(
+    {
       repId,
       supabase,
       conversationId,
@@ -737,38 +837,20 @@ export async function POST(request: Request) {
           }
         : undefined,
     },
-    onFinish: (event) => {
-      runUsage = normalizeRunUsage(event.totalUsage)
-      runUsage.estimatedCostCents = estimateNicNacRunCostCents(
-        modelPolicy,
-        runUsage,
-      )
-      console.log('[nic-nac] agent finish', {
-        runId,
-        rep: rep.email,
-        conversationId,
-        totalUsage: event.totalUsage,
-      })
-    },
-  })
-  const tools = configuredAgent.catalog.tools
-  const toolIntents = configuredAgent.catalog.allowedIntents
-  const requestedToolIntents = configuredAgent.catalog.requestedIntents
-  const activeToolNames = configuredAgent.catalog.toolNames
-  const toolPolicySource = configuredAgent.catalog.source
-  console.info('[nic-nac] agent capability catalog', {
+    toolIntents,
+  )
+  const activeToolNames = Object.keys(tools)
+  console.info('[nic-nac] tool routing', {
     runId,
     conversationId,
     product: productContext.product,
     surface: productContext.surface,
     requestedIntents: requestedToolIntents,
     intents: toolIntents,
-    blockedIntents: configuredAgent.catalog.blockedIntents,
-    blockedTools: configuredAgent.catalog.blockedToolNames,
+    blockedIntents: toolPolicy.blockedIntents,
     toolCount: activeToolNames.length,
     tools: activeToolNames,
-    toolChoice: configuredAgent.agent.toolChoice,
-    maxSteps: configuredAgent.agent.maxSteps,
+    requireToolCall,
   })
 
   const modelContext = selectMessagesForModel(messages)
@@ -868,6 +950,17 @@ export async function POST(request: Request) {
   }
 
   const modelMessages = await convertToModelMessages(modelContext.messages)
+  const systemPrompt = buildNicNacSystemPrompt({
+    intents: toolIntents,
+    activeToolNames,
+    repDisplayName: rep.display_name,
+    mode,
+    workflowPromptState: renderActiveWorkflowPromptStates(activeWorkflowContexts),
+    productContext,
+    blockedToolIntents: toolPolicy.blockedIntents,
+    memoryContextPrompt: assembledContext.promptText,
+  })
+  let runUsage: NicNacRunUsage | undefined
   let streamErrorMessage: string | undefined
   let emptyOutputRecovered = false
   const executedToolNames: string[] = []
@@ -923,15 +1016,91 @@ export async function POST(request: Request) {
       })
       currentlyVisible = true
 
-      const result = await configuredAgent.agent.stream({
+      const result = streamText({
+        model: getNicNacLanguageModel(modelPolicy),
+        system: systemPrompt,
         messages: modelMessages,
+        tools,
+        prepareStep: ({ steps }) => ({
+          toolChoice: chooseNicNacToolChoiceForStep({
+            requireToolCall,
+            stepsLength: steps.length,
+            activeToolNames,
+            latestToolIntents,
+            routedToolIntents,
+            activeTradeBoardWorkflow,
+            activeTradeWorkflow: tradeWorkflowContext.sessionAfter
+              ? {
+                  status: tradeWorkflowContext.sessionAfter.status,
+                  workflowType: tradeWorkflowContext.sessionAfter.workflowType,
+                  phase: tradeWorkflowContext.sessionAfter.phase,
+                  intent: tradeWorkflowContext.sessionAfter.intent,
+                  missingFields: tradeWorkflowContext.sessionAfter.missingFields,
+                  blockers: tradeWorkflowContext.sessionAfter.blockers,
+                }
+              : null,
+            activeCalendarWorkflow: calendarWorkflowContext.sessionAfter
+              ? {
+                  status: calendarWorkflowContext.sessionAfter.status,
+                  phase: calendarWorkflowContext.sessionAfter.phase,
+                  intent: calendarWorkflowContext.sessionAfter.intent,
+                  missing: calendarWorkflowContext.sessionAfter.missingFields,
+                }
+              : null,
+            latestUserText,
+            previousAssistantText,
+          }),
+        }),
+        stopWhen: stepCountIs(5),
+        providerOptions: getNicNacProviderOptions(modelPolicy),
         abortSignal: request.signal,
+        experimental_onToolCallStart: () => {
+          activeToolCalls += 1
+          toolEverFired = true
+          if (activeToolCalls === 1) {
+            // 0 → 1 transition. Re-emit confirm every cycle so a hide-then-
+            // tool sequence (e.g. preamble flicker, or tool→text→tool) brings
+            // the rabbit back.
+            writer.write({
+              type: 'data-thinking',
+              data: { phase: 'confirm', messageId: assistantMessageId },
+              transient: true,
+            })
+            currentlyVisible = true
+          }
+        },
+        experimental_onToolCallFinish: () => {
+          activeToolCalls = Math.max(0, activeToolCalls - 1)
+        },
+        onError: async (err) => {
+          streamErrorMessage = extractStreamErrorMessage(err)
+          console.error('[nic-nac] streamText error:', err)
+          await logIncident({
+            errorType: 'streamtext_error',
+            repId,
+            conversationId,
+            severity: 'error',
+            details: { runId, message: streamErrorMessage },
+          })
+        },
+        onFinish: (event) => {
+          runUsage = normalizeRunUsage(event.totalUsage)
+          runUsage.estimatedCostCents = estimateNicNacRunCostCents(
+            modelPolicy,
+            runUsage,
+          )
+          console.log('[nic-nac] streamText finish', {
+            runId,
+            rep: rep.email,
+            conversationId,
+            totalUsage: event.totalUsage,
+          })
+        },
       })
 
       // Inspect chunks before forwarding so we can hide on first visible
       // non-whitespace text. sendStart:false because we already emitted start.
       // try/finally guarantees a terminal hide even if iteration throws.
-      const activeToolCallIds = new Set<string>()
       try {
         for await (const chunk of result.toUIMessageStream({ sendStart: false })) {
           if (chunk.type === 'finish') {
@@ -943,23 +1112,8 @@ export async function POST(request: Request) {
           }
           if (chunk.type === 'tool-input-available') {
             toolNamesByCallId.set(chunk.toolCallId, chunk.toolName)
-            if (!activeToolCallIds.has(chunk.toolCallId)) {
-              activeToolCallIds.add(chunk.toolCallId)
-              activeToolCalls = activeToolCallIds.size
-              toolEverFired = true
-              if (activeToolCalls === 1) {
-                writer.write({
-                  type: 'data-thinking',
-                  data: { phase: 'confirm', messageId: assistantMessageId },
-                  transient: true,
-                })
-                currentlyVisible = true
-              }
-            }
           }
           if (chunk.type === 'tool-output-available') {
-            activeToolCallIds.delete(chunk.toolCallId)
-            activeToolCalls = activeToolCallIds.size
             const toolName = toolNamesByCallId.get(chunk.toolCallId)
             if (toolName) {
               executedToolNames.push(toolName)
@@ -986,14 +1140,6 @@ export async function POST(request: Request) {
                 getNicNacMandatoryToolFollowUpText(toolName, chunk.output) ??
                 mandatoryToolFollowUpText
             }
-          }
-          if (
-            chunk.type === 'tool-output-error' ||
-            chunk.type === 'tool-output-denied' ||
-            chunk.type === 'tool-approval-request'
-          ) {
-            activeToolCallIds.delete(chunk.toolCallId)
-            activeToolCalls = activeToolCallIds.size
           }
           if (
             toolFailureRecoveryText &&
@@ -1052,17 +1198,6 @@ export async function POST(request: Request) {
           writer.write({ type: 'text-end', id: fallbackTextId })
         }
         if (pendingFinishChunk) writer.write(pendingFinishChunk)
-      } catch (err) {
-        streamErrorMessage = extractStreamErrorMessage(err)
-        console.error('[nic-nac] agent stream error:', err)
-        await logIncident({
-          errorType: 'agent_stream_error',
-          repId,
-          conversationId,
-          severity: 'error',
-          details: { runId, message: streamErrorMessage },
-        })
-        throw err
       } finally {
         emitHide('finish')
       }

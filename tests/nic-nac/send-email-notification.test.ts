@@ -336,6 +336,7 @@ describe('send_email_notification', () => {
       'restore_listing',
       'save_required_setup_answer',
       'search_jewelry_database',
+      'search_work_knowledge',
       'send_email_notification',
       'send_sms_notification',
       'set_notification_preferences',

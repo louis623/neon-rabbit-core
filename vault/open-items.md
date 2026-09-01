@@ -554,14 +554,19 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Nic-Nac reliability
 
-- [ ] **Implement the approved slice of the Nic-Nac agent-harness rebuild** —
-  detailed plan:
-  `docs/superpowers/plans/2026-09-01-nic-nac-agent-harness-rebuild.md`.
-  Start only after Louis authorizes the exact implementation phase. Recommended
-  first slice is the baseline/safety ledger, tool-contract hardening, and a
-  local default-off `ToolLoopAgent` harness. Do not treat plan approval as
-  authorization for paid model replays, production cohort enablement, the
-  scheduled canary, or real-customer testing.
+- [x] **Implement the approved slice of the Nic-Nac agent-harness rebuild** —
+  completed September 1. The default-off `ToolLoopAgent` harness, complete
+  permission-scoped catalog, concise employee guide, safety ledger, grounded
+  work knowledge, Calendar supersession, legacy rollback route, and exact
+  cohort/kill-switch controls are implemented. Deterministic evidence is in
+  `docs/sparkle-suite/testing/2026-09-01-nic-nac-agent-harness-evidence.md`.
+- [ ] **Authorize and run the guarded Nic-Nac agent acceptance cohort** — set
+  one exact synthetic reviewer identity only after Louis authorizes the
+  cohort, approve a numeric paid-request cap separately, replay the Calendar
+  read-to-add failure and cross-tool switches on the live customer domain,
+  assert visible answer quality and intended tool use, verify no unintended
+  data changes, and prove the legacy kill switch. Do not use Louis's
+  personal/admin account, a real customer, or the restricted Support operator.
 - [ ] **Run the final released Calendar-read replay after a new exact paid-request authorization** — commit `898f69ef` is live and locally verified. The prior four-request production replay exhausted its approved cap while exposing the final copy-scope issue. If Louis authorizes another exact four-request cap, use only the isolated synthetic reviewer and replay `right now`, `this week`, `next live`, and `tonight`; require only `list_my_shows`, natural scoped answers, and an unchanged before/after calendar. Do not use Louis's demo/personal account, the restricted Support operator, or any customer account.
 - [ ] **Add a scheduled, isolated Nic-Nac cross-workflow canary** — run a
   disposable reviewer conversation through a Dance Floor intake followed by an

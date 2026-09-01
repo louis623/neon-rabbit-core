@@ -22,7 +22,11 @@ describe('Nic-Nac mission guard route wiring', () => {
     expect(missionScopeCallIndex).toBeGreaterThan(-1)
     expect(missionScopeCallIndex).toBeLessThan(routeBody.indexOf('loadSuiteRepMemoryCards({'))
     expect(missionScopeCallIndex).toBeLessThan(routeBody.indexOf('getOrCreateTradeBoardIntakeContext({'))
-    expect(missionScopeCallIndex).toBeLessThan(routeBody.indexOf('buildToolsForIntents('))
-    expect(missionScopeCallIndex).toBeLessThan(routeBody.indexOf('streamText({'))
+    expect(missionScopeCallIndex).toBeLessThan(
+      routeBody.indexOf('createConfiguredNicNacAgent({'),
+    )
+    expect(missionScopeCallIndex).toBeLessThan(
+      routeBody.indexOf('configuredAgent.agent.stream({'),
+    )
   })
 })

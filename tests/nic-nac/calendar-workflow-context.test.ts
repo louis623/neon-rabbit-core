@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   getOrCreateCalendarWorkflowContext,
   inferCalendarIntent,
+  resolveCalendarIntentForTurn,
 } from '@/lib/nic-nac/workflows/calendar-workflow-context'
 
 const baseRow = {
@@ -80,6 +81,90 @@ describe('calendar workflow context', () => {
         },
       ] as never),
     ).toBe('list_shows')
+  })
+
+  it('lets an explicit add request replace an old Calendar read intent', () => {
+    expect(
+      resolveCalendarIntentForTurn({
+        existingIntent: 'list_shows',
+        messages: [
+          {
+            id: 'msg-2',
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text: 'Cool. Add a show tonight at 7 p.m. Eastern on TikTok.',
+              },
+            ],
+          },
+        ] as never,
+      }),
+    ).toBe('add_show')
+  })
+
+  it('continues the existing write intent for a short clarification answer', () => {
+    expect(
+      resolveCalendarIntentForTurn({
+        existingIntent: 'add_show',
+        messages: [
+          {
+            id: 'msg-2',
+            role: 'user',
+            parts: [{ type: 'text', text: 'TikTok.' }],
+          },
+        ] as never,
+      }),
+    ).toBe('add_show')
+  })
+
+  it('does not persist a Calendar read as an active workflow', async () => {
+    const { supabase, chain } = makeSupabase(null)
+
+    const context = await getOrCreateCalendarWorkflowContext({
+      supabase: supabase as never,
+      repId: 'rep-1',
+      conversationId: baseRow.conversation_id,
+      latestUserMessageId: 'msg-read',
+      mode: 'workspace',
+      nowIso: '2026-07-03T00:30:00.000Z',
+      messages: [
+        {
+          id: 'msg-read',
+          role: 'user',
+          parts: [{ type: 'text', text: 'Do I have any shows tonight?' }],
+        },
+      ],
+    })
+
+    expect(chain.insert).not.toHaveBeenCalled()
+    expect(context.sessionAfter).toBeNull()
+    expect(context.activeWorkflow).toBeNull()
+  })
+
+  it('pauses an existing Calendar mutation during a read without overwriting it', async () => {
+    const { supabase, chain } = makeSupabase(baseRow)
+
+    const context = await getOrCreateCalendarWorkflowContext({
+      supabase: supabase as never,
+      repId: 'rep-1',
+      conversationId: baseRow.conversation_id,
+      latestUserMessageId: 'msg-read',
+      mode: 'workspace',
+      nowIso: '2026-07-03T00:30:00.000Z',
+      messages: [
+        {
+          id: 'msg-read',
+          role: 'user',
+          parts: [{ type: 'text', text: 'First, what is on my calendar?' }],
+        },
+      ],
+    })
+
+    expect(chain.update).not.toHaveBeenCalled()
+    expect(context.sessionAfter?.intent).toBe('add_show')
+    expect(context.activeWorkflow).toBeNull()
+    expect(context.workflowPromptState).toBe('')
   })
 
   it('turns an existing active calendar workflow into retained calendar tools', async () => {

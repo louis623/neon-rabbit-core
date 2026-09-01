@@ -5760,3 +5760,40 @@ Lessons retained:
   turns. An explicit new request must always get a fresh tool-selection decision.
 - Tool-switch reliability must be tested as a multi-turn conversation with one
   conversation ID. Separate one-turn prompts do not prove the requested behavior.
+
+---
+
+# September 1, 2026 - Nic-Nac agent-harness implementation
+
+- Implemented the approved `ToolLoopAgent` harness while keeping Sparkle
+  Suite's authentication, tenant policy, schemas, approvals, auditing,
+  persistence, telemetry, UI streaming, and deterministic recovery in charge
+  of business truth and safety.
+- Replaced phrase-selected top-level tool packs and forced first tools with the
+  full permission-scoped Workspace capability catalog. The model now chooses
+  among allowed tools on every step and can chain up to six steps by default.
+- Added the concise Nic-Nac employee guide, a complete 53-tool safety ledger,
+  explicit approvals for outbound SMS/email, grounded/versioned work knowledge,
+  generic current/paused task semantics, and Calendar workflow supersession.
+- Preserved the prior route as a rollback path. Production is default-off when
+  rollout variables are unset; exact rep/email cohorts are supported, and an
+  explicit false setting is the kill switch. No cohort was enabled.
+- Verified the exact Calendar read-to-add failure and cross-tool switching in
+  three consecutive 12-test replays. The final candidate also passed 32 focused
+  harness/safety/knowledge tests, 1,271 Nic-Nac tests with one existing skip,
+  the 226-test standard suite, provider-free zero-paid-call smoke, lint, diff
+  checks, and the full production build.
+- The current bundled in-app-browser runtime was loaded and preflighted, but it
+  returned no claimable user or controlled tabs. No browser state was changed
+  and no UI claim was made.
+- No paid model call, personal/admin or customer testing, billing/Stripe,
+  messaging, DNS/domain/alias, customer-domain mapping, Live Queue extension,
+  or scheduled canary action occurred.
+
+**Lessons learned:**
+- Reliability comes from giving the model the allowed capabilities and keeping
+  enforcement at the tool boundary, not from expanding a phrase router.
+- A rollback-safe rollout gate and a complete side-effect ledger are required
+  before an agent can safely receive a broad tool catalog.
+- Deterministic mocked tool-loop tests prove orchestration and safety; live
+  answer quality still needs a separately capped model-backed reviewer replay.

@@ -65,6 +65,7 @@ import { setShowReminderOverrideTool } from './set-show-reminder-override'
 import { customerAudienceTool } from './get-customer-audience'
 import { manageCustomerContactTool } from './manage-customer-contact'
 import { getHelpResourcesTool } from './get-help-resources'
+import { searchWorkKnowledgeTool } from './search-work-knowledge'
 import { submitSupportReportTool } from './submit-support-report'
 import { getRequiredSetupStateTool } from './get-required-setup-state'
 import { ensureLiveQueueSyncCodeTool } from './ensure-live-queue-sync-code'
@@ -124,6 +125,7 @@ const REGISTRY: ToolDefinition[] = [
   customerAudienceTool,
   manageCustomerContactTool,
   getHelpResourcesTool,
+  searchWorkKnowledgeTool,
   submitSupportReportTool,
   getRequiredSetupStateTool,
   ensureLiveQueueSyncCodeTool,
@@ -131,6 +133,21 @@ const REGISTRY: ToolDefinition[] = [
   requestRequiredSetupSupportTool,
   unlockRequiredSetupTool,
 ]
+
+/**
+ * Read-only registry metadata for capability and safety audits.
+ *
+ * Keep the definitions themselves private so callers cannot bypass the normal
+ * wrapper stack. The array intentionally preserves registry order and
+ * duplicates: the safety audit must be able to detect an accidental duplicate
+ * instead of having a Map or object silently hide it.
+ */
+export function listRegisteredNicNacToolMetadata(): Array<{
+  name: string
+  readOnly: boolean
+}> {
+  return REGISTRY.map(({ name, readOnly }) => ({ name, readOnly }))
+}
 
 export type NicNacToolIntent =
   | 'memory'
@@ -213,7 +230,11 @@ const TOOL_PACKS: Record<NicNacToolIntent, string[]> = {
     'set_notification_preferences',
     'set_show_reminder_override',
   ],
-  resources: ['get_help_resources', 'submit_support_report'],
+  resources: [
+    'get_help_resources',
+    'search_work_knowledge',
+    'submit_support_report',
+  ],
   required_setup: [
     'get_required_setup_state',
     'ensure_live_queue_sync_code',

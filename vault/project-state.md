@@ -2690,3 +2690,27 @@ Verification passed:
   final deployment, so a post-deploy model replay remains explicit-approval
   gated. No personal/admin, Support-operator, customer, billing, messaging,
   DNS, or calendar mutation was used.
+
+### September 1, 2026 Nic-Nac agent-harness rebuild
+
+- The approved local rebuild is complete. Nic-Nac now has a Vercel AI SDK
+  `ToolLoopAgent` harness with model-selected `auto` tool choice, a complete
+  permission-scoped capability catalog, a concise employee guide, multi-step
+  execution, and a six-step default/eight-step hard ceiling.
+- Existing workflows preserve transaction facts only. They no longer retain or
+  force the next conversational tool, and Calendar reads no longer remain
+  active after their answer. The exact Calendar read-to-add failure and
+  Calendar/Dance Floor/site/guidance switches pass in one conversation.
+- All 53 registered tools have an enforced safety-ledger entry. SMS and email
+  sends require approval; disclosed Nic-Nac Support remains blocked from owner,
+  billing, Stripe/payment, authentication/entitlement, DNS/domain, and
+  customer-domain authority.
+- Production is default-off behind exact rep/email cohort variables and keeps
+  the complete legacy route as an immediate rollback path. No cohort, paid
+  model replay, customer account, billing, DNS, message, or scheduled canary
+  was used or enabled during implementation.
+- Deterministic verification passed three consecutive 12-test critical
+  replays, the 1,271-test Nic-Nac suite (one existing skip), the 226-test
+  repository suite, provider-free harness smoke, changed-file lint, diff
+  checks, and the production build. Evidence is in
+  `docs/sparkle-suite/testing/2026-09-01-nic-nac-agent-harness-evidence.md`.

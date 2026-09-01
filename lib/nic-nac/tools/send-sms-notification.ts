@@ -35,6 +35,7 @@ export function makeSendSmsNotificationTool(_ctx?: {
     description:
       'Send a one-off SMS notification to a single customer phone number. This is for direct texts, not subscriber blasts or show reminders.',
     inputSchema,
+    needsApproval: true,
     execute: async (input) => {
       try {
         return await sendSmsNotification(_ctx.repId, {

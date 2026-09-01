@@ -92,6 +92,7 @@ describe('Nic-Nac tool routing', () => {
     expect(intents).toEqual(['resources'])
     expect(listToolNamesForIntents(intents)).toEqual([
       'get_help_resources',
+      'search_work_knowledge',
       'submit_support_report',
     ])
   })
@@ -152,6 +153,7 @@ describe('Nic-Nac tool routing', () => {
     expect(intents).toEqual(['resources'])
     expect(listToolNamesForIntents(intents)).toEqual([
       'get_help_resources',
+      'search_work_knowledge',
       'submit_support_report',
     ])
   })
@@ -168,6 +170,7 @@ describe('Nic-Nac tool routing', () => {
     expect(intents).toEqual(['resources'])
     expect(listToolNamesForIntents(intents)).toEqual([
       'get_help_resources',
+      'search_work_knowledge',
       'submit_support_report',
     ])
   })

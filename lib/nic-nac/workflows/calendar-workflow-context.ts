@@ -91,7 +91,21 @@ export function inferCalendarIntent(messages: UIMessage[]): CalendarWorkflowInte
 }
 
 function shouldStartCalendarWorkflow(messages: UIMessage[]) {
-  return getToolIntentsForMessages(messages).includes('calendar')
+  // Reads are complete, one-turn requests. Persisting them as an active
+  // workflow lets a harmless lookup become a sticky intent that can capture a
+  // later write request. Only mutation/clarification work needs durable state.
+  return (
+    getToolIntentsForMessages(messages).includes('calendar') &&
+    inferCalendarIntent(messages) !== 'list_shows'
+  )
+}
+
+export function resolveCalendarIntentForTurn(args: {
+  existingIntent: CalendarWorkflowIntent
+  messages: UIMessage[]
+}): CalendarWorkflowIntent {
+  const latestIntent = inferCalendarIntent(args.messages)
+  return latestIntent === 'unknown' ? args.existingIntent : latestIntent
 }
 
 function renderCalendarWorkflowPromptState(
@@ -138,13 +152,16 @@ async function ingestCalendarWorkflowTurn(
   },
 ): Promise<CalendarWorkflowSessionState> {
   const latestUserText = getMessageText(getLatestUserMessage(args.messages))
-  const intent =
-    args.session.intent === 'unknown'
-      ? inferCalendarIntent(args.messages)
-      : args.session.intent
+  const intent = resolveCalendarIntentForTurn({
+    existingIntent: args.session.intent,
+    messages: args.messages,
+  })
+  const changedIntent =
+    args.session.intent !== 'unknown' && intent !== args.session.intent
+  const priorKnownFields = changedIntent ? {} : args.session.knownFields
   const knownFields = latestUserText
-    ? mergeCalendarKnownFieldsFromText(args.session.knownFields, latestUserText)
-    : args.session.knownFields
+    ? mergeCalendarKnownFieldsFromText(priorKnownFields, latestUserText)
+    : priorKnownFields
   const readiness = computeCalendarWorkflowReadiness({
     intent,
     knownFields,
@@ -182,6 +199,23 @@ export async function getOrCreateCalendarWorkflowContext(args: {
       conversationId: args.conversationId,
       nowIso: args.nowIso,
     })
+    const latestIntent = inferCalendarIntent(args.messages)
+    if (latestIntent === 'list_shows') {
+      // A Calendar lookup can temporarily interrupt a mutation, but it must
+      // neither overwrite that mutation's collected facts nor create a new
+      // active read workflow. The agent can call list_my_shows from the normal
+      // permission-scoped catalog and the pending mutation remains resumable.
+      return existing
+        ? {
+            sessionBefore: existing,
+            sessionAfter: existing,
+            activeWorkflow: null,
+            workflowIntents: [],
+            toolPolicySource: 'latest_turn_intent',
+            workflowPromptState: '',
+          }
+        : emptyCalendarWorkflowContext('latest_turn_intent')
+    }
     const shouldStart = existing !== null || shouldStartCalendarWorkflow(args.messages)
     if (!shouldStart) {
       return emptyCalendarWorkflowContext('latest_turn_intent')
