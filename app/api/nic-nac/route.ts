@@ -1126,11 +1126,15 @@ export async function POST(request: Request) {
                   stage: failure.stage,
                 })
                 toolFailureRecoveryText =
-                  getNicNacToolOnlyRecoveryText(toolName, chunk.output) ??
+                  getNicNacToolOnlyRecoveryText(toolName, chunk.output, {
+                    latestUserText,
+                  }) ??
                   NIC_NAC_EMPTY_RESPONSE_FALLBACK
               }
               toolOnlyRecoveryText =
-                getNicNacToolOnlyRecoveryText(toolName, chunk.output) ??
+                getNicNacToolOnlyRecoveryText(toolName, chunk.output, {
+                  latestUserText,
+                }) ??
                 toolOnlyRecoveryText
               mandatoryToolFollowUpText =
                 getNicNacMandatoryToolFollowUpText(toolName, chunk.output) ??

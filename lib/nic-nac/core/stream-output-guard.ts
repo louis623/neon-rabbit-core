@@ -183,22 +183,198 @@ function summarizeTradeHistory(record: ToolOutputRecord) {
   )
 }
 
-function summarizeShows(record: ToolOutputRecord) {
+type ToolRecoveryContext = {
+  latestUserText?: string
+  now?: Date
+}
+
+function summarizeShows(record: ToolOutputRecord, context: ToolRecoveryContext = {}) {
   const events = readRecords(record, 'events')
   const count = readNumber(record, 'count') ?? events.length
-  if (count === 0) return 'You don’t have any matching shows on your Calendar right now.'
+  const query = context.latestUserText?.replace(/\s+/g, ' ').trim() ?? ''
+  const now = context.now ?? new Date()
+  if (count === 0) return summarizeEmptyCalendarRead(query)
+
+  const chronological = [...events].sort(
+    (left, right) => readEventTime(left) - readEventTime(right),
+  )
+  const nextEvent = chronological.find((event) => readEventTime(event) >= now.getTime())
+
+  if (/\bnext\s+(?:show|live|event)\b/i.test(query) && nextEvent) {
+    return summarizeNextShow(nextEvent)
+  }
+
+  if (/\bright now\b|\bcurrently\b/i.test(query)) {
+    const activeEvent = chronological.find((event) => eventIsActive(event, now))
+    if (activeEvent) {
+      return `Yes — ${compactLabel(activeEvent.title, 'your show')} is happening right now on ${compactLabel(activeEvent.platform, 'your scheduled platform')}.`
+    }
+    return nextEvent
+      ? `You don’t have a show happening right now. ${summarizeNextShow(nextEvent)}`
+      : 'You don’t have a show happening right now, and there isn’t another scheduled show coming up.'
+  }
+
+  const dateScope = calendarDateScope(query)
+  if (dateScope) {
+    const timeZone = readEventTimeZone(chronological[0])
+    const scopedEvents = chronological.filter((event) =>
+      eventFallsInDateScope(event, now, timeZone, dateScope),
+    )
+    if (dateScope === 'tonight') {
+      if (scopedEvents.length === 0) {
+        return nextEvent
+          ? `No — you don’t have a show tonight. ${summarizeNextShow(nextEvent)}`
+          : 'No — you don’t have a show tonight or another show scheduled yet.'
+      }
+      if (scopedEvents.length === 1) {
+        const event = scopedEvents[0]
+        return `Yes — you have ${compactLabel(event.title, 'a show')} tonight at ${formatCalendarEventClockTime(event.eventTime, event.timeZone)} on ${compactLabel(event.platform, 'your scheduled platform')}.`
+      }
+    }
+
+    const label = calendarDateScopeLabel(dateScope)
+    if (scopedEvents.length === 0) {
+      return nextEvent
+        ? `You don’t have a show ${label}. ${summarizeNextShow(nextEvent)}`
+        : `You don’t have a show ${label} or another show scheduled yet.`
+    }
+    return summarizeRows(
+      `You have ${scopedEvents.length} ${scopedEvents.length === 1 ? 'show' : 'shows'} ${label}.`,
+      scopedEvents,
+      summarizeShowRow,
+    )
+  }
 
   return summarizeRows(
     `You have ${count} matching ${count === 1 ? 'show' : 'shows'} on your Calendar.`,
     events,
-    (event, index) => {
-      const title = compactLabel(event.title, 'Untitled show')
-      const when = formatCalendarEventTime(event.eventTime, event.timeZone)
-      const platform = compactLabel(event.platform, 'platform unavailable')
-      const status = compactLabel(event.status, 'status unavailable')
-      return `${index + 1}. ${title} — ${when} on ${platform} (${status}).`
-    },
+    summarizeShowRow,
   )
+}
+
+function summarizeShowRow(event: ToolOutputRecord, index: number) {
+  const title = compactLabel(event.title, 'Untitled show')
+  const when = formatCalendarEventTime(event.eventTime, event.timeZone)
+  const platform = compactLabel(event.platform, 'platform unavailable')
+  const status = compactLabel(event.status, 'status unavailable')
+  return `${index + 1}. ${title} — ${when} on ${platform} (${status}).`
+}
+
+function summarizeNextShow(event: ToolOutputRecord) {
+  return `Your next live is ${compactLabel(event.title, 'an untitled show')} — ${formatCalendarEventTime(event.eventTime, event.timeZone)} on ${compactLabel(event.platform, 'your scheduled platform')}.`
+}
+
+function readEventTime(event: ToolOutputRecord) {
+  return typeof event.eventTime === 'string' ? Date.parse(event.eventTime) : Number.NaN
+}
+
+function readEventTimeZone(event: ToolOutputRecord) {
+  return typeof event.timeZone === 'string' && event.timeZone.trim()
+    ? event.timeZone
+    : 'UTC'
+}
+
+function eventIsActive(event: ToolOutputRecord, now: Date) {
+  const startsAt = readEventTime(event)
+  if (!Number.isFinite(startsAt)) return false
+  const durationMinutes =
+    typeof event.durationMinutes === 'number' && event.durationMinutes > 0
+      ? event.durationMinutes
+      : 120
+  return startsAt <= now.getTime() && now.getTime() < startsAt + durationMinutes * 60_000
+}
+
+type CalendarDateScope =
+  | 'today'
+  | 'tonight'
+  | 'tomorrow'
+  | 'this_week'
+  | 'next_week'
+  | 'this_month'
+
+function calendarDateScope(query: string): CalendarDateScope | null {
+  if (/\btonight\b/i.test(query)) return 'tonight'
+  if (/\btomorrow\b/i.test(query)) return 'tomorrow'
+  if (/\bnext week\b/i.test(query)) return 'next_week'
+  if (/\bthis week\b/i.test(query)) return 'this_week'
+  if (/\bthis month\b/i.test(query)) return 'this_month'
+  if (/\btoday\b/i.test(query)) return 'today'
+  return null
+}
+
+function calendarDateScopeLabel(scope: CalendarDateScope) {
+  return scope === 'this_week'
+    ? 'this week'
+    : scope === 'next_week'
+      ? 'next week'
+      : scope === 'this_month'
+        ? 'this month'
+        : scope
+}
+
+function summarizeEmptyCalendarRead(query: string) {
+  if (/\bnext\s+(?:show|live|event)\b/i.test(query)) {
+    return 'You don’t have another live scheduled yet.'
+  }
+  if (/\bright now\b|\bcurrently\b/i.test(query)) {
+    return 'You don’t have a show happening right now, and there isn’t another scheduled show coming up.'
+  }
+  const scope = calendarDateScope(query)
+  if (scope === 'tonight') return 'No — you don’t have a show tonight.'
+  if (scope) return `You don’t have a show ${calendarDateScopeLabel(scope)}.`
+  return 'You don’t have any matching shows on your Calendar right now.'
+}
+
+function eventFallsInDateScope(
+  event: ToolOutputRecord,
+  now: Date,
+  fallbackTimeZone: string,
+  scope: CalendarDateScope,
+) {
+  const eventTime = readEventTime(event)
+  if (!Number.isFinite(eventTime)) return false
+  const timeZone = readEventTimeZone(event) || fallbackTimeZone
+  const eventDate = localCalendarDateKey(new Date(eventTime), timeZone)
+  const today = localCalendarDateKey(now, timeZone)
+  if (scope === 'today' || scope === 'tonight') return eventDate === today
+  if (scope === 'tomorrow') return eventDate === addCalendarDays(today, 1)
+  if (scope === 'this_month') return eventDate.slice(0, 7) === today.slice(0, 7)
+
+  const weekday = localWeekdayIndex(now, timeZone)
+  const weekStart = addCalendarDays(today, -weekday)
+  const weekEnd = addCalendarDays(weekStart, 6)
+  if (scope === 'next_week') {
+    const nextWeekStart = addCalendarDays(weekStart, 7)
+    const nextWeekEnd = addCalendarDays(nextWeekStart, 6)
+    return eventDate >= nextWeekStart && eventDate <= nextWeekEnd
+  }
+  return eventDate >= weekStart && eventDate <= weekEnd
+}
+
+function localCalendarDateKey(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date)
+  const value = (type: 'year' | 'month' | 'day') =>
+    parts.find((part) => part.type === type)?.value ?? '00'
+  return `${value('year')}-${value('month')}-${value('day')}`
+}
+
+function localWeekdayIndex(date: Date, timeZone: string) {
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    weekday: 'short',
+  }).format(date)
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(weekday)
+}
+
+function addCalendarDays(dateKey: string, days: number) {
+  const [year, month, day] = dateKey.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day + days))
+  return date.toISOString().slice(0, 10)
 }
 
 function formatCalendarEventTime(eventTime: unknown, timeZone: unknown) {
@@ -218,6 +394,23 @@ function formatCalendarEventTime(eventTime: unknown, timeZone: unknown) {
     }).format(parsed)
   } catch {
     return compactLabel(eventTime, 'time unavailable')
+  }
+}
+
+function formatCalendarEventClockTime(eventTime: unknown, timeZone: unknown) {
+  if (typeof eventTime !== 'string') return 'the scheduled time'
+  const parsed = new Date(eventTime)
+  if (Number.isNaN(parsed.getTime())) return compactLabel(eventTime, 'the scheduled time')
+
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: typeof timeZone === 'string' && timeZone.trim() ? timeZone : 'UTC',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    }).format(parsed)
+  } catch {
+    return compactLabel(eventTime, 'the scheduled time')
   }
 }
 
@@ -255,6 +448,7 @@ function toolFailureRecoveryText(failure: NicNacToolFailure): string {
 export function getNicNacToolOnlyRecoveryText(
   toolName: string,
   output: unknown,
+  context: ToolRecoveryContext = {},
 ): string | null {
   const record = asRecord(output)
   const failure = getNicNacToolFailure(toolName, output)
@@ -298,7 +492,7 @@ export function getNicNacToolOnlyRecoveryText(
   if (toolName === 'get_trade_swap_cleanup') return summarizeSwapCleanup(record)
   if (toolName === 'search_jewelry_database') return summarizeCatalogSearch(record)
   if (toolName === 'get_trade_history') return summarizeTradeHistory(record)
-  if (toolName === 'list_my_shows') return summarizeShows(record)
+  if (toolName === 'list_my_shows') return summarizeShows(record, context)
 
   return null
 }

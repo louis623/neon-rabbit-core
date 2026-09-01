@@ -112,6 +112,138 @@ describe('Nic-Nac stream output guard', () => {
     )
   })
 
+  it('answers common calendar date scopes naturally from the same read-only tool output', () => {
+    const output = {
+      count: 2,
+      events: [
+        {
+          title: 'Reviewer Smoke Friday Sparkles',
+          eventTime: '2026-09-01T23:30:00.000Z',
+          timeZone: 'America/New_York',
+          durationMinutes: 60,
+          platform: 'TikTok',
+          status: 'scheduled',
+        },
+        {
+          title: 'Reviewer Smoke Friday Sparkles',
+          eventTime: '2026-09-08T23:30:00.000Z',
+          timeZone: 'America/New_York',
+          durationMinutes: 60,
+          platform: 'TikTok',
+          status: 'scheduled',
+        },
+      ],
+    }
+    const now = new Date('2026-09-01T15:00:00.000Z')
+
+    expect(
+      getNicNacToolOnlyRecoveryText('list_my_shows', output, {
+        latestUserText: 'Hey Nic-Nac, do I have anything on my calendar right now?',
+        now,
+      }),
+    ).toBe(
+      'You don’t have a show happening right now. Your next live is Reviewer Smoke Friday Sparkles — Tuesday, September 1 at 7:30 PM EDT on TikTok.',
+    )
+    expect(
+      getNicNacToolOnlyRecoveryText('list_my_shows', output, {
+        latestUserText: "What's on my schedule this week?",
+        now,
+      }),
+    ).toBe(
+      'You have 1 show this week.\n' +
+        '1. Reviewer Smoke Friday Sparkles — Tuesday, September 1 at 7:30 PM EDT on TikTok (scheduled).',
+    )
+    expect(
+      getNicNacToolOnlyRecoveryText('list_my_shows', output, {
+        latestUserText: 'When is my next live?',
+        now,
+      }),
+    ).toBe(
+      'Your next live is Reviewer Smoke Friday Sparkles — Tuesday, September 1 at 7:30 PM EDT on TikTok.',
+    )
+    expect(
+      getNicNacToolOnlyRecoveryText('list_my_shows', output, {
+        latestUserText: 'Do I have a show tonight?',
+        now,
+      }),
+    ).toBe(
+      'Yes — you have Reviewer Smoke Friday Sparkles tonight at 7:30 PM EDT on TikTok.',
+    )
+  })
+
+  it('recognizes a show that is actively happening right now', () => {
+    expect(
+      getNicNacToolOnlyRecoveryText(
+        'list_my_shows',
+        {
+          count: 1,
+          events: [
+            {
+              title: 'Coffee and Fizz',
+              eventTime: '2026-09-01T23:30:00.000Z',
+              timeZone: 'America/New_York',
+              durationMinutes: 60,
+              platform: 'Facebook Live',
+              status: 'scheduled',
+            },
+          ],
+        },
+        {
+          latestUserText: 'Do I have anything on my calendar right now?',
+          now: new Date('2026-09-01T23:45:00.000Z'),
+        },
+      ),
+    ).toBe('Yes — Coffee and Fizz is happening right now on Facebook Live.')
+  })
+
+  it('keeps empty and broader date-scoped calendar answers direct', () => {
+    const now = new Date('2026-09-01T15:00:00.000Z')
+    expect(
+      getNicNacToolOnlyRecoveryText('list_my_shows', { events: [] }, {
+        latestUserText: 'When is my next live?',
+        now,
+      }),
+    ).toBe('You don’t have another live scheduled yet.')
+    expect(
+      getNicNacToolOnlyRecoveryText('list_my_shows', { events: [] }, {
+        latestUserText: 'Do I have a show tonight?',
+        now,
+      }),
+    ).toBe('No — you don’t have a show tonight.')
+
+    const output = {
+      count: 2,
+      events: [
+        {
+          title: 'Next Week Live',
+          eventTime: '2026-09-08T23:30:00.000Z',
+          timeZone: 'America/New_York',
+          platform: 'TikTok',
+          status: 'scheduled',
+        },
+        {
+          title: 'Next Month Live',
+          eventTime: '2026-10-06T23:30:00.000Z',
+          timeZone: 'America/New_York',
+          platform: 'TikTok',
+          status: 'scheduled',
+        },
+      ],
+    }
+    expect(
+      getNicNacToolOnlyRecoveryText('list_my_shows', output, {
+        latestUserText: "What's on my schedule next week?",
+        now,
+      }),
+    ).toContain('You have 1 show next week.')
+    expect(
+      getNicNacToolOnlyRecoveryText('list_my_shows', output, {
+        latestUserText: "What's on my calendar this month?",
+        now,
+      }),
+    ).toContain('You have 1 show this month.')
+  })
+
   it('renders deterministic customer-visible summaries for every Trade read workflow', () => {
     expect(
       getNicNacToolOnlyRecoveryText('list_my_trade_board', {
