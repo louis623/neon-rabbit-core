@@ -4,6 +4,27 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## September 1, 2026 - Control Center Task List priorities and requested work queue
+
+- Added the four-level durable priority model (Urgent, High, Medium, Low) to
+  the Control Center Task List. New and promoted tasks can select a priority;
+  every task card can change it later; open work can be filtered by priority
+  and recent update date and is ordered by priority then most recent update.
+- Applied migration `20260901130000_ss_task_list_priorities.sql`, committed
+  and pushed `ac34ed20` (`feat: add Control Center task priorities`), and
+  manually deployed Vercel production deployment
+  `dpl_6iqYbBit4g6k5GJRq4cy7x9EAh61`. Both required Sparkle Suite domains
+  resolve to that exact Ready deployment.
+- Focused Task List and Control Center tests passed (17 tests), as did
+  selected-file ESLint and the Vercel/local production builds. Live Control
+  Center UI verification confirmed the priority picker, priority/date filters,
+  per-task priority controls, and all five requested private tasks.
+- Creating the entries did not inspect or mutate Kim's Stripe state, send an
+  email, contact Ready AI, change Lindsey's domain/DNS/SSL state, or run a
+  Nic-Nac smoke test. Those are work items recorded in the live Task List.
+
+---
+
 ## September 1, 2026 - Nic-Nac and transparent-support reliability closeout
 
 - Consolidated this session's reliability work. The detailed August 31

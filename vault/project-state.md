@@ -1,5 +1,26 @@
 # Project State
 
+## September 1, 2026 - Control Center Task List priorities released
+
+- The live Control Center Task List now supports durable **Urgent**, **High**,
+  **Medium**, and **Low** priorities. Operators can set a priority when adding
+  or promoting a task, update it later from the task card, filter open tasks by
+  priority and recent update date, and see open work ordered by priority then
+  newest update. Existing tasks safely default to Medium.
+- Released application commit `ac34ed20`, migration `20260901130000`, and
+  Vercel deployment `dpl_6iqYbBit4g6k5GJRq4cy7x9EAh61`. Both
+  `www.yoursparklesuite.com` and `yoursparklesuite.com` resolve to that Ready
+  deployment. Focused Task List tests, selected-file ESLint, and the production
+  build passed.
+- Louis's five requested private Task List entries were created through the
+  released Control Center. They record verification/follow-up work only; no
+  Stripe, customer-domain, email, Ready AI, or Nic-Nac production action was
+  performed in creating the tasks.
+
+**Last updated:** September 1, 2026
+
+---
+
 ## September 1, 2026 - Support access is operator-controlled
 
 - This closes the connected Nic-Nac/support reliability work for the session:
