@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-import { BUG_HUNT_ITEM_TYPES, type BugHuntItemType } from '@/lib/control-center/bug-hunt'
+import { BUG_HUNT_ITEM_TYPES, BUG_HUNT_PRIORITIES, type BugHuntPriority, type BugHuntItemType } from '@/lib/control-center/bug-hunt'
 
 import {
   humanizeCommunicationValue,
@@ -28,6 +28,7 @@ export function PromoteToTaskListDialog({
   const [itemType, setItemType] = useState<BugHuntItemType>(() =>
     defaultTaskType(report.reportType),
   )
+  const [priority, setPriority] = useState<BugHuntPriority>('medium')
   const [owner, setOwner] = useState('')
   const [notes, setNotes] = useState('')
   const [markPlanned, setMarkPlanned] = useState(false)
@@ -82,6 +83,7 @@ export function PromoteToTaskListDialog({
           body: JSON.stringify({
             title,
             itemType,
+            priority,
             owner: owner || undefined,
             notes: notes || undefined,
             status: markPlanned ? 'planned' : undefined,
@@ -176,6 +178,20 @@ export function PromoteToTaskListDialog({
                   {BUG_HUNT_ITEM_TYPES.map((type) => (
                     <option key={type} value={type}>
                       {humanizeCommunicationValue(type)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="grid gap-1 text-sm font-semibold">
+                Priority
+                <select
+                  className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 font-normal"
+                  onChange={(event) => setPriority(event.target.value as BugHuntPriority)}
+                  value={priority}
+                >
+                  {BUG_HUNT_PRIORITIES.map((itemPriority) => (
+                    <option key={itemPriority} value={itemPriority}>
+                      {humanizeCommunicationValue(itemPriority)}
                     </option>
                   ))}
                 </select>

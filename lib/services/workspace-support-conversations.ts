@@ -11,7 +11,7 @@ import type {
   SupportReportType,
   SupportReportUrgency,
 } from '@/lib/services/support-reports'
-import type { BugHuntItemType } from '@/lib/control-center/bug-hunt'
+import type { BugHuntPriority, BugHuntItemType } from '@/lib/control-center/bug-hunt'
 import { assertWorkspaceConversationComposingEnabled } from '@/lib/services/workspace-conversation-feature-flags'
 
 const createSchema = z.object({
@@ -261,6 +261,7 @@ export async function promoteSupportReportToTask(
     reportId: string
     title: string
     itemType: BugHuntItemType
+    priority?: BugHuntPriority
     owner?: string
     notes?: string
     operatorId: string
@@ -271,7 +272,7 @@ export async function promoteSupportReportToTask(
   if (report.error || !report.data || !report.data.workspace_conversation_id) {
     throw new ServiceError({ code: 'SUPPORT_REPORT_NOT_FOUND', message: 'linked support report not found', statusCode: 404 })
   }
-  const existing = await supabase.from('sparkle_suite_bug_hunt_items').select('id, title, details, item_type, status, owner, source, created_at, updated_at, completed_at, source_support_report_id').eq('source_support_report_id', input.reportId).maybeSingle()
+  const existing = await supabase.from('sparkle_suite_bug_hunt_items').select('id, title, details, item_type, status, priority, owner, source, created_at, updated_at, completed_at, source_support_report_id').eq('source_support_report_id', input.reportId).maybeSingle()
   if (existing.error) throw existing.error
   if (existing.data) return { task: existing.data, created: false }
   const title = input.title.trim()
@@ -280,14 +281,15 @@ export async function promoteSupportReportToTask(
     title,
     details: input.notes?.trim() || null,
     item_type: input.itemType,
+    priority: input.priority ?? 'medium',
     status: 'open',
     owner: input.owner?.trim() || null,
     source: `Sparkle Suite Support report ${input.reportId}`,
     source_support_report_id: input.reportId,
-  }).select('id, title, details, item_type, status, owner, source, created_at, updated_at, completed_at, source_support_report_id').single()
+  }).select('id, title, details, item_type, status, priority, owner, source, created_at, updated_at, completed_at, source_support_report_id').single()
   if (inserted.error || !inserted.data) {
     if ((inserted.error as { code?: string } | null)?.code === '23505') {
-      const raced = await supabase.from('sparkle_suite_bug_hunt_items').select('id, title, details, item_type, status, owner, source, created_at, updated_at, completed_at, source_support_report_id').eq('source_support_report_id', input.reportId).single()
+      const raced = await supabase.from('sparkle_suite_bug_hunt_items').select('id, title, details, item_type, status, priority, owner, source, created_at, updated_at, completed_at, source_support_report_id').eq('source_support_report_id', input.reportId).single()
       if (raced.data) return { task: raced.data, created: false }
     }
     throw inserted.error ?? new Error('task promotion returned no row')

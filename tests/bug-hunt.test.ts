@@ -10,12 +10,13 @@ describe('Control Center Task List', () => {
       details: null,
       item_type: 'bug',
       status: 'open',
+      priority: 'high',
       owner: 'Louis',
       source: 'Meeting',
       created_at: '2026-08-09T12:00:00.000Z',
       updated_at: '2026-08-09T12:00:00.000Z',
       completed_at: null,
       source_support_report_id: 'report-1',
-    })).toMatchObject({ itemType: 'bug', status: 'open', details: '', owner: 'Louis', sourceSupportReportId: 'report-1' })
+    })).toMatchObject({ itemType: 'bug', status: 'open', priority: 'high', details: '', owner: 'Louis', sourceSupportReportId: 'report-1' })
   })
 })

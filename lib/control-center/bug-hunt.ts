@@ -4,9 +4,11 @@ type AdminClient = ReturnType<typeof createAdminClient>
 
 export const BUG_HUNT_ITEM_TYPES = ['bug', 'update', 'research', 'content', 'operations'] as const
 export const BUG_HUNT_STATUSES = ['open', 'in_progress', 'blocked', 'complete'] as const
+export const BUG_HUNT_PRIORITIES = ['urgent', 'high', 'medium', 'low'] as const
 
 export type BugHuntItemType = (typeof BUG_HUNT_ITEM_TYPES)[number]
 export type BugHuntStatus = (typeof BUG_HUNT_STATUSES)[number]
+export type BugHuntPriority = (typeof BUG_HUNT_PRIORITIES)[number]
 
 export type BugHuntItem = {
   id: string
@@ -14,6 +16,7 @@ export type BugHuntItem = {
   details: string
   itemType: BugHuntItemType
   status: BugHuntStatus
+  priority: BugHuntPriority
   owner: string
   source: string
   createdAt: string
@@ -28,6 +31,7 @@ type BugHuntRow = {
   details: string | null
   item_type: BugHuntItemType
   status: BugHuntStatus
+  priority: BugHuntPriority
   owner: string | null
   source: string | null
   created_at: string
@@ -36,7 +40,7 @@ type BugHuntRow = {
   source_support_report_id: string | null
 }
 
-export const BUG_HUNT_SELECT = 'id, title, details, item_type, status, owner, source, created_at, updated_at, completed_at, source_support_report_id'
+export const BUG_HUNT_SELECT = 'id, title, details, item_type, status, priority, owner, source, created_at, updated_at, completed_at, source_support_report_id'
 
 export function normalizeBugHuntItem(row: BugHuntRow): BugHuntItem {
   return {
@@ -45,6 +49,7 @@ export function normalizeBugHuntItem(row: BugHuntRow): BugHuntItem {
     details: row.details?.trim() ?? '',
     itemType: row.item_type,
     status: row.status,
+    priority: row.priority,
     owner: row.owner?.trim() ?? '',
     source: row.source?.trim() ?? '',
     createdAt: row.created_at,

@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server'
 
 import {
   BUG_HUNT_ITEM_TYPES,
+  BUG_HUNT_PRIORITIES,
   BUG_HUNT_SELECT,
   BUG_HUNT_STATUSES,
   normalizeBugHuntItem,
   type BugHuntItemType,
+  type BugHuntPriority,
   type BugHuntStatus,
 } from '@/lib/control-center/bug-hunt'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -26,6 +28,10 @@ function isStatus(value: string): value is BugHuntStatus {
   return (BUG_HUNT_STATUSES as readonly string[]).includes(value)
 }
 
+function isPriority(value: string): value is BugHuntPriority {
+  return (BUG_HUNT_PRIORITIES as readonly string[]).includes(value)
+}
+
 function errorResponse(error: unknown) {
   if (error instanceof AuthError) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 })
   if (error instanceof OperatorAuthError) return NextResponse.json({ error: 'forbidden' }, { status: 403 })
@@ -39,14 +45,17 @@ export async function POST(request: Request) {
     const body = (await request.json()) as Record<string, unknown>
     const title = text(body.title, 240)
     const itemType = text(body.itemType, 30)
+    const priority = text(body.priority || 'medium', 30)
     if (!title) return NextResponse.json({ error: 'A task title is required.' }, { status: 400 })
     if (!isItemType(itemType)) return NextResponse.json({ error: 'Choose a valid task type.' }, { status: 400 })
+    if (!isPriority(priority)) return NextResponse.json({ error: 'Choose a valid task priority.' }, { status: 400 })
 
     const { data, error } = await createAdminClient()
       .from('sparkle_suite_bug_hunt_items')
       .insert({
         title,
         item_type: itemType,
+        priority,
         details: text(body.details) || null,
         owner: text(body.owner, 160) || null,
         source: text(body.source, 240) || null,
@@ -70,6 +79,11 @@ export async function PATCH(request: Request) {
     const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if ('details' in body) update.details = text(body.details) || null
     if ('owner' in body) update.owner = text(body.owner, 160) || null
+    if ('priority' in body) {
+      const priority = text(body.priority, 30)
+      if (!isPriority(priority)) return NextResponse.json({ error: 'Choose a valid task priority.' }, { status: 400 })
+      update.priority = priority
+    }
     if ('status' in body) {
       const status = text(body.status, 30)
       if (!isStatus(status)) return NextResponse.json({ error: 'Choose a valid status.' }, { status: 400 })
