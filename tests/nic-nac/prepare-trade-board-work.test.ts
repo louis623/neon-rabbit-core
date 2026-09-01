@@ -27,11 +27,15 @@ interface ToolDef {
   execute: (input: unknown) => Promise<Record<string, unknown>>
 }
 
-function makeTool(activeTradeBoardWorkflow?: TradeBoardIntakeSessionState): ToolDef {
+function makeTool(
+  activeTradeBoardWorkflow?: TradeBoardIntakeSessionState,
+  latestUserHasImage = false,
+): ToolDef {
   return makePrepareTradeBoardWorkTool({
     repId: 'rep-1',
     supabase: { marker: 'rep-client' } as never,
     activeTradeBoardWorkflow,
+    latestUserHasImage,
   }) as unknown as ToolDef
 }
 
@@ -88,6 +92,23 @@ describe('prepare_trade_board_work', () => {
       query: 'untrusted sentence',
       itemNumber: 'RG99999',
       jewelryType: 'RG',
+    })
+
+    expect(searchJewelryDatabaseMock).toHaveBeenCalledWith(
+      { marker: 'admin-client' },
+      'rep-1',
+      { query: 'ER13229', limit: 5 },
+    )
+  })
+
+  it('accepts vision-read label facts only on an image turn when durable facts are empty', async () => {
+    searchJewelryDatabaseMock.mockResolvedValueOnce([])
+
+    await makeTool(activeWorkflow(), true).execute({
+      action: 'add_piece',
+      itemNumber: 'ER13229',
+      designName: 'The Florence Earrings',
+      jewelryType: 'ER',
     })
 
     expect(searchJewelryDatabaseMock).toHaveBeenCalledWith(

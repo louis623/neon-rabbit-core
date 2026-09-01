@@ -4,6 +4,7 @@ import {
   getOrCreateTradeBoardIntakeContext,
   inferDeclaredPhotoRoleFromConversation,
   mergeWorkflowToolIntents,
+  reconcileDeclaredPhotoRoleWithWorkflow,
 } from '@/lib/nic-nac/workflows/trade-board-intake-context'
 import { renderTradeBoardIntakePromptState } from '@/lib/nic-nac/workflows/trade-board-intake-prompt'
 import type { TradeBoardIntakePromptState } from '@/lib/nic-nac/workflows/trade-board-intake-types'
@@ -206,6 +207,48 @@ describe('Dance Floor intake route context', () => {
     ]
 
     expect(inferDeclaredPhotoRoleFromConversation(messages, 0)).toBe('unknown')
+  })
+
+  it('treats the next unlabeled upload as jewelry after a label is already saved', () => {
+    expect(
+      reconcileDeclaredPhotoRoleWithWorkflow({
+        inferredRole: 'label_details',
+        latestUserText: '',
+        photos: [
+          {
+            conversationMessageId: 'label-message',
+            attachmentIndex: 1,
+            declaredRole: 'label_details',
+            visualRole: 'label_or_packaging',
+            roleConfirmed: true,
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: [],
+          },
+        ],
+      }),
+    ).toBe('jewelry_front')
+  })
+
+  it('honors an explicit second label declaration instead of guessing jewelry', () => {
+    expect(
+      reconcileDeclaredPhotoRoleWithWorkflow({
+        inferredRole: 'label_details',
+        latestUserText: 'Here is a replacement label photo.',
+        photos: [
+          {
+            conversationMessageId: 'label-message',
+            attachmentIndex: 1,
+            declaredRole: 'label_details',
+            visualRole: 'label_or_packaging',
+            roleConfirmed: true,
+            quality: 'unknown',
+            qualityIssues: [],
+            notes: [],
+          },
+        ],
+      }),
+    ).toBe('label_details')
   })
 
   it('keeps dance floor intents when workflow intents are active', () => {

@@ -5,9 +5,14 @@ import {
   approveLatestTool,
   findApprovalTarget,
   getMissingRemoveListingSmokeEnv,
+  SEED_REMOVAL_TARGET_QUANTITY,
 } from '@/scripts/smoke-nic-nac-remove-listing'
 
 describe('Nic-Nac remove-listing smoke script helpers', () => {
+  it('keeps one public unit available after seeding a pending request', () => {
+    expect(SEED_REMOVAL_TARGET_QUANTITY).toBe(2)
+  })
+
   it('reports the required live smoke environment', () => {
     expect(getMissingRemoveListingSmokeEnv({})).toEqual([
       'NEXT_PUBLIC_SUPABASE_URL',

@@ -12,6 +12,7 @@ const DEFAULT_APP_URL = 'https://www.yoursparklesuite.com'
 const MAX_HISTORY_WAIT_MS = 75_000
 const HISTORY_POLL_MS = 1_000
 const SMOKE_PREFIX = 'Codex Remove Smoke'
+export const SEED_REMOVAL_TARGET_QUANTITY = 2
 
 type Env = Record<string, string | undefined>
 type Supabase = SupabaseClient
@@ -491,6 +492,10 @@ async function seedRemovalTarget(
       design_id: design.id,
       listing_source: 'catalog',
       status: 'available',
+      // One unit is intentionally reserved by the pending request below. Keep
+      // another unit net-available so the public-before-removal assertion is
+      // testing removal behavior instead of a zero-inventory fixture.
+      quantity_available: SEED_REMOVAL_TARGET_QUANTITY,
       rep_notes: `${SMOKE_PREFIX} listing ${runTag}`,
       trade_preferences: 'Synthetic removal smoke. Item-for-item only.',
       uses_canonical_photo: true,

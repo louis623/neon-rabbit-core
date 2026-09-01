@@ -6,6 +6,7 @@ type CatalogToolPart = {
   state?: string
   output?: {
     results?: Array<Record<string, unknown>>
+    design?: Record<string, unknown>
   }
 }
 
@@ -75,12 +76,16 @@ export function extractKnownFieldsFromCatalogToolOutputs(
     (message) => (message.parts ?? []) as CatalogToolPart[],
   )
   const toolParts = parts
-    .filter((part) => part.type === 'tool-search_jewelry_database')
+    .filter((part) =>
+      ['tool-search_jewelry_database', 'tool-prepare_trade_board_work'].includes(
+        part.type ?? '',
+      ),
+    )
     .filter((part) => part.state === 'output-available')
     .reverse()
 
   for (const part of toolParts) {
-    const result = part.output?.results?.[0]
+    const result = part.output?.design ?? part.output?.results?.[0]
     if (!result) continue
     const known = knownFieldsFromCatalogResult(result)
     if (known.itemNumber && known.designName) return known

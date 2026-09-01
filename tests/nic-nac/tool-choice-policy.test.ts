@@ -141,6 +141,45 @@ describe('Nic-Nac tool choice policy', () => {
     ).toEqual({ type: 'tool', toolName: 'get_trade_requests' })
   })
 
+  it.each([
+    {
+      toolName: 'get_trade_requests',
+      text: 'Open my Dance Floor request inbox and list the pending incoming trade requests.',
+    },
+    {
+      toolName: 'get_fulfillment_queue',
+      text: 'Show my active trade fulfillment queue.',
+    },
+    {
+      toolName: 'get_trade_swap_cleanup',
+      text: 'Show my post-show swap cleanup queue.',
+    },
+    {
+      toolName: 'search_jewelry_database',
+      text: 'Open the jewelry database record for item ER12345.',
+    },
+    {
+      toolName: 'list_my_trade_board',
+      text: 'List everything currently on my Dance Floor.',
+    },
+  ])('pins explicit $toolName reads even when the turn was not marked required', ({ toolName, text }) => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: false,
+        stepsLength: 0,
+        activeToolNames: [
+          'prepare_trade_board_work',
+          'get_trade_requests',
+          'get_fulfillment_queue',
+          'get_trade_swap_cleanup',
+          'search_jewelry_database',
+          'list_my_trade_board',
+        ],
+        latestUserText: text,
+      }),
+    ).toEqual({ type: 'tool', toolName })
+  })
+
   it('does not force a tool after the first model step', () => {
     expect(
       chooseNicNacToolChoiceForStep({

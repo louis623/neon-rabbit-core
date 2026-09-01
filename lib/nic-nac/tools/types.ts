@@ -15,6 +15,7 @@ export type ToolContext = {
   conversationId: string
   runId: string
   latestUserText?: string
+  latestUserHasImage?: boolean
   activeTradeBoardWorkflow?: TradeBoardIntakeSessionState | null
   activeTradeWorkflow?: TradeWorkflowSessionState | null
   activeCalendarWorkflow?: CalendarWorkflowSessionState | null

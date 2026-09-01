@@ -45,19 +45,28 @@ function searchQuery(input: ToolInput) {
 function appOwnedInput(
   input: ToolInput,
   workflow: TradeBoardIntakeSessionState | null | undefined,
+  latestUserHasImage: boolean,
 ): ToolInput {
   if (!workflow || input.action !== 'add_piece') return input
+
+  // Text-only turns must use durable app-owned facts so an unconstrained model
+  // cannot invent an item number or jewelry attributes. On an image turn, the
+  // provider is also the vision reader, so allow it to fill only fields the
+  // durable workflow does not know yet. The resolver's database result is then
+  // persisted back into the workflow on the next turn.
+  const groundedVisionInput = latestUserHasImage ? input : ({} as ToolInput)
 
   return {
     action: input.action,
     catalogMode: workflow.catalogMode,
-    itemNumber: workflow.known.itemNumber,
-    designName: workflow.known.designName,
-    jewelryType: workflow.known.jewelryType,
-    collectionFamily: workflow.known.collectionFamily,
-    material: workflow.known.material,
-    mainStone: workflow.known.mainStone,
-    ringSize: workflow.known.ringSize,
+    itemNumber: workflow.known.itemNumber ?? groundedVisionInput.itemNumber,
+    designName: workflow.known.designName ?? groundedVisionInput.designName,
+    jewelryType: workflow.known.jewelryType ?? groundedVisionInput.jewelryType,
+    collectionFamily:
+      workflow.known.collectionFamily ?? groundedVisionInput.collectionFamily,
+    material: workflow.known.material ?? groundedVisionInput.material,
+    mainStone: workflow.known.mainStone ?? groundedVisionInput.mainStone,
+    ringSize: workflow.known.ringSize ?? groundedVisionInput.ringSize,
   }
 }
 
@@ -130,13 +139,18 @@ export function makePrepareTradeBoardWorkTool(ctx: {
   repId: string
   supabase: SupabaseClient
   activeTradeBoardWorkflow?: TradeBoardIntakeSessionState | null
+  latestUserHasImage?: boolean
 }) {
   return tool({
     description:
       'Read-only resolver for Dance Floor and jewelry database work. Use this first when the rep wants to add, remove, view, facilitate, or correct Dance Floor/jewelry database work. It decides whether the item is an existing catalog design, a new catalog intake, a dancer-management action, or a trade-request workflow before write tools run.',
     inputSchema,
     execute: async (modelInput) => {
-      const input = appOwnedInput(modelInput, ctx.activeTradeBoardWorkflow)
+      const input = appOwnedInput(
+        modelInput,
+        ctx.activeTradeBoardWorkflow,
+        ctx.latestUserHasImage === true,
+      )
       if (input.action === 'remove_piece') {
         const board = await getMyBoard(ctx.supabase, ctx.repId, {
           statusFilter: 'available',
@@ -366,5 +380,6 @@ export const prepareTradeBoardWorkTool: ToolDefinition = {
       repId: ctx.repId,
       supabase: ctx.supabase,
       activeTradeBoardWorkflow: ctx.activeTradeBoardWorkflow,
+      latestUserHasImage: ctx.latestUserHasImage,
     }),
 }

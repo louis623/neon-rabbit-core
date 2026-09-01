@@ -819,6 +819,12 @@ export async function POST(request: Request) {
       conversationId,
       runId,
       latestUserText,
+      latestUserHasImage:
+        latestUserMessage?.parts?.some(
+          (part) =>
+            (part as { type?: string }).type === 'file' &&
+            (part as { mediaType?: string }).mediaType?.startsWith('image/'),
+        ) ?? false,
       activeTradeBoardWorkflow,
       activeTradeWorkflow: tradeWorkflowContext.sessionAfter,
       activeCalendarWorkflow: calendarWorkflowContext.sessionAfter,

@@ -43,7 +43,11 @@ export type NicNacStepToolChoice =
         | 'prepare_calendar_work'
         | 'add_show'
         | 'remove_listing'
+        | 'list_my_trade_board'
+        | 'search_jewelry_database'
         | 'get_trade_requests'
+        | 'get_trade_swap_cleanup'
+        | 'get_fulfillment_queue'
         | 'approve_trade'
         | 'approve_trade_swap'
         | 'reject_trade'
@@ -65,6 +69,36 @@ export function chooseNicNacToolChoiceForStep(args: {
   previousAssistantText?: string
 }): NicNacStepToolChoice {
   if (args.stepsLength > 0) return 'auto'
+  if (
+    args.activeToolNames.includes('get_trade_requests') &&
+    textAsksForTradeRequestInbox(args.latestUserText ?? '')
+  ) {
+    return { type: 'tool', toolName: 'get_trade_requests' }
+  }
+  if (
+    args.activeToolNames.includes('get_fulfillment_queue') &&
+    textAsksForFulfillmentQueue(args.latestUserText ?? '')
+  ) {
+    return { type: 'tool', toolName: 'get_fulfillment_queue' }
+  }
+  if (
+    args.activeToolNames.includes('get_trade_swap_cleanup') &&
+    textAsksForSwapCleanup(args.latestUserText ?? '')
+  ) {
+    return { type: 'tool', toolName: 'get_trade_swap_cleanup' }
+  }
+  if (
+    args.activeToolNames.includes('search_jewelry_database') &&
+    textAsksForCatalogLookup(args.latestUserText ?? '')
+  ) {
+    return { type: 'tool', toolName: 'search_jewelry_database' }
+  }
+  if (
+    args.activeToolNames.includes('list_my_trade_board') &&
+    textAsksForCurrentDanceFloor(args.latestUserText ?? '')
+  ) {
+    return { type: 'tool', toolName: 'list_my_trade_board' }
+  }
   if (!args.requireToolCall) {
     // The Workspace keeps its complete tool catalog available, but a purely
     // conversational turn does not need the provider to evaluate tool calls.
@@ -111,12 +145,6 @@ export function chooseNicNacToolChoiceForStep(args: {
     !args.latestToolIntents.includes('trade_board')
   ) {
     return { type: 'tool', toolName: 'prepare_calendar_work' }
-  }
-  if (
-    args.activeToolNames.includes('get_trade_requests') &&
-    textAsksForTradeRequestInbox(args.latestUserText ?? '')
-  ) {
-    return { type: 'tool', toolName: 'get_trade_requests' }
   }
   if (
     args.activeToolNames.includes('prepare_trade_board_work') &&
@@ -226,6 +254,35 @@ function textAsksForTradeRequestInbox(text: string): boolean {
     /\bpending\b[\s\S]{0,80}\brequests?\b/i.test(text) ||
     /\brequests?\b[\s\S]{0,60}\binbox\b/i.test(text) ||
     /\binbox\b[\s\S]{0,60}\brequests?\b/i.test(text)
+  )
+}
+
+function textAsksForFulfillmentQueue(text: string): boolean {
+  return (
+    /\bfulfillment\s+queue\b/i.test(text) ||
+    /\b(?:active|pending|open)\b[\s\S]{0,50}\bfulfillments?\b/i.test(text) ||
+    /\b(?:what|which|show|list)\b[\s\S]{0,60}\b(?:needs?|need)\b[\s\S]{0,30}\b(?:ship|shipping|complete|fulfill)/i.test(text)
+  )
+}
+
+function textAsksForSwapCleanup(text: string): boolean {
+  return (
+    /\b(?:post[- ]?show\s+)?swap\s+cleanup\s+(?:queue|list|items?)\b/i.test(text) ||
+    /\b(?:show|open|list)\b[\s\S]{0,60}\bswap\s+cleanup\b/i.test(text)
+  )
+}
+
+function textAsksForCatalogLookup(text: string): boolean {
+  return (
+    /\b(?:open|show|find|look\s*up|search|check)\b[\s\S]{0,80}\b(?:jewelry\s+)?(?:database|catalog)\b/i.test(text) ||
+    /\b(?:database|catalog)\b[\s\S]{0,80}\b(?:record|details?|item)\b/i.test(text)
+  )
+}
+
+function textAsksForCurrentDanceFloor(text: string): boolean {
+  return (
+    /\b(?:show|list|open|what(?:'s| is)|which)\b[\s\S]{0,80}\b(?:my|the|current)\b[\s\S]{0,30}\b(?:dance\s*floor|trade\s*board|board)\b/i.test(text) &&
+    !/\b(?:add|put|place|post|remove|take\s+down|restore)\b/i.test(text)
   )
 }
 

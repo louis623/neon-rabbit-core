@@ -51,6 +51,31 @@ export function inferDeclaredPhotoRoleFromConversation(
   return inferRoleFromText(getMessageText(previousAssistant))
 }
 
+export function reconcileDeclaredPhotoRoleWithWorkflow(args: {
+  inferredRole: TradeBoardPhotoDeclaredRole
+  latestUserText: string
+  photos: TradeBoardIntakeSessionState['photos']
+}): TradeBoardPhotoDeclaredRole {
+  const latestUserDeclaredRole = inferRoleFromText(args.latestUserText)
+  if (latestUserDeclaredRole !== 'unknown') return latestUserDeclaredRole
+
+  const alreadyHasLabel = args.photos.some(
+    (photo) => photo.declaredRole === 'label_details',
+  )
+  const alreadyHasJewelryFront = args.photos.some(
+    (photo) => photo.declaredRole === 'jewelry_front',
+  )
+  if (
+    alreadyHasLabel &&
+    !alreadyHasJewelryFront &&
+    (args.inferredRole === 'label_details' || args.inferredRole === 'unknown')
+  ) {
+    return 'jewelry_front'
+  }
+
+  return args.inferredRole
+}
+
 export function mergeWorkflowToolIntents(
   latestIntents: NicNacToolIntent[],
   workflowIntents: NicNacToolIntent[],
@@ -272,10 +297,14 @@ export async function ingestLatestTradeBoardIntakeTurn(
   ) as Array<{ type?: string; mediaType?: string; url?: string }>
 
   for (const [index, filePart] of fileParts.entries()) {
-    const declaredRole = inferDeclaredPhotoRoleFromConversation(
-      args.messages,
-      index,
-    )
+    const declaredRole = reconcileDeclaredPhotoRoleWithWorkflow({
+      inferredRole: inferDeclaredPhotoRoleFromConversation(
+        args.messages,
+        index,
+      ),
+      latestUserText,
+      photos,
+    })
     const visualRole = inferVisualRole(declaredRole)
     const photo = {
       conversationMessageId: args.latestUserMessageId ?? latestUser.id,
