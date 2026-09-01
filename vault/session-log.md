@@ -5670,3 +5670,52 @@ Lessons retained:
 - Pressure testing must cover full transitions—read, selection, approval,
   mutation, public proof, and cleanup—across every workflow family. A single
   happy-path replay is not credible Nic-Nac release evidence.
+
+---
+
+# September 1, 2026 - Nic-Nac Calendar read routing and natural answers
+
+- Confirmed the only approved workspace, `louis623/sparkle-suite` remote,
+  allowlisted `codex/nic-nac-trade-hardening` branch, and starting tip
+  `b83f8c84`; preserved the existing untracked `artifacts/` and `test-results/`.
+- Diagnosed the screenshot response as a routing/recovery defect: the question
+  was recognized as Calendar work, but the forced first tool was
+  `prepare_calendar_work`, whose resolver-only fallback asked for a show and
+  date instead of reading the calendar.
+- Released `7df6569a` with direct read routing to `list_my_shows`, broad
+  read-vs-mutation classification, workflow supersession, and deterministic
+  factual show summaries. Local verification passed all Nic-Nac tests, the
+  repository suite, lint, and the production build.
+- With Louis's exact approval for four paid requests, reset only the synthetic
+  dashboard-unlocked reviewer and replayed the screenshot question plus `this
+  week`, `next live`, and `tonight` variants against the real production API.
+  Every turn used only `list_my_shows`; before/after calendar snapshots were
+  identical. The replay also showed every prompt received the same complete
+  two-show list, so the result was not accepted as naturally scoped.
+- Added latest-question context to the app-owned recovery layer. It now checks
+  active-show duration for `right now`, filters date scopes in the event time
+  zone, answers yes/no for `tonight`, and returns only the first event for
+  `next live`. Empty-calendar replies are scoped as well. The permanent smoke
+  runner has a hard four-request cap, permits no tool except `list_my_shows`,
+  and fails if the calendar changes or later shows leak into narrower answers.
+- Final commit `898f69ef` passed 160 Nic-Nac test files plus one skipped (1,235
+  tests plus one skipped), the 226-test repository suite, selected-file ESLint,
+  diff checks, and the Next.js production build. It was pushed and manually
+  released as Ready deployment `dpl_5NKrYHLyq166UxXy2rzhYhRN5N62`.
+- Both `https://www.yoursparklesuite.com` and
+  `https://yoursparklesuite.com` resolve to that exact deployment. The live
+  `www` root and `/nic-nac` return 200; the apex returns the expected canonical
+  307. No extra paid model requests were made after the approved four were
+  consumed, so final post-deploy behavioral replay awaits a new exact request
+  cap from Louis.
+- The existing restricted Nic-Nac Support browser session was not logged out,
+  repurposed, or used for reviewer work. No personal/admin or customer account,
+  DNS, domain, Vercel alias, Stripe/billing, message, or calendar write was used.
+
+**Lessons learned:**
+- A factual list is still the wrong answer when the question asks for a time
+  scope. Live replay assertions must check answer semantics, not just tool name,
+  non-empty text, and absence of mutations.
+- Deterministic recovery copy needs the user's current question as well as the
+  structured tool result; otherwise safe fallbacks flatten distinct intents
+  into one generic list.

@@ -2662,3 +2662,31 @@ Verification passed:
   Synthetic live workflow fixtures were isolated to the reviewer identity and
   cleaned after each replay; no personal/admin, Kim/customer, billing,
   messaging, checkout, or external-provider mutation was used.
+
+### September 1, 2026 Nic-Nac natural Calendar reads
+
+- The reported Calendar question was correctly classified as a read, but the
+  first-step tool policy forced the write-oriented Calendar preflight. When the
+  model produced no follow-up prose, that preflight's generic clarification
+  became the visible answer.
+- Calendar reads now route directly to the read-only `list_my_shows` tool.
+  App-owned recovery copy uses the latest question to answer `right now`,
+  `today`, `tonight`, `tomorrow`, `this week`, `next week`, `this month`, and
+  `next live` naturally while retaining factual show times and time zones.
+- The first released hardening tip `7df6569a` passed an explicitly approved
+  four-request production replay in the synthetic reviewer workspace. All four
+  turns used only `list_my_shows` and left the seeded calendar unchanged, but
+  the identical two-show fallback for every question exposed the remaining
+  scope/copy defect before closeout.
+- Final application commit `898f69ef` adds the question-aware response layer,
+  stronger scope assertions, and a capped read-only four-prompt smoke runner.
+  It passed 160 Nic-Nac test files plus one skipped (1,235 tests plus one
+  skipped), the repository's 226-test suite, changed-file lint, and the full
+  Next.js production build.
+- Exact tip `898f69ef` is live as Ready Vercel deployment
+  `dpl_5NKrYHLyq166UxXy2rzhYhRN5N62`. Both Suite aliases resolve to it; the
+  `www` root and `/nic-nac` return 200 and the apex preserves its canonical 307
+  redirect. The four approved paid requests were fully consumed before this
+  final deployment, so a post-deploy model replay remains explicit-approval
+  gated. No personal/admin, Support-operator, customer, billing, messaging,
+  DNS, or calendar mutation was used.

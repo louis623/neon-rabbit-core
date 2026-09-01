@@ -554,6 +554,7 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Nic-Nac reliability
 
+- [ ] **Run the final released Calendar-read replay after a new exact paid-request authorization** — commit `898f69ef` is live and locally verified. The prior four-request production replay exhausted its approved cap while exposing the final copy-scope issue. If Louis authorizes another exact four-request cap, use only the isolated synthetic reviewer and replay `right now`, `this week`, `next live`, and `tonight`; require only `list_my_shows`, natural scoped answers, and an unchanged before/after calendar. Do not use Louis's demo/personal account, the restricted Support operator, or any customer account.
 - [ ] **Add a scheduled, isolated Nic-Nac cross-workflow canary** — run a
   disposable reviewer conversation through a Dance Floor intake followed by an
   explicit Calendar request, assert that both replies contain visible
