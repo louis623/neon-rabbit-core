@@ -6,6 +6,7 @@ import {
   shouldUseTradeBoardGuidedStart,
   TRADE_BOARD_GUIDED_START_RESPONSE,
 } from '@/lib/nic-nac/workflows/trade-board-guided-start'
+import { hasTradeBoardIntakeSignal } from '@/lib/nic-nac/workflows/trade-board-intake-context'
 import type { TradeBoardIntakeSessionState } from '@/lib/nic-nac/workflows/trade-board-intake-types'
 
 function workflow(
@@ -44,10 +45,36 @@ describe('Dance Floor deterministic guided start', () => {
     'Help me add a dancer to the Dance Floor.',
     'I want to put a piece on my trade board',
     'Can we list this jewelry on the dance floor?',
+    'Post this jewelry to my Dance Floor.',
   ])('recognizes a generic guided start: %s', (latestUserText) => {
     expect(
       shouldUseTradeBoardGuidedStart({ latestUserText, workflow: workflow() }),
     ).toBe(true)
+  })
+
+  it.each([
+    'Help me add a dancer to the Dance Floor.',
+    'I want to put a piece on my trade board',
+    'Can we list this jewelry on the dance floor?',
+    'Post this jewelry to my Dance Floor.',
+  ])('starts the durable intake workflow before applying the guided response: %s', (text) => {
+    expect(
+      hasTradeBoardIntakeSignal([
+        { id: 'user-1', role: 'user', parts: [{ type: 'text', text }] },
+      ]),
+    ).toBe(true)
+  })
+
+  it.each([
+    'List everything currently on my Dance Floor.',
+    'What is on my trade board?',
+    'Add an item to my Calendar.',
+  ])('does not mistake a read request for a new listing workflow: %s', (text) => {
+    expect(
+      hasTradeBoardIntakeSignal([
+        { id: 'user-1', role: 'user', parts: [{ type: 'text', text }] },
+      ]),
+    ).toBe(false)
   })
 
   it('does not intercept facts, photos, confirmed non-item flow, or another product', () => {

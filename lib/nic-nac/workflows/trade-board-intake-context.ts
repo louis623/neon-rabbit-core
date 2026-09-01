@@ -24,6 +24,7 @@ import {
   updateTradeBoardIntakeSession,
   upsertTradeBoardIntakePhoto,
 } from './trade-board-intake-store'
+import { isExplicitTradeBoardAddRequest } from './trade-board-add-intent'
 
 export function inferDeclaredPhotoRoleFromConversation(
   messages: UIMessage[],
@@ -163,9 +164,7 @@ export function hasTradeBoardIntakeSignal(messages: UIMessage[]): boolean {
 }
 
 function hasExplicitTradeBoardAddSignal(text: string): boolean {
-  return /\badd\b[\s\S]{0,80}\b(dance floor|board|listing|piece|item)\b/i.test(
-    text,
-  )
+  return isExplicitTradeBoardAddRequest(text)
 }
 
 function assistantIsPostCompletionFollowUp(text: string): boolean {
