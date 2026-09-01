@@ -31,6 +31,7 @@ export type NicNacCapabilityCatalog = {
   blockedIntents: NicNacBlockedToolIntent[]
   blockedToolNames: string[]
   operatorRestrictedToolNames: string[]
+  harnessExcludedToolNames: string[]
 }
 
 export type BuildNicNacCapabilityCatalogInput = {
@@ -42,6 +43,13 @@ export type BuildNicNacCapabilityCatalogInput = {
 function unique(values: readonly string[]): string[] {
   return Array.from(new Set(values))
 }
+
+const AGENT_HARNESS_EXCLUDED_TOOL_NAMES = new Set([
+  // The ToolLoopAgent should reason directly across the Calendar read/write
+  // tools. This legacy regex/text resolver remains available to the legacy
+  // route but must not compete with the model inside the new harness.
+  'prepare_calendar_work',
+])
 
 /**
  * Builds the complete capability set for the current product surface.
@@ -64,7 +72,15 @@ export function buildNicNacCapabilityCatalog({
     productContext,
     requestedIntents,
   )
-  const tools = buildToolsForIntents(toolContext, policy.allowedIntents)
+  const allowedTools = buildToolsForIntents(toolContext, policy.allowedIntents)
+  const harnessExcludedToolNames = Object.keys(allowedTools).filter((name) =>
+    AGENT_HARNESS_EXCLUDED_TOOL_NAMES.has(name),
+  )
+  const tools = Object.fromEntries(
+    Object.entries(allowedTools).filter(
+      ([name]) => !AGENT_HARNESS_EXCLUDED_TOOL_NAMES.has(name),
+    ),
+  ) as ToolSet
   const toolNames = Object.keys(tools)
   const toolSafety = toolNames.map((toolName) => {
     const entry = getNicNacToolSafetyEntry(toolName)
@@ -76,7 +92,11 @@ export function buildNicNacCapabilityCatalog({
     return entry
   })
   const operatorRestrictedToolNames = toolContext.operatorSupport
-    ? policy.allowedToolNames.filter((name) => !toolNames.includes(name))
+    ? policy.allowedToolNames.filter(
+        (name) =>
+          !toolNames.includes(name) &&
+          !AGENT_HARNESS_EXCLUDED_TOOL_NAMES.has(name),
+      )
     : []
 
   return {
@@ -96,5 +116,6 @@ export function buildNicNacCapabilityCatalog({
       ...operatorRestrictedToolNames,
     ]),
     operatorRestrictedToolNames,
+    harnessExcludedToolNames,
   }
 }

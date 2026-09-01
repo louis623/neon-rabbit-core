@@ -145,6 +145,16 @@ describe('site recipes Nic-Nac tools', () => {
     })
   })
 
+  it('requires approval for removal but not ordinary recipe edits', () => {
+    const tool = makeManageSiteRecipesTool(makeCtx()) as unknown as ToolDef & {
+      needsApproval: (input: { action: string }) => boolean
+    }
+
+    expect(tool.needsApproval({ action: 'remove' })).toBe(true)
+    expect(tool.needsApproval({ action: 'upsert' })).toBe(false)
+    expect(tool.needsApproval({ action: 'reorder' })).toBe(false)
+  })
+
   it('exposes recipe tools through the site tool pack and system prompt', () => {
     const tools = buildAllTools(makeCtx())
     const siteDefinitions = listToolNamesForIntents(['site'])

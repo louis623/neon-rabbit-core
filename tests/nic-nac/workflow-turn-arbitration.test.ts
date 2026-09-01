@@ -27,6 +27,28 @@ describe('Nic-Nac workflow turn arbitration', () => {
     })
   })
 
+  it('routes a passive reply only to the most recently updated active workflow when context is known', () => {
+    expect(
+      arbitrateNicNacWorkflowTurn(['memory'], {
+        tradeBoard: '2026-09-01T20:00:00.000Z',
+        trade: '2026-09-01T20:05:00.000Z',
+        calendar: '2026-09-01T20:10:00.000Z',
+      }),
+    ).toEqual({
+      tradeBoard: false,
+      trade: false,
+      calendar: true,
+    })
+  })
+
+  it('does not fan out a passive reply when no active workflow exists', () => {
+    expect(arbitrateNicNacWorkflowTurn(['memory'], {})).toEqual({
+      tradeBoard: false,
+      trade: false,
+      calendar: false,
+    })
+  })
+
   it('suspends product workflows for an explicit resource request', () => {
     expect(arbitrateNicNacWorkflowTurn(['resources'])).toEqual({
       tradeBoard: false,

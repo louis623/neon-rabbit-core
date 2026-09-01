@@ -4,6 +4,32 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## September 1, 2026 - Nic-Nac adversarial harness hardening
+
+- Closed the approval-integrity gap by matching every approval response to the
+  exact final canonical server-issued request and resuming the actual agent
+  loop after approval. Removed the manual canned-success continuation and
+  proved old approvals do not replay on later turns.
+- Removed the legacy regex Calendar resolver from the new agent catalog while
+  leaving the default production legacy route unchanged. Retired the unused
+  scripted task reducer and its test-only state machine.
+- Bounded and labeled recoverable workflow facts as untrusted data, made
+  optional continuity reads degrade safely, and stopped passive replies from
+  being ingested into every active workflow.
+- Added conditional approval to recipe/team-member removal and guarded show
+  session replacement with idempotent same-anchor reuse, exact active-session
+  matching, and visible approval. Provider failures before iterator creation
+  now receive the normal failure handling.
+- Verification: 92/92 focused tests; 1,390 Nic-Nac tests with one existing
+  skip across 171 files; 226/226 standard tests; 17/17 critical route tests on
+  three consecutive runs (51/51); provider-free smoke with 53 registered and
+  47 agent tools, zero findings, and zero paid calls; changed-file ESLint;
+  `git diff --check`; and the Next.js production build. No deployment, cohort,
+  paid replay, customer, billing, DNS, domain, alias, or Live Queue change was
+  made.
+
+---
+
 ## September 1, 2026 - Nic-Nac completion audit and task continuity
 
 - Wired durable Calendar, Dance Floor, and trade transaction facts into the

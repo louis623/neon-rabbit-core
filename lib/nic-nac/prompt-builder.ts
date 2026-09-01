@@ -50,7 +50,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
   show_memory: `Current-show memory tools:
 - get_show_session_context, start_show_session, end_show, and record_show_session_event are zero-provider database tools. They write/read show memory and calendar status only.
 - Use get_show_session_context when a live show, current-show, or post-show workflow starts.
-- Use start_show_session when the rep says the show is starting, asks for help during the live, or gives a live queue/calendar anchor. If the rep is clearly live but gives no anchor, ask one short question or use a generated sync code only when the flow needs durable state immediately.
+- Use start_show_session when the rep says the show is starting, asks for help during the live, or gives a live queue/calendar anchor. If the rep is clearly live but gives no anchor, ask one short question or use a generated sync code only when the flow needs durable state immediately. If a different show session is already active, ask whether to keep it or replace it; replacing it requires the tool's approval dialog.
 - Use end_show when the rep says the linked live show is over, done, ended, or completed.
 - Use record_show_session_event for queue snapshots, inventory notes, customer requests, promises, follow-ups, trade notes, and show summaries.
 - Keep current-show memory factual and operational. Do not claim that you sent reminders, updated a live feed, or took provider action unless another real tool result says so.`,
@@ -124,7 +124,7 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - cancel_show_series requires the approval dialog and cancels the selected recurring occurrence plus future scheduled occurrences in that series. Use it only when the rep wants the series stopped going forward.
 - pause_show_series requires the approval dialog and pauses a recurring series through a specific date by cancelling only the occurrences inside that bounded window. Use it for "pause Tuesdays for two weeks" after identifying the eventId and pauseUntil.
 - end_show marks a live show completed after the rep says the show is over.
-- start_show_session marks a linked calendar event live when calendarEventId is provided.
+- start_show_session marks a linked calendar event live when calendarEventId is provided. It reuses the same active anchor and requires visible approval before replacing a different active show session.
 - Do not combine applyToSeries: true with eventTime. Series-wide edits can update title, platform, duration, description, discount codes, featured collections, and timezone only.
 - Calendar times must be timezone-explicit. If the rep gives a local show time, use the rep/event IANA timezone such as America/New_York, America/Chicago, America/Denver, America/Los_Angeles, America/Phoenix, America/Anchorage, or Pacific/Honolulu. If the timezone is missing and you cannot infer it from the rep profile or the rep's own words, ask one short question before scheduling.
 - The rep workspace shows show times in the rep/event timezone. The customer site shows show times in the viewer's local browser timezone.
@@ -138,11 +138,11 @@ const INTENT_PROMPTS: Record<NicNacToolIntent, string> = {
 - When a rep supplies a complete About section, save all supplied parts in one update: the title as aboutHeading, a short byline or location line as aboutSubheading, and the remaining paragraphs as aboutNarrative. Never save only the body when the rep supplied a title or subtitle.
 - If the rep says an About update was incomplete, use update_site_setting again. Use the complete About copy already present in this conversation; do not tell them to paste it into a separate form.
 - list_join_team_roster reads editable Join Team roster cards.
-- manage_join_team_roster adds, updates, removes, hides/shows, or reorders Join Team roster cards, including photos and TikTok/Facebook VIP/Instagram/globe website/YouTube links.
+- manage_join_team_roster adds, updates, hides/shows, or reorders Join Team roster cards directly; removing a member requires the tool's approval dialog.
 - build_site_recipe_draft builds a BlingKitchen Pantry recipe draft from recent chat image uploads. Recipe-card photos are source material for ingredients and steps; display/food photos are the public recipe images. Use 1-based recent chat photo indexes. Do not ask Heather for image URLs.
 - For Heather's recipe flow, she should only need the recipe title, food/display photos, and readable recipe-card photos. Only block unreadable recipe cards or genuinely bad public display photos.
 - After build_site_recipe_draft returns a draft, summarize the recipe details and ask for approval before saving. Save only after approval with manage_site_recipes.
-- manage_site_recipes adds, updates, removes, hides/shows, or reorders BlingKitchen Pantry recipes. Do not save recipe-card source photos as public recipe images.`,
+- manage_site_recipes adds, updates, hides/shows, or reorders BlingKitchen Pantry recipes directly; removing a recipe requires the tool's approval dialog. Do not save recipe-card source photos as public recipe images.`,
 
   notification: `Notification tools:
 - Telnyx campaign C7BAANX is active, but live SMS still requires number assignment and handset smoke proof. If a rep asks to text someone before those proof gates pass, explain that you can draft the text but cannot send it yet.

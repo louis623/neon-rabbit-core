@@ -562,6 +562,14 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   output/retry/time controls, legacy rollback route, and exact cohort/kill-switch
   controls are implemented. Deterministic evidence is in
   `docs/sparkle-suite/testing/2026-09-01-nic-nac-agent-harness-evidence.md`.
+  The adversarial follow-up also removed the legacy regex Calendar resolver
+  from the agent catalog, retired the disconnected scripted task reducer,
+  validated approvals against canonical history, resumed approvals through the
+  real agent loop, bounded optional continuity, prevented passive workflow
+  fan-out, and added approval/exact-session guards to destructive removals and
+  show replacement. Final local proof is 1,390 Nic-Nac tests, 226 standard
+  tests, 51 critical consecutive replays, provider-free smoke, ESLint, diff
+  checks, and the production build.
 - [ ] **Authorize and run the guarded Nic-Nac agent acceptance cohort** — set
   one exact synthetic reviewer identity only after Louis authorizes the
   cohort, approve a numeric paid-request cap separately, replay the Calendar

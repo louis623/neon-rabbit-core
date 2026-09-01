@@ -1,5 +1,32 @@
 # Decision Log
 
+## September 1, 2026 - The agent reasons; deterministic code guards execution
+
+**The new Nic-Nac harness does not expose the legacy regex Calendar resolver.**
+The model receives the real permission-scoped Calendar tools and chooses among
+them from the current conversation. The resolver remains available only to the
+default-off legacy rollback route until that route is deliberately retired.
+
+**Durable workflow state is recoverable data, not a hidden conversational
+state machine.** Keep facts bounded, valid, explicitly untrusted, and resumable;
+do not let old workflow state choose the next tool. Passive replies may flow to
+the most recently active workflow only. The disconnected scripted task reducer
+was removed because test-only state machinery is not runtime evidence.
+
+**Approvals are canonical capabilities, not client assertions.** Accept a
+response only when its message, approval, tool, call, and input exactly match
+the last server-issued request. Resume through the actual agent/tool loop so
+success, failure, and follow-on work remain truthful. Destructive removals and
+replacement of a different active show session require visible approval; show
+replacement also requires an exact active-session guard.
+
+Reason: Nic-Nac needs model-level flexibility at the conversational layer and
+deterministic enforcement at the mutation boundary. Mixing those roles caused
+the sticky, scripted behavior Louis reported and allowed tests to pass without
+proving the live agent path.
+
+---
+
 ## September 1, 2026 - Dedicated support identity and least-privilege custom-domain access
 
 **Nic-Nac Support is a distinct, attributable operator identity, not a shared

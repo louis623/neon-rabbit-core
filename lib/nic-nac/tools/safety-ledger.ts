@@ -127,6 +127,13 @@ const requiredApproval = {
   rationale: 'A visible approval is required before this consequential action executes.',
 } as const
 
+const dynamicApproval = {
+  policy: 'dynamic',
+  review: 'accepted',
+  rationale:
+    'The tool requires visible approval only for its destructive or replacement action; ordinary reversible actions remain direct.',
+} as const
+
 const reviewedDirectRequestNoApproval = {
   policy: 'not_required',
   review: 'accepted',
@@ -297,7 +304,7 @@ export const NIC_NAC_TOOL_SAFETY_LEDGER: Readonly<
     availability: { normalWorkspace: true, requiredSetup: false, operatorSupport: allowedSupport('team.manage', 'team', false) },
   }),
   manage_join_team_roster: defineTool('manage_join_team_roster', {
-    domain: 'team', operation: 'write', approval: reviewedDirectRequestNoApproval,
+    domain: 'team', operation: 'write', approval: dynamicApproval,
     sideEffect: { risk: 'high', kind: 'public_content' },
     availability: { normalWorkspace: true, requiredSetup: false, operatorSupport: allowedSupport('team.manage', 'team', true) },
   }),
@@ -312,7 +319,7 @@ export const NIC_NAC_TOOL_SAFETY_LEDGER: Readonly<
     availability: { normalWorkspace: true, requiredSetup: false, operatorSupport: allowedSupport('site.manage', 'site', false) },
   }),
   manage_site_recipes: defineTool('manage_site_recipes', {
-    domain: 'site_content', operation: 'write', approval: reviewedDirectRequestNoApproval,
+    domain: 'site_content', operation: 'write', approval: dynamicApproval,
     sideEffect: { risk: 'high', kind: 'public_content' },
     availability: { normalWorkspace: true, requiredSetup: false, operatorSupport: allowedSupport('site.manage', 'site', true) },
   }),
@@ -327,7 +334,7 @@ export const NIC_NAC_TOOL_SAFETY_LEDGER: Readonly<
     availability: { normalWorkspace: true, requiredSetup: false, operatorSupport: allowedSupport('workspace.view', 'workspace', false) },
   }),
   start_show_session: defineTool('start_show_session', {
-    domain: 'show_session', operation: 'write', approval: acceptedNoApproval,
+    domain: 'show_session', operation: 'write', approval: dynamicApproval,
     sideEffect: { risk: 'moderate', kind: 'show_session_state' },
     availability: { normalWorkspace: true, requiredSetup: false, operatorSupport: allowedSupport('live_queue.manage', 'live_queue', true) },
   }),

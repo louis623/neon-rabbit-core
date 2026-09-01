@@ -1,6 +1,11 @@
 import { z } from 'zod'
 import { tool } from 'ai'
-import { startNicNacShowSession } from '@/lib/nic-nac/show-sessions'
+import {
+  isSameNicNacShowSessionAnchor,
+  loadActiveNicNacShowSession,
+  NicNacShowSessionConflictError,
+  startNicNacShowSession,
+} from '@/lib/nic-nac/show-sessions'
 import { startShow } from '@/lib/services/calendar'
 import { ServiceError } from '@/lib/services/errors'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
@@ -9,7 +14,16 @@ import type { ToolDefinition } from './types'
 const inputSchema = z.object({
   calendarEventId: z.string().min(1).optional(),
   liveQueueSyncCode: z.string().min(1).optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  metadata: z
+    .record(
+      z.string().min(1).max(64),
+      z.union([z.string().max(500), z.number(), z.boolean(), z.null()]),
+    )
+    .refine((value) => Object.keys(value).length <= 12, {
+      message: 'metadata supports at most 12 fields',
+    })
+    .optional(),
+  replaceActiveSession: z.boolean().default(false),
 })
 
 export function makeStartShowSessionTool(ctx: {
@@ -20,15 +34,46 @@ export function makeStartShowSessionTool(ctx: {
 }) {
   return tool({
     description:
-      "Start or replace the authenticated rep's current live-show session state. " +
-      'Use when the rep says the live show is starting or you need a durable current-show object. ' +
-      'If no calendarEventId or liveQueueSyncCode is available, call this anyway; Nic-Nac will auto-anchor the session to the current conversation.',
+      "Start or reuse the authenticated rep's current live-show session state. " +
+      'Use only when the rep says the live show is starting or explicitly asks for help during the live. ' +
+      'If a different show session is already active, first explain that and call again with replaceActiveSession=true only when the rep wants to replace it; replacement shows a visible approval dialog.',
     inputSchema,
-    execute: async ({ calendarEventId, liveQueueSyncCode, metadata }) => {
+    needsApproval: ({ replaceActiveSession }) => replaceActiveSession === true,
+    execute: async ({
+      calendarEventId,
+      liveQueueSyncCode,
+      metadata,
+      replaceActiveSession,
+    }) => {
+      const shouldReplaceActiveSession = replaceActiveSession === true
       const needsAutoAnchor = !calendarEventId && !liveQueueSyncCode
       const resolvedSyncCode = needsAutoAnchor
         ? `NIC-NAC-AUTO-${ctx.conversationId}`
         : liveQueueSyncCode
+      const requestedAnchor = {
+        calendarEventId,
+        liveQueueSyncCode: resolvedSyncCode,
+      }
+      const activeSession = await loadActiveNicNacShowSession(
+        ctx.supabase,
+        ctx.repId,
+      )
+
+      if (
+        activeSession &&
+        isSameNicNacShowSessionAnchor(activeSession, requestedAnchor)
+      ) {
+        return { ...activeSession, calendarEvent: null, reused: true }
+      }
+
+      if (activeSession && !shouldReplaceActiveSession) {
+        throw new NicNacToolError({
+          code: 'show_session_conflict',
+          userMessage:
+            'A different live-show session is already active. Ask whether the rep wants to keep it or replace it.',
+        })
+      }
+
       let calendarEvent: Awaited<ReturnType<typeof startShow>>['event'] | null = null
       if (calendarEventId) {
         try {
@@ -44,17 +89,32 @@ export function makeStartShowSessionTool(ctx: {
           throw err
         }
       }
-      const session = await startNicNacShowSession(ctx.supabase, {
-        repId: ctx.repId,
-        calendarEventId,
-        liveQueueSyncCode: resolvedSyncCode,
-        metadata: {
-          ...(metadata ?? {}),
-          ...(needsAutoAnchor ? { autoAnchor: true } : {}),
-          conversationId: ctx.conversationId,
-          runId: ctx.runId,
-        },
-      })
+      let session: Awaited<ReturnType<typeof startNicNacShowSession>>
+      try {
+        session = await startNicNacShowSession(ctx.supabase, {
+          repId: ctx.repId,
+          calendarEventId,
+          liveQueueSyncCode: resolvedSyncCode,
+          replaceActiveSession: shouldReplaceActiveSession,
+          expectedActiveSessionId: activeSession?.id,
+          metadata: {
+            ...(metadata ?? {}),
+            ...(needsAutoAnchor ? { autoAnchor: true } : {}),
+            conversationId: ctx.conversationId,
+            runId: ctx.runId,
+          },
+        })
+      } catch (error) {
+        if (error instanceof NicNacShowSessionConflictError) {
+          throw new NicNacToolError({
+            code: 'show_session_conflict',
+            userMessage:
+              'The active live-show session changed before I could start this one. Please check the current show and try again.',
+            cause: error,
+          })
+        }
+        throw error
+      }
       return { ...session, calendarEvent }
     },
   })

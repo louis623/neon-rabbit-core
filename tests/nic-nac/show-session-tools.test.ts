@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const startNicNacShowSessionMock = vi.fn()
+const loadActiveNicNacShowSessionMock = vi.fn()
 const recordNicNacShowSessionEventMock = vi.fn()
 const loadNicNacShowSessionContextMock = vi.fn()
 const startShowMock = vi.fn()
@@ -13,6 +14,8 @@ vi.mock('@/lib/nic-nac/show-sessions', async () => {
     ...actual,
     startNicNacShowSession: (...args: unknown[]) =>
       startNicNacShowSessionMock(...args),
+    loadActiveNicNacShowSession: (...args: unknown[]) =>
+      loadActiveNicNacShowSessionMock(...args),
     recordNicNacShowSessionEvent: (...args: unknown[]) =>
       recordNicNacShowSessionEventMock(...args),
     loadNicNacShowSessionContext: (...args: unknown[]) =>
@@ -50,6 +53,8 @@ function makeCtx() {
 
 beforeEach(() => {
   startNicNacShowSessionMock.mockReset()
+  loadActiveNicNacShowSessionMock.mockReset()
+  loadActiveNicNacShowSessionMock.mockResolvedValue(null)
   recordNicNacShowSessionEventMock.mockReset()
   loadNicNacShowSessionContextMock.mockReset()
   startShowMock.mockReset()
@@ -82,6 +87,8 @@ describe('Nic-Nac show-session tools', () => {
         repId: 'rep-1',
         calendarEventId: 'event-1',
         liveQueueSyncCode: 'SYNC123',
+        replaceActiveSession: false,
+        expectedActiveSessionId: undefined,
         metadata: {
           platform: 'TikTok',
           conversationId: 'conv-1',
@@ -115,6 +122,8 @@ describe('Nic-Nac show-session tools', () => {
         repId: 'rep-1',
         calendarEventId: undefined,
         liveQueueSyncCode: 'NIC-NAC-AUTO-conv-1',
+        replaceActiveSession: false,
+        expectedActiveSessionId: undefined,
         metadata: {
           autoAnchor: true,
           conversationId: 'conv-1',
@@ -194,5 +203,36 @@ describe('Nic-Nac show-session tools', () => {
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('get_show_session_context')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('end_show')
     expect(NIC_NAC_SYSTEM_PROMPT).toContain('record_show_session_event')
+  })
+
+  it('refuses to replace a different active show without rep approval', async () => {
+    loadActiveNicNacShowSessionMock.mockResolvedValueOnce({
+      id: 'session-existing',
+      repId: 'rep-1',
+      calendarEventId: 'event-existing',
+      liveQueueSyncCode: 'SYNC-OLD',
+      status: 'active',
+    })
+    const tool = makeStartShowSessionTool(makeCtx()) as unknown as ToolDef
+
+    await expect(
+      tool.execute({
+        calendarEventId: 'event-new',
+        liveQueueSyncCode: 'SYNC-NEW',
+        replaceActiveSession: false,
+      }),
+    ).rejects.toMatchObject({ code: 'show_session_conflict' })
+
+    expect(startShowMock).not.toHaveBeenCalled()
+    expect(startNicNacShowSessionMock).not.toHaveBeenCalled()
+  })
+
+  it('requires approval only when replacing a different active show', async () => {
+    const tool = makeStartShowSessionTool(makeCtx()) as unknown as ToolDef & {
+      needsApproval: (input: { replaceActiveSession: boolean }) => boolean
+    }
+
+    expect(tool.needsApproval({ replaceActiveSession: false })).toBe(false)
+    expect(tool.needsApproval({ replaceActiveSession: true })).toBe(true)
   })
 })

@@ -1,6 +1,6 @@
 # Nic-Nac Agent Harness Rebuild Plan
 
-**Status:** Local implementation and completion audit are complete and deterministically verified as of September 1, 2026. Production stays default-off behind an exact-cohort rollout gate with the legacy orchestrator preserved. Paid model replays, production cohort enablement, real-customer testing, and the scheduled isolated canary remain separately authorization-gated.
+**Status:** Local implementation and adversarial completion audit are complete and deterministically verified as of September 1, 2026. Production stays default-off behind an exact-cohort rollout gate with the legacy orchestrator preserved. Paid model replays, production cohort enablement, real-customer testing, and the scheduled isolated canary remain separately authorization-gated.
 
 **Goal:** Make Nic-Nac feel like a capable live-show business partner who can understand a rep's current request, choose the right Sparkle Suite tools, switch tasks naturally in the same conversation, ask a short clarification when needed, and complete safe work without being trapped by an earlier workflow.
 
@@ -9,8 +9,10 @@
 ### Completion-audit result
 
 - Phases 0 through 6 are implemented locally behind the production-default-off exact-cohort gate.
-- Phase 7 is complete at the deterministic and recorded-agent-loop layers: the final critical route suite passed 14/14 three consecutive times, and a real `ToolLoopAgent` fixture switched Calendar → Dance Floor → grounded knowledge → Calendar write while keeping the same full safe catalog and `toolChoice: auto` on every model step.
-- Durable Calendar, Dance Floor, and trade transactions now reach the agent as bounded recoverable facts. They never declare the current goal or force a tool, and they are filtered to the exact capabilities of a disclosed Support session before storage is queried.
+- Phase 7 is complete at the deterministic and recorded-agent-loop layers: the final critical route suite passed 17/17 three consecutive times, and a real `ToolLoopAgent` fixture switched Calendar → Dance Floor → grounded knowledge → Calendar write while keeping the same full safe catalog and `toolChoice: auto` on every model step.
+- Durable Calendar, Dance Floor, and trade transactions now reach the agent as bounded, valid, explicitly untrusted recoverable facts. They never declare the current goal or force a tool, they degrade safely when optional reads fail, and they are filtered to the exact capabilities of a disclosed Support session before storage is queried.
+- The new agent catalog excludes the legacy regex Calendar resolver. The model chooses directly among the real Calendar tools; the resolver remains on the preserved legacy route only. The disconnected scripted task reducer was retired.
+- Approval responses must match the exact last canonical server-issued request and resume through the real agent loop. Public-content removal and replacement of a different active show session now use conditional visible approval, and show replacement has an exact active-session guard.
 - Calendar and Dance Floor read/preflight/write descriptions are explicitly non-overlapping, including the exact read-then-add failure class.
 - The harness has bounded steps, output tokens, retries, and total/step/chunk timeouts.
 - The remaining Phase 7 gate is the separately authorized capped live-model replay bank. Phase 8 production cohort acceptance is also pending. This code must not be broadly enabled until both gates pass.

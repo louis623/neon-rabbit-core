@@ -41,6 +41,8 @@ describe('Nic-Nac permission-scoped capability catalog', () => {
     )
     expect(catalog.toolNames).not.toContain('get_required_setup_state')
     expect(catalog.toolNames).not.toContain('unlock_required_setup')
+    expect(catalog.toolNames).not.toContain('prepare_calendar_work')
+    expect(catalog.harnessExcludedToolNames).toEqual(['prepare_calendar_work'])
     expect(catalog.requestedIntents).not.toContain('required_setup')
     expect(catalog.toolSafety).toHaveLength(catalog.toolNames.length)
     expect(catalog.toolSafety).toEqual(
@@ -99,7 +101,6 @@ describe('Nic-Nac permission-scoped capability catalog', () => {
     })
 
     expect(catalog.toolNames).toEqual([
-      'prepare_calendar_work',
       'add_show',
       'list_my_shows',
       'update_show',
@@ -114,6 +115,10 @@ describe('Nic-Nac permission-scoped capability catalog', () => {
     expect(catalog.operatorRestrictedToolNames).toEqual(
       expect.arrayContaining(['end_show', 'add_listing']),
     )
+    expect(catalog.operatorRestrictedToolNames).not.toContain(
+      'prepare_calendar_work',
+    )
+    expect(catalog.harnessExcludedToolNames).toEqual(['prepare_calendar_work'])
   })
 
   it('keeps private Workspace tools off a public surface', () => {

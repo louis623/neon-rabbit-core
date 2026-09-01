@@ -6,6 +6,12 @@ export type NicNacWorkflowTurnArbitration = {
   calendar: boolean
 }
 
+export type NicNacActiveWorkflowTimestamps = {
+  tradeBoard?: string | null
+  trade?: string | null
+  calendar?: string | null
+}
+
 const PASSIVE_CONTINUATION_INTENTS = new Set<NicNacToolIntent>([
   'memory',
   'show_memory',
@@ -25,12 +31,35 @@ function includesAny(
  */
 export function arbitrateNicNacWorkflowTurn(
   latestTurnIntents: readonly NicNacToolIntent[],
+  activeWorkflowTimestamps?: NicNacActiveWorkflowTimestamps,
 ): NicNacWorkflowTurnArbitration {
   const isPassiveContinuation = latestTurnIntents.every((intent) =>
     PASSIVE_CONTINUATION_INTENTS.has(intent),
   )
 
   if (isPassiveContinuation) {
+    if (activeWorkflowTimestamps) {
+      const active = (
+        [
+          ['tradeBoard', activeWorkflowTimestamps.tradeBoard],
+          ['trade', activeWorkflowTimestamps.trade],
+          ['calendar', activeWorkflowTimestamps.calendar],
+        ] as const
+      )
+        .filter((entry): entry is readonly [keyof NicNacWorkflowTurnArbitration, string] =>
+          Boolean(entry[1]),
+        )
+        .sort(
+          (left, right) =>
+            (Date.parse(right[1]) || 0) - (Date.parse(left[1]) || 0),
+        )
+      const selected = active[0]?.[0]
+      return {
+        tradeBoard: selected === 'tradeBoard',
+        trade: selected === 'trade',
+        calendar: selected === 'calendar',
+      }
+    }
     return { tradeBoard: true, trade: true, calendar: true }
   }
 

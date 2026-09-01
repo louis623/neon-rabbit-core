@@ -6,6 +6,7 @@
 
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
+import { isDeepStrictEqual } from 'node:util'
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -145,123 +146,144 @@ function extractStreamErrorMessage(err: unknown): string {
   return String(err)
 }
 
-// Scan messages for HITL approval-responded parts. AI SDK v6 mutates the
-// assistant message parts in place when the user clicks approve/reject.
+// Inspect only the final assistant turn for HITL approval responses. AI SDK v6
+// mutates that assistant message in place when the user clicks approve/reject;
+// older responded parts are conversation history and must not replay on a
+// later ordinary user turn.
 function extractApprovalResponses(
   messages: UIMessage[]
-): Array<{ approvalId: string; approved: boolean; toolName: string }> {
-  const out: Array<{ approvalId: string; approved: boolean; toolName: string }> = []
-  for (const m of messages) {
-    for (const part of m.parts ?? []) {
+): Array<{
+  messageId: string
+  approvalId: string
+  approved: boolean
+  toolName: string
+  toolCallId: string
+  input: unknown
+}> {
+  const out: Array<{
+    messageId: string
+    approvalId: string
+    approved: boolean
+    toolName: string
+    toolCallId: string
+    input: unknown
+  }> = []
+  const message = messages.at(-1)
+  if (message?.role !== 'assistant') return out
+  for (const part of message.parts ?? []) {
       const p = part as unknown as {
         type?: string
         state?: string
         approval?: { id?: string; approved?: boolean }
         toolName?: string
+        toolCallId?: string
+        input?: unknown
       }
-      if (p?.state === 'approval-responded' && p?.approval?.id) {
+      if (
+        p?.state === 'approval-responded' &&
+        p?.approval?.id &&
+        p.toolCallId
+      ) {
         out.push({
+          messageId: message.id,
           approvalId: p.approval.id,
           approved: p.approval.approved ?? false,
           toolName:
             p.toolName ??
             (p.type?.startsWith('tool-') ? p.type.slice('tool-'.length) : 'unknown'),
+          toolCallId: p.toolCallId,
+          input: p.input ?? {},
         })
       }
-    }
   }
   return out
 }
 
-type ApprovalContinuationResult = {
-  handled: boolean
-  updatedParts?: UIMessage['parts']
-  responseText?: string
-  executedToolNames?: string[]
+type CanonicalApprovalRequest = {
+  messageId: string
+  approvalId: string
+  toolName: string
+  toolCallId: string
+  input: unknown
 }
 
-async function executeApprovedToolContinuations(args: {
-  messages: UIMessage[]
-  tools: Record<string, unknown>
-}): Promise<ApprovalContinuationResult> {
-  const last = args.messages.at(-1)
-  if (last?.role !== 'assistant') return { handled: false }
-
-  let handled = false
-  const executedToolNames: string[] = []
-  const responseLines: string[] = []
-  const updatedParts = [...(last.parts ?? [])] as UIMessage['parts']
-
-  for (let index = 0; index < updatedParts.length; index += 1) {
-    const part = updatedParts[index] as UIMessage['parts'][number] & {
+function getCanonicalApprovalRequests(
+  messages: UIMessage[],
+): CanonicalApprovalRequest[] {
+  const lastAssistant = [...messages]
+    .reverse()
+    .find((message) => message.role === 'assistant')
+  if (!lastAssistant) return []
+  const parts = lastAssistant.parts ?? []
+  let lastStepStart = -1
+  for (let index = 0; index < parts.length; index += 1) {
+    if ((parts[index] as { type?: string }).type === 'step-start') {
+      lastStepStart = index
+    }
+  }
+  const requests: CanonicalApprovalRequest[] = []
+  for (let index = lastStepStart + 1; index < parts.length; index += 1) {
+    const part = parts[index] as UIMessage['parts'][number] & {
       type?: string
       state?: string
       toolName?: string
       input?: unknown
-      output?: unknown
       toolCallId?: string
-      approval?: { id?: string; approved?: boolean; reason?: string }
+      approval?: { id?: string }
     }
-    if (part.state !== 'approval-responded' || !part.approval?.id) continue
-
+    if (
+      part.state !== 'approval-requested' ||
+      !part.approval?.id ||
+      !part.toolCallId
+    ) {
+      continue
+    }
     const toolName =
       part.toolName ??
       (part.type?.startsWith('tool-') ? part.type.slice('tool-'.length) : undefined)
-    if (!toolName || !part.toolCallId) continue
-
-    const tool = args.tools[toolName] as {
-      needsApproval?: boolean
-      execute?: (input: unknown) => Promise<unknown>
-    } | undefined
-    if (tool?.needsApproval !== true || typeof tool.execute !== 'function') continue
-
-    handled = true
-    if (part.approval.approved === false) {
-      updatedParts[index] = {
-        ...part,
-        toolName,
-        state: 'output-denied',
-      } as UIMessage['parts'][number]
-      responseLines.push('No problem — I left that unchanged.')
-      continue
-    }
-
-    const output = await tool.execute(part.input ?? {})
-    executedToolNames.push(toolName)
-    updatedParts[index] = {
-      ...part,
+    if (!toolName) continue
+    requests.push({
+      messageId: lastAssistant.id,
+      approvalId: part.approval.id,
       toolName,
-      state: 'output-available',
-      output,
-    } as UIMessage['parts'][number]
-    responseLines.push(formatApprovalContinuationText(toolName, output))
+      toolCallId: part.toolCallId,
+      input: part.input ?? {},
+    })
   }
-
-  if (!handled) return { handled: false }
-  return {
-    handled: true,
-    updatedParts,
-    responseText: responseLines.filter(Boolean).join('\n\n'),
-    executedToolNames,
-  }
+  return requests
 }
 
-function formatApprovalContinuationText(toolName: string, output: unknown): string {
-  const data = output as {
-    event?: { title?: string; status?: string }
-    cancelledCount?: number
+function validateApprovalResponseProvenance(args: {
+  clientMessages: UIMessage[]
+  canonicalMessages: UIMessage[]
+  responses: ReturnType<typeof extractApprovalResponses>
+}): { valid: true } | { valid: false; approvalId?: string } {
+  if (args.responses.length === 0) return { valid: true }
+  const lastClient = args.clientMessages.at(-1)
+  if (lastClient?.role !== 'assistant') return { valid: false }
+  const canonical = new Map(
+    getCanonicalApprovalRequests(args.canonicalMessages).map((request) => [
+      request.approvalId,
+      request,
+    ]),
+  )
+  const seen = new Set<string>()
+  for (const response of args.responses) {
+    const request = canonical.get(response.approvalId)
+    if (
+      seen.has(response.approvalId) ||
+      !request ||
+      response.messageId !== lastClient.id ||
+      response.messageId !== request.messageId ||
+      response.toolName !== request.toolName ||
+      response.toolCallId !== request.toolCallId ||
+      !isDeepStrictEqual(response.input, request.input)
+    ) {
+      return { valid: false, approvalId: response.approvalId }
+    }
+    seen.add(response.approvalId)
   }
-  if (toolName === 'cancel_show') {
-    const title = data.event?.title ? ` ${data.event.title}` : ''
-    return `Done — I cancelled${title}.`
-  }
-  if (toolName === 'cancel_show_series') {
-    const count = typeof data.cancelledCount === 'number' ? data.cancelledCount : undefined
-    return count
-      ? `Done — I cancelled ${count} future show${count === 1 ? '' : 's'} in that series.`
-      : 'Done — I cancelled that recurring show series.'
-  }
-  return 'Done — I made that approved change.'
+  return { valid: true }
 }
 
 async function runLegacyNicNac(request: Request) {
@@ -581,6 +603,20 @@ export async function POST(request: Request) {
 
   // Approval replay protection. UNIQUE(approval_id) is the durable backstop.
   const approvals = extractApprovalResponses(messages)
+  const approvalProvenance = validateApprovalResponseProvenance({
+    clientMessages: messages,
+    canonicalMessages: existingHistory,
+    responses: approvals,
+  })
+  if (!approvalProvenance.valid) {
+    return NextResponse.json(
+      {
+        error: 'approval_not_issued',
+        approvalId: approvalProvenance.approvalId,
+      },
+      { status: 400, headers: responseHeaders },
+    )
+  }
   for (const a of approvals) {
     const { replayed } = supportScope
       ? await recordOperatorSupportApprovalEvent(supabase, supportScope, a)
@@ -660,7 +696,6 @@ export async function POST(request: Request) {
   // choose, retain, remove, or force tools. The permission-scoped agent catalog
   // below is independent of this text classifier, so an old workflow can never
   // capture a new explicit request before the model reasons.
-  const workflowTurn = arbitrateNicNacWorkflowTurn(latestTurnIntents)
   const workflowNowIso = new Date().toISOString()
   const workflowSupabase = createAdminClient()
   const supportCapabilities = supportContext?.session.capabilities
@@ -680,6 +715,11 @@ export async function POST(request: Request) {
     conversationId,
     nowIso: workflowNowIso,
     access: workflowContinuityAccess,
+  })
+  const workflowTurn = arbitrateNicNacWorkflowTurn(latestTurnIntents, {
+    tradeBoard: workflowTaskContinuity.tradeBoardSession?.updatedAt,
+    trade: workflowTaskContinuity.tradeSession?.updatedAt,
+    calendar: workflowTaskContinuity.calendarSession?.updatedAt,
   })
   const tradeBoardWorkflowContext =
     workflowContinuityAccess.tradeBoard && workflowTurn.tradeBoard
@@ -794,7 +834,6 @@ export async function POST(request: Request) {
       })
     },
   })
-  const tools = configuredAgent.catalog.tools
   const toolIntents = configuredAgent.catalog.allowedIntents
   const requestedToolIntents = configuredAgent.catalog.requestedIntents
   const activeToolNames = configuredAgent.catalog.toolNames
@@ -828,90 +867,6 @@ export async function POST(request: Request) {
       droppedMessageCount: modelContext.droppedMessageCount,
       estimatedTokens: modelContext.estimatedTokens,
     })
-  }
-
-  if (isContinuation && approvals.length > 0) {
-    const continuation = await executeApprovedToolContinuations({ messages, tools })
-    if (continuation.handled && continuation.updatedParts) {
-      const textId = randomUUID()
-      const responseText =
-        continuation.responseText?.trim() || 'Done — I made that approved change.'
-      const finalParts = normalizeNicNacAssistantParts([
-        ...continuation.updatedParts,
-        { type: 'text', text: responseText },
-      ] as UIMessage['parts'])
-
-      await checkpointAssistant(supabase, {
-        conversationId,
-        messageId: assistantMessageId,
-        parts: finalParts,
-      })
-      await logNicNacRun({
-        runId,
-        repId,
-        conversationId,
-        model: modelPolicy.modelId,
-        modelPolicy: modelPolicy.key,
-        modelProvider: modelPolicy.provider,
-        reasoningLevel: modelPolicy.reasoning,
-        productContext,
-        status: 'complete',
-        latencyMs: Date.now() - runStartedAt,
-        intents: toolIntents,
-        toolNames: continuation.executedToolNames?.length
-          ? continuation.executedToolNames
-          : activeToolNames,
-        modelContext: {
-          originalMessageCount: messages.length,
-          modelMessageCount: modelContext.messages.length,
-          droppedMessageCount: modelContext.droppedMessageCount,
-          estimatedTokens: modelContext.estimatedTokens,
-          wasCompacted: modelContext.wasCompacted,
-        },
-        contextAssembly: assembledContext.telemetry,
-      })
-
-      const approvedIds = new Set(approvals.map((approval) => approval.approvalId))
-      const stream = createUIMessageStream({
-        originalMessages: messages,
-        generateId: () => assistantMessageId,
-        execute: async ({ writer }) => {
-          writer.write({ type: 'start', messageId: assistantMessageId })
-          for (const part of finalParts) {
-            const toolPart = part as {
-              state?: string
-              output?: unknown
-              toolCallId?: string
-              approval?: { id?: string }
-            }
-            if (!toolPart.toolCallId || !approvedIds.has(toolPart.approval?.id ?? '')) {
-              continue
-            }
-            if (toolPart.state === 'output-available') {
-              writer.write({
-                type: 'tool-output-available',
-                toolCallId: toolPart.toolCallId,
-                output: toolPart.output,
-              })
-            } else if (toolPart.state === 'output-denied') {
-              writer.write({
-                type: 'tool-output-denied',
-                toolCallId: toolPart.toolCallId,
-              })
-            }
-          }
-          writer.write({ type: 'text-start', id: textId })
-          writer.write({ type: 'text-delta', id: textId, delta: responseText })
-          writer.write({ type: 'text-end', id: textId })
-          writer.write({ type: 'finish', finishReason: 'stop' })
-        },
-      })
-
-      return createUIMessageStreamResponse({
-        stream,
-        headers: responseHeaders,
-      })
-    }
   }
 
   const modelMessages = await convertToModelMessages(modelContext.messages)
@@ -970,16 +925,18 @@ export async function POST(request: Request) {
       })
       currentlyVisible = true
 
-      const result = await configuredAgent.agent.stream({
-        messages: modelMessages,
-        abortSignal: request.signal,
-      })
-
       // Inspect chunks before forwarding so we can hide on first visible
       // non-whitespace text. sendStart:false because we already emitted start.
-      // try/finally guarantees a terminal hide even if iteration throws.
+      // The try begins before stream creation so both an initial provider
+      // rejection and a later iterator failure receive the same persistence,
+      // incident, and visible-error treatment. The finally guarantees a
+      // terminal hide in every case.
       const activeToolCallIds = new Set<string>()
       try {
+        const result = await configuredAgent.agent.stream({
+          messages: modelMessages,
+          abortSignal: request.signal,
+        })
         for await (const chunk of result.toUIMessageStream({ sendStart: false })) {
           if (chunk.type === 'finish') {
             pendingFinishChunk = chunk

@@ -1,5 +1,33 @@
 # Project State
 
+## September 1, 2026 - Nic-Nac agent-harness adversarial hardening follow-up
+
+- The default-off harness now validates approval responses against the exact
+  last canonical server-issued request and returns approved work to the real
+  `ToolLoopAgent`; the canned manual “Done” continuation was removed. Tool
+  failures can no longer be mislabeled as success, and older approval parts do
+  not replay on a later user turn.
+- The agent catalog excludes the legacy regex-based Calendar resolver so the
+  model chooses directly among real Calendar tools. The legacy production path
+  retains the resolver unchanged. The disconnected scripted task reducer and
+  its test-only state machine were retired.
+- Recoverable workflow facts are bounded, valid JSON and explicitly untrusted;
+  optional continuity-read failures degrade safely. Passive replies can update
+  only the most recently active workflow rather than all workflows at once.
+- Public recipe/team-member removals now require approval. A show session
+  reuses the same anchor, refuses silent replacement of a different active
+  session, and requires both a visible approval and exact active-session guard
+  for replacement.
+- Final local proof: 1,390 Nic-Nac tests passed with one existing skip across
+  171 files, 226/226 standard tests, 51/51 consecutive critical route replays,
+  92/92 focused tests, provider-free smoke with 53 registered/47 agent tools
+  and zero paid calls, changed-file ESLint, diff checks, and the Next.js
+  production build. Production remains default-off and was not deployed.
+
+**Last updated:** September 1, 2026
+
+---
+
 ## September 1, 2026 - Nic-Nac agent-harness completion audit
 
 - The guarded Nic-Nac rebuild now includes bounded recoverable task continuity:

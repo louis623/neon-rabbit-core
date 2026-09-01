@@ -92,8 +92,9 @@ export function makeManageJoinTeamRosterTool(ctx: {
 }) {
   return tool({
     description:
-      'Add, update, remove, hide/show, or reorder join-team roster cards for the authenticated rep public Join Team page. Supported links include TikTok, Facebook/VIP, Instagram, website/globe, and YouTube.',
+      'Add, update, remove, hide/show, or reorder join-team roster cards for the authenticated rep public Join Team page. Removing a team member requires visible rep approval before it executes. Supported links include TikTok, Facebook/VIP, Instagram, website/globe, and YouTube.',
     inputSchema: manageSchema,
+    needsApproval: (input) => input.action === 'remove',
     execute: async (input) => {
       try {
         if (input.action === 'remove') {

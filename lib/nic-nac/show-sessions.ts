@@ -85,6 +85,8 @@ export interface StartNicNacShowSessionInput {
   liveQueueSyncCode?: string
   startedAt?: Date
   metadata?: Record<string, unknown>
+  replaceActiveSession?: boolean
+  expectedActiveSessionId?: string
 }
 
 export interface RecordNicNacShowSessionEventInput {
@@ -142,24 +144,98 @@ function mapEvent(row: EventRow): NicNacShowSessionEvent {
   }
 }
 
+const SHOW_SESSION_SELECT = [
+  'id',
+  'rep_id',
+  'calendar_event_id',
+  'live_queue_sync_code',
+  'status',
+  'started_at',
+  'ended_at',
+  'summary',
+  'metadata',
+  'created_at',
+  'updated_at',
+].join(', ')
+
+export class NicNacShowSessionConflictError extends Error {
+  readonly activeSession: NicNacShowSession | null
+
+  constructor(activeSession: NicNacShowSession | null) {
+    super(
+      activeSession
+        ? 'A different live-show session is already active.'
+        : 'The active live-show session changed before the replacement could run.',
+    )
+    this.name = 'NicNacShowSessionConflictError'
+    this.activeSession = activeSession
+  }
+}
+
+export function isSameNicNacShowSessionAnchor(
+  session: NicNacShowSession,
+  input: Pick<StartNicNacShowSessionInput, 'calendarEventId' | 'liveQueueSyncCode'>,
+): boolean {
+  return Boolean(
+    (input.calendarEventId && session.calendarEventId === input.calendarEventId) ||
+      (input.liveQueueSyncCode &&
+        session.liveQueueSyncCode === input.liveQueueSyncCode),
+  )
+}
+
+export async function loadActiveNicNacShowSession(
+  supabase: SupabaseClient,
+  repId: string,
+): Promise<NicNacShowSession | null> {
+  const { data, error } = await supabase
+    .from('nic_nac_show_sessions')
+    .select(SHOW_SESSION_SELECT)
+    .eq('rep_id', repId)
+    .eq('status', 'active')
+    .is('ended_at', null)
+    .order('started_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw error
+  return data ? mapSession(data as unknown as SessionRow) : null
+}
+
 export async function startNicNacShowSession(
   supabase: SupabaseClient,
   input: StartNicNacShowSessionInput,
 ): Promise<NicNacShowSession> {
   const startedAt = (input.startedAt ?? new Date()).toISOString()
+  const activeSession = await loadActiveNicNacShowSession(supabase, input.repId)
 
-  const { error: closeError } = await supabase
-    .from('nic_nac_show_sessions')
-    .update({
-      status: 'ended',
-      ended_at: startedAt,
-      updated_at: startedAt,
-    })
-    .eq('rep_id', input.repId)
-    .eq('status', 'active')
-    .is('ended_at', null)
+  if (activeSession && isSameNicNacShowSessionAnchor(activeSession, input)) {
+    return activeSession
+  }
 
-  if (closeError) throw closeError
+  if (
+    (activeSession &&
+      (!input.replaceActiveSession ||
+        input.expectedActiveSessionId !== activeSession.id)) ||
+    (!activeSession && input.expectedActiveSessionId)
+  ) {
+    throw new NicNacShowSessionConflictError(activeSession)
+  }
+
+  if (activeSession) {
+    const { error: closeError } = await supabase
+      .from('nic_nac_show_sessions')
+      .update({
+        status: 'ended',
+        ended_at: startedAt,
+        updated_at: startedAt,
+      })
+      .eq('id', activeSession.id)
+      .eq('rep_id', input.repId)
+      .eq('status', 'active')
+      .is('ended_at', null)
+
+    if (closeError) throw closeError
+  }
 
   const { data, error } = await supabase
     .from('nic_nac_show_sessions')
@@ -171,21 +247,7 @@ export async function startNicNacShowSession(
       started_at: startedAt,
       metadata: input.metadata ?? {},
     })
-    .select(
-      [
-        'id',
-        'rep_id',
-        'calendar_event_id',
-        'live_queue_sync_code',
-        'status',
-        'started_at',
-        'ended_at',
-        'summary',
-        'metadata',
-        'created_at',
-        'updated_at',
-      ].join(', '),
-    )
+    .select(SHOW_SESSION_SELECT)
     .single()
 
   if (error || !data) throw error ?? new Error('show session insert failed')
@@ -290,34 +352,7 @@ export async function loadNicNacShowSessionContext(
   const eventLimit = options.eventLimit ?? 20
   const memoryLimit = options.memoryLimit ?? 10
 
-  const { data: sessionData, error: sessionError } = await supabase
-    .from('nic_nac_show_sessions')
-    .select(
-      [
-        'id',
-        'rep_id',
-        'calendar_event_id',
-        'live_queue_sync_code',
-        'status',
-        'started_at',
-        'ended_at',
-        'summary',
-        'metadata',
-        'created_at',
-        'updated_at',
-      ].join(', '),
-    )
-    .eq('rep_id', repId)
-    .eq('status', 'active')
-    .is('ended_at', null)
-    .order('started_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  if (sessionError) throw sessionError
-  const activeSession = sessionData
-    ? mapSession(sessionData as unknown as SessionRow)
-    : null
+  const activeSession = await loadActiveNicNacShowSession(supabase, repId)
 
   let recentEvents: NicNacShowSessionEvent[] = []
   const liveQueueSnapshot = activeSession

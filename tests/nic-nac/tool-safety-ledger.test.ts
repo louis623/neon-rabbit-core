@@ -90,6 +90,17 @@ describe('Nic-Nac tool safety ledger', () => {
       'set_show_reminder_override',
       'skip_show_occurrence',
     ])
+
+    const dynamicApproval = Object.values(NIC_NAC_TOOL_SAFETY_LEDGER)
+      .filter((entry) => entry.approval.policy === 'dynamic')
+      .map((entry) => entry.name)
+      .sort()
+
+    expect(dynamicApproval).toEqual([
+      'manage_join_team_roster',
+      'manage_site_recipes',
+      'start_show_session',
+    ])
   })
 
   it('keeps setup credential and entitlement tools out of normal and operator-support work', () => {

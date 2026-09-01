@@ -10,10 +10,25 @@ function makeUpdateChain(response: { error: unknown }) {
   const is = vi.fn().mockResolvedValue(response)
   const eqStatus = vi.fn(() => ({ is }))
   const eqRep = vi.fn(() => ({ eq: eqStatus }))
-  const update = vi.fn(() => ({ eq: eqRep }))
+  const eqId = vi.fn(() => ({ eq: eqRep }))
+  const update = vi.fn(() => ({ eq: eqId }))
   return {
     api: { update },
-    spies: { update, eqRep, eqStatus, is },
+    spies: { update, eqId, eqRep, eqStatus, is },
+  }
+}
+
+function makeActiveSessionChain<T>(response: { data: T | null; error: unknown }) {
+  const maybeSingle = vi.fn().mockResolvedValue(response)
+  const limit = vi.fn(() => ({ maybeSingle }))
+  const order = vi.fn(() => ({ limit }))
+  const is = vi.fn(() => ({ order }))
+  const eqStatus = vi.fn(() => ({ is }))
+  const eqRep = vi.fn(() => ({ eq: eqStatus }))
+  const select = vi.fn(() => ({ eq: eqRep }))
+  return {
+    api: { select },
+    spies: { select, eqRep, eqStatus, is, order, limit, maybeSingle },
   }
 }
 
@@ -39,7 +54,88 @@ function makeMaybeSingleChain<T>(response: { data: T | null; error: unknown }) {
 }
 
 describe('Nic-Nac show sessions', () => {
-  it('starts a durable show session after closing any prior active session for the rep', async () => {
+  it('reuses an active session with the same show anchor without writing', async () => {
+    const activeChain = makeActiveSessionChain({
+      data: {
+        id: 'session-existing',
+        rep_id: 'rep-1',
+        calendar_event_id: 'event-1',
+        live_queue_sync_code: 'SYNC123',
+        status: 'active' as const,
+        started_at: '2026-05-17T19:00:00.000Z',
+        ended_at: null,
+        summary: null,
+        metadata: {},
+        created_at: '2026-05-17T19:00:00.000Z',
+        updated_at: '2026-05-17T19:00:00.000Z',
+      },
+      error: null,
+    })
+    const from = vi.fn().mockReturnValueOnce(activeChain.api)
+
+    const result = await startNicNacShowSession(
+      { from } as never,
+      {
+        repId: 'rep-1',
+        calendarEventId: 'event-1',
+        liveQueueSyncCode: 'SYNC123',
+      },
+    )
+
+    expect(result.id).toBe('session-existing')
+    expect(from).toHaveBeenCalledTimes(1)
+  })
+
+  it('refuses to close a different active session without an approved replacement', async () => {
+    const activeChain = makeActiveSessionChain({
+      data: {
+        id: 'session-existing',
+        rep_id: 'rep-1',
+        calendar_event_id: 'event-old',
+        live_queue_sync_code: 'SYNC-OLD',
+        status: 'active' as const,
+        started_at: '2026-05-17T19:00:00.000Z',
+        ended_at: null,
+        summary: null,
+        metadata: {},
+        created_at: '2026-05-17T19:00:00.000Z',
+        updated_at: '2026-05-17T19:00:00.000Z',
+      },
+      error: null,
+    })
+    const from = vi.fn().mockReturnValueOnce(activeChain.api)
+
+    await expect(
+      startNicNacShowSession(
+        { from } as never,
+        {
+          repId: 'rep-1',
+          calendarEventId: 'event-new',
+          liveQueueSyncCode: 'SYNC-NEW',
+        },
+      ),
+    ).rejects.toMatchObject({ name: 'NicNacShowSessionConflictError' })
+
+    expect(from).toHaveBeenCalledTimes(1)
+  })
+
+  it('starts a replacement session only for the expected active session', async () => {
+    const activeChain = makeActiveSessionChain({
+      data: {
+        id: 'session-old',
+        rep_id: 'rep-1',
+        calendar_event_id: 'event-old',
+        live_queue_sync_code: 'SYNC-OLD',
+        status: 'active' as const,
+        started_at: '2026-05-17T19:00:00.000Z',
+        ended_at: null,
+        summary: null,
+        metadata: {},
+        created_at: '2026-05-17T19:00:00.000Z',
+        updated_at: '2026-05-17T19:00:00.000Z',
+      },
+      error: null,
+    })
     const closeChain = makeUpdateChain({ error: null })
     const insertChain = makeInsertChain({
       data: {
@@ -59,6 +155,7 @@ describe('Nic-Nac show sessions', () => {
     })
     const from = vi
       .fn()
+      .mockReturnValueOnce(activeChain.api)
       .mockReturnValueOnce(closeChain.api)
       .mockReturnValueOnce(insertChain.api)
 
@@ -70,20 +167,25 @@ describe('Nic-Nac show sessions', () => {
         liveQueueSyncCode: 'SYNC123',
         startedAt: new Date('2026-05-17T20:00:00.000Z'),
         metadata: { platform: 'TikTok' },
+        replaceActiveSession: true,
+        expectedActiveSessionId: 'session-old',
       },
     )
 
     expect(from).toHaveBeenNthCalledWith(1, 'nic_nac_show_sessions')
+    expect(activeChain.spies.eqRep).toHaveBeenCalledWith('rep_id', 'rep-1')
+    expect(from).toHaveBeenNthCalledWith(2, 'nic_nac_show_sessions')
     expect(closeChain.spies.update).toHaveBeenCalledWith({
       status: 'ended',
       ended_at: '2026-05-17T20:00:00.000Z',
       updated_at: '2026-05-17T20:00:00.000Z',
     })
+    expect(closeChain.spies.eqId).toHaveBeenCalledWith('id', 'session-old')
     expect(closeChain.spies.eqRep).toHaveBeenCalledWith('rep_id', 'rep-1')
     expect(closeChain.spies.eqStatus).toHaveBeenCalledWith('status', 'active')
     expect(closeChain.spies.is).toHaveBeenCalledWith('ended_at', null)
 
-    expect(from).toHaveBeenNthCalledWith(2, 'nic_nac_show_sessions')
+    expect(from).toHaveBeenNthCalledWith(3, 'nic_nac_show_sessions')
     expect(insertChain.spies.insert).toHaveBeenCalledWith({
       rep_id: 'rep-1',
       calendar_event_id: 'event-1',

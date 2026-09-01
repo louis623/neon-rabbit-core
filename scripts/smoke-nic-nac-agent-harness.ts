@@ -56,12 +56,14 @@ const catalog = buildNicNacCapabilityCatalog({
   productContext,
   toolContext,
 })
-assert.equal(catalog.toolNames.length, 48)
+assert.equal(catalog.toolNames.length, 47)
 assert.equal(catalog.toolSafety.length, catalog.toolNames.length)
 assert.ok(catalog.toolNames.includes('list_my_shows'))
 assert.ok(catalog.toolNames.includes('add_show'))
 assert.ok(catalog.toolNames.includes('list_my_trade_board'))
 assert.ok(catalog.toolNames.includes('search_work_knowledge'))
+assert.ok(!catalog.toolNames.includes('prepare_calendar_work'))
+assert.deepEqual(catalog.harnessExcludedToolNames, ['prepare_calendar_work'])
 assert.ok(!catalog.toolNames.includes('unlock_required_setup'))
 
 const instructions = buildNicNacAgentInstructions({
@@ -104,6 +106,7 @@ console.log(
       paidModelCalls: 0,
       registeredTools: Object.keys(builtTools).length,
       workspaceAgentTools: catalog.toolNames.length,
+      harnessExcludedTools: catalog.harnessExcludedToolNames,
       approvalLedgerFindings: safetyFindings.length,
       productionDefaultOff: true,
       exactCohortEnablement: true,

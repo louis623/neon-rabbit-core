@@ -382,4 +382,97 @@ describe('Nic-Nac ToolLoopAgent factory', () => {
       )
     }
   })
+
+  it('executes a canonically approved tool and returns to model reasoning for follow-up work', async () => {
+    const executions: string[] = []
+    const model = new MockLanguageModelV3({
+      doStream: async () => ({
+        stream: simulateReadableStream({
+          chunks: [
+            { type: 'text-start', id: 'approved-final' },
+            {
+              type: 'text-delta',
+              id: 'approved-final',
+              delta:
+                'The show is cancelled. I also checked the remaining task and it is ready.',
+            },
+            { type: 'text-end', id: 'approved-final' },
+            {
+              type: 'finish',
+              finishReason: { unified: 'stop', raw: undefined },
+              usage: ZERO_USAGE,
+            },
+          ],
+        }),
+      }),
+    })
+    const agent = createNicNacAgent({
+      model,
+      instructions: 'Continue reasoning after approved tools execute.',
+      tools: {
+        cancel_show: tool({
+          description: 'Cancel the selected show after approval.',
+          inputSchema: z.object({ eventId: z.string() }),
+          needsApproval: true,
+          execute: async ({ eventId }) => {
+            executions.push(`cancel_show:${eventId}`)
+            return { event: { id: eventId, status: 'cancelled' } }
+          },
+        }),
+        list_my_shows: tool({
+          description: 'Read remaining shows when needed.',
+          inputSchema: z.object({}),
+          execute: async () => ({ events: [] }),
+        }),
+      },
+    })
+
+    const result = await agent.stream({
+      messages: [
+        {
+          role: 'assistant',
+          content: [
+            {
+              type: 'tool-call',
+              toolCallId: 'cancel-call-1',
+              toolName: 'cancel_show',
+              input: { eventId: 'synthetic-event-1' },
+            },
+            {
+              type: 'tool-approval-request',
+              approvalId: 'approval-1',
+              toolCallId: 'cancel-call-1',
+            },
+          ],
+        },
+        {
+          role: 'tool',
+          content: [
+            {
+              type: 'tool-approval-response',
+              approvalId: 'approval-1',
+              approved: true,
+            },
+          ],
+        },
+      ],
+    })
+
+    await expect(result.text).resolves.toContain('show is cancelled')
+    expect(executions).toEqual(['cancel_show:synthetic-event-1'])
+    expect(model.doStreamCalls).toHaveLength(1)
+    expect(model.doStreamCalls[0].toolChoice).toEqual({ type: 'auto' })
+    expect(
+      model.doStreamCalls[0].prompt.some(
+        (message) =>
+          message.role === 'tool' &&
+          Array.isArray(message.content) &&
+          message.content.some(
+            (part) =>
+              part.type === 'tool-result' &&
+              part.toolCallId === 'cancel-call-1',
+          ),
+      ),
+    ).toBe(true)
+  })
 })
