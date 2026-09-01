@@ -69,6 +69,20 @@ export function chooseNicNacToolChoiceForStep(args: {
   previousAssistantText?: string
 }): NicNacStepToolChoice {
   if (args.stepsLength > 0) return 'auto'
+  const pinnedTradeTool = chooseGenericTradeWorkflowTool(
+    args.activeTradeWorkflow,
+    args.activeToolNames,
+  )
+  if (pinnedTradeTool) return { type: 'tool', toolName: pinnedTradeTool }
+
+  const pinnedTradeReadTool = chooseGenericTradeWorkflowReadTool(
+    args.activeTradeWorkflow,
+    args.activeToolNames,
+  )
+  if (pinnedTradeReadTool) {
+    return { type: 'tool', toolName: pinnedTradeReadTool }
+  }
+
   if (
     args.activeToolNames.includes('get_trade_requests') &&
     textAsksForTradeRequestInbox(args.latestUserText ?? '')
@@ -128,11 +142,6 @@ export function chooseNicNacToolChoiceForStep(args: {
   ) {
     return { type: 'tool', toolName: 'add_listing' }
   }
-  const pinnedTradeTool = chooseGenericTradeWorkflowTool(
-    args.activeTradeWorkflow,
-    args.activeToolNames,
-  )
-  if (pinnedTradeTool) return { type: 'tool', toolName: pinnedTradeTool }
   if (
     args.activeToolNames.includes('add_show') &&
     calendarWorkflowIsReadyToAdd(args.activeCalendarWorkflow)
@@ -154,6 +163,30 @@ export function chooseNicNacToolChoiceForStep(args: {
   }
 
   return 'required'
+}
+
+function chooseGenericTradeWorkflowReadTool(
+  workflow: GenericTradeWorkflowForToolChoice,
+  activeToolNames: string[],
+): Extract<NicNacStepToolChoice, { type: 'tool' }>['toolName'] | null {
+  if (workflow?.status !== 'active') return null
+  if ((workflow.missingFields?.length ?? 0) === 0) return null
+
+  const toolName =
+    workflow.workflowType === 'trade_board_remove_listing'
+      ? 'list_my_trade_board'
+      : workflow.workflowType === 'trade_request_decision' ||
+          workflow.workflowType === 'trade_swap_capture'
+        ? 'get_trade_requests'
+        : workflow.workflowType === 'trade_fulfillment_update'
+          ? 'get_fulfillment_queue'
+          : workflow.workflowType === 'trade_swap_cleanup'
+            ? 'get_trade_swap_cleanup'
+            : workflow.workflowType === 'trade_catalog_correction'
+              ? 'search_jewelry_database'
+              : null
+
+  return toolName && activeToolNames.includes(toolName) ? toolName : null
 }
 
 function shouldAllowOptionalToolSelection(args: {

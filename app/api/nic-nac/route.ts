@@ -86,6 +86,7 @@ import {
 import { arbitrateNicNacWorkflowTurn } from '@/lib/nic-nac/workflows/workflow-turn-arbitration'
 import { summarizeHardFailDetection } from '@/lib/nic-nac/workflows/trade-board-intake-eval'
 import {
+  getNicNacMandatoryToolFollowUpText,
   getNicNacToolOnlyRecoveryText,
   getNicNacToolFailure,
   isRenderableNicNacStreamChunk,
@@ -991,6 +992,8 @@ export async function POST(request: Request) {
       const toolNamesByCallId = new Map<string, string>()
       let toolOnlyRecoveryText: string | null = null
       let toolFailureRecoveryText: string | null = null
+      let mandatoryToolFollowUpText: string | null = null
+      let renderedText = ''
 
       const emitHide = (reason: 'plain-text' | 'final-text' | 'finish' | 'error') => {
         if (!currentlyVisible) return
@@ -1128,6 +1131,9 @@ export async function POST(request: Request) {
               toolOnlyRecoveryText =
                 getNicNacToolOnlyRecoveryText(toolName, chunk.output) ??
                 toolOnlyRecoveryText
+              mandatoryToolFollowUpText =
+                getNicNacMandatoryToolFollowUpText(toolName, chunk.output) ??
+                mandatoryToolFollowUpText
             }
           }
           if (
@@ -1139,6 +1145,7 @@ export async function POST(request: Request) {
           if (isRenderableNicNacStreamChunk(chunk)) {
             sawRenderableOutput = true
           }
+          if (chunk.type === 'text-delta') renderedText += chunk.delta
           if (
             chunk.type === 'text-delta' &&
             /\S/.test(chunk.delta) &&
@@ -1158,6 +1165,22 @@ export async function POST(request: Request) {
             delta: toolFailureRecoveryText,
           })
           writer.write({ type: 'text-end', id: fallbackTextId })
+        } else if (
+          !streamAborted &&
+          !streamErrorMessage &&
+          mandatoryToolFollowUpText &&
+          !/add\b[\s\S]{0,80}\b(?:received|got)\b[\s\S]{0,80}\b(?:Dance Floor|board)|(?:received|got)\b[\s\S]{0,80}\badd\b[\s\S]{0,80}\b(?:Dance Floor|board)/i.test(
+            renderedText,
+          )
+        ) {
+          const followUpTextId = randomUUID()
+          writer.write({ type: 'text-start', id: followUpTextId })
+          writer.write({
+            type: 'text-delta',
+            id: followUpTextId,
+            delta: `${sawRenderableOutput ? '\n\n' : ''}${mandatoryToolFollowUpText}`,
+          })
+          writer.write({ type: 'text-end', id: followUpTextId })
         } else if (!streamAborted && !streamErrorMessage && !sawRenderableOutput) {
           emptyOutputRecovered = true
           const fallbackTextId = randomUUID()

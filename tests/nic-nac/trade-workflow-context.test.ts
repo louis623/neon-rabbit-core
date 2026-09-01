@@ -178,6 +178,61 @@ describe('generic Trade workflow context', () => {
     expect(result.activeWorkflow).toBeNull()
   })
 
+  it('starts an explicit new Trade workflow instead of letting stale Trade state intercept it', async () => {
+    getActiveTradeWorkflowSessionMock.mockResolvedValueOnce({
+      id: 'stale-remove-workflow',
+      repId: 'rep-1',
+      conversationId: 'conversation-1',
+      workflowType: 'trade_board_remove_listing',
+      status: 'active',
+      phase: 'identify_target',
+      intent: 'remove_listing',
+      knownFields: {},
+      missingFields: ['listingId'],
+      blockers: [],
+      candidates: [],
+      approvalState: 'not_required',
+    })
+    createTradeWorkflowSessionMock.mockResolvedValueOnce({
+      id: 'new-correction-workflow',
+      repId: 'rep-1',
+      conversationId: 'conversation-1',
+      workflowType: 'trade_catalog_correction',
+      status: 'active',
+      phase: 'started',
+      intent: 'report_catalog_issue',
+      knownFields: {},
+      missingFields: [],
+      blockers: [],
+      candidates: [],
+      approvalState: 'not_required',
+    })
+    updateTradeWorkflowSessionMock.mockImplementation((_client, state) =>
+      Promise.resolve(state),
+    )
+
+    const result = await getOrCreateTradeWorkflowContext({
+      supabase: {} as never,
+      repId: 'rep-1',
+      conversationId: 'conversation-1',
+      latestUserText: 'The catalog MSRP for ER13229 is wrong. Fix it.',
+      latestToolIntents: ['catalog'],
+      latestUserMessageId: 'message-correction',
+      mode: 'workspace',
+      nowIso: '2026-08-31T20:00:00.000Z',
+    })
+
+    expect(createTradeWorkflowSessionMock).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        workflowType: 'trade_catalog_correction',
+        intent: 'report_catalog_issue',
+      }),
+    )
+    expect(result.sessionBefore).toBeNull()
+    expect(result.sessionAfter?.workflowType).toBe('trade_catalog_correction')
+  })
+
   it('keeps explicit skip-capture approvals on the plain trade decision path', async () => {
     getActiveTradeWorkflowSessionMock.mockResolvedValueOnce(null)
     createTradeWorkflowSessionMock.mockResolvedValueOnce({

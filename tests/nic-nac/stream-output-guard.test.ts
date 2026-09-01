@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
+  getNicNacMandatoryToolFollowUpText,
   getNicNacToolOnlyRecoveryText,
   getNicNacToolFailure,
   isRenderableNicNacStreamChunk,
@@ -91,6 +92,21 @@ describe('Nic-Nac stream output guard', () => {
     ).toContain('title, date and start time')
     expect(
       getNicNacToolOnlyRecoveryText('list_my_shows', { events: [] }),
+    ).toBeNull()
+  })
+
+  it('requires the received-piece follow-up after completed fulfillment', () => {
+    expect(
+      getNicNacMandatoryToolFollowUpText('update_fulfillment_status', {
+        status: 'completed',
+        shouldPromptAddToBoard: true,
+      }),
+    ).toContain('dancer you received')
+    expect(
+      getNicNacMandatoryToolFollowUpText('update_fulfillment_status', {
+        status: 'shipped',
+        shouldPromptAddToBoard: false,
+      }),
     ).toBeNull()
   })
 

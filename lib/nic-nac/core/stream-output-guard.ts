@@ -98,6 +98,21 @@ export function getNicNacToolOnlyRecoveryText(
   return null
 }
 
+export function getNicNacMandatoryToolFollowUpText(
+  toolName: string,
+  output: unknown,
+): string | null {
+  const record = asRecord(output)
+  if (
+    toolName === 'update_fulfillment_status' &&
+    record.status === 'completed' &&
+    record.shouldPromptAddToBoard === true
+  ) {
+    return 'Fulfillment is complete. Want to add the dancer you received to your Dance Floor now?'
+  }
+  return null
+}
+
 export function isRenderableNicNacStreamChunk(chunk: UIMessageChunk) {
   if (chunk.type === 'text-delta') return /\S/.test(chunk.delta)
   if (chunk.type === 'tool-approval-request') return true

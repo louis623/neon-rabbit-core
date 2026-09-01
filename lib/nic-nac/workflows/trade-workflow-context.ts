@@ -46,13 +46,21 @@ export async function getOrCreateTradeWorkflowContext(args: {
       conversationId: args.conversationId,
       nowIso: args.nowIso,
     })
+    const explicitWorkflowType = inferWorkflowTypeFromTurn(
+      args.latestUserText,
+      args.latestToolIntents,
+    )
+    const continuingExisting =
+      existing &&
+      (!explicitWorkflowType || explicitWorkflowType === existing.workflowType)
+        ? existing
+        : null
     const workflowType =
-      existing?.workflowType ??
-      inferWorkflowTypeFromTurn(args.latestUserText, args.latestToolIntents)
+      explicitWorkflowType ?? continuingExisting?.workflowType
     if (!workflowType) return emptyContext()
 
     const base =
-      existing ??
+      continuingExisting ??
       (await createTradeWorkflowSession(args.supabase, {
         repId: args.repId,
         conversationId: args.conversationId,
@@ -63,7 +71,7 @@ export async function getOrCreateTradeWorkflowContext(args: {
     const ingested = ingestTradeWorkflowTurn(
       {
         ...base,
-        intent: existing
+        intent: continuingExisting
           ? inferWorkflowIntentFromTurn(base.workflowType, args.latestUserText, base.intent)
           : base.intent,
       },
@@ -93,7 +101,7 @@ export async function getOrCreateTradeWorkflowContext(args: {
           })
     const workflowIntents = getTradeWorkflowToolIntents(updated)
     return {
-      sessionBefore: existing,
+      sessionBefore: continuingExisting,
       sessionAfter: updated,
       activeWorkflow:
         updated.status === 'active' && workflowIntents.length

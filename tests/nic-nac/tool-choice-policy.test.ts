@@ -271,6 +271,61 @@ describe('Nic-Nac tool choice policy', () => {
     },
   )
 
+  it.each([
+    ['trade_board_remove_listing', 'identify_target', 'list_my_trade_board'],
+    ['trade_request_decision', 'identify_target', 'get_trade_requests'],
+    ['trade_swap_capture', 'details_capture', 'get_trade_requests'],
+    ['trade_fulfillment_update', 'identify_target', 'get_fulfillment_queue'],
+    ['trade_swap_cleanup', 'details_capture', 'get_trade_swap_cleanup'],
+    ['trade_catalog_correction', 'details_capture', 'search_jewelry_database'],
+  ])(
+    'forces %s workflow in %s to read candidates with %s',
+    (workflowType, phase, toolName) => {
+      expect(
+        chooseNicNacToolChoiceForStep({
+          requireToolCall: true,
+          stepsLength: 0,
+          activeToolNames: [
+            'list_my_trade_board',
+            'get_trade_requests',
+            'get_fulfillment_queue',
+            'get_trade_swap_cleanup',
+            'search_jewelry_database',
+          ],
+          activeTradeWorkflow: {
+            status: 'active',
+            workflowType,
+            phase,
+            missingFields: ['target'],
+            blockers: [],
+          },
+        }),
+      ).toEqual({ type: 'tool', toolName })
+    },
+  )
+
+  it('prioritizes a mutation-ready correction over broad catalog read wording', () => {
+    expect(
+      chooseNicNacToolChoiceForStep({
+        requireToolCall: true,
+        stepsLength: 0,
+        activeToolNames: [
+          'search_jewelry_database',
+          'report_jewelry_catalog_issue',
+        ],
+        latestUserText:
+          'The shared jewelry catalog MSRP is wrong. Fix the catalog record now.',
+        activeTradeWorkflow: {
+          status: 'active',
+          workflowType: 'trade_catalog_correction',
+          phase: 'ready_to_report',
+          missingFields: [],
+          blockers: [],
+        },
+      }),
+    ).toEqual({ type: 'tool', toolName: 'report_jewelry_catalog_issue' })
+  })
+
   it('does not force a generic Trade write tool when candidate blockers remain', () => {
     expect(
       chooseNicNacToolChoiceForStep({
