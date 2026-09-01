@@ -1,5 +1,20 @@
 # Decision Log
 
+## August 31, 2026 - Background refreshes must preserve Nic-Nac drafts
+
+**Treat a support session as changed only when its stable identity changes.**
+Expiration clocks, polling responses, unread-count refreshes, and other parent
+rerenders must not restart Nic-Nac conversation initialization. Effects that
+own conversation identity must depend on primitive session or conversation
+IDs, not wrapper-object identity.
+
+**An unsent composer draft is protected local UI state.** Background refresh
+verification must include typing through at least two refresh intervals and
+asserting that the value and focus remain intact. Server-response smoke alone
+does not prove the rep can successfully compose a request.
+
+---
+
 ## August 31, 2026 - Team onboarding links use a Sparkle Suite-owned host
 
 **Use one Sparkle Suite-owned onboarding host with a managed-team path.** New

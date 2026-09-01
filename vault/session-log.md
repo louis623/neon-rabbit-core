@@ -4,6 +4,28 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## August 31, 2026 - Nic-Nac support-mode composer stability release
+
+- Reproduced Louis's report in Lindsey's live disclosed support session using
+  harmless unsent text. Before the fix, the draft cleared on the next
+  15-second support expiration-clock tick. Normal demo-account use outside
+  support mode remained healthy.
+- Root cause was client state identity, not the Nic-Nac model or the Codex
+  desktop browser: `SupportWorkspaceClient` recreated the support context on
+  each clock render, while `NicNacClient` conversation effects depended on
+  that object and reinitialized history, remounting the composer.
+- Fixed both boundaries in commit
+  `62d895b77d6455b5cdcc87b4396718888f7d8341`: memoized the parent support
+  context and narrowed child effect dependencies to the primitive session ID
+  and support-mode boolean. Added a regression contract for clock rerenders.
+- Verification passed 27 focused tests, selected-file ESLint, local production
+  build, Vercel production build, exact alias inspection, and a 36-second live
+  draft-retention replay across multiple clock ticks. Released deployment
+  `dpl_5ndTgTj4NxhcF6NNz7Fbd7yuJqcD`; no message was sent and no customer,
+  billing, DNS, or onboarding state changed.
+
+---
+
 ## August 31, 2026 - Team-branded onboarding link foundation
 
 - Chose a Sparkle Suite-owned URL pattern for all Team Management onboarding

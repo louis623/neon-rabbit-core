@@ -1,5 +1,28 @@
 # Project State
 
+## August 31, 2026 - Nic-Nac support-mode draft reset fixed
+
+- Diagnosed the disappearing Nic-Nac composer draft in transparent operator
+  support. The support-session expiration clock rerendered every 15 seconds,
+  recreated the `operatorSupport` object, and retriggered Nic-Nac conversation
+  initialization because its effects depended on object identity. That
+  temporarily removed and remounted the chat, clearing unsent text.
+- Application commit `62d895b77d6455b5cdcc87b4396718888f7d8341`
+  memoizes the support context and makes Nic-Nac effects depend on the stable
+  support-session ID and derived boolean. Focused coverage passed (27 tests),
+  selected-file ESLint passed, and both local and Vercel production builds
+  passed.
+- Released Vercel deployment `dpl_5ndTgTj4NxhcF6NNz7Fbd7yuJqcD`. Both
+  Sparkle Suite domains resolve to the Ready deployment. Exact live replay in
+  Lindsey's disclosed support session kept an unsent synthetic draft intact
+  for 36 seconds across multiple support-clock ticks; it was then cleared
+  without sending. No customer action, billing action, DNS change, or
+  onboarding-link creation occurred.
+
+**Last updated:** August 31, 2026
+
+---
+
 ## August 31, 2026 - Team-branded onboarding address prepared
 
 - New Rep Onboarding links are now designed to use the Sparkle Suite-owned
