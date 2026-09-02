@@ -1,5 +1,25 @@
 # Project State
 
+## September 2, 2026 - Early live smoke is positive; pressure testing continues
+
+- Louis reports that the newly released sole-agent Nic-Nac is doing well in
+  internal-demo smoke testing and is materially better than the legacy
+  experience. This is encouraging real-user evidence, not a reason to loosen
+  permission, approval, tenant-isolation, timeout, or no-duplicate-write
+  safeguards.
+- Continue testing natural, mid-conversation switches among Calendar, Dance
+  Floor, live-show guidance, and other normal rep work. Treat a new failure as
+  evidence to investigate at the production route/tool boundary; do not add
+  phrase scripts, sticky workflow routing, or another hidden fallback.
+- The current live product remains application commit `564223ac` on deployment
+  `dpl_3GEo2haLjRbgkiUCqapMzWHk6Bdo`; repository closeout documentation is
+  pushed in `4a62816f`. No further production change occurred after the
+  positive smoke update.
+
+**Last updated:** September 2, 2026
+
+---
+
 ## September 1, 2026 - Agentic Nic-Nac is the sole production route
 
 - The legacy `/api/nic-nac` handler and its default-off rollout gate were

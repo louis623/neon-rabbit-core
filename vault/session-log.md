@@ -4,6 +4,29 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## September 2, 2026 - Nic-Nac release session closeout
+
+- Louis reports the first internal-demo smoke tests are going well and Nic-Nac
+  is in a much better place. He intends to push the agent harder, so this is a
+  positive early result rather than a claim that every future live-show request
+  is proven.
+- Key lesson: code may be correct while production is wrong if a hidden route,
+  feature gate, alias, or identity selection points users somewhere else.
+  Production proof must establish the actual route used by a real request, not
+  merely that the intended code was built and deployed.
+- Key lesson: conversational flexibility belongs with the model selecting from
+  a permission-scoped tool catalog. Deterministic code should protect
+  authentication, tenant boundaries, schemas, approvals, idempotency, bounded
+  retries, and truthful recovery—not pre-decide the rep's intent from wording.
+- Key lesson: an empty successful model turn needs a general, safe execution
+  boundary. Retry once only before a tool starts; after a tool starts, preserve
+  tool-result recovery and never replay a possible write.
+- Open Brain and repository vault were both updated and verified. No additional
+  deployment, paid model request, customer action, billing, messaging, DNS,
+  customer-domain, or Live Queue mutation occurred during closeout.
+
+---
+
 ## September 1, 2026 - Sole-agent Nic-Nac production cutover
 
 - Confirmed the deployed ToolLoopAgent was still hidden behind a production-

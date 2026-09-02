@@ -1,5 +1,26 @@
 # Decision Log
 
+## September 2, 2026 - Pressure-test the live agent; do not turn it back into scripts
+
+**Positive smoke testing is evidence, not the finish line.** Continue to test
+the released ToolLoopAgent with ordinary, unscripted rep language and genuine
+mid-conversation task switches. New failures should be diagnosed from the
+actual production route, model/tool trace, and visible output.
+
+**Keep the division of responsibility.** The model decides what the rep is
+trying to accomplish among its permission-scoped capabilities. Application
+code enforces authorization, validation, approvals, tenant isolation,
+idempotency, timeouts, and bounded recovery. Do not respond to pressure-test
+failures by restoring regex intent routing, sticky tool packs, or hidden
+workflow steering.
+
+Reason: Louis's early internal-demo smoke is materially better after removing
+the legacy path. The durable goal is a capable live-show coworker, so further
+hardening must improve real flexibility without reintroducing the architecture
+that constrained it.
+
+---
+
 ## September 1, 2026 - One production Nic-Nac, with no silent legacy fallback
 
 **The ToolLoopAgent is the only production conversation orchestrator.** The

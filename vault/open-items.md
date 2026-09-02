@@ -569,13 +569,12 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   commit `47275feb` is live as `dpl_9WJxru6eyyX6A4KQCrZrkuov7QRK`; only the
   two Suite domains moved.
 
-- [ ] **Close the broader zero-output/catalog-pressure risk before broad
-  Nic-Nac rollout** — exercise representative Calendar, Dance Floor, trade,
-  resources, and grounded-guidance reads against recorded empty/provider-edge
-  outputs. Define a general no-empty-turn contract and evaluate model-native
-  deferred tool loading or another permission-scoped capability design. Do not
-  restore phrase routing, sticky tool packs, or hidden workflow steering, and
-  do not enable the production agent cohort until the proof is complete.
+- [ ] **Continue real-world Nic-Nac pressure testing in the internal demo** —
+  the sole-agent production release is live and early smoke is positive.
+  Exercise natural, unscripted changes between Calendar, Dance Floor,
+  live-show guidance, and other normal rep work. Record the exact user wording,
+  visible response, route/run evidence, and tool trace for any failure. Do not
+  restore phrase routing, sticky tool packs, or hidden workflow steering.
 
 - [x] **Apply Dex-reviewed ToolLoopAgent corrections** — continuity now renders
   facts only, vague turns cannot fall into the latest stale workflow, agent
@@ -602,14 +601,14 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   show replacement. Final local proof is 1,390 Nic-Nac tests, 226 standard
   tests, 51 critical consecutive replays, provider-free smoke, ESLint, diff
   checks, and the production build.
-- [ ] **Authorize and run the guarded Nic-Nac agent acceptance cohort** — set
-  one exact synthetic reviewer identity only after Louis authorizes the
-  cohort, approve a numeric paid-request cap separately, replay the Calendar
-  read-to-add failure and cross-tool switches on the live customer domain,
-  assert visible answer quality and intended tool use, verify no unintended
-  data changes, and prove the legacy kill switch. Do not use Louis's
-  personal/admin account, a real customer, or the restricted Support operator.
-- [ ] **Run the final released Calendar-read replay after a new exact paid-request authorization** — commit `898f69ef` is live and locally verified. The prior four-request production replay exhausted its approved cap while exposing the final copy-scope issue. If Louis authorizes another exact four-request cap, use only the isolated synthetic reviewer and replay `right now`, `this week`, `next live`, and `tonight`; require only `list_my_shows`, natural scoped answers, and an unchanged before/after calendar. Do not use Louis's demo/personal account, the restricted Support operator, or any customer account.
+- [x] **Retire the default-off cohort and legacy-kill-switch acceptance plan** —
+  completed September 1 by deleting the legacy handler and rollout gate. The
+  live endpoint now has one agent route, proven by its response header; rollback
+  is an explicit Git/Vercel release action, not a per-account fallback.
+- [x] **Supersede the prior isolated Calendar-read replay plan** — the former
+  rollout-specific replay is obsolete after the sole-agent release. Calendar
+  reads and cross-tool switching are now part of ongoing internal-demo pressure
+  testing, with no paid-call cap or customer account implied by this record.
 - [ ] **Add a scheduled, isolated Nic-Nac cross-workflow canary** — run a
   disposable reviewer conversation through a Dance Floor intake followed by an
   explicit Calendar request, assert that both replies contain visible
