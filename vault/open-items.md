@@ -631,8 +631,9 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - Standing rule: leave the unused duplicate OpenAI project and first unused Finder runtime key untouched. They are not cleanup work and should be revisited only if evidence shows a security, billing, access, or operational problem. Any future deletion or revocation still requires Louis's explicit authorization and a dependency audit.
 - [ ] Keep historical Default-project provider spend unallocated. If it later appears in the Control Center, show it as a separate legacy/unallocated amount outside Suite, Finder, and their combined product total.
 
-- [ ] Run the isolated production reviewer proof for event-level customer show
-  destinations only after Louis explicitly authorizes reactivating or replacing
-  the archived synthetic reviewer persona. Verify one TikTok link and one
-  TikTok + Whatnot dual-stream card on the exact live customer page; never use
-  Louis's or a customer account.
+- [ ] Run the isolated production reviewer proof for configured customer-site
+  show-platform links only after Louis explicitly authorizes reactivating or
+  replacing the archived synthetic reviewer persona. Verify one TikTok link,
+  one TikTok + Whatnot card, and the Google/Outlook/Apple-or-other calendar
+  chooser on the exact live customer page; never use Louis's or a customer
+  account.

@@ -5,6 +5,10 @@ import { addShow } from '@/lib/services/calendar'
 import { ServiceError } from '@/lib/services/errors'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
 import {
+  missingCustomerShowPlatforms,
+  resolveCustomerShowPlatformLinks,
+} from '@/lib/amethyst/show-platform-links'
+import {
   buildCalendarCreatePlan,
   reconcileAddShowInputWithCalendarPlan,
 } from '@/lib/nic-nac/workflows/calendar-plan'
@@ -22,13 +26,6 @@ const inputSchema = z.object({
     description: z.string(),
   })).max(10).optional(),
   featuredCollections: z.array(z.string()).optional(),
-  streamingDestinations: z.array(z.object({
-    platform: z.string().min(1),
-    url: z.string().url().refine((url) => url.startsWith('https://'), {
-      message: 'streaming destination URLs must use HTTPS',
-    }),
-    label: z.string().min(1).optional(),
-  })).max(5).optional(),
   recurring: z.object({
     cadence: z.enum(['daily', 'weekly', 'weekday']),
     duration: z.enum(['1_month', '3_months', 'ongoing']),
@@ -48,6 +45,43 @@ function explainServiceError(err: unknown): never {
   throw err
 }
 
+async function configuredCustomerSiteWatchLinks(
+  supabase: SupabaseClient,
+  repId: string,
+  platform: string,
+) {
+  // This lookup is advisory for the customer-facing result. Scheduling remains
+  // available even when the rep has not configured that platform yet.
+  try {
+    const client = supabase as unknown as {
+      from?: (table: string) => {
+        select: (columns: string) => {
+          eq: (column: string, value: string) => {
+            maybeSingle: () => Promise<{
+              data: { social_handles?: unknown } | null
+              error: unknown
+            }>
+          }
+        }
+      }
+    }
+    if (!client.from) return { links: [], missingPlatforms: [] }
+    const { data, error } = await client
+      .from('reps')
+      .select('social_handles')
+      .eq('id', repId)
+      .maybeSingle()
+    if (error) return { links: [], missingPlatforms: [] }
+
+    return {
+      links: resolveCustomerShowPlatformLinks(platform, data?.social_handles),
+      missingPlatforms: missingCustomerShowPlatforms(platform, data?.social_handles),
+    }
+  } catch {
+    return { links: [], missingPlatforms: [] }
+  }
+}
+
 export function makeAddShowTool(ctx: {
   repId: string
   supabase: SupabaseClient
@@ -61,7 +95,7 @@ export function makeAddShowTool(ctx: {
       'For recurring: ask the rep how often (daily, weekly, or weekday/Monday-Friday) and how long (a specific number of times, one month, three months, or ongoing). ' +
       'If the rep says a bounded count like "twice" or "next two Tuesdays", pass recurring.occurrenceCount and create exactly that many entries. ' +
       'In the current build, ongoing schedules out about six months ahead. ' +
-      'Discount codes support up to 10 per show as an array of {code, description} pairs. Streaming destinations are optional. When the rep supplies public watch URLs, pass streamingDestinations as {platform, url, label?}; use a label for a custom platform. If they name a platform but do not have its URL, schedule the show without a destination and explain that its customer-site watch button will appear after they add the URL.',
+      'Discount codes support up to 10 per show as an array of {code, description} pairs. A show platform uses the matching social link already configured in the rep\'s customer-site settings. Do not ask for or save a separate event URL. The result tells you whether that configured customer-facing watch link exists; if it is missing, schedule the show and say the rep has no configured link to share for that platform yet.',
     inputSchema,
     execute: async (input) => {
       try {
@@ -82,12 +116,17 @@ export function makeAddShowTool(ctx: {
               latestUserText: ctx.latestUserText,
               activeCalendarWorkflow: ctx.activeCalendarWorkflow,
             })
-        const result = await addShow(ctx.supabase, ctx.repId, safeInput)
+        const [result, customerSiteWatch] = await Promise.all([
+          addShow(ctx.supabase, ctx.repId, safeInput),
+          configuredCustomerSiteWatchLinks(ctx.supabase, ctx.repId, safeInput.platform),
+        ])
         const firstEvent = result.events[0] ?? null
         const lastEvent = result.events[result.events.length - 1] ?? null
 
         return {
           calendarPlan: plan,
+          customerSiteWatchLinks: customerSiteWatch.links,
+          missingCustomerSitePlatforms: customerSiteWatch.missingPlatforms,
           count: result.count,
           events: result.events,
           event: result.count === 1 ? firstEvent : null,

@@ -81,6 +81,21 @@ function makeCtx() {
   }
 }
 
+function makeCtxWithSocialHandles(socialHandles: Record<string, string>) {
+  const maybeSingle = vi.fn().mockResolvedValue({
+    data: { social_handles: socialHandles },
+    error: null,
+  })
+  const eq = vi.fn(() => ({ maybeSingle }))
+  const select = vi.fn(() => ({ eq }))
+  return {
+    ...makeCtx(),
+    supabase: {
+      from: vi.fn(() => ({ select })),
+    } as never,
+  }
+}
+
 function makeCalendarWorkflow(recurring?: {
   cadence: 'daily' | 'weekly' | 'weekday'
   duration: '1_month' | '3_months' | 'ongoing'
@@ -165,29 +180,42 @@ describe('calendar tools', () => {
     expect(result.events).toHaveLength(1)
   })
 
-  it('add_show forwards optional multi-stream destinations without making them scheduling requirements', async () => {
+  it('uses the matching configured customer-site social link for a scheduled platform', async () => {
     addShowMock.mockResolvedValueOnce({ count: 1, events: [calendarEvent()] })
-    const tool = makeAddShowTool(makeCtx()) as unknown as ToolDef
+    const tool = makeAddShowTool(
+      makeCtxWithSocialHandles({ tiktok: '@demo' }),
+    ) as unknown as ToolDef
 
-    await tool.execute({
-      platform: 'TikTok + Whatnot',
+    const result = await tool.execute({
+      platform: 'TikTok',
       eventTime: '2026-06-07T00:00:00.000Z',
-      streamingDestinations: [
-        { platform: 'TikTok', url: 'https://www.tiktok.com/@demo' },
-        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/demo' },
-      ],
     })
 
-    expect(addShowMock).toHaveBeenCalledWith(
-      expect.anything(),
-      'rep-1',
-      expect.objectContaining({
-        streamingDestinations: [
-          { platform: 'TikTok', url: 'https://www.tiktok.com/@demo' },
-          { platform: 'Whatnot', url: 'https://www.whatnot.com/user/demo' },
-        ],
-      }),
-    )
+    expect(result).toMatchObject({
+      customerSiteWatchLinks: [{
+        kind: 'tiktok',
+        label: 'Watch on TikTok',
+        href: 'https://www.tiktok.com/@demo',
+      }],
+      missingCustomerSitePlatforms: [],
+    })
+  })
+
+  it('reports the selected platform as missing when the customer-site link is not configured', async () => {
+    addShowMock.mockResolvedValueOnce({ count: 1, events: [calendarEvent()] })
+    const tool = makeAddShowTool(
+      makeCtxWithSocialHandles({ facebook: '@demo' }),
+    ) as unknown as ToolDef
+
+    const result = await tool.execute({
+      platform: 'TikTok',
+      eventTime: '2026-06-07T00:00:00.000Z',
+    })
+
+    expect(result).toMatchObject({
+      customerSiteWatchLinks: [],
+      missingCustomerSitePlatforms: ['tiktok'],
+    })
   })
 
   it('add_show strips recurring when active workflow did not capture recurrence', async () => {
@@ -644,25 +672,6 @@ describe('calendar tools', () => {
       errorType: 'audit_write_failed',
       severity: 'warn',
     })
-  })
-
-  it('update_show accepts a streaming destination list as its only patch', async () => {
-    updateShowMock.mockResolvedValueOnce({ event: calendarEvent(), updatedCount: 1 })
-    const tool = makeUpdateShowTool(makeCtx()) as unknown as ToolDef
-
-    await tool.execute({
-      eventId: VALID_EVENT_ID,
-      streamingDestinations: [{ platform: 'YouTube', url: 'https://www.youtube.com/@demo/live' }],
-    })
-
-    expect(updateShowMock).toHaveBeenCalledWith(
-      expect.anything(),
-      'rep-1',
-      VALID_EVENT_ID,
-      expect.objectContaining({
-        streamingDestinations: [{ platform: 'YouTube', url: 'https://www.youtube.com/@demo/live' }],
-      }),
-    )
   })
 
   it('update_show ignores blank optional model fields before series patches', async () => {

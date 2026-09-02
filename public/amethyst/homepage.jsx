@@ -1462,6 +1462,58 @@ function downloadCalendarEvent(event) {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
+function buildGoogleCalendarHref(event) {
+  const startAt = Date.parse(event.eventTime);
+  if (Number.isNaN(startAt)) return "#";
+  const endAt = new Date(startAt + ((event.durationMinutes || 60) * 60 * 1000));
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: event.title || "Upcoming live reveal",
+    dates: `${toCalendarTimestamp(event.eventTime)}/${toCalendarTimestamp(endAt.toISOString())}`,
+    details: buildCalendarDescription(event),
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function buildOutlookCalendarHref(event) {
+  const startAt = Date.parse(event.eventTime);
+  if (Number.isNaN(startAt)) return "#";
+  const endAt = new Date(startAt + ((event.durationMinutes || 60) * 60 * 1000));
+  const params = new URLSearchParams({
+    path: "/calendar/action/compose",
+    rru: "addevent",
+    subject: event.title || "Upcoming live reveal",
+    startdt: new Date(startAt).toISOString(),
+    enddt: endAt.toISOString(),
+    body: buildCalendarDescription(event),
+  });
+  return `https://outlook.live.com/calendar/0/action/compose?${params.toString()}`;
+}
+
+function CalendarChooser({ event, onClose }) {
+  if (!event) return null;
+  return (
+    <div className="hp-calendar-modal-mask" role="presentation" onClick={onClose}>
+      <section className="hp-calendar-modal" role="dialog" aria-modal="true" aria-labelledby="calendar-choice-title" onClick={(click) => click.stopPropagation()}>
+        <div className="hp-calendar-modal-head">
+          <div>
+            <div className="hp-calendar-modal-eyebrow">Save the date</div>
+            <h2 id="calendar-choice-title" className="hp-calendar-modal-title">Add to your calendar</h2>
+            <p>{event.title}</p>
+          </div>
+          <button type="button" className="hp-calendar-modal-close" onClick={onClose} aria-label="Close calendar choices">×</button>
+        </div>
+        <div className="hp-calendar-choice-list">
+          <a href={buildGoogleCalendarHref(event)} target="_blank" rel="noreferrer" className="hp-calendar-choice google">Google Calendar</a>
+          <a href={buildOutlookCalendarHref(event)} target="_blank" rel="noreferrer" className="hp-calendar-choice outlook">Outlook Calendar</a>
+          <button type="button" className="hp-calendar-choice other" onClick={() => downloadCalendarEvent(event)}>Apple Calendar or another app</button>
+        </div>
+        <p className="hp-calendar-modal-note">Apple Calendar and many other calendar apps use the calendar file download.</p>
+      </section>
+    </div>
+  );
+}
+
 function normalizeHomepageEvent(event) {
   const title = event.title || event.name || "Upcoming live reveal";
   const eventTime = event.eventTime || null;
@@ -1523,6 +1575,7 @@ function EventCodeRow({ code, desc }) {
 }
 
 function Events({ count }) {
+  const [calendarEvent, setCalendarEvent] = useState(null);
   return (
     <section className="hp-section" id="events">
       <div className="hp-container">
@@ -1586,7 +1639,7 @@ function Events({ count }) {
                 )}
 
                 <div className="hp-event-actions">
-                  <button className="hp-event-add" onClick={() => downloadCalendarEvent(event)}>
+                  <button type="button" className="hp-event-add" onClick={() => setCalendarEvent(event)}>
                     <CustomerMediaIcon name="calendar" />
                     <span>Add to calendar</span>
                   </button>
@@ -1602,6 +1655,7 @@ function Events({ count }) {
           })}
         </div>
       </div>
+      <CalendarChooser event={calendarEvent} onClose={() => setCalendarEvent(null)} />
     </section>
   );
 }

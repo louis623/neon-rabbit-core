@@ -1,6 +1,6 @@
 import { listMyShows } from '@/lib/services/calendar'
 import type { CalendarEvent } from '@/lib/services/types'
-import { streamingDestinationLabel } from '@/lib/services/streaming-destinations'
+import { resolveCustomerShowPlatformLinks } from '@/lib/amethyst/show-platform-links'
 import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { BLING_KITCHEN_PROFILE } from '@/lib/bling-kitchen/profile'
@@ -212,12 +212,11 @@ function buildBlingKitchenFallbackEvents(
   return events
 }
 
-function buildPlatformLinks(event: CalendarEvent): AmethystHomepageEventPlatformLink[] {
-  return (event.streamingDestinations ?? []).map((destination) => ({
-    kind: destination.platform,
-    label: `Watch on ${streamingDestinationLabel(destination)}`,
-    href: destination.url,
-  }))
+function buildPlatformLinks(
+  event: CalendarEvent,
+  socialHandles: unknown,
+): AmethystHomepageEventPlatformLink[] {
+  return resolveCustomerShowPlatformLinks(event.platform, socialHandles)
 }
 
 function mapCollectionLinks(collections: string[] | null | undefined) {
@@ -240,6 +239,7 @@ function normalizeEventTitle(event: CalendarEvent) {
 export function mapCalendarEventToHomepageEvent(
   event: CalendarEvent,
   index: number,
+  socialHandles: unknown = {},
 ): AmethystHomepageEventCard {
   return {
     id: event.id,
@@ -254,7 +254,7 @@ export function mapCalendarEventToHomepageEvent(
       desc: discount.description,
     })),
     collections: mapCollectionLinks(event.featuredCollections),
-    platforms: buildPlatformLinks(event),
+    platforms: buildPlatformLinks(event, socialHandles),
   }
 }
 
@@ -295,7 +295,7 @@ export async function loadAmethystHomepageUpcomingShows(
       env: process.env,
       publicSiteSlug,
       repId,
-      select: 'id, email',
+      select: 'id, email, social_handles',
     })
 
     const isBlingKitchen = isBlingKitchenTarget(publicSiteSlug, rep?.email)
@@ -319,7 +319,7 @@ export async function loadAmethystHomepageUpcomingShows(
     return result.events
       .slice(0, limit)
       .map((event, index) =>
-        mapCalendarEventToHomepageEvent(event, index),
+        mapCalendarEventToHomepageEvent(event, index, rep.social_handles),
       )
   } catch {
     return targeted ? [] : defaultAmethystHomepageEvents

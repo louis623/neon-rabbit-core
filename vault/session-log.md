@@ -6082,3 +6082,16 @@ Lessons retained:
   `brisglowtique.com`, `www.brisglowtique.com`, `theblingkitchen.com`, and
   `www.theblingkitchen.com`. No customer data, billing, or customer show rows
   were changed.
+# September 2, 2026 — Calendar social-link and calendar-picker correction
+
+- Louis clarified that a show platform is not a separate stream URL contract.
+  When Nic-Nac schedules a TikTok (or other supported-platform) show, customer
+  cards must use the matching social link already saved in that rep’s Site
+  Settings. No per-event override or copy from other media is allowed.
+- Local implementation replaces the event-destination mapper with configured
+  social-handle resolution, makes Nic-Nac return explicit configured/missing
+  link evidence after `add_show`, and changes customer calendar actions from
+  immediate ICS download to Google/Outlook/Apple-or-other picker options.
+- Focused proof: 119 tests across homepage mapping/template, customer-site
+  data scrub, calendar service/tools, and new platform-link cases; production
+  build completed. Release/live synthetic verification is next.

@@ -65,19 +65,21 @@ describe('Amethyst homepage upcoming shows', () => {
     expect(endAt).toBeGreaterThan(now)
   })
 
-  it('maps event-owned stream destinations into homepage cards in stored order', () => {
+  it('maps the show platform to the matching configured customer-site social link', () => {
     const mapped = mapCalendarEventToHomepageEvent(
       makeEvent({
         title: null,
         description: 'Friday Night Fizz',
         durationMinutes: 90,
         streamingDestinations: [
-          { platform: 'tiktok', url: 'https://tiktok.com/@demo' },
-          { platform: 'whatnot', url: 'https://www.whatnot.com/user/demo' },
-          { platform: 'custom', url: 'https://example.com/live', label: 'Demo Live' },
+          { platform: 'tiktok', url: 'https://wrong.example/live' },
         ],
       }),
       0,
+      {
+        tiktok: '@demo',
+        whatnot: '@demo-live',
+      },
     )
 
     expect(mapped).toMatchObject({
@@ -102,17 +104,7 @@ describe('Amethyst homepage upcoming shows', () => {
         {
           kind: 'tiktok',
           label: 'Watch on TikTok',
-          href: 'https://tiktok.com/@demo',
-        },
-        {
-          kind: 'whatnot',
-          label: 'Watch on Whatnot',
-          href: 'https://www.whatnot.com/user/demo',
-        },
-        {
-          kind: 'custom',
-          label: 'Watch on Demo Live',
-          href: 'https://example.com/live',
+          href: 'https://www.tiktok.com/@demo',
         },
       ],
     })
@@ -125,6 +117,10 @@ describe('Amethyst homepage upcoming shows', () => {
     const maybeSingle = vi.fn().mockResolvedValue({
       data: {
         id: 'rep-1',
+        social_handles: {
+          tiktok: '@demo',
+          facebook: '@demo-facebook',
+        },
       },
       error: null,
     })
@@ -140,13 +136,13 @@ describe('Amethyst homepage upcoming shows', () => {
         makeEvent({
           id: 'event-1',
           platform: 'TikTok',
-          streamingDestinations: [{ platform: 'tiktok', url: 'https://tiktok.com/@demo' }],
+          streamingDestinations: [{ platform: 'tiktok', url: 'https://wrong.example/live' }],
         }),
         makeEvent({
           id: 'event-2',
           platform: 'Facebook',
           title: 'Sunday Sparkle Session',
-          streamingDestinations: [{ platform: 'facebook', url: 'https://facebook.com/demo' }],
+          streamingDestinations: [{ platform: 'facebook', url: 'https://wrong.example/live' }],
         }),
         makeEvent({
           id: 'event-3',
@@ -168,7 +164,7 @@ describe('Amethyst homepage upcoming shows', () => {
     expect(result[1].featured).toBe(false)
     expect(result[1].platforms[0]).toMatchObject({
       kind: 'facebook',
-      href: 'https://facebook.com/demo',
+      href: 'https://www.facebook.com/demo-facebook',
     })
   })
 

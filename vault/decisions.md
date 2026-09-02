@@ -2297,3 +2297,16 @@ Calendar first, followed by one Watch-on action per event destination.
 Reason: Rep-wide social/profile links cannot truthfully identify a specific
 show's host, cannot represent dual-streaming, and previously caused the public
 card to silently omit or misdirect watch actions.
+# September 2, 2026 — Calendar watch actions use configured customer-site social handles
+
+- Supersedes the earlier event-owned destination decision for customer show cards.
+  A Calendar show’s named platform (TikTok, Instagram, YouTube, Facebook, or
+  Whatnot) resolves to the matching social handle/link already configured in
+  that rep’s customer-facing Site Settings. It does not infer a link from
+  media, accept an event-specific override, or persist a separate event URL.
+- If that platform has no valid configured customer-site link, the card has no
+  watch action and Nic-Nac must say plainly that there is no configured link to
+  share yet. Multi-platform show names resolve each matching configured handle
+  in the name’s order.
+- Customer `Add to calendar` opens a provider chooser: Google Calendar,
+  Outlook Calendar, or an ICS file for Apple Calendar/another compatible app.
