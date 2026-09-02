@@ -4,7 +4,7 @@ Date: September 1, 2026
 
 ## Outcome
 
-The approved Nic-Nac rebuild is implemented as a guarded release candidate. The top-level Workspace conversation is now driven by the Vercel AI SDK `ToolLoopAgent`: the model receives the complete capability catalog permitted for the authenticated surface, uses automatic tool choice, and may take up to six model/tool steps by default with a hard ceiling of eight.
+The approved Nic-Nac rebuild is implemented and its default-off code is deployed. The top-level Workspace conversation is now driven by the Vercel AI SDK `ToolLoopAgent` only for an explicitly enabled rollout identity: the model receives the complete capability catalog permitted for the authenticated surface, uses automatic tool choice, and may take up to six model/tool steps by default with a hard ceiling of eight.
 
 The application still owns authentication, tenant isolation, tool schemas, validation, approval gates, audit behavior, data writes, streaming persistence, deterministic recovery, and proof of success. Existing transaction workflows may preserve transaction facts, but they no longer select or force the next conversational tool.
 
@@ -49,9 +49,9 @@ These checks were not silently broadened into the implementation authorization:
 
 - No paid live-model replay has run. It requires an explicit numeric request cap.
 - No production rep/email cohort has been enabled.
-- No real customer, Louis personal/admin account, restricted Support session, billing object, message recipient, DNS/domain/alias, or Live Queue extension was used or changed.
+- No real customer, Louis personal/admin account, restricted Support session, billing object, message recipient, DNS/customer-domain, or Live Queue extension was used or changed. Only the two normal Sparkle Suite production aliases were moved for the authorized release.
 - The separately discussed scheduled isolated cross-workflow canary was not created.
-- Browser-side Nic-Nac behavior was not claimed: the current in-app-browser runtime returned no claimable tab during preflight.
+- Browser-side Nic-Nac behavior is not claimed. The current browser runtime and exact target preflight succeeded, and the public landing page was visually stable, but the protected synthetic reviewer controls remained token-gated. An inherited authenticated session was left untouched rather than used as reviewer evidence.
 
 The next controlled acceptance gate is an exact synthetic-reviewer cohort plus a separately approved paid-request cap. It should replay natural-language Calendar read-to-add and cross-tool switches on the live customer domain, prove tool selection and visible answer quality, confirm no unintended data changes, and exercise the kill switch before broader rollout.
 
@@ -64,4 +64,6 @@ The next controlled acceptance gate is an exact synthetic-reviewer cohort plus a
 - Complete Nic-Nac regression suite: 1,396 passed with one existing skip across 171 files.
 - Repository standard suite: 228/228 passed.
 - Changed-file ESLint, `git diff --check`, provider-free harness smoke, and the Next.js 16.2.1 production build including TypeScript/static generation passed.
-- No deployment, production cohort, paid model call, browser action, customer mutation, message send, billing action, DNS/domain/alias change, or Live Queue mutation occurred.
+- Exact commit `4d96111efe65a6895bea8c78f48976cd57da0044` was manually released as Ready Vercel deployment `dpl_FksLyVKFHSgPUZH5w19sWYhRcDpf`. Both Suite domains resolve to that deployment. The `www` landing page stayed stable after settling, the apex redirected canonically to `www`, `/nic-nac` returned 200, and `/api/nic-nac/health` reported the API and database reachable.
+- Deployment used `--skip-domain` because customer domains share the project, then assigned only `www.yoursparklesuite.com` and `yoursparklesuite.com`. Bri's Glowtique and The Bling Kitchen remained on the prior deployment.
+- Production contains no `NIC_NAC_AGENT_HARNESS_ENABLED`, `NIC_NAC_AGENT_HARNESS_REP_IDS`, or `NIC_NAC_AGENT_HARNESS_EMAILS` variable, so the new harness remains default-off. No cohort, paid model call, synthetic reviewer reset, customer mutation, message send, billing action, DNS/customer-domain change, or Live Queue mutation occurred.

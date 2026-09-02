@@ -22,9 +22,22 @@ Running log of significant work sessions. Most recent first.
 - Verification: 75/75 focused tests; 32/32 critical tests on three consecutive
   runs (96/96); 1,396 Nic-Nac tests with one existing skip; 228/228 standard
   tests; provider-free smoke with 53 registered/45 agent tools and zero paid
-  calls; changed-file ESLint; `git diff --check`; and the production build. No
-  deployment, cohort, paid replay, customer, message, billing, DNS, alias, or
-  Live Queue action occurred.
+  calls; changed-file ESLint; `git diff --check`; and the production build.
+- Louis then authorized production release. Exact pushed commit `4d96111e` was
+  manually deployed as Ready deployment `dpl_FksLyVKFHSgPUZH5w19sWYhRcDpf`.
+  Both Suite domains resolve to it; the landing page stayed on the live URL,
+  the apex redirected to `www`, `/nic-nac` returned 200, and
+  `/api/nic-nac/health` returned API/database healthy.
+- Because customer domains share the Vercel project, deployment used
+  `--skip-domain` and moved only the two Suite domains. Bri's Glowtique and The
+  Bling Kitchen remained on the prior deployment. Production has no Nic-Nac
+  harness broad-enable or exact-cohort variable, so deployment did not enable
+  the new path for reps.
+- The current browser runtime and exact target preflight succeeded. The live
+  protected `/start` controls remained token-gated, and an inherited
+  authenticated session was left untouched rather than used for reviewer
+  evidence. No paid Nic-Nac request, reviewer reset, customer/billing/message,
+  DNS/customer-domain, or Live Queue mutation occurred.
 
 ---
 

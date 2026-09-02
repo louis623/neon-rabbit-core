@@ -559,7 +559,9 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   `add_show` arguments cannot be rewritten by old Calendar state, direct
   SMS/email sends are absent from the default harness without a wording router,
   and the exact Calendar read/clarify/add replay passes. Local verification is
-  complete; this correction has not been deployed or enabled for reps.
+  complete, and exact commit `4d96111e` is deployed as
+  `dpl_FksLyVKFHSgPUZH5w19sWYhRcDpf`. The harness remains default-off and no
+  acceptance cohort is enabled for reps.
 
 - [x] **Implement the approved slice of the Nic-Nac agent-harness rebuild** —
   completed September 1. The default-off `ToolLoopAgent` harness, complete

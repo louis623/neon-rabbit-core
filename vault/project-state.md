@@ -19,8 +19,23 @@
 - Local proof: 75/75 focused tests, 96/96 consecutive critical replays,
   1,396 Nic-Nac tests with one existing skip, 228/228 standard tests,
   provider-free smoke with 53 registered/45 agent tools and zero paid calls,
-  changed-file ESLint, diff checks, and the production build. No deployment or
-  production cohort change occurred.
+  changed-file ESLint, diff checks, and the production build.
+- Exact application commit `4d96111efe65a6895bea8c78f48976cd57da0044`
+  was manually released as Ready Vercel deployment
+  `dpl_FksLyVKFHSgPUZH5w19sWYhRcDpf`. Both Suite domains resolve to that exact
+  deployment; the `www` landing page remained stable after settling, the apex
+  canonically redirected to `www`, `/nic-nac` returned 200, and the public
+  Nic-Nac health endpoint reported API and database reachability.
+- The release used Vercel's skip-domain path and then assigned only
+  `www.yoursparklesuite.com` and `yoursparklesuite.com`. Bri's Glowtique and
+  The Bling Kitchen aliases remained on the prior production deployment. The
+  production environment has no broad or exact-cohort agent-harness rollout
+  variable, so the new harness remains default-off behind the legacy route.
+- No paid Nic-Nac call, cohort enablement, customer data, billing, message,
+  DNS, customer-domain, or Live Queue mutation occurred. The protected
+  synthetic reviewer controls remained unavailable without their production
+  token, and the inherited authenticated browser session was not used as a
+  substitute.
 
 **Last updated:** September 1, 2026
 
