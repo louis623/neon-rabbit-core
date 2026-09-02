@@ -40,6 +40,13 @@ function label(value: string) {
     .join(' ')
 }
 
+function modelDecision(fit: CostCapacitySnapshot['byModel'][number]['modelFit']) {
+  if (fit === 'static') return 'Right-sized · no model needed'
+  if (fit === 'drift') return 'Review · outside policy'
+  if (fit === 'unknown') return 'Review · telemetry incomplete'
+  return 'Matches policy · validate with evals'
+}
+
 function Metric({
   eyebrow,
   value,
@@ -201,24 +208,54 @@ export function CostCapacityPage({ snapshot }: { snapshot: CostCapacitySnapshot 
 
         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2">
+            <Bot aria-hidden="true" className="h-5 w-5 text-violet-700" />
+            <h2 className="text-lg font-semibold">What each model tier is for</h2>
+          </div>
+          <p className="mt-1 max-w-4xl text-sm leading-6 text-slate-600">
+            The configured policy answers whether a run used the intended model. Proving that a different model is better requires the same workflow replayed against both models, with quality, tool correctness, latency, and cost scored together.
+          </p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="text-xs uppercase tracking-wide text-slate-500">
+                <tr><th className="pb-3 pr-4">Policy tier</th><th className="pb-3 pr-4">Work it is for</th><th className="pb-3 pr-4">Configured model</th><th className="pb-3 pr-4">Reasoning</th><th className="pb-3">Optimization status</th></tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {snapshot.modelPolicies.map((policy) => (
+                  <tr key={policy.policyKey}>
+                    <td className="py-3 pr-4"><span className="font-semibold">{label(policy.purpose)}</span><span className="block text-xs text-slate-500">{policy.policyKey}</span></td>
+                    <td className="py-3 pr-4">{policy.job}</td>
+                    <td className="py-3 pr-4 font-semibold">{policy.model}</td>
+                    <td className="py-3 pr-4">{label(policy.reasoning)}</td>
+                    <td className="py-3">Needs comparative replay evidence</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-2">
             <Activity aria-hidden="true" className="h-5 w-5 text-violet-700" />
-            <h2 className="text-lg font-semibold">Model efficiency</h2>
+            <h2 className="text-lg font-semibold">Model fit by workload</h2>
           </div>
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left text-sm">
+            <table className="w-full min-w-[1180px] text-left text-sm">
               <thead className="text-xs uppercase tracking-wide text-slate-500">
-                <tr><th className="pb-3 pr-4">Class</th><th className="pb-3 pr-4">Model / purpose</th><th className="pb-3 pr-4">Runs</th><th className="pb-3 pr-4">Tokens in / out / cached</th><th className="pb-3 pr-4">Estimated</th><th className="pb-3 pr-4">Cost / success</th><th className="pb-3">Policy</th></tr>
+                <tr><th className="pb-3 pr-4">Class</th><th className="pb-3 pr-4">Workload</th><th className="pb-3 pr-4">Actual / expected model</th><th className="pb-3 pr-4">Policy tier</th><th className="pb-3 pr-4">Runs</th><th className="pb-3 pr-4">Tokens in / out / cached</th><th className="pb-3 pr-4">Estimated</th><th className="pb-3 pr-4">Cost / success</th><th className="pb-3">Decision</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {snapshot.byModel.map((row) => (
-                  <tr key={`${row.productClass}-${row.model}-${row.purpose}`}>
+                  <tr key={`${row.productClass}-${row.model}-${row.purpose}-${row.workload}`}>
                     <td className="py-3 pr-4 font-semibold">{label(row.productClass)}</td>
-                    <td className="py-3 pr-4"><span className="font-semibold">{row.model}</span><span className="block text-xs text-slate-500">{label(row.purpose)}</span></td>
+                    <td className="py-3 pr-4 font-semibold">{row.workload}</td>
+                    <td className="py-3 pr-4"><span className="font-semibold">{row.model}</span><span className="block text-xs text-slate-500">Expected: {row.expectedModel ?? 'No model'}</span></td>
+                    <td className="py-3 pr-4"><span className="font-semibold">{label(row.purpose)}</span><span className="block text-xs text-slate-500">Reasoning: {row.reasoningLevel ? label(row.reasoningLevel) : '—'} / {row.expectedReasoning ? label(row.expectedReasoning) : '—'}</span></td>
                     <td className="py-3 pr-4">{row.runs}</td>
                     <td className="py-3 pr-4">{row.inputTokens} / {row.outputTokens} / {row.cachedTokens}</td>
                     <td className="py-3 pr-4">{money(row.estimatedCents)}</td>
                     <td className="py-3 pr-4">{money(row.costPerSuccessfulWorkflowCents)}</td>
-                    <td className="py-3">{row.unknownPrice ? 'Unknown price' : row.policyDrift ? 'Drift' : 'Expected'}</td>
+                    <td className="py-3">{row.unknownPrice ? 'Review · unknown price' : modelDecision(row.modelFit)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -230,16 +267,18 @@ export function CostCapacityPage({ snapshot }: { snapshot: CostCapacitySnapshot 
           <h2 className="text-lg font-semibold">Recent run evidence</h2>
           <p className="mt-1 text-sm text-slate-500">Latest 50 rows for the selected month. Actual provider cost remains aggregate and is never fabricated per run.</p>
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[1200px] text-left text-xs">
+            <table className="w-full min-w-[1420px] text-left text-xs">
               <thead className="uppercase tracking-wide text-slate-500">
-                <tr><th className="pb-3 pr-3">Started · ET</th><th className="pb-3 pr-3">Class / surface</th><th className="pb-3 pr-3">Model / purpose</th><th className="pb-3 pr-3">Run ID</th><th className="pb-3 pr-3">In</th><th className="pb-3 pr-3">Out</th><th className="pb-3 pr-3">Cached</th><th className="pb-3 pr-3">Est.</th><th className="pb-3">Outcome</th></tr>
+                <tr><th className="pb-3 pr-3">Started · ET</th><th className="pb-3 pr-3">Class / surface</th><th className="pb-3 pr-3">Workload</th><th className="pb-3 pr-3">Actual / expected model</th><th className="pb-3 pr-3">Policy tier</th><th className="pb-3 pr-3">Run ID</th><th className="pb-3 pr-3">In</th><th className="pb-3 pr-3">Out</th><th className="pb-3 pr-3">Cached</th><th className="pb-3 pr-3">Est.</th><th className="pb-3">Outcome</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {snapshot.recentRuns.map((row) => (
                   <tr key={`${row.productClass}-${row.runId}`}>
                     <td className="py-3 pr-3 whitespace-nowrap">{timestamp(row.startedAt)}</td>
                     <td className="py-3 pr-3"><span className="font-semibold">{label(row.productClass)}</span><span className="block text-slate-500">{label(row.surface)} · {label(row.costClass)}</span></td>
-                    <td className="py-3 pr-3"><span className="font-semibold">{row.model}</span><span className="block text-slate-500">{label(row.purpose)}</span></td>
+                    <td className="py-3 pr-3 font-semibold">{row.workload}</td>
+                    <td className="py-3 pr-3"><span className="font-semibold">{row.model}</span><span className="block text-slate-500">Expected: {row.expectedModel ?? 'No model'}</span></td>
+                    <td className="py-3 pr-3"><span className="font-semibold">{label(row.purpose)}</span><span className="block text-slate-500">{row.policyKey ?? 'Static application action'}</span></td>
                     <td className="max-w-52 truncate py-3 pr-3 font-mono" title={row.runId}>{row.runId}</td>
                     <td className="py-3 pr-3">{row.inputTokens ?? '—'}</td>
                     <td className="py-3 pr-3">{row.outputTokens ?? '—'}</td>

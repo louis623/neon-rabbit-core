@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const createClientMock = vi.fn()
@@ -7,6 +8,11 @@ vi.mock('@/lib/supabase/service-role', () => ({
 }))
 
 import { GET } from '@/app/api/internal/finder/control-center-nic-nac-usage/route'
+
+const routeSource = readFileSync(
+  'app/api/internal/finder/control-center-nic-nac-usage/route.ts',
+  'utf8',
+)
 
 function request(token = 'usage-token', query = 'start=2026-09-01T00%3A00%3A00.000Z&end=2026-09-03T00%3A00%3A00.000Z') {
   return new Request(`https://finder.test/api/internal/finder/control-center-nic-nac-usage?${query}`, {
@@ -49,6 +55,7 @@ describe('Finder Control Center usage bridge', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('cache-control')).toContain('no-store')
     expect(payload.rows).toEqual([{ id: 'run-1', status: 'completed' }])
+    expect(routeSource).toContain('reasoning_effort,requested_intents')
   })
 
   it('rejects oversized reporting windows', async () => {

@@ -10,6 +10,7 @@ const FINDER_USAGE_PATH = '/api/internal/finder/control-center-nic-nac-usage'
 export type ProductClass = 'suite' | 'finder'
 export type CostClass = 'customer_facing' | 'internal'
 export type RunPurpose = 'default' | 'escalated' | 'utility' | 'lab'
+export type ModelFit = 'expected' | 'drift' | 'static' | 'unknown'
 
 export type CostCapacityRun = {
   productClass: ProductClass
@@ -18,6 +19,12 @@ export type CostCapacityRun = {
   provider: string
   model: string
   purpose: RunPurpose
+  policyKey: string | null
+  workload: string
+  reasoningLevel: string | null
+  expectedModel: string | null
+  expectedReasoning: string | null
+  modelFit: ModelFit
   runId: string
   inputTokens: number | null
   outputTokens: number | null
@@ -36,6 +43,9 @@ type SuiteRunRow = {
   model: string
   model_provider: string | null
   model_policy: string | null
+  reasoning_level?: string | null
+  routed_intents?: string[] | null
+  workflow_type?: string | null
   status: string
   input_tokens: number | null
   output_tokens: number | null
@@ -51,6 +61,8 @@ type FinderRunRow = {
   model_provider: string | null
   model_name: string | null
   model_policy_key: string | null
+  reasoning_effort?: string | null
+  requested_intents?: string[] | null
   prompt_tokens: number | null
   completion_tokens: number | null
   estimated_cost_usd: number | string | null
@@ -106,6 +118,11 @@ export type CostCapacitySnapshot = {
     productClass: ProductClass
     model: string
     purpose: RunPurpose
+    workload: string
+    expectedModel: string | null
+    reasoningLevel: string | null
+    expectedReasoning: string | null
+    modelFit: ModelFit
     runs: number
     successfulWorkflows: number
     inputTokens: number
@@ -115,6 +132,13 @@ export type CostCapacitySnapshot = {
     costPerSuccessfulWorkflowCents: number | null
     policyDrift: boolean
     unknownPrice: boolean
+  }>
+  modelPolicies: Array<{
+    purpose: RunPurpose
+    policyKey: string
+    model: string
+    reasoning: string
+    job: string
   }>
   recentRuns: CostCapacityRun[]
   coverageHoles: string[]
@@ -141,6 +165,64 @@ function classifyCost(purpose: RunPurpose, surface: string): CostClass {
     : 'customer_facing'
 }
 
+const WORKFLOW_LABELS: Record<string, string> = {
+  calendar_event_work: 'Calendar event work',
+  trade_board_add_listing: 'Trade Board · add listing',
+  trade_board_remove_listing: 'Trade Board · remove listing',
+  trade_board_trade_request: 'Trade Board · trade request',
+}
+
+const INTENT_LABELS: Record<string, string> = {
+  calendar: 'Calendar',
+  catalog: 'Jewelry catalog',
+  memory: 'Conversation & memory',
+  notification: 'Notifications',
+  required_setup: 'Workspace setup',
+  resources: 'Help & resources',
+  show_memory: 'Live show assistance',
+  site: 'Customer site',
+  trade_board: 'Trade Board',
+}
+
+function readableKey(value: string) {
+  return value
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function describeWorkload(
+  workflowType: string | null | undefined,
+  intents: string[] | null | undefined,
+  surface: string,
+) {
+  if (workflowType) return WORKFLOW_LABELS[workflowType] ?? readableKey(workflowType)
+  const labels = [...new Set((intents ?? []).map((intent) => INTENT_LABELS[intent] ?? readableKey(intent)))]
+  if (labels.length) return labels.slice(0, 3).join(' + ')
+  if (surface.includes('lab')) return 'Sparkle Lab synthesis'
+  if (surface === 'sparkle_finder') return 'Finder conversation'
+  return 'General Nic-Nac conversation'
+}
+
+function policyForPurpose(purpose: RunPurpose) {
+  const key =
+    purpose === 'escalated'
+      ? 'human_escalated'
+      : purpose === 'utility'
+        ? 'utility_fast'
+        : purpose === 'lab'
+          ? 'lab_synthesis'
+          : 'human_default'
+  return getNicNacModelPolicy(key)
+}
+
+function modelFit(model: string, expectedModel: string | null): ModelFit {
+  if (model === 'No model (static)') return 'static'
+  if (model === 'Unknown (not recorded)' || !expectedModel) return 'unknown'
+  return model === expectedModel ? 'expected' : 'drift'
+}
+
 export function dollarsToIntegerCents(value: number | string | null) {
   if (value === null || value === '') return null
   const dollars = Number(value)
@@ -151,6 +233,7 @@ export function dollarsToIntegerCents(value: number | string | null) {
 
 export function normalizeSuiteRun(row: SuiteRunRow): CostCapacityRun {
   const purpose = policyPurpose(row.model_policy)
+  const policy = policyForPurpose(purpose)
   const surface = row.surface ?? 'unknown'
   const isStaticApplicationRun =
     !row.model_provider &&
@@ -158,13 +241,21 @@ export function normalizeSuiteRun(row: SuiteRunRow): CostCapacityRun {
     (row.input_tokens ?? 0) === 0 &&
     (row.output_tokens ?? 0) === 0 &&
     row.estimated_cost_cents === 0
+  const model = isStaticApplicationRun ? 'No model (static)' : row.model
+  const expectedModel = isStaticApplicationRun ? null : policy.modelId
   return {
     productClass: 'suite',
     costClass: classifyCost(purpose, surface),
     surface,
     provider: isStaticApplicationRun ? 'application' : row.model_provider ?? 'unknown',
-    model: isStaticApplicationRun ? 'No model (static)' : row.model,
+    model,
     purpose,
+    policyKey: isStaticApplicationRun ? null : row.model_policy ?? policy.key,
+    workload: describeWorkload(row.workflow_type, row.routed_intents, surface),
+    reasoningLevel: isStaticApplicationRun ? null : row.reasoning_level ?? null,
+    expectedModel,
+    expectedReasoning: isStaticApplicationRun ? null : policy.reasoning,
+    modelFit: modelFit(model, expectedModel),
     runId: row.run_id,
     inputTokens: asCount(row.input_tokens),
     outputTokens: asCount(row.output_tokens),
@@ -182,17 +273,26 @@ export function normalizeSuiteRun(row: SuiteRunRow): CostCapacityRun {
 
 export function normalizeFinderRun(row: FinderRunRow): CostCapacityRun {
   const purpose = policyPurpose(row.model_policy_key)
+  const policy = policyForPurpose(purpose)
   const surface = 'sparkle_finder'
+  const isStaticApplicationRun = row.status === 'redirected'
+  const model = isStaticApplicationRun
+    ? 'No model (static)'
+    : row.model_name ?? 'Unknown (not recorded)'
+  const expectedModel = isStaticApplicationRun ? null : policy.modelId
   return {
     productClass: 'finder',
     costClass: classifyCost(purpose, surface),
     surface,
-    provider: row.status === 'redirected' ? 'application' : row.model_provider ?? 'unknown',
-    model:
-      row.status === 'redirected'
-        ? 'No model (static)'
-        : row.model_name ?? 'Unknown (not recorded)',
+    provider: isStaticApplicationRun ? 'application' : row.model_provider ?? 'unknown',
+    model,
     purpose,
+    policyKey: isStaticApplicationRun ? null : row.model_policy_key ?? policy.key,
+    workload: describeWorkload(null, row.requested_intents, surface),
+    reasoningLevel: isStaticApplicationRun ? null : row.reasoning_effort ?? null,
+    expectedModel,
+    expectedReasoning: isStaticApplicationRun ? null : policy.reasoning,
+    modelFit: modelFit(model, expectedModel),
     runId: row.id,
     inputTokens: asCount(row.prompt_tokens),
     outputTokens: asCount(row.completion_tokens),
@@ -219,18 +319,6 @@ function aggregateRuns(rows: CostCapacityRun[]) {
   }
 }
 
-function expectedModelForPurpose(purpose: RunPurpose) {
-  const key =
-    purpose === 'escalated'
-      ? 'human_escalated'
-      : purpose === 'utility'
-        ? 'utility_fast'
-        : purpose === 'lab'
-          ? 'lab_synthesis'
-          : 'human_default'
-  return getNicNacModelPolicy(key).modelId
-}
-
 function knownPriceModel(model: string) {
   return ['gpt-5.4', 'gpt-5.4-mini', 'gpt-5.5'].some(
     (prefix) => model === prefix || model.startsWith(`${prefix}-20`),
@@ -240,16 +328,18 @@ function knownPriceModel(model: string) {
 function groupByModel(rows: CostCapacityRun[]) {
   const groups = new Map<string, CostCapacityRun[]>()
   for (const row of rows) {
-    const key = [row.productClass, row.model, row.purpose].join('::')
+    const key = [row.productClass, row.model, row.purpose, row.workload].join('::')
     groups.set(key, [...(groups.get(key) ?? []), row])
   }
   return [...groups.entries()]
     .map(([key, group]) => {
-      const [productClass, model, purpose] = key.split('::') as [
+      const [productClass, model, purpose, workload] = key.split('::') as [
         ProductClass,
         string,
         RunPurpose,
+        string,
       ]
+      const exemplar = group[0]
       const aggregate = aggregateRuns(group)
       const estimatedCents = group.reduce(
         (sum, row) => sum + (row.estimatedCents ?? 0),
@@ -259,6 +349,11 @@ function groupByModel(rows: CostCapacityRun[]) {
         productClass,
         model,
         purpose,
+        workload,
+        expectedModel: exemplar.expectedModel,
+        reasoningLevel: exemplar.reasoningLevel,
+        expectedReasoning: exemplar.expectedReasoning,
+        modelFit: exemplar.modelFit,
         runs: aggregate.runs,
         successfulWorkflows: aggregate.successfulWorkflows,
         inputTokens: aggregate.inputTokens,
@@ -269,10 +364,7 @@ function groupByModel(rows: CostCapacityRun[]) {
           aggregate.successfulWorkflows > 0
             ? Math.round(estimatedCents / aggregate.successfulWorkflows)
             : null,
-        policyDrift:
-          model !== 'No model (static)' &&
-          model !== 'Unknown (not recorded)' &&
-          model !== expectedModelForPurpose(purpose),
+        policyDrift: exemplar.modelFit === 'drift',
         unknownPrice:
           model !== 'No model (static)' &&
           model !== 'Unknown (not recorded)' &&
@@ -406,7 +498,7 @@ export function buildCostCapacitySnapshot(input: {
       .map((row) => `${row.productClass}: ${row.model} has no approved estimate price.`),
     ...byModel
       .filter((row) => row.policyDrift)
-      .map((row) => `${row.productClass}: ${row.purpose} ran on ${row.model}, outside the configured policy.`),
+      .map((row) => `${row.productClass}: ${row.workload} ran on ${row.model}; the ${row.purpose} policy expects ${row.expectedModel}.`),
   ]
   for (const product of products) {
     if (product.runs > 0 && product.hardFails / product.runs >= 0.2) {
@@ -441,6 +533,16 @@ export function buildCostCapacitySnapshot(input: {
       actualCentsPerDay: actualCents === null ? null : actualCents / elapsedDays,
     },
     byModel,
+    modelPolicies: (['default', 'escalated', 'utility', 'lab'] as RunPurpose[]).map((purpose) => {
+      const policy = policyForPurpose(purpose)
+      return {
+        purpose,
+        policyKey: policy.key,
+        model: policy.modelId,
+        reasoning: policy.reasoning,
+        job: policy.purpose,
+      }
+    }),
     recentRuns: rows.slice(0, 50),
     coverageHoles: [...new Set(coverageHoles)],
     alerts: [...new Set(alerts)],
@@ -572,7 +674,7 @@ export async function readCostCapacityRuns(
   const suitePromise = supabase
     .from('nic_nac_runs')
     .select(
-      'run_id,product,surface,model,model_provider,model_policy,status,input_tokens,output_tokens,cache_read_tokens,estimated_cost_cents,hard_fail_phrase_count,created_at',
+      'run_id,product,surface,model,model_provider,model_policy,reasoning_level,routed_intents,workflow_type,status,input_tokens,output_tokens,cache_read_tokens,estimated_cost_cents,hard_fail_phrase_count,created_at',
     )
     .gte('created_at', range.start.toISOString())
     .lt('created_at', range.end.toISOString())
@@ -626,8 +728,14 @@ export function formatCostCapacityCsv(rows: CostCapacityRun[]) {
     'product_class',
     'cost_class',
     'surface',
+    'workload',
     'model',
+    'expected_model',
+    'reasoning_level',
+    'expected_reasoning',
     'purpose',
+    'policy_key',
+    'model_fit',
     'run_id',
     'tokens_in',
     'tokens_out',
@@ -642,8 +750,14 @@ export function formatCostCapacityCsv(rows: CostCapacityRun[]) {
     row.productClass,
     row.costClass,
     row.surface,
+    row.workload,
     row.model,
+    row.expectedModel,
+    row.reasoningLevel,
+    row.expectedReasoning,
     row.purpose,
+    row.policyKey,
+    row.modelFit,
     row.runId,
     row.inputTokens,
     row.outputTokens,

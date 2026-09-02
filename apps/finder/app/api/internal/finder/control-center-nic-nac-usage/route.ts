@@ -48,7 +48,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await admin
     .from('sparkle_finder_nic_nac_runs')
-    .select('id,status,model_provider,model_name,model_policy_key,prompt_tokens,completion_tokens,estimated_cost_usd,error_code,started_at')
+    .select('id,status,model_provider,model_name,model_policy_key,reasoning_effort,requested_intents,prompt_tokens,completion_tokens,estimated_cost_usd,error_code,started_at')
     .gte('started_at', start.toISOString())
     .lt('started_at', end.toISOString())
     .order('started_at', { ascending: false })
