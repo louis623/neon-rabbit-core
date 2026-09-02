@@ -6110,3 +6110,11 @@ Lessons retained:
   configured TikTok profile and that the calendar chooser exposes Google,
   Outlook, and Apple/other choices. No sign-in, data mutation, provider action,
   customer-domain movement, billing, or customer-account action occurred.
+
+## Open Brain closeout
+
+- Louis requested the complete session record in Open Brain. Captured the
+  platform-to-configured-social-link decision, calendar chooser behavior,
+  corrected event-destination approach, commits/deployments, test and live
+  evidence, reviewer constraint, and the Vercel alias lesson as an Open Brain
+  observation on September 2, 2026. No credentials or private tokens included.
