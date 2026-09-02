@@ -2,6 +2,18 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 2, 2026 - Session memory reconciliation
+
+- Reconciled the completed Terra release against Open Brain and all four vault
+  files. The final application release is `2a1e5ad1`; the documented closeout
+  is committed in `824dc6d`. Both are pushed on the allowlisted branch.
+- Added the reusable provenance lesson: inspect each hostname directly after a
+  held-domain Vercel release because a deployment alias list may be stale.
+- Added the reviewer-cleanup lesson: retain app-owned confirmation, explicit
+  owner scope, and a reload-based persistence check even for synthetic data.
+
+---
+
 ## September 2, 2026 - Terra production release and live reviewer closeout
 
 - Pushed application `2a1e5ad1`, manually deployed Ready

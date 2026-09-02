@@ -1,5 +1,19 @@
 # Decision Log
 
+## September 2, 2026 - Production provenance uses direct hostname resolution
+
+For a held-domain manual Vercel release, verify each intended hostname with a
+direct deployment inspection after assignment. A deployment's cached alias
+array can retain stale aliases, so it is supporting evidence only—not proof
+that a domain has moved or stayed put. Keep the replacement deployment and
+the protected customer-domain deployment as separate provenance records.
+
+For synthetic smoke cleanup, use the normal app-owned confirmation control.
+Even when the reviewer account is safe, do not treat a model request as enough
+authority to cancel a test record: obtain Louis's explicit scope and verify
+the persisted result after reload. This preserves the same approval boundary
+used for ordinary reps and leaves recoverable audit history.
+
 ## September 2, 2026 - Bounded migration verification and optional tool contracts
 
 Louis authorized a temporary Responses-only Suite test key with a $3 total
