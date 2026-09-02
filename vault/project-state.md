@@ -1,5 +1,33 @@
 # Project State
 
+## September 1, 2026 - Agentic Nic-Nac is the sole production route
+
+- The legacy `/api/nic-nac` handler and its default-off rollout gate were
+  removed. Every production request now enters the permission-scoped
+  ToolLoopAgent path; absent or stale rollout environment values cannot send a
+  rep back to the retired implementation.
+- A successful-but-blank pre-tool model turn now receives one bounded retry
+  across all job types. The retry is forbidden after any tool begins, so a
+  Calendar or Dance Floor write cannot be executed twice. Existing grounded
+  tool-result summaries and the safe Calendar read recovery remain in place.
+- Verification passed 1,294 Nic-Nac tests with one skip, 228 standard tests,
+  the provider-free 45-tool architecture/safety smoke, changed-file ESLint,
+  diff checks, and the complete Next.js production build. No paid model call
+  was used for release verification.
+- Exact pushed application commit `564223ac10918d14e5a19e79bdb2b5af21b5b597`
+  is live as Ready deployment `dpl_3GEo2haLjRbgkiUCqapMzWHk6Bdo`. Both Suite
+  domains resolve to it; root and `/nic-nac` returned 200, API/database health
+  was green with zero recent errors, and a safe unauthenticated live probe
+  returned `X-Nic-Nac-Orchestrator: agent`.
+- Only the two Suite domains moved. Bri's Glowtique and The Bling Kitchen
+  stayed on `dpl_2qiLozydCs16rXufFNbqttMvfDWz`. The prior Suite deployment is
+  preserved as rollback evidence; no customer, billing, messaging, DNS,
+  customer-domain, or Live Queue state changed.
+
+**Last updated:** September 1, 2026
+
+---
+
 ## September 1, 2026 - Live Nic-Nac Calendar empty-turn recovery
 
 - Production evidence proved Louis's two `Whats on my calendar` failures ran

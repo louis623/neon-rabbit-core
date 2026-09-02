@@ -2,13 +2,27 @@
 
 Date: September 1, 2026
 
+> Production cutover update: commit `564223ac` retired the legacy route and
+> rollout gate. The ToolLoopAgent is now the only `/api/nic-nac` orchestrator.
+> Any default-off or legacy-fallback wording retained in the chronological
+> evidence below describes the earlier implementation/review state, not the
+> current production architecture.
+
 ## Outcome
 
-The approved Nic-Nac rebuild is implemented and its default-off code is deployed. The top-level Workspace conversation is now driven by the Vercel AI SDK `ToolLoopAgent` only for an explicitly enabled rollout identity: the model receives the complete capability catalog permitted for the authenticated surface, uses automatic tool choice, and may take up to six model/tool steps by default with a hard ceiling of eight.
+The approved Nic-Nac rebuild is implemented and live. The top-level Workspace conversation is driven by the Vercel AI SDK `ToolLoopAgent`: the model receives the complete capability catalog permitted for the authenticated surface, uses automatic tool choice, and may take up to six model/tool steps by default with a hard ceiling of eight.
 
 The application still owns authentication, tenant isolation, tool schemas, validation, approval gates, audit behavior, data writes, streaming persistence, deterministic recovery, and proof of success. Existing transaction workflows may preserve transaction facts, but they no longer select or force the next conversational tool.
 
-The production rollout is deliberately default-off. With no rollout environment variables, production requests use the preserved legacy route. An exact rep ID or email cohort can be enabled later, and `NIC_NAC_AGENT_HARNESS_ENABLED=false` is the kill switch. No cohort was enabled during this implementation.
+The production route has no legacy fallback or rollout switch. Git and the preserved prior Vercel deployment remain the recoverable rollback evidence; a missing environment variable cannot silently return a rep to the retired route.
+
+## Sole-agent production release
+
+- Exact commit `564223ac10918d14e5a19e79bdb2b5af21b5b597` removed the 1,428-line legacy handler, removed the rollout gate, and made every `/api/nic-nac` response identify `x-nic-nac-orchestrator: agent` from the start of request handling.
+- A completely blank successful model turn is retried once only when no tool has started. Once a tool begins, the route never replays the turn, so writes cannot be duplicated. Existing deterministic tool-result summaries and the tenant-scoped Calendar read recovery remain the final safety net.
+- Provider-free proof passed 1,294 Nic-Nac tests with one skip, 228 standard tests, the 45-tool architecture/safety smoke with zero paid model calls, changed-file ESLint, diff checks, and the Next.js production build.
+- Ready deployment `dpl_3GEo2haLjRbgkiUCqapMzWHk6Bdo` / `sparkle-suite-6vppehzbk-louis-2849s-projects.vercel.app` was verified while held, then only `www.yoursparklesuite.com` and `yoursparklesuite.com` were moved to it. Root and `/nic-nac` returned 200, health reported API/database reachable and zero recent errors, and an unauthenticated zero-model-call live probe returned `X-Nic-Nac-Orchestrator: agent`.
+- Bri's Glowtique and The Bling Kitchen remained on `dpl_2qiLozydCs16rXufFNbqttMvfDWz`. No signed-in account, paid Nic-Nac call, customer data, message, billing object, DNS, customer-domain mapping, or Live Queue state was used or changed during release proof.
 
 ## Implemented boundaries
 

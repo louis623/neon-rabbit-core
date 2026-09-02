@@ -4,6 +4,29 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## September 1, 2026 - Sole-agent Nic-Nac production cutover
+
+- Confirmed the deployed ToolLoopAgent was still hidden behind a production-
+  default-off switch, which silently sent Louis to the legacy route. Removed
+  the switch, deleted the legacy handler, and added a structural regression
+  proving there is one production orchestrator and it is `agent`.
+- Added one bounded retry for a completely blank successful turn before any
+  tool starts. Tool-started turns never retry, preventing duplicate writes.
+- Verification passed 37 focused route/stream/production-path tests, 1,294
+  Nic-Nac tests with one skip, 228 standard tests, provider-free architecture
+  smoke, changed-file ESLint, diff checks, and local plus Vercel production
+  builds. No paid model request ran.
+- Committed and pushed exact application commit `564223ac`, then manually
+  deployed it with all domains held as Ready deployment
+  `dpl_3GEo2haLjRbgkiUCqapMzWHk6Bdo` /
+  `sparkle-suite-6vppehzbk-louis-2849s-projects.vercel.app`.
+- Held and live checks passed for root, `/nic-nac`, health, and the explicit
+  `X-Nic-Nac-Orchestrator: agent` response header. Assigned only the two Suite
+  domains; apex canonicalized to `www`, protected customer domains stayed on
+  `dpl_2qiLozydCs16rXufFNbqttMvfDWz`, and no new error logs appeared.
+
+---
+
 ## September 1, 2026 - Live Calendar empty-turn incident and release
 
 - Investigated Louis's screenshot without sending another paid Nic-Nac

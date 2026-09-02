@@ -1,5 +1,24 @@
 # Decision Log
 
+## September 1, 2026 - One production Nic-Nac, with no silent legacy fallback
+
+**The ToolLoopAgent is the only production conversation orchestrator.** The
+legacy handler and rollout gate are retired from the application tree. Rollback
+uses an explicit known-good Git/Vercel release, not a hidden per-request fork
+that can leave the owner testing the wrong product.
+
+**A successful blank turn gets one safe retry before tool execution.** This is
+an execution-boundary reliability rule for every kind of request, not a phrase
+router. Once any tool begins, the turn cannot be automatically replayed, which
+protects writes and outbound side effects from duplication.
+
+Reason: the new agent code had passed its tests and was deployed, but the
+default-off fork still sent real production traffic to the legacy handler. A
+feature that Louis cannot reach is not released, and a fallback that silently
+changes architectures makes production evidence misleading.
+
+---
+
 ## September 1, 2026 - Empty safe reads recover at the execution boundary
 
 **Natural punctuation differences are not different jobs.** Calendar reads

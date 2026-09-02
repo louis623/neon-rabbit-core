@@ -5,6 +5,13 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Louis smoke-test the sole-agent Nic-Nac in the internal demo
+  account** - production now has one Nic-Nac route and reports orchestrator
+  `agent`. Use the existing non-live, dashboard-unlocked demo entitlement to
+  test natural Calendar read-to-add and switches among Calendar, Dance Floor,
+  and live-show questions. Do not use a customer account or create billing,
+  outbound-message, DNS, or Live Queue side effects during the review.
+
 - [ ] **Connect Kim's custom domain after expanded Namecheap DNS access** -
   Louis sent the request for Advanced DNS / Host Records permission after the
   accepted manager invitation proved view-only for DNS. Wait for that access;
