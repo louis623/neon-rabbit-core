@@ -65,17 +65,15 @@ describe('Nic-Nac stream output guard', () => {
     expect(NIC_NAC_EMPTY_RESPONSE_FALLBACK).toContain('Please send that again')
     expect(NIC_NAC_EMPTY_RESPONSE_FALLBACK).not.toContain('error')
 
-    for (const routePath of [
-      'app/api/nic-nac/route.ts',
-      'app/api/nic-nac/legacy-route.ts',
-    ]) {
-      const routeSource = readFileSync(resolve(process.cwd(), routePath), 'utf8')
-      expect(routeSource).toContain("if (chunk.type === 'finish')")
-      expect(routeSource).toContain('!sawRenderableOutput')
-      expect(routeSource).toContain('recoverNicNacEmptyCalendarRead')
-      expect(routeSource).toContain('NIC_NAC_EMPTY_RESPONSE_FALLBACK')
-      expect(routeSource).toContain("'empty_model_output_recovered'")
-    }
+    const routeSource = readFileSync(
+      resolve(process.cwd(), 'app/api/nic-nac/route.ts'),
+      'utf8',
+    )
+    expect(routeSource).toContain("if (chunk.type === 'finish')")
+    expect(routeSource).toContain('!sawRenderableOutput')
+    expect(routeSource).toContain('recoverNicNacEmptyCalendarRead')
+    expect(routeSource).toContain('NIC_NAC_EMPTY_RESPONSE_FALLBACK')
+    expect(routeSource).toContain("'empty_model_output_recovered'")
   })
 
   it('turns an apostrophe-free Calendar question into a read-only answer after a zero-output turn', async () => {

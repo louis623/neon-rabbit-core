@@ -303,6 +303,7 @@ describe('Nic-Nac agent route integration', () => {
     const body = await response.text()
 
     expect(response.status).toBe(200)
+    expect(response.headers.get('x-nic-nac-orchestrator')).toBe('agent')
     expect(body).toContain('Hello, Brittany! How can I help you today?')
     expect(createConfiguredNicNacAgentMock).not.toHaveBeenCalled()
     expect(agentStreamMock).not.toHaveBeenCalled()
@@ -818,12 +819,18 @@ describe('Nic-Nac agent route integration', () => {
     expect(body).toContain('Your Dance Floor has 1 matching dancer')
     expect(body).toContain('The Starlight Earrings')
     expect(body).not.toContain('Please send that again')
+    expect(agentStreamMock).toHaveBeenCalledOnce()
     expect(logNicNacRunMock).toHaveBeenCalledWith(
       expect.objectContaining({ executedToolNames: ['list_my_trade_board'] }),
     )
   })
 
   it('answers an apostrophe-free Calendar read when the provider emits no text or tool call', async () => {
+    agentStreamMock.mockResolvedValueOnce(
+      resultFromChunks([
+        { type: 'finish', finishReason: { unified: 'stop', raw: undefined } },
+      ]),
+    )
     agentStreamMock.mockResolvedValueOnce(
       resultFromChunks([
         { type: 'finish', finishReason: { unified: 'stop', raw: undefined } },
@@ -851,6 +858,35 @@ describe('Nic-Nac agent route integration', () => {
     )
     expect(logNicNacRunMock).toHaveBeenCalledWith(
       expect.objectContaining({ executedToolNames: ['list_my_shows'] }),
+    )
+    expect(agentStreamMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('retries one completely blank pre-tool turn for every kind of job', async () => {
+    agentStreamMock
+      .mockResolvedValueOnce(
+        resultFromChunks([
+          { type: 'finish', finishReason: { unified: 'stop', raw: undefined } },
+        ]),
+      )
+      .mockResolvedValueOnce(
+        textResult('Here are three strong opening lines for your live show.'),
+      )
+
+    const response = await POST(
+      requestFor('Give me three strong opening lines for my live show.'),
+    )
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toContain('Here are three strong opening lines')
+    expect(body).not.toContain('Please send that again')
+    expect(agentStreamMock).toHaveBeenCalledTimes(2)
+    expect(logIncidentMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errorType: 'agent_empty_output_retry',
+        severity: 'warn',
+      }),
     )
   })
 

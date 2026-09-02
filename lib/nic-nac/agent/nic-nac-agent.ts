@@ -169,7 +169,7 @@ export type ConfiguredNicNacAgent = {
 }
 
 /**
- * Application-level factory for the default-off harness. It keeps the current
+ * Application-level factory for the production Nic-Nac agent. It keeps the current
  * provider/model policy and permission-scoped capability construction out of
  * the route while leaving authentication, persistence, approvals, and UI
  * streaming at the route boundary.

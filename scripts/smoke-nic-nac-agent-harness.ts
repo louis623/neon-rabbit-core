@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { buildNicNacCapabilityCatalog } from '@/lib/nic-nac/agent/capability-catalog'
 import { buildNicNacAgentInstructions } from '@/lib/nic-nac/agent/instructions'
-import {
-  canNicNacAgentHarnessBeEnabled,
-  isNicNacAgentHarnessEnabled,
-} from '@/lib/nic-nac/agent/rollout'
 import { createSuiteRepWorkspaceProductContext } from '@/lib/nic-nac/core/product-context'
 import { searchNicNacWorkKnowledge } from '@/lib/nic-nac/knowledge/search-work-knowledge'
 import {
@@ -89,22 +87,13 @@ assert.equal(knowledge.results[0]?.scope, 'live_streaming_practice')
 assert.ok(knowledge.results[0]?.sourceId)
 assert.ok(knowledge.results[0]?.reviewedAt)
 
-const rolloutIdentity = {
-  repId: toolContext.repId,
-  email: 'synthetic-reviewer@example.com',
-}
-assert.equal(
-  isNicNacAgentHarnessEnabled(rolloutIdentity, { NODE_ENV: 'production' }),
-  false,
+const routeSource = readFileSync(
+  resolve(process.cwd(), 'app/api/nic-nac/route.ts'),
+  'utf8',
 )
-assert.equal(canNicNacAgentHarnessBeEnabled({ NODE_ENV: 'production' }), false)
-assert.equal(
-  isNicNacAgentHarnessEnabled(rolloutIdentity, {
-    NODE_ENV: 'production',
-    NIC_NAC_AGENT_HARNESS_EMAILS: rolloutIdentity.email,
-  }),
-  true,
-)
+assert.match(routeSource, /'x-nic-nac-orchestrator': 'agent'/)
+assert.doesNotMatch(routeSource, /legacyNicNacPOST|runLegacyNicNac/)
+assert.doesNotMatch(routeSource, /NIC_NAC_AGENT_HARNESS/)
 
 console.log(
   JSON.stringify(
@@ -115,8 +104,8 @@ console.log(
       workspaceAgentTools: catalog.toolNames.length,
       harnessExcludedTools: catalog.harnessExcludedToolNames,
       approvalLedgerFindings: safetyFindings.length,
-      productionDefaultOff: true,
-      exactCohortEnablement: true,
+      soleProductionOrchestrator: 'agent',
+      legacyRuntimeFallback: false,
       groundedKnowledgeSource: knowledge.results[0]?.sourceId,
     },
     null,

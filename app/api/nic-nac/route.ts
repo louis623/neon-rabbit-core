@@ -86,11 +86,6 @@ import {
   loadNicNacWorkflowTaskContinuity,
   renderNicNacWorkflowTaskContext,
 } from '@/lib/nic-nac/agent/workflow-task-context'
-import {
-  canNicNacAgentHarnessBeEnabled,
-  isNicNacAgentHarnessEnabled,
-} from '@/lib/nic-nac/agent/rollout'
-import { POST as legacyNicNacPOST } from './legacy-route'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -291,19 +286,13 @@ function validateApprovalResponseProvenance(args: {
   return { valid: true }
 }
 
-async function runLegacyNicNac(request: Request) {
-  const response = await legacyNicNacPOST(request)
-  response.headers.set('x-nic-nac-orchestrator', 'legacy')
-  return response
-}
-
 export async function POST(request: Request) {
-  if (!canNicNacAgentHarnessBeEnabled()) {
-    return runLegacyNicNac(request)
-  }
   const runId = randomUUID()
   const runStartedAt = Date.now()
-  const responseHeaders: Record<string, string> = { 'x-nic-nac-run-id': runId }
+  const responseHeaders: Record<string, string> = {
+    'x-nic-nac-run-id': runId,
+    'x-nic-nac-orchestrator': 'agent',
+  }
   const modelPolicy = getNicNacModelPolicy('human_default')
 
   let ctx
@@ -330,18 +319,6 @@ export async function POST(request: Request) {
     throw err
   }
   const { repId, rep, supabase } = ctx
-  if (
-    !isNicNacAgentHarnessEnabled({
-      repId,
-      email: rep.email,
-    })
-  ) {
-    // Production-default-off rollback path. The legacy handler performs its
-    // own normal authentication and request processing; this preliminary
-    // identity read exists only to evaluate the exact rollout cohort.
-    return runLegacyNicNac(request)
-  }
-  responseHeaders['x-nic-nac-orchestrator'] = 'agent'
   const supportContext = getOperatorSupportRequestContext()
   const supportScope = supportContext
     ? {
@@ -941,91 +918,110 @@ export async function POST(request: Request) {
       // terminal hide in every case.
       const activeToolCallIds = new Set<string>()
       try {
-        const result = await configuredAgent.agent.stream({
-          messages: modelMessages,
-          abortSignal: request.signal,
-        })
-        for await (const chunk of result.toUIMessageStream({ sendStart: false })) {
-          if (chunk.type === 'finish') {
-            pendingFinishChunk = chunk
-            continue
-          }
-          if (chunk.type === 'abort' || chunk.type === 'error') {
-            streamAborted = true
-          }
-          if (chunk.type === 'tool-input-available') {
-            toolNamesByCallId.set(chunk.toolCallId, chunk.toolName)
-            if (!activeToolCallIds.has(chunk.toolCallId)) {
-              activeToolCallIds.add(chunk.toolCallId)
-              activeToolCalls = activeToolCallIds.size
-              toolEverFired = true
-              if (activeToolCalls === 1) {
-                writer.write({
-                  type: 'data-thinking',
-                  data: { phase: 'confirm', messageId: assistantMessageId },
-                  transient: true,
-                })
-                currentlyVisible = true
+        for (let agentAttempt = 1; agentAttempt <= 2; agentAttempt += 1) {
+          const result = await configuredAgent.agent.stream({
+            messages: modelMessages,
+            abortSignal: request.signal,
+          })
+          for await (const chunk of result.toUIMessageStream({ sendStart: false })) {
+            if (chunk.type === 'finish') {
+              pendingFinishChunk = chunk
+              continue
+            }
+            if (chunk.type === 'abort' || chunk.type === 'error') {
+              streamAborted = true
+            }
+            if (chunk.type === 'tool-input-available') {
+              toolNamesByCallId.set(chunk.toolCallId, chunk.toolName)
+              if (!activeToolCallIds.has(chunk.toolCallId)) {
+                activeToolCallIds.add(chunk.toolCallId)
+                activeToolCalls = activeToolCallIds.size
+                toolEverFired = true
+                if (activeToolCalls === 1) {
+                  writer.write({
+                    type: 'data-thinking',
+                    data: { phase: 'confirm', messageId: assistantMessageId },
+                    transient: true,
+                  })
+                  currentlyVisible = true
+                }
               }
             }
-          }
-          if (chunk.type === 'tool-output-available') {
-            activeToolCallIds.delete(chunk.toolCallId)
-            activeToolCalls = activeToolCallIds.size
-            const toolName = toolNamesByCallId.get(chunk.toolCallId)
-            if (toolName) {
-              executedToolNames.push(toolName)
-              const failure = getNicNacToolFailure(toolName, chunk.output)
-              if (failure) {
-                toolFailures.push({
-                  toolName: failure.toolName,
-                  errorTier: failure.errorTier,
-                  code: failure.code,
-                  stage: failure.stage,
-                })
-                toolFailureRecoveryText =
+            if (chunk.type === 'tool-output-available') {
+              activeToolCallIds.delete(chunk.toolCallId)
+              activeToolCalls = activeToolCallIds.size
+              const toolName = toolNamesByCallId.get(chunk.toolCallId)
+              if (toolName) {
+                executedToolNames.push(toolName)
+                const failure = getNicNacToolFailure(toolName, chunk.output)
+                if (failure) {
+                  toolFailures.push({
+                    toolName: failure.toolName,
+                    errorTier: failure.errorTier,
+                    code: failure.code,
+                    stage: failure.stage,
+                  })
+                  toolFailureRecoveryText =
+                    getNicNacToolOnlyRecoveryText(toolName, chunk.output, {
+                      latestUserText,
+                    }) ??
+                    NIC_NAC_EMPTY_RESPONSE_FALLBACK
+                }
+                toolOnlyRecoveryText =
                   getNicNacToolOnlyRecoveryText(toolName, chunk.output, {
                     latestUserText,
                   }) ??
-                  NIC_NAC_EMPTY_RESPONSE_FALLBACK
+                  toolOnlyRecoveryText
+                mandatoryToolFollowUpText =
+                  getNicNacMandatoryToolFollowUpText(toolName, chunk.output) ??
+                  mandatoryToolFollowUpText
               }
-              toolOnlyRecoveryText =
-                getNicNacToolOnlyRecoveryText(toolName, chunk.output, {
-                  latestUserText,
-                }) ??
-                toolOnlyRecoveryText
-              mandatoryToolFollowUpText =
-                getNicNacMandatoryToolFollowUpText(toolName, chunk.output) ??
-                mandatoryToolFollowUpText
             }
+            if (
+              chunk.type === 'tool-output-error' ||
+              chunk.type === 'tool-output-denied' ||
+              chunk.type === 'tool-approval-request'
+            ) {
+              activeToolCallIds.delete(chunk.toolCallId)
+              activeToolCalls = activeToolCallIds.size
+            }
+            if (
+              toolFailureRecoveryText &&
+              ['text-start', 'text-delta', 'text-end'].includes(chunk.type)
+            ) {
+              continue
+            }
+            if (isRenderableNicNacStreamChunk(chunk)) {
+              sawRenderableOutput = true
+            }
+            if (chunk.type === 'text-delta') renderedText += chunk.delta
+            if (
+              chunk.type === 'text-delta' &&
+              /\S/.test(chunk.delta) &&
+              currentlyVisible &&
+              activeToolCalls === 0
+            ) {
+              emitHide(toolEverFired ? 'final-text' : 'plain-text')
+            }
+            writer.write(chunk)
           }
-          if (
-            chunk.type === 'tool-output-error' ||
-            chunk.type === 'tool-output-denied' ||
-            chunk.type === 'tool-approval-request'
-          ) {
-            activeToolCallIds.delete(chunk.toolCallId)
-            activeToolCalls = activeToolCallIds.size
-          }
-          if (
-            toolFailureRecoveryText &&
-            ['text-start', 'text-delta', 'text-end'].includes(chunk.type)
-          ) {
-            continue
-          }
-          if (isRenderableNicNacStreamChunk(chunk)) {
-            sawRenderableOutput = true
-          }
-          if (chunk.type === 'text-delta') renderedText += chunk.delta
-          if (
-            chunk.type === 'text-delta' &&
-            /\S/.test(chunk.delta) &&
-            currentlyVisible &&
-            activeToolCalls === 0
-          ) {
-            emitHide(toolEverFired ? 'final-text' : 'plain-text')
-          }
-          writer.write(chunk)
+
+          const shouldRetryEmptyAgentTurn =
+            agentAttempt === 1 &&
+            !streamAborted &&
+            !streamErrorMessage &&
+            !sawRenderableOutput &&
+            !toolEverFired
+          if (!shouldRetryEmptyAgentTurn) break
+
+          pendingFinishChunk = null
+          await logIncident({
+            errorType: 'agent_empty_output_retry',
+            repId,
+            conversationId,
+            severity: 'warn',
+            details: { runId, attempt: agentAttempt },
+          })
         }
         if (
           !streamAborted &&
