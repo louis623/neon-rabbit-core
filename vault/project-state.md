@@ -1,5 +1,44 @@
 # Project State
 
+## September 1, 2026 - Live Nic-Nac Calendar empty-turn recovery
+
+- Production evidence proved Louis's two `Whats on my calendar` failures ran
+  through the legacy route, not the default-off ToolLoopAgent. Both completed
+  with zero model tokens, no tool call, and
+  `empty_model_output_recovered`; no quota, 429, or insufficient-credit error
+  was present.
+- Root cause was a compound failure: the Calendar-read recognizer required an
+  apostrophe in `What's`, so the apostrophe-free wording left the legacy
+  48-tool catalog on automatic selection; the provider then returned a valid
+  but empty turn. With no `list_my_shows` result to summarize, the generic
+  apology was the only remaining output.
+- Calendar-read recognition now accepts ordinary ASCII, curly-apostrophe, and
+  apostrophe-free forms. Both the legacy and ToolLoopAgent stream paths also
+  have a final read-only Calendar safety net: if a Calendar question ends with
+  no visible text and no tool result, the server reads `list_my_shows`, renders
+  the normal grounded Calendar summary, and records tool/run/incident
+  telemetry. Calendar mutations are explicitly excluded, and a failed read
+  reports an honest Calendar error instead of the generic apology.
+- Verification passed 91 focused route/policy/recovery tests, 228 standard
+  tests, 112 agent/routing/workflow tests, changed-file ESLint,
+  `git diff --check`, and the Next.js 16.2.1 production build. The standalone
+  repository `tsc --noEmit` still reports the known unrelated test-fixture
+  typing backlog; the production build TypeScript gate passed.
+- Exact pushed application commit
+  `47275febe2e0796d435bf060666b991539d94f25` is live as Ready Vercel deployment
+  `dpl_9WJxru6eyyX6A4KQCrZrkuov7QRK`. Both Suite domains resolve to that exact
+  deployment; root and `/nic-nac` returned 200, apex canonicalized to `www`,
+  and Nic-Nac health reported API/database reachable with zero recent errors.
+- Deployment used `--skip-domain` and moved only the two Suite domains. Both
+  Bri's Glowtique hostnames and both Bling Kitchen hostnames remain on prior
+  Ready deployment `dpl_2qiLozydCs16rXufFNbqttMvfDWz`. No paid Nic-Nac call,
+  cohort enablement, signed-in account use, customer data, message, billing,
+  DNS, customer-domain, or Live Queue mutation occurred.
+
+**Last updated:** September 1, 2026
+
+---
+
 ## September 1, 2026 - Dex-reviewed Nic-Nac correction slice
 
 - Removed the remaining action-like wording from ToolLoopAgent continuity.

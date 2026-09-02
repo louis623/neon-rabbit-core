@@ -554,6 +554,22 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Nic-Nac reliability
 
+- [x] **Recover live apostrophe-free Calendar reads from zero-output turns** —
+  production telemetry proved the September 1 failures used the legacy route,
+  spent zero model tokens, called no tool, and were not credit/quota failures.
+  Natural contraction variants now route consistently, and both stream paths
+  have a mutation-excluding read-only Calendar fallback with telemetry. Exact
+  commit `47275feb` is live as `dpl_9WJxru6eyyX6A4KQCrZrkuov7QRK`; only the
+  two Suite domains moved.
+
+- [ ] **Close the broader zero-output/catalog-pressure risk before broad
+  Nic-Nac rollout** — exercise representative Calendar, Dance Floor, trade,
+  resources, and grounded-guidance reads against recorded empty/provider-edge
+  outputs. Define a general no-empty-turn contract and evaluate model-native
+  deferred tool loading or another permission-scoped capability design. Do not
+  restore phrase routing, sticky tool packs, or hidden workflow steering, and
+  do not enable the production agent cohort until the proof is complete.
+
 - [x] **Apply Dex-reviewed ToolLoopAgent corrections** — continuity now renders
   facts only, vague turns cannot fall into the latest stale workflow, agent
   `add_show` arguments cannot be rewritten by old Calendar state, direct

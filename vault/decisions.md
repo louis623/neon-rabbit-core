@@ -1,5 +1,33 @@
 # Decision Log
 
+## September 1, 2026 - Empty safe reads recover at the execution boundary
+
+**Natural punctuation differences are not different jobs.** Calendar reads
+must accept ordinary contractions with straight, curly, or omitted
+apostrophes. This recognition can pin an unambiguous read, but it must never
+turn an add, update, cancel, or other mutation into a read.
+
+**A zero-output provider turn may not erase a safe Calendar job.** The model
+and normal tool loop remain the primary path. Only after the stream finishes
+with no renderable answer and no `list_my_shows` result may the application run
+that read-only tool itself and render the same grounded summary. The recovery
+must be tenant-scoped and appear in tool, run, and incident telemetry. If the
+read fails, say so honestly and claim no change.
+
+**Do not mistake this safety net for the complete catalog-pressure solution.**
+The legacy route still exposes a large tool catalog, and the default-off agent
+still uses automatic tool choice. Before broad agent rollout, prove a general
+no-empty-turn contract across representative safe reads and evaluate model-
+native deferred tool loading or an equivalent capability design without
+reintroducing phrase routing or sticky tool packs.
+
+Reason: the live failure combined a punctuation-sensitive recognizer with a
+known provider zero-token edge. Fixing only the exact phrase would leave the
+same blank-turn failure mode intact; replacing model reasoning with more
+scripts would recreate the original architecture problem.
+
+---
+
 ## September 1, 2026 - Continuity is inert facts; agent tool arguments are authoritative
 
 **A saved workflow may provide facts but may not present itself as the current

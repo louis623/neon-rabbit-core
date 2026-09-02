@@ -67,3 +67,47 @@ The next controlled acceptance gate is an exact synthetic-reviewer cohort plus a
 - Exact commit `4d96111efe65a6895bea8c78f48976cd57da0044` was manually released as Ready Vercel deployment `dpl_FksLyVKFHSgPUZH5w19sWYhRcDpf`. Both Suite domains resolve to that deployment. The `www` landing page stayed stable after settling, the apex redirected canonically to `www`, `/nic-nac` returned 200, and `/api/nic-nac/health` reported the API and database reachable.
 - Deployment used `--skip-domain` because customer domains share the project, then assigned only `www.yoursparklesuite.com` and `yoursparklesuite.com`. Bri's Glowtique and The Bling Kitchen remained on the prior deployment.
 - Production contains no `NIC_NAC_AGENT_HARNESS_ENABLED`, `NIC_NAC_AGENT_HARNESS_REP_IDS`, or `NIC_NAC_AGENT_HARNESS_EMAILS` variable, so the new harness remains default-off. No cohort, paid model call, synthetic reviewer reset, customer mutation, message send, billing action, DNS/customer-domain change, or Live Queue mutation occurred.
+
+## Live legacy Calendar empty-turn incident and recovery
+
+- Louis's two screenshot failures were production runs
+  `77a37401-45bf-432c-892e-59a98146f898` and
+  `7dae2da0-4c4b-4da4-95b6-70bf790ad962`. Both used the legacy route, completed
+  on `gpt-5.4` with zero input/output/total tokens, executed no tool, recorded
+  no tool failure, and ended as `empty_model_output_recovered`. Log review
+  found no 429, quota, or insufficient-credit error.
+- The exact apostrophe-free text `Whats on my calendar` did not match the old
+  Calendar-read recognizer, while `What's on my calendar` did. That prevented
+  the direct `list_my_shows` pin and left the 48-tool legacy catalog on
+  automatic selection. The provider then returned its known successful-empty
+  edge, so the existing tool-result summarizer never received a result.
+- The recognizer now treats straight, curly, and omitted apostrophes as the
+  same natural Calendar wording. In both the legacy and ToolLoopAgent stream
+  paths, a Calendar read that still ends with no visible text and no tool result
+  performs one tenant-scoped, read-only `list_my_shows` recovery and renders the
+  normal grounded Calendar summary. Add/update/cancel requests cannot enter
+  this fallback. A failed recovery produces an explicit Calendar error and is
+  recorded rather than emitting the generic apology.
+- Provider-free verification passed 91 focused route/policy/recovery tests,
+  228 standard tests, 112 agent/routing/workflow tests, changed-file ESLint,
+  diff checks, and the production build. Repository-wide `tsc --noEmit` still
+  reports the pre-existing unrelated test-fixture typing backlog; application
+  TypeScript passed in the production build.
+- Exact commit `47275febe2e0796d435bf060666b991539d94f25` was manually released
+  as Ready deployment `dpl_9WJxru6eyyX6A4KQCrZrkuov7QRK` /
+  `sparkle-suite-dclumf6r2-louis-2849s-projects.vercel.app`. The held deployment
+  returned 200 for `/` and `/nic-nac`, and health reported API/database
+  reachable before alias movement. Both Suite domains now resolve to it; the
+  apex canonicalizes to `www`, live health remained green with zero recent
+  errors, and the deployment had no recent error-level logs.
+- Deployment used `--skip-domain`, then assigned only the two Suite domains.
+  Both Bri's Glowtique hostnames and both Bling Kitchen hostnames remained on
+  Ready deployment `dpl_2qiLozydCs16rXufFNbqttMvfDWz`. No paid Nic-Nac call,
+  rollout cohort, signed-in account, customer data, billing, messaging, DNS,
+  customer-domain, or Live Queue state was used or changed.
+- Remaining risk: the exact Calendar failure now has defense in depth, but the
+  large legacy catalog and automatic new-agent catalog can still encounter a
+  provider empty-turn edge on other unpinned jobs. Broad rollout remains gated
+  on a general no-empty-turn proof and evaluation of model-native deferred tool
+  loading or an equivalent capability design that does not recreate phrase
+  routing or sticky tool packs.

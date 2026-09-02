@@ -4,6 +4,40 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## September 1, 2026 - Live Calendar empty-turn incident and release
+
+- Investigated Louis's screenshot without sending another paid Nic-Nac
+  request. Production telemetry identified two complete legacy-route runs with
+  zero input/output tokens, no tool calls, and the hard-coded empty-response
+  recovery. No 429, quota, or insufficient-credit signal was present.
+- Confirmed `Whats on my calendar` missed the apostrophe-sensitive Calendar
+  read recognizer, leaving the legacy 48-tool catalog on automatic selection.
+  The provider's known zero-output edge then left no tool result for the
+  existing Calendar summarizer.
+- Made natural `What's`/`What’s`/`Whats` and `When's`/`Whens` Calendar reads
+  equivalent. Added a read-only last-line recovery to both stream paths that
+  directly reads and summarizes the rep's Calendar only after a zero-visible-
+  output/no-result turn. Mutations do not enter it; failures are honest and
+  telemetry records the recovery attempt.
+- Verification: 91 focused tests, 228 standard tests, 112 agent/routing/
+  workflow tests, changed-file ESLint, diff checks, and local/remote production
+  builds passed. Repository-wide `tsc --noEmit` retained only the known
+  unrelated test-fixture backlog.
+- Committed and pushed `47275feb`, then manually deployed that exact tip with
+  domains held as Ready deployment `dpl_9WJxru6eyyX6A4KQCrZrkuov7QRK` /
+  `sparkle-suite-dclumf6r2-louis-2849s-projects.vercel.app`. Direct held-target
+  checks passed before alias movement.
+- Assigned only `www.yoursparklesuite.com` and `yoursparklesuite.com`. Live
+  root/apex and `/nic-nac` returned 200, health reported API/database green and
+  zero recent errors, and no new error-level logs were present. The four
+  Bri/Bling Kitchen aliases stayed on `dpl_2qiLozydCs16rXufFNbqttMvfDWz`.
+- The current in-app browser runtime connected, but exposed no claimable tab;
+  no duplicate tab was created and no inherited signed-in session was used.
+  No paid model request, cohort, customer, billing, messaging, DNS, customer-
+  domain, or Live Queue action occurred.
+
+---
+
 ## September 1, 2026 - Dex-reviewed Nic-Nac corrections
 
 - Converted unfinished Calendar, Dance Floor, and trade continuity to neutral
