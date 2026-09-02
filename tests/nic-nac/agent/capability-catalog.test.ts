@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { z } from 'zod'
 import {
   createSuiteOperatorSupportProductContext,
   createSuitePublicLandingProductContext,
@@ -20,6 +21,18 @@ function toolContext(
 }
 
 describe('Nic-Nac permission-scoped capability catalog', () => {
+  it('preserves optional tool fields without disabling application validation or approval', () => {
+    const catalog = buildNicNacCapabilityCatalog({
+      productContext: createSuiteRepWorkspaceProductContext({ repId: 'rep-1' }),
+      toolContext: toolContext(),
+    })
+    expect(Object.values(catalog.tools).every(definition => definition.strict === false)).toBe(true)
+    const schema = catalog.tools.add_show.inputSchema as z.ZodType
+    expect(schema.safeParse({ platform: 'TikTok', eventTime: '2099-09-04T23:00:00Z' }).success).toBe(true)
+    expect(schema.safeParse({ platform: 123 }).success).toBe(false)
+    expect(catalog.tools.cancel_show.needsApproval).toBe(true)
+  })
+
   it('gives a Workspace rep the whole normal capability catalog without required-setup tools', () => {
     const catalog = buildNicNacCapabilityCatalog({
       productContext: createSuiteRepWorkspaceProductContext({ repId: 'rep-1' }),

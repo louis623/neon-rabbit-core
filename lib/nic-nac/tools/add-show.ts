@@ -12,7 +12,7 @@ import type { ToolContext, ToolDefinition } from './types'
 
 const inputSchema = z.object({
   platform: z.string(),
-  eventTime: z.string(),
+  eventTime: z.iso.datetime({ offset: true }).describe('ISO timestamp with an explicit UTC offset or Z, e.g. 2026-09-04T19:00:00-04:00. timeZone is the display/recurrence zone, not a substitute for the offset.'),
   timeZone: z.string().optional(),
   durationMinutes: z.number().int().positive().optional(),
   title: z.string().optional(),

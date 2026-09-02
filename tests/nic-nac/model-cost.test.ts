@@ -3,16 +3,16 @@ import { estimateNicNacRunCostCents } from '@/lib/nic-nac/core/model-cost'
 import { getNicNacModelPolicy } from '@/lib/nic-nac/core/model-policy'
 
 describe('Nic-Nac model cost estimates', () => {
-  it('estimates GPT-5.4 short-context usage in integer cents', () => {
+  it('estimates GPT-5.6 Terra short-context usage in integer cents', () => {
     expect(
       estimateNicNacRunCostCents(getNicNacModelPolicy('human_default'), {
-        inputTokens: 6_100,
-        outputTokens: 216,
-        totalTokens: 6_316,
-        cacheReadTokens: 1_000,
+        inputTokens: 10_000,
+        outputTokens: 1_000,
+        totalTokens: 11_000,
+        cacheReadTokens: 0,
         cacheWriteTokens: 0,
       }),
-    ).toBe(2)
+    ).toBe(4)
   })
 
   it('uses the cheaper GPT-5.4 mini policy for utility work', () => {
@@ -25,6 +25,27 @@ describe('Nic-Nac model cost estimates', () => {
         cacheWriteTokens: 0,
       }),
     ).toBe(2)
+  })
+
+  it('prices Terra cache writes at 1.25x input without double counting input tokens', () => {
+    expect(
+      estimateNicNacRunCostCents(getNicNacModelPolicy('human_default'), {
+        inputTokens: 100_000,
+        outputTokens: 10_000,
+        totalTokens: 110_000,
+        cacheReadTokens: 20_000,
+        cacheWriteTokens: 30_000,
+      }),
+    ).toBe(30)
+  })
+
+  it('retains GPT-5.4 pricing for historical runs and an explicit rollback', () => {
+    expect(
+      estimateNicNacRunCostCents(
+        { ...getNicNacModelPolicy('human_default'), modelId: 'gpt-5.4' },
+        { inputTokens: 100_000, outputTokens: 10_000 },
+      ),
+    ).toBe(40)
   })
 
   it('keeps model family matching strict so premium pro/nano overrides do not reuse base pricing', () => {

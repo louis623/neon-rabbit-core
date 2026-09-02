@@ -2,6 +2,47 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 2, 2026 - Authorized Terra tests and reviewer-token repair
+
+- Completed real GPT-5.4/Terra comparative synthetic tests with zero business
+  mutations, 74 provider requests, and 95 cents conservative estimated spend
+  under Louis's $3 cap. Revoked only the temporary restricted Suite key;
+  confirmed the production runtime key still active.
+- Fixed two model-independent contract gaps revealed by replay: implicit
+  Responses strictness forced optional recurrence, and unvalidated timestamps
+  could omit UTC offsets. Optionality is now explicit and add/update schemas
+  reject ambiguous timestamps before execution. Final Terra Calendar and
+  approval replay passed; earlier failures and literal phrase false positives
+  remain in private evidence, not silently regraded as clean passes.
+- Repaired only the approved reviewer secret and changed only Suite's default
+  model environment override. Finder/reporting policies are kept separate.
+  A broad production-env export was blocked; no workaround or credential
+  substitution was used. Continue via the supported synthetic reviewer UI.
+- Final checks: 1,312 passed / one existing skip, changed-file lint, provider-
+  free safety smoke, full production build. Production release pending.
+
+---
+
+## September 2, 2026 - Same-day Terra migration preparation
+
+- Verified repo/remote/allowlisted branch at HEAD `d25dbd8c`, current Suite
+  production deployment `dpl_3jf6qWNJJKJgibFJZrCbnMgeMzWm`, and both Suite
+  aliases. Customer-domain aliases were inspected but not moved.
+- Prepared `gpt-5.6-terra` medium as human-default, retained all other tiers
+  and GPT-5.4 rollback pricing, added Terra cache-write-aware estimates, and
+  updated only the AI SDK 6-compatible OpenAI adapter to `3.0.106`.
+- Passed 1,296 Nic-Nac tests with one existing skip, 228 standard tests,
+  focused policy/cost/telemetry tests, provider-free architecture smoke,
+  changed-file lint, diff checks, and the complete Next.js production build.
+- Vercel's production export substitutes placeholders for write-only secrets,
+  so the current Suite runtime key cannot be used by the local paid replay
+  runner. Removed the temporary export. No old key or personal/customer
+  account was substituted. Need authorization for a temporary restricted
+  Suite test key and a capped synthetic replay budget before proceeding.
+- Changes remain local/uncommitted; no production model/env change, paid API
+  call, deployment, billing, customer mutation, messaging, DNS, scheduled
+  canary, or cleanup of existing OpenAI projects/keys occurred.
+
 ---
 
 ## September 2, 2026 - Nic-Nac release session closeout

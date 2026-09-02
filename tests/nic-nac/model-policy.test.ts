@@ -18,10 +18,10 @@ describe('Nic-Nac model policy', () => {
     ])
   })
 
-  it('defaults human-facing Nic-Nac to OpenAI GPT-5.4 medium reasoning', () => {
+  it('defaults human-facing Nic-Nac to OpenAI GPT-5.6 Terra medium reasoning', () => {
     expect(getNicNacModelPolicy('human_default')).toMatchObject({
       provider: 'openai',
-      modelId: 'gpt-5.4',
+      modelId: 'gpt-5.6-terra',
       reasoning: 'medium',
     })
   })

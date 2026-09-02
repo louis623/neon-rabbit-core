@@ -19,7 +19,7 @@ describe('Nic-Nac Cost & Capacity', () => {
       run_id: 'suite-run',
       product: 'sparkle_suite',
       surface: 'rep_workspace',
-      model: 'gpt-5.4',
+      model: 'gpt-5.6-terra',
       model_provider: 'openai',
       model_policy: 'human_default',
       reasoning_level: 'medium',
@@ -70,10 +70,11 @@ describe('Nic-Nac Cost & Capacity', () => {
     ])
     expect(snapshot.totals.cachedTokens).toBe(40)
     expect(snapshot.totals.hardFails).toBe(1)
+    expect(snapshot.byModel.every((row) => !row.unknownPrice)).toBe(true)
     expect(finder.cachedTokens).toBeNull()
     expect(suite).toMatchObject({
       workload: 'Trade Board · add listing',
-      expectedModel: 'gpt-5.4',
+      expectedModel: 'gpt-5.6-terra',
       modelFit: 'expected',
     })
     expect(finder).toMatchObject({
@@ -82,6 +83,8 @@ describe('Nic-Nac Cost & Capacity', () => {
       modelFit: 'expected',
     })
     expect(snapshot.modelPolicies).toEqual(expect.arrayContaining([
+      expect.objectContaining({ productClass: 'suite', purpose: 'default', model: 'gpt-5.6-terra' }),
+      expect.objectContaining({ productClass: 'finder', purpose: 'default', model: 'gpt-5.4' }),
       expect.objectContaining({ purpose: 'utility', model: 'gpt-5.4-mini', reasoning: 'low' }),
     ]))
   })
@@ -150,7 +153,7 @@ describe('Nic-Nac Cost & Capacity', () => {
       run_id: 'suite-run',
       product: 'sparkle_suite',
       surface: 'customer_site',
-      model: 'gpt-5.4',
+      model: 'gpt-5.6-terra',
       model_provider: 'openai',
       model_policy: 'human_default',
       status: 'complete',
@@ -163,7 +166,7 @@ describe('Nic-Nac Cost & Capacity', () => {
     })
     const csv = formatCostCapacityCsv([row])
     expect(csv).toContain('product_class,cost_class,surface,workload,model,expected_model')
-    expect(csv).toContain('suite,customer_facing,customer_site,General Nic-Nac conversation,gpt-5.4,gpt-5.4')
+    expect(csv).toContain('suite,customer_facing,customer_site,General Nic-Nac conversation,gpt-5.6-terra,gpt-5.6-terra')
     expect(csv).toContain('2026-09-02')
     expect(csv).toContain('10:00:00')
   })

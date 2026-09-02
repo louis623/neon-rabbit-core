@@ -1,5 +1,50 @@
 # Project State
 
+## September 2, 2026 - Terra verification complete; release in progress
+
+- Supersedes the preparation blocker below. Louis authorized the temporary
+  restricted Suite key and $3 cap plus reviewer-token-only repair. Real-model
+  tests used 95 conservative estimated cents across 74 requests; the temporary
+  key was visibly revoked and the working runtime key remains active.
+- Both models exposed implicit Responses strictness and ambiguous timestamp
+  gaps. The permission catalog now explicitly preserves optional tool fields;
+  add/update schemas require timezone-explicit ISO timestamps before execution.
+  No intent routing or prompt rewrite was added. Final Terra calendar/approval
+  replay passed. Photo replay phrase flags include negated correct reassurance;
+  raw flags remain recorded and are not claimed as zero-phrase passes.
+- Vercel confirmed only the approved reviewer token and Suite default model
+  (`gpt-5.6-terra`) updates. Live deployment remains unchanged until release.
+  Finder and all other model tiers remain unchanged. Dashboard comparisons now
+  use separate product baselines, not Suite's override for Finder.
+- 1,312 regression tests pass with one existing skip; changed-file lint,
+  provider-free 45-tool safety smoke, and full production build pass.
+- Release evidence: `docs/sparkle-suite/operations/2026-09-02-nic-nac-terra-migration.md`.
+  Commit/push/manual release and actual live synthetic reviewer proof are next.
+
+## September 2, 2026 - Terra migration prepared locally; real-model gate pending
+
+- Louis chose a same-day human-default model migration while the rep population
+  is smallest. The candidate is `gpt-5.6-terra` at the existing `medium`
+  reasoning level; escalated, utility, and Lab policies remain unchanged.
+- Local changes update the default policy, cost-dashboard model recognition,
+  Terra pricing including the 1.25x cache-write input rate, and the compatible
+  AI SDK 6 OpenAI adapter from `3.0.73` to `3.0.106`. GPT-5.4 pricing and the
+  environment override remain available for explicit rollback.
+- Passed 1,296 Nic-Nac tests (one existing skip), 228 standard tests, 23 focused
+  policy/cost/telemetry tests, provider-free 45-tool safety smoke, changed-file
+  lint, diff checks, and the full production build.
+- No paid replay, commit, push, production environment update, or deployment
+  has occurred. Vercel cannot export the current write-only Suite runtime key;
+  a temporary restricted test key and a bounded replay budget need Louis's
+  authorization. Do not substitute old local credentials or personal/customer
+  accounts. The temporary environment export was removed.
+- Production remains application `91273c87` on
+  `dpl_3jf6qWNJJKJgibFJZrCbnMgeMzWm`, URL
+  `sparkle-suite-h17tgwrni-louis-2849s-projects.vercel.app`. Repo HEAD is
+  `d25dbd8c` on the allowlisted branch. Future release should move only the two
+  Suite aliases, leaving customer domains unchanged. Preserve `artifacts/`
+  and `test-results/`.
+
 ## September 2, 2026 - Early live smoke is positive; pressure testing continues
 
 - Louis reports that the newly released sole-agent Nic-Nac is doing well in

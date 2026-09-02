@@ -3,6 +3,7 @@ import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 import { getNicNacModelPolicy } from '@/lib/nic-nac/core/model-policy'
+import finderReportingPolicy from '@/config/nic-nac-finder-reporting-policy.json'
 
 const MAX_MONTHLY_ROWS = 10_000
 const FINDER_USAGE_PATH = '/api/internal/finder/control-center-nic-nac-usage'
@@ -134,6 +135,7 @@ export type CostCapacitySnapshot = {
     unknownPrice: boolean
   }>
   modelPolicies: Array<{
+    productClass: ProductClass
     purpose: RunPurpose
     policyKey: string
     model: string
@@ -205,7 +207,7 @@ function describeWorkload(
   return 'General Nic-Nac conversation'
 }
 
-function policyForPurpose(purpose: RunPurpose) {
+function policyForPurpose(purpose: RunPurpose, productClass: ProductClass = 'suite') {
   const key =
     purpose === 'escalated'
       ? 'human_escalated'
@@ -214,7 +216,12 @@ function policyForPurpose(purpose: RunPurpose) {
         : purpose === 'lab'
           ? 'lab_synthesis'
           : 'human_default'
-  return getNicNacModelPolicy(key)
+  const suite = getNicNacModelPolicy(key)
+  // Reporting baseline only: Finder is deployed independently. Never apply
+  // Suite's environment overrides to Finder or change its runtime from here.
+  return productClass === 'finder'
+    ? { ...suite, ...finderReportingPolicy[key] }
+    : suite
 }
 
 function modelFit(model: string, expectedModel: string | null): ModelFit {
@@ -273,7 +280,7 @@ export function normalizeSuiteRun(row: SuiteRunRow): CostCapacityRun {
 
 export function normalizeFinderRun(row: FinderRunRow): CostCapacityRun {
   const purpose = policyPurpose(row.model_policy_key)
-  const policy = policyForPurpose(purpose)
+  const policy = policyForPurpose(purpose, 'finder')
   const surface = 'sparkle_finder'
   const isStaticApplicationRun = row.status === 'redirected'
   const model = isStaticApplicationRun
@@ -320,7 +327,7 @@ function aggregateRuns(rows: CostCapacityRun[]) {
 }
 
 function knownPriceModel(model: string) {
-  return ['gpt-5.4', 'gpt-5.4-mini', 'gpt-5.5'].some(
+  return ['gpt-5.6-terra', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.5'].some(
     (prefix) => model === prefix || model.startsWith(`${prefix}-20`),
   )
 }
@@ -533,16 +540,17 @@ export function buildCostCapacitySnapshot(input: {
       actualCentsPerDay: actualCents === null ? null : actualCents / elapsedDays,
     },
     byModel,
-    modelPolicies: (['default', 'escalated', 'utility', 'lab'] as RunPurpose[]).map((purpose) => {
-      const policy = policyForPurpose(purpose)
+    modelPolicies: (['suite', 'finder'] as ProductClass[]).flatMap(productClass => (['default', 'escalated', 'utility', 'lab'] as RunPurpose[]).map((purpose) => {
+      const policy = policyForPurpose(purpose, productClass)
       return {
+        productClass,
         purpose,
         policyKey: policy.key,
         model: policy.modelId,
         reasoning: policy.reasoning,
         job: policy.purpose,
       }
-    }),
+    })),
     recentRuns: rows.slice(0, 50),
     coverageHoles: [...new Set(coverageHoles)],
     alerts: [...new Set(alerts)],

@@ -1,5 +1,31 @@
 # Decision Log
 
+## September 2, 2026 - Bounded migration verification and optional tool contracts
+
+Louis authorized a temporary Responses-only Suite test key with a $3 total
+cap and revocation afterward, plus replacing only the deficient reviewer
+token with a strong secret. Working OpenAI keys and unrelated unused projects
+remain untouched. Keep Suite/Finder policy reporting independent during the
+Suite-only model migration.
+
+Model replays proved implicit Responses strict-mode normalization could force
+optional tool fields with either model. Set generation strictness explicitly
+without relaxing runtime Zod validation or approvals. Require timezone-explicit
+Calendar tool timestamps before execution. These are application contracts,
+not phrase routing, workflow steering, or automatic replay after tool start.
+
+## September 2, 2026 - Prefer a controlled Terra migration now, not after growth
+
+Louis's timing decision is to pursue GPT-5.6 Terra now while there are fewer
+reps and operating savings matter. Scope the change to Nic-Nac's human-default
+policy at medium reasoning. Do not simultaneously lower reasoning, replace
+other model tiers, rewrite prompts/tools, restore legacy routing, or add the
+separately unauthorized scheduled canary. A real-model regression gate and
+explicit GPT-5.4 rollback remain required; deterministic tests alone do not
+prove Terra's customer-facing behavior. The prepared local change is not yet
+released because current runtime credentials are write-only and unavailable
+to the approved local replay runner.
+
 ## September 2, 2026 - Pressure-test the live agent; do not turn it back into scripts
 
 **Positive smoke testing is evidence, not the finish line.** Continue to test

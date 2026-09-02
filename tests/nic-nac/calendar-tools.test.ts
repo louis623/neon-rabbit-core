@@ -116,6 +116,22 @@ beforeEach(() => {
 })
 
 describe('calendar tools', () => {
+  it('requires an unambiguous timestamp before add or update can execute', () => {
+    const add = makeAddShowTool(makeCtx()).inputSchema as import('zod').ZodType
+    const update = makeUpdateShowTool(makeCtx()).inputSchema as import('zod').ZodType
+    for (const eventTime of ['2026-09-04T19:00:00', '2026-09-04', 'not-a-date']) {
+      expect(add.safeParse({ platform: 'TikTok', eventTime, timeZone: 'America/New_York' }).success).toBe(false)
+      expect(update.safeParse({ eventId: VALID_EVENT_ID, eventTime }).success).toBe(false)
+    }
+    for (const eventTime of ['2026-09-04T19:00:00-04:00', '2026-09-04T23:00:00Z']) {
+      expect(add.safeParse({ platform: 'TikTok', eventTime }).success).toBe(true)
+      expect(update.safeParse({ eventId: VALID_EVENT_ID, eventTime }).success).toBe(true)
+    }
+    expect(update.safeParse({ eventId: VALID_EVENT_ID, title: 'Title only' }).success).toBe(true)
+    expect(addShowMock).not.toHaveBeenCalled()
+    expect(updateShowMock).not.toHaveBeenCalled()
+  })
+
   it('add_show forwards multi-code and recurring inputs and returns the calendar payload', async () => {
     addShowMock.mockResolvedValueOnce({ count: 4, events: [calendarEvent({ isRecurring: true })] })
     const tool = makeAddShowTool(makeCtx()) as unknown as ToolDef

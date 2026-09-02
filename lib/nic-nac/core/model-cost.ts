@@ -5,11 +5,20 @@ type NicNacModelPricing = {
   modelPrefix: string
   inputCentsPerMillion: number
   cachedInputCentsPerMillion: number
+  cacheWriteCentsPerMillion?: number
   outputCentsPerMillion: number
 }
 
-// OpenAI standard, short-context text pricing checked June 21, 2026.
+// OpenAI standard, short-context text pricing. Terra checked September 2, 2026;
+// the retained GPT-5.4/5.5 prices preserve historical and rollback estimates.
 const OPENAI_STANDARD_SHORT_CONTEXT_PRICING: NicNacModelPricing[] = [
+  {
+    modelPrefix: 'gpt-5.6-terra',
+    inputCentsPerMillion: 200,
+    cachedInputCentsPerMillion: 20,
+    cacheWriteCentsPerMillion: 250,
+    outputCentsPerMillion: 1_200,
+  },
   {
     modelPrefix: 'gpt-5.5',
     inputCentsPerMillion: 500,
@@ -67,12 +76,18 @@ export function estimateNicNacRunCostCents(
     inputTokens,
     Math.max(0, usage.cacheReadTokens ?? 0),
   )
-  const uncachedInputTokens = inputTokens - cachedInputTokens
+  const cacheWriteTokens = Math.min(
+    inputTokens - cachedInputTokens,
+    Math.max(0, usage.cacheWriteTokens ?? 0),
+  )
+  const uncachedInputTokens = inputTokens - cachedInputTokens - cacheWriteTokens
   const outputTokens = Math.max(0, usage.outputTokens ?? 0)
 
   const estimatedCents =
     (uncachedInputTokens * pricing.inputCentsPerMillion +
       cachedInputTokens * pricing.cachedInputCentsPerMillion +
+      cacheWriteTokens *
+        (pricing.cacheWriteCentsPerMillion ?? pricing.inputCentsPerMillion) +
       outputTokens * pricing.outputCentsPerMillion) /
     1_000_000
 

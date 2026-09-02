@@ -74,7 +74,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.71",
-    "@ai-sdk/openai": "^3.0.73",
+    "@ai-sdk/openai": "^3.0.106",
     "@ai-sdk/react": "^3.0.170",
     "@modelcontextprotocol/server": "^2.0.0",
     "@supabase/ssr": "^0.10.2",

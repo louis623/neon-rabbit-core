@@ -31,7 +31,7 @@ const NIC_NAC_MODEL_POLICY_DEFINITIONS: Record<
   human_default: {
     key: 'human_default',
     provider: 'openai',
-    defaultModelId: 'gpt-5.4',
+    defaultModelId: 'gpt-5.6-terra',
     envVar: 'NIC_NAC_HUMAN_DEFAULT_MODEL',
     reasoning: 'medium',
     purpose: 'Default production Nic-Nac conversations.',

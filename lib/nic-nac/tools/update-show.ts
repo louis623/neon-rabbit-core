@@ -12,7 +12,7 @@ const inputSchema = z
   .object({
     eventId: z.string().uuid(),
     platform: z.string().optional(),
-    eventTime: z.string().optional(),
+    eventTime: z.iso.datetime({ offset: true }).describe('ISO timestamp with an explicit UTC offset or Z. timeZone is not a substitute for the offset.').optional(),
     timeZone: z.string().optional(),
     durationMinutes: z.number().int().positive().optional(),
     title: z.string().optional(),

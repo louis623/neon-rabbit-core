@@ -1,0 +1,6 @@
+{
+  "human_default": { "modelId": "gpt-5.4", "reasoning": "medium" },
+  "human_escalated": { "modelId": "gpt-5.5", "reasoning": "medium" },
+  "utility_fast": { "modelId": "gpt-5.4-mini", "reasoning": "low" },
+  "lab_synthesis": { "modelId": "gpt-5.5", "reasoning": "high" }
+}

@@ -83,7 +83,13 @@ export function buildNicNacCapabilityCatalog({
   const tools = Object.fromEntries(
     Object.entries(allowedTools).filter(
       ([name]) => !AGENT_EXCLUDED_TOOL_NAMES.has(name),
-    ),
+    ).map(([name, definition]) => [name, {
+      ...definition,
+      // Responses otherwise normalizes omitted strictness and may require
+      // optional fields (e.g. recurrence on a one-time show). Preserve the
+      // app-owned Zod contract; SDK validation and approvals still run.
+      strict: definition.strict ?? false,
+    }]),
   ) as ToolSet
   const toolNames = Object.keys(tools)
   const toolSafety = toolNames.map((toolName) => {

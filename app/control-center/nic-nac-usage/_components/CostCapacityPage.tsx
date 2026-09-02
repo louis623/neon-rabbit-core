@@ -42,7 +42,7 @@ function label(value: string) {
 
 function modelDecision(fit: CostCapacitySnapshot['byModel'][number]['modelFit']) {
   if (fit === 'static') return 'Right-sized · no model needed'
-  if (fit === 'drift') return 'Review · outside policy'
+  if (fit === 'drift') return 'Review · differs from current policy'
   if (fit === 'unknown') return 'Review · telemetry incomplete'
   return 'Matches policy · validate with evals'
 }
@@ -212,7 +212,7 @@ export function CostCapacityPage({ snapshot }: { snapshot: CostCapacitySnapshot 
             <h2 className="text-lg font-semibold">What each model tier is for</h2>
           </div>
           <p className="mt-1 max-w-4xl text-sm leading-6 text-slate-600">
-            The configured policy answers whether a run used the intended model. Proving that a different model is better requires the same workflow replayed against both models, with quality, tool correctness, latency, and cost scored together.
+            These are current product-specific policies, not historical policy-at-run-time assertions. Finder uses a separately maintained reporting baseline; changing Suite does not change Finder. Proving that a different model is better requires the same workflow replayed against both models, with quality, tool correctness, latency, and cost scored together.
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
@@ -221,8 +221,8 @@ export function CostCapacityPage({ snapshot }: { snapshot: CostCapacitySnapshot 
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {snapshot.modelPolicies.map((policy) => (
-                  <tr key={policy.policyKey}>
-                    <td className="py-3 pr-4"><span className="font-semibold">{label(policy.purpose)}</span><span className="block text-xs text-slate-500">{policy.policyKey}</span></td>
+                  <tr key={`${policy.productClass}-${policy.policyKey}`}>
+                    <td className="py-3 pr-4"><span className="font-semibold">{label(policy.productClass)} · {label(policy.purpose)}</span><span className="block text-xs text-slate-500">{policy.policyKey}</span></td>
                     <td className="py-3 pr-4">{policy.job}</td>
                     <td className="py-3 pr-4 font-semibold">{policy.model}</td>
                     <td className="py-3 pr-4">{label(policy.reasoning)}</td>
