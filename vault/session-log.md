@@ -6073,3 +6073,12 @@ Lessons retained:
   show plus focused service, tool, homepage, reminder, and fixture coverage.
   Do not reset it in production without explicit authorization: the historical
   reviewer persona was archived and reset would reactivate it.
+- Application commit `b392fb90` is live as Ready deployment
+  `dpl_2Qmz44MZqX2tibsJgfHHpNqPGLUg`; both Suite domains resolve to that
+  deployment. The additive migration `20260902140000` is applied.
+- Vercel initially attached customer aliases during the manual production
+  deployment despite the release constraint. They were immediately restored,
+  after inspection, to the exact prior deployment `dpl_3jf6qWNJJKJgibFJZrCbnMgeMzWm`:
+  `brisglowtique.com`, `www.brisglowtique.com`, `theblingkitchen.com`, and
+  `www.theblingkitchen.com`. No customer data, billing, or customer show rows
+  were changed.
