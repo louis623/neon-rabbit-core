@@ -6094,4 +6094,19 @@ Lessons retained:
   immediate ICS download to Google/Outlook/Apple-or-other picker options.
 - Focused proof: 119 tests across homepage mapping/template, customer-site
   data scrub, calendar service/tools, and new platform-link cases; production
-  build completed. Release/live synthetic verification is next.
+  build completed. The separate reviewer-synthetic multi-platform proof stays
+  pending explicit authorization to reactivate or replace the archived persona.
+
+## Release evidence update
+
+- Pushed application commit `6e2877af48c8bb028ce3fa4ffb01b72ae94f1c90` and
+  released it with `--skip-domain` as Ready deployment
+  `dpl_CMVwBAT5cECEvo7nY969RSv5qiRL` / `sparkle-suite-bfijpj3rs-louis-2849s-projects.vercel.app`.
+  Assigned only `www.yoursparklesuite.com` and `yoursparklesuite.com`.
+- Direct Vercel inspection confirmed both Suite aliases at the new deployment;
+  direct inspection confirmed both protected customer domains stayed on
+  `dpl_3jf6qWNJJKJgibFJZrCbnMgeMzWm`.
+- Read-only live Dudes Fizz Fest check confirmed TikTok cards link to the
+  configured TikTok profile and that the calendar chooser exposes Google,
+  Outlook, and Apple/other choices. No sign-in, data mutation, provider action,
+  customer-domain movement, billing, or customer-account action occurred.

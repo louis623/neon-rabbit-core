@@ -2977,3 +2977,18 @@ Verification passed:
 - `/control-center/nic-nac-usage` shows workload purpose, actual and expected model, policy tier, actual and expected reasoning, and whether each row matches configured policy. It explicitly requires comparative replay evidence before declaring another model better.
 - Provider actuals refresh on page open and manual Refresh. Prepaid credit balance remains unavailable through the documented API and continues to link to Billing without scraping it.
 - Historical Default-project spend remains unallocated outside Suite/Finder totals.
+# September 2, 2026 — Customer show links now use configured social handles
+
+- Application commit `6e2877af48c8bb028ce3fa4ffb01b72ae94f1c90` is Ready as
+  `dpl_CMVwBAT5cECEvo7nY969RSv5qiRL`. Both Suite aliases resolve to
+  `sparkle-suite-bfijpj3rs-louis-2849s-projects.vercel.app`; Bri's Glowtique
+  and The Bling Kitchen remain on `dpl_3jf6qWNJJKJgibFJZrCbnMgeMzWm`.
+- Calendar platform names now use the corresponding current social handle set
+  in each rep's customer-site settings. Live Dudes Fizz Fest verification
+  showed both scheduled TikTok cards now render `Watch on TikTok` with the
+  configured profile URL, after `Add to calendar`. No event URL, homepage
+  media URL, or unrelated platform link was used.
+- Customer `Add to calendar` now opens a verified chooser for Google Calendar,
+  Outlook Calendar, and Apple Calendar/another compatible app (ICS download).
+  Reviewer-synthetic multi-platform proof remains pending the separate,
+  explicit authorization to reactivate or replace the archived reviewer.
