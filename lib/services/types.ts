@@ -211,6 +211,26 @@ export interface DiscountCode {
   description: string
 }
 
+export type StreamingDestinationPlatform =
+  | 'tiktok'
+  | 'instagram'
+  | 'youtube'
+  | 'facebook'
+  | 'whatnot'
+  | 'custom'
+
+export interface StreamingDestinationInput {
+  platform: string
+  url: string
+  label?: string
+}
+
+export interface StreamingDestination {
+  platform: StreamingDestinationPlatform
+  url: string
+  label?: string
+}
+
 export interface RecurringShowInput {
   cadence: 'daily' | 'weekly' | 'weekday'
   duration: '1_month' | '3_months' | 'ongoing'
@@ -229,6 +249,7 @@ export interface CalendarEvent {
   description: string | null
   discountCodes: DiscountCode[]
   featuredCollections: string[] | null
+  streamingDestinations?: StreamingDestination[]
   isRecurring: boolean
   recurrenceGroupId: string | null
   recurrenceRule: string | null
@@ -246,6 +267,7 @@ export interface AddShowInput {
   description?: string
   discountCodes?: DiscountCode[]
   featuredCollections?: string[]
+  streamingDestinations?: StreamingDestinationInput[]
   recurring?: RecurringShowInput
 }
 
@@ -274,6 +296,7 @@ export interface UpdateShowInput {
   description?: string
   discountCodes?: DiscountCode[]
   featuredCollections?: string[]
+  streamingDestinations?: StreamingDestinationInput[]
   applyToSeries?: boolean
 }
 

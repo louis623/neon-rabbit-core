@@ -1,5 +1,6 @@
 import { listMyShows } from '@/lib/services/calendar'
 import type { CalendarEvent } from '@/lib/services/types'
+import { streamingDestinationLabel } from '@/lib/services/streaming-destinations'
 import { resolveAmethystPreviewRep } from '@/lib/amethyst/preview-rep'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { BLING_KITCHEN_PROFILE } from '@/lib/bling-kitchen/profile'
@@ -15,7 +16,7 @@ export interface AmethystHomepageEventCollectionLink {
 }
 
 export interface AmethystHomepageEventPlatformLink {
-  kind: 'tt' | 'fb'
+  kind: string
   label: string
   href: string
 }
@@ -32,11 +33,6 @@ export interface AmethystHomepageEventCard {
   collections: AmethystHomepageEventCollectionLink[]
   platforms: AmethystHomepageEventPlatformLink[]
 }
-
-const PLATFORM_LINKS = {
-  tiktok: { kind: 'tt', label: 'Join me on TikTok' },
-  facebook: { kind: 'fb', label: 'Watch on Facebook Live' },
-} as const
 
 function demoLiveEventTime() {
   return new Date(Date.now() - 10 * 60 * 1000).toISOString()
@@ -216,56 +212,12 @@ function buildBlingKitchenFallbackEvents(
   return events
 }
 
-function normalizeStreamingLinks(
-  streamingLinks: unknown,
-): Record<string, string> {
-  if (!streamingLinks || typeof streamingLinks !== 'object') {
-    return {}
-  }
-
-  const normalized: Record<string, string> = {}
-  for (const [key, value] of Object.entries(streamingLinks)) {
-    if (typeof value !== 'string') continue
-    const trimmed = value.trim()
-    if (!trimmed) continue
-    normalized[key.toLowerCase()] = trimmed
-  }
-
-  return normalized
-}
-
-function normalizePlatformKey(platform: string | null): 'tiktok' | 'facebook' | null {
-  const normalized = platform?.trim().toLowerCase() ?? ''
-  if (normalized.includes('tik')) return 'tiktok'
-  if (normalized.includes('face')) return 'facebook'
-  return null
-}
-
-function buildPlatformLinks(
-  primaryPlatform: string | null,
-  streamingLinks: Record<string, string>,
-): AmethystHomepageEventPlatformLink[] {
-  const primaryKey = normalizePlatformKey(primaryPlatform)
-  const orderedKeys = primaryKey
-    ? [
-        primaryKey,
-        ...Object.keys(PLATFORM_LINKS).filter((key) => key !== primaryKey),
-      ]
-    : Object.keys(PLATFORM_LINKS)
-
-  return orderedKeys.flatMap((key) => {
-    const href = streamingLinks[key]
-    if (!href) return []
-
-    const config = PLATFORM_LINKS[key as keyof typeof PLATFORM_LINKS]
-    return [
-      {
-        kind: config.kind,
-        label: config.label,
-        href,
-      },
-    ]
-  })
+function buildPlatformLinks(event: CalendarEvent): AmethystHomepageEventPlatformLink[] {
+  return (event.streamingDestinations ?? []).map((destination) => ({
+    kind: destination.platform,
+    label: `Watch on ${streamingDestinationLabel(destination)}`,
+    href: destination.url,
+  }))
 }
 
 function mapCollectionLinks(collections: string[] | null | undefined) {
@@ -287,11 +239,8 @@ function normalizeEventTitle(event: CalendarEvent) {
 
 export function mapCalendarEventToHomepageEvent(
   event: CalendarEvent,
-  streamingLinks: unknown,
   index: number,
 ): AmethystHomepageEventCard {
-  const normalizedLinks = normalizeStreamingLinks(streamingLinks)
-
   return {
     id: event.id,
     title: normalizeEventTitle(event),
@@ -305,7 +254,7 @@ export function mapCalendarEventToHomepageEvent(
       desc: discount.description,
     })),
     collections: mapCollectionLinks(event.featuredCollections),
-    platforms: buildPlatformLinks(event.platform, normalizedLinks),
+    platforms: buildPlatformLinks(event),
   }
 }
 
@@ -346,7 +295,7 @@ export async function loadAmethystHomepageUpcomingShows(
       env: process.env,
       publicSiteSlug,
       repId,
-      select: 'id, email, streaming_links',
+      select: 'id, email',
     })
 
     const isBlingKitchen = isBlingKitchenTarget(publicSiteSlug, rep?.email)
@@ -370,11 +319,7 @@ export async function loadAmethystHomepageUpcomingShows(
     return result.events
       .slice(0, limit)
       .map((event, index) =>
-        mapCalendarEventToHomepageEvent(
-          event,
-          (rep as { streaming_links?: unknown }).streaming_links,
-          index,
-        ),
+        mapCalendarEventToHomepageEvent(event, index),
       )
   } catch {
     return targeted ? [] : defaultAmethystHomepageEvents

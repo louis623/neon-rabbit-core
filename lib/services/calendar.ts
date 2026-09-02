@@ -15,16 +15,22 @@ import {
   type ShowStatusTransitionResult,
   type DiscountCode,
   type RecurringShowInput,
+  type StreamingDestination,
+  type StreamingDestinationInput,
 } from './types'
 import { errors } from './errors'
 import {
   DEFAULT_REP_TIME_ZONE,
   assertValidTimeZone,
 } from './calendar-timezone'
+import {
+  normalizeStreamingDestinations,
+  StreamingDestinationValidationError,
+} from './streaming-destinations'
 
 const EVENT_SELECT = `
   id, rep_id, platform, event_time, time_zone, duration_minutes, title, description,
-  discount_codes, featured_collections, is_recurring, recurrence_group_id,
+  discount_codes, featured_collections, streaming_destinations, is_recurring, recurrence_group_id,
   recurrence_rule, status, created_at, updated_at
 `
 
@@ -39,6 +45,7 @@ type CalendarEventRow = {
   description: string | null
   discount_codes: DiscountCode[] | null
   featured_collections: string[] | null
+  streaming_destinations: StreamingDestination[] | null
   is_recurring: boolean | null
   recurrence_group_id: string | null
   recurrence_rule: string | null
@@ -57,6 +64,7 @@ type CalendarEventUpdate = {
   description?: string | null
   discount_codes?: DiscountCode[]
   featured_collections?: string[] | null
+  streaming_destinations?: StreamingDestination[]
 }
 
 function normalizeOptionalText(value: string | undefined): string | null {
@@ -159,6 +167,19 @@ function getRecurringOccurrenceCount(recurring: RecurringShowInput): number {
   if (recurring.duration === '1_month') return 4
   if (recurring.duration === '3_months') return 13
   return 26
+}
+
+function normalizeEventStreamingDestinations(
+  streamingDestinations: StreamingDestinationInput[] | undefined,
+): StreamingDestination[] {
+  try {
+    return normalizeStreamingDestinations(streamingDestinations)
+  } catch (error) {
+    if (error instanceof StreamingDestinationValidationError) {
+      throw errors.INVALID_INPUT('invalid streamingDestinations', error.message)
+    }
+    throw error
+  }
 }
 
 type ZonedDateTimeParts = {
@@ -310,6 +331,7 @@ function mapEvent(row: CalendarEventRow): CalendarEvent {
     description: row.description,
     discountCodes: row.discount_codes ?? [],
     featuredCollections: row.featured_collections,
+    streamingDestinations: normalizeStreamingDestinations(row.streaming_destinations),
     isRecurring: row.is_recurring ?? false,
     recurrenceGroupId: row.recurrence_group_id,
     recurrenceRule: row.recurrence_rule,
@@ -341,6 +363,9 @@ function applyUpdateToRow(
     featured_collections: Object.prototype.hasOwnProperty.call(update, 'featured_collections')
       ? (update.featured_collections ?? null)
       : row.featured_collections,
+    streaming_destinations: Object.prototype.hasOwnProperty.call(update, 'streaming_destinations')
+      ? (update.streaming_destinations ?? [])
+      : row.streaming_destinations,
     updated_at: update.updated_at,
   }
 }
@@ -378,6 +403,7 @@ export async function addShow(
   const title = normalizeOptionalText(input.title)
   const description = normalizeOptionalText(input.description)
   const featuredCollections = input.featuredCollections ?? null
+  const streamingDestinations = normalizeEventStreamingDestinations(input.streamingDestinations)
 
   if (!input.recurring) {
     const { data, error } = await supabase
@@ -392,6 +418,7 @@ export async function addShow(
         description,
         discount_codes: discountCodes,
         featured_collections: featuredCollections,
+        streaming_destinations: streamingDestinations,
         is_recurring: false,
         recurrence_group_id: null,
         recurrence_rule: null,
@@ -426,6 +453,7 @@ export async function addShow(
     description,
     discount_codes: discountCodes,
     featured_collections: featuredCollections,
+    streaming_destinations: streamingDestinations,
     is_recurring: shouldCreateSeries,
     recurrence_group_id: shouldCreateSeries ? recurrenceGroupId : null,
     recurrence_rule: shouldCreateSeries ? input.recurring!.cadence : null,
@@ -571,6 +599,10 @@ export async function updateShow(
   }
   if (patch.featuredCollections !== undefined) {
     update.featured_collections = patch.featuredCollections
+    hasPatch = true
+  }
+  if (patch.streamingDestinations !== undefined) {
+    update.streaming_destinations = normalizeEventStreamingDestinations(patch.streamingDestinations)
     hasPatch = true
   }
 

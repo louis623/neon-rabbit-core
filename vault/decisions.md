@@ -2285,3 +2285,15 @@ Reason: Model names and spend alone do not establish task fitness. Purpose telem
 Decision: The unused duplicate OpenAI project and first unused Finder runtime key are not a cleanup task. Leave them unchanged indefinitely unless concrete evidence shows a security, billing, access, or operational reason to intervene. Any later revocation or deletion requires Louis's explicit authorization and a dependency audit.
 
 Reason: The working production separation is stable, and speculative cleanup is not worth introducing another setup setback.
+
+## 2026-09-02 - Customer show watch links are event-owned
+
+Decision: Public watch destinations belong to an individual calendar event as
+an ordered `streaming_destinations` list, not to the rep-wide site link map.
+Nic-Nac may schedule an event without a destination, but it must preserve every
+valid supplied destination for dual-streaming. Customer cards show Add to
+Calendar first, followed by one Watch-on action per event destination.
+
+Reason: Rep-wide social/profile links cannot truthfully identify a specific
+show's host, cannot represent dual-streaming, and previously caused the public
+card to silently omit or misdirect watch actions.

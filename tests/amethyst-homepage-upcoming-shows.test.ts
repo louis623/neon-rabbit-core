@@ -30,6 +30,7 @@ function makeEvent(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
     description: 'Main show',
     discountCodes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
     featuredCollections: ['Birthday', 'OG'],
+    streamingDestinations: [],
     isRecurring: false,
     recurrenceGroupId: null,
     recurrenceRule: null,
@@ -64,18 +65,18 @@ describe('Amethyst homepage upcoming shows', () => {
     expect(endAt).toBeGreaterThan(now)
   })
 
-  it('maps calendar events into homepage cards with collection links and stream buttons', () => {
+  it('maps event-owned stream destinations into homepage cards in stored order', () => {
     const mapped = mapCalendarEventToHomepageEvent(
       makeEvent({
         title: null,
         description: 'Friday Night Fizz',
         durationMinutes: 90,
+        streamingDestinations: [
+          { platform: 'tiktok', url: 'https://tiktok.com/@demo' },
+          { platform: 'whatnot', url: 'https://www.whatnot.com/user/demo' },
+          { platform: 'custom', url: 'https://example.com/live', label: 'Demo Live' },
+        ],
       }),
-      {
-        tiktok: 'https://tiktok.com/@demo',
-        facebook: '',
-        youtube: 'https://youtube.com/@demo',
-      },
       0,
     )
 
@@ -99,9 +100,19 @@ describe('Amethyst homepage upcoming shows', () => {
       ],
       platforms: [
         {
-          kind: 'tt',
-          label: 'Join me on TikTok',
+          kind: 'tiktok',
+          label: 'Watch on TikTok',
           href: 'https://tiktok.com/@demo',
+        },
+        {
+          kind: 'whatnot',
+          label: 'Watch on Whatnot',
+          href: 'https://www.whatnot.com/user/demo',
+        },
+        {
+          kind: 'custom',
+          label: 'Watch on Demo Live',
+          href: 'https://example.com/live',
         },
       ],
     })
@@ -114,10 +125,6 @@ describe('Amethyst homepage upcoming shows', () => {
     const maybeSingle = vi.fn().mockResolvedValue({
       data: {
         id: 'rep-1',
-        streaming_links: {
-          tiktok: 'https://tiktok.com/@demo',
-          facebook: 'https://facebook.com/demo',
-        },
       },
       error: null,
     })
@@ -130,11 +137,16 @@ describe('Amethyst homepage upcoming shows', () => {
     createAdminClientMock.mockReturnValue(admin)
     listMyShowsMock.mockResolvedValue({
       events: [
-        makeEvent({ id: 'event-1', platform: 'TikTok' }),
+        makeEvent({
+          id: 'event-1',
+          platform: 'TikTok',
+          streamingDestinations: [{ platform: 'tiktok', url: 'https://tiktok.com/@demo' }],
+        }),
         makeEvent({
           id: 'event-2',
           platform: 'Facebook',
           title: 'Sunday Sparkle Session',
+          streamingDestinations: [{ platform: 'facebook', url: 'https://facebook.com/demo' }],
         }),
         makeEvent({
           id: 'event-3',
@@ -155,7 +167,7 @@ describe('Amethyst homepage upcoming shows', () => {
     expect(result[0].featured).toBe(true)
     expect(result[1].featured).toBe(false)
     expect(result[1].platforms[0]).toMatchObject({
-      kind: 'fb',
+      kind: 'facebook',
       href: 'https://facebook.com/demo',
     })
   })
@@ -194,10 +206,6 @@ describe('Amethyst homepage upcoming shows', () => {
       data: {
         id: 'rep-bling-kitchen',
         email: 'blingkitchen19@gmail.com',
-        streaming_links: {
-          tiktok: 'https://www.tiktok.com/@blingkitchen',
-          facebook: 'https://www.facebook.com/groups/1485026002799524',
-        },
       },
       error: null,
     })

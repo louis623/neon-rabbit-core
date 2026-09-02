@@ -6056,3 +6056,20 @@ Lessons retained:
 - Live Control Center verification confirmed refresh-on-open, the manual Refresh cycle, separate product classes, a current provider-fetch timestamp, and the new model-purpose/model-fit tables. Provider actuals currently show `$0.00` for the newly created product projects; provider reporting may lag.
 - A minimal Responses API request proved the Suite restricted runtime key can invoke the configured model family. Finder's final synthetic authenticated model smoke was not rerun because its write-only smoke token is unavailable to the terminal and the only visible browser session belongs to Louis; that account was not used for reviewer testing.
 - No billing, Stripe, bank, refund, auto-refill, customer, DNS, domain, alias, messaging, or scheduled-canary change was made. Untracked `artifacts/` and `test-results/` were preserved.
+
+## 2026-09-02 - Event-level customer show destinations
+
+- Repaired the calendar/customer-site contract so `calendar_events` owns an
+  ordered `streaming_destinations` JSON list. The list supports TikTok,
+  Instagram, YouTube, Facebook, Whatnot, and labeled custom destinations.
+- Nic-Nac add/edit show tools validate HTTPS destinations at the app boundary;
+  URLs are optional for scheduling, deduplicated, capped at five, and copied
+  across recurring occurrences or future-series updates when supplied.
+- Upcoming-show cards no longer read `reps.streaming_links`. They render Add
+  to Calendar first and then only the exact event-owned Watch-on destinations.
+  Existing events remain empty and unchanged; generic homepage media and old
+  `primary`/`secondary` profile keys cannot become show links.
+- Added a code-only reviewer fixture for one single-stream and one dual-stream
+  show plus focused service, tool, homepage, reminder, and fixture coverage.
+  Do not reset it in production without explicit authorization: the historical
+  reviewer persona was archived and reset would reactivate it.

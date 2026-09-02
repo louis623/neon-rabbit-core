@@ -26,6 +26,7 @@ function baseRow(overrides: Record<string, unknown> = {}) {
       { code: 'SPARKLE10', description: 'Ten percent off' },
     ],
     featured_collections: ['Celestial'],
+    streaming_destinations: [],
     is_recurring: false,
     recurrence_group_id: null,
     recurrence_rule: null,
@@ -169,6 +170,7 @@ describe('calendar service', () => {
       description: null,
       discount_codes: [{ code: 'SPARKLE10', description: 'Ten percent off' }],
       featured_collections: ['Celestial'],
+      streaming_destinations: [],
       is_recurring: false,
       recurrence_group_id: null,
       recurrence_rule: null,
@@ -234,6 +236,49 @@ describe('calendar service', () => {
       recurrenceGroupId: 'group-1',
       recurrenceRule: 'weekly',
     })
+  })
+
+  it('normalizes, de-duplicates, and persists event streaming destinations', async () => {
+    const row = baseRow({
+      streaming_destinations: [
+        { platform: 'tiktok', url: 'https://www.tiktok.com/@demo' },
+        { platform: 'whatnot', url: 'https://www.whatnot.com/user/demo' },
+      ],
+    })
+    const insertSingle = makeInsertSingleChain({ data: row, error: null })
+    const insert = vi.fn(() => ({ select: insertSingle.select }))
+    const supabase = { from: vi.fn(() => ({ insert })) } as never
+
+    await addShow(supabase, 'rep-1', {
+      platform: 'TikTok',
+      eventTime: row.event_time as string,
+      streamingDestinations: [
+        { platform: 'TikTok', url: 'https://www.tiktok.com/@demo' },
+        { platform: 'TikTok', url: 'https://www.tiktok.com/@demo' },
+        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/demo' },
+      ],
+    })
+
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({
+      streaming_destinations: [
+        { platform: 'tiktok', url: 'https://www.tiktok.com/@demo' },
+        { platform: 'whatnot', url: 'https://www.whatnot.com/user/demo' },
+      ],
+    }))
+  })
+
+  it('rejects non-HTTPS and unlabeled custom streaming destinations', async () => {
+    const supabase = { from: vi.fn() } as never
+    await expect(addShow(supabase, 'rep-1', {
+      platform: 'TikTok',
+      eventTime: '2099-05-01T20:00:00.000Z',
+      streamingDestinations: [{ platform: 'TikTok', url: 'http://example.com/live' }],
+    })).rejects.toMatchObject({ code: 'INVALID_INPUT' })
+    await expect(addShow(supabase, 'rep-1', {
+      platform: 'TikTok',
+      eventTime: '2099-05-01T20:00:00.000Z',
+      streamingDestinations: [{ platform: 'ShopLive', url: 'https://example.com/live' }],
+    })).rejects.toMatchObject({ code: 'INVALID_INPUT' })
   })
 
   it('addShow creates exact-count repeated shows as standalone one-time entries', async () => {
@@ -566,6 +611,10 @@ describe('calendar service', () => {
       title: 'Wednesday Sparkles',
       discountCodes: [{ code: 'NEWCODE', description: 'Updated' }],
       timeZone: 'America/New_York',
+      streamingDestinations: [
+        { platform: 'TikTok', url: 'https://www.tiktok.com/@demo' },
+        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/demo' },
+      ],
       applyToSeries: true,
     })
 
@@ -573,6 +622,10 @@ describe('calendar service', () => {
     expect(updateCall.title).toBe('Wednesday Sparkles')
     expect(updateCall.discount_codes).toEqual([{ code: 'NEWCODE', description: 'Updated' }])
     expect(updateCall.time_zone).toBe('America/New_York')
+    expect(updateCall.streaming_destinations).toEqual([
+      { platform: 'tiktok', url: 'https://www.tiktok.com/@demo' },
+      { platform: 'whatnot', url: 'https://www.whatnot.com/user/demo' },
+    ])
     expect(typeof updateCall.updated_at).toBe('string')
     expect(updated.state.eq).toEqual([
       ['rep_id', 'rep-1'],

@@ -507,6 +507,11 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('href={presentation.outboundUrl}')
     expect(jsx).toContain('target="_blank"')
     expect(jsx).toContain('rel="noreferrer noopener"')
+    const eventActions = jsx.slice(jsx.indexOf('<div className="hp-event-actions">'))
+    expect(eventActions.indexOf('className="hp-event-add"')).toBeLessThan(
+      eventActions.indexOf('event.platforms.map'),
+    )
+    expect(jsx).toContain('key={`${event.id}-${platform.kind}-${platform.href}`}')
     expect(jsx).toContain('/amethyst/media-icons.svg#')
     expect(jsx).toContain('mediaUrl ? footer : null')
     expect(jsx).toContain('Portrait photo coming soon')

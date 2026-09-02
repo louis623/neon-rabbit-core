@@ -22,6 +22,13 @@ const inputSchema = z
       description: z.string(),
     })).max(10).optional(),
     featuredCollections: z.array(z.string()).optional(),
+    streamingDestinations: z.array(z.object({
+      platform: z.string().min(1),
+      url: z.string().url().refine((url) => url.startsWith('https://'), {
+        message: 'streaming destination URLs must use HTTPS',
+      }),
+      label: z.string().min(1).optional(),
+    })).max(5).optional(),
     applyToSeries: z.boolean().optional().default(false),
   })
   .refine(
@@ -33,7 +40,8 @@ const inputSchema = z
       value.title !== undefined ||
       value.description !== undefined ||
       value.discountCodes !== undefined ||
-      value.featuredCollections !== undefined,
+      value.featuredCollections !== undefined ||
+      value.streamingDestinations !== undefined,
     { message: 'at least one patch field is required' },
   )
 
@@ -71,7 +79,7 @@ export function makeUpdateShowTool(ctx: {
 }) {
   return tool({
     description:
-      'Update details on a scheduled show. Can change time, platform, title, description, discount codes, or featured collections. ' +
+      'Update details on a scheduled show. Can change time, platform, title, description, discount codes, featured collections, or the full optional streamingDestinations list. ' +
       'Set applyToSeries=true to apply non-time changes to all future shows in a recurring series. ' +
       'Do not combine applyToSeries=true with eventTime. Do not include durationMinutes unless the rep asks to change duration or length.',
     inputSchema,
@@ -80,6 +88,7 @@ export function makeUpdateShowTool(ctx: {
         eventId,
         discountCodes,
         featuredCollections,
+        streamingDestinations,
         applyToSeries,
       } = input
       const platform = normalizeOptionalToolText(input.platform)
@@ -100,6 +109,7 @@ export function makeUpdateShowTool(ctx: {
         description,
         discountCodes,
         featuredCollections,
+        streamingDestinations,
         applyToSeries,
       }
 

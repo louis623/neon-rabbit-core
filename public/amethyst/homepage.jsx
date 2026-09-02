@@ -1586,16 +1586,16 @@ function Events({ count }) {
                 )}
 
                 <div className="hp-event-actions">
-                  {event.platforms.map((platform) => (
-                    <a key={`${event.id}-${platform.kind}`} {...linkProps(platform.href)} className={`hp-event-platform ${platform.kind}`}>
-                      <span className={`glyph ${platform.kind}`} />
-                      {platform.label}
-                    </a>
-                  ))}
                   <button className="hp-event-add" onClick={() => downloadCalendarEvent(event)}>
                     <CustomerMediaIcon name="calendar" />
                     <span>Add to calendar</span>
                   </button>
+                  {event.platforms.map((platform) => (
+                    <a key={`${event.id}-${platform.kind}-${platform.href}`} {...linkProps(platform.href)} className={`hp-event-platform ${platform.kind}`}>
+                      <span className={`glyph ${platform.kind}`} />
+                      {platform.label}
+                    </a>
+                  ))}
                 </div>
               </article>
             );

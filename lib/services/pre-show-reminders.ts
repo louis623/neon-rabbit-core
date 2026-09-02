@@ -74,6 +74,7 @@ type CalendarEventRow = {
   description: string | null
   discount_codes: unknown[] | null
   featured_collections: string[] | null
+  streaming_destinations: CalendarEvent['streamingDestinations'] | null
   is_recurring: boolean | null
   recurrence_group_id: string | null
   recurrence_rule: string | null
@@ -114,6 +115,7 @@ function mapEvent(row: CalendarEventRow): CalendarEvent {
     description: row.description,
     discountCodes: [],
     featuredCollections: row.featured_collections,
+    streamingDestinations: row.streaming_destinations ?? [],
     isRecurring: row.is_recurring ?? false,
     recurrenceGroupId: row.recurrence_group_id,
     recurrenceRule: row.recurrence_rule,
@@ -288,6 +290,7 @@ async function loadEvents(
         'description',
         'discount_codes',
         'featured_collections',
+        'streaming_destinations',
         'is_recurring',
         'recurrence_group_id',
         'recurrence_rule',

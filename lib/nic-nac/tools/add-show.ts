@@ -22,6 +22,13 @@ const inputSchema = z.object({
     description: z.string(),
   })).max(10).optional(),
   featuredCollections: z.array(z.string()).optional(),
+  streamingDestinations: z.array(z.object({
+    platform: z.string().min(1),
+    url: z.string().url().refine((url) => url.startsWith('https://'), {
+      message: 'streaming destination URLs must use HTTPS',
+    }),
+    label: z.string().min(1).optional(),
+  })).max(5).optional(),
   recurring: z.object({
     cadence: z.enum(['daily', 'weekly', 'weekday']),
     duration: z.enum(['1_month', '3_months', 'ongoing']),
@@ -54,7 +61,7 @@ export function makeAddShowTool(ctx: {
       'For recurring: ask the rep how often (daily, weekly, or weekday/Monday-Friday) and how long (a specific number of times, one month, three months, or ongoing). ' +
       'If the rep says a bounded count like "twice" or "next two Tuesdays", pass recurring.occurrenceCount and create exactly that many entries. ' +
       'In the current build, ongoing schedules out about six months ahead. ' +
-      'Discount codes support up to 10 per show as an array of {code, description} pairs.',
+      'Discount codes support up to 10 per show as an array of {code, description} pairs. Streaming destinations are optional. When the rep supplies public watch URLs, pass streamingDestinations as {platform, url, label?}; use a label for a custom platform. If they name a platform but do not have its URL, schedule the show without a destination and explain that its customer-site watch button will appear after they add the URL.',
     inputSchema,
     execute: async (input) => {
       try {

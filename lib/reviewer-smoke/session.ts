@@ -328,6 +328,9 @@ async function seedReviewerCalendarSmokeData(admin: AdminClient, repId: string) 
         description: 'Synthetic reviewer smoke live show.',
         discount_codes: [{ code: 'SMOKE10', description: 'Smoke test code' }],
         featured_collections: ['Reviewer Smoke Collection'],
+        streaming_destinations: [
+          { platform: 'tiktok', url: 'https://www.tiktok.com/@sparklesuitereviewer' },
+        ],
         is_recurring: true,
         recurrence_group_id: REVIEWER_SMOKE_CALENDAR.recurrenceGroupId,
         recurrence_rule: 'weekly',
@@ -345,6 +348,10 @@ async function seedReviewerCalendarSmokeData(admin: AdminClient, repId: string) 
         description: 'Synthetic reviewer smoke future live show.',
         discount_codes: [{ code: 'SMOKE10', description: 'Smoke test code' }],
         featured_collections: ['Reviewer Smoke Collection'],
+        streaming_destinations: [
+          { platform: 'tiktok', url: 'https://www.tiktok.com/@sparklesuitereviewer' },
+          { platform: 'whatnot', url: 'https://www.whatnot.com/user/sparklesuitereviewer' },
+        ],
         is_recurring: true,
         recurrence_group_id: REVIEWER_SMOKE_CALENDAR.recurrenceGroupId,
         recurrence_rule: 'weekly',

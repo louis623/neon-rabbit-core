@@ -2377,9 +2377,17 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
 .hp-event-platform.tt {
   background: linear-gradient(95deg, var(--hp-primary), var(--hp-accent));
 }
+.hp-event-platform.tiktok {
+  background: linear-gradient(95deg, var(--hp-primary), var(--hp-accent));
+}
 .hp-event-platform.fb {
   background: #1877F2;
 }
+.hp-event-platform.instagram { background: linear-gradient(95deg, #833AB4, #FD1D1D, #FCAF45); }
+.hp-event-platform.youtube { background: #FF0000; }
+.hp-event-platform.facebook { background: #1877F2; }
+.hp-event-platform.whatnot { background: #3a6cff; }
+.hp-event-platform.custom { background: linear-gradient(95deg, var(--hp-primary), var(--hp-accent)); }
 .hp-event-platform:hover { filter: brightness(1.05); transform: translateY(-1px); }
 .hp-event-platform .glyph {
   width: 18px; height: 18px;
@@ -2387,6 +2395,7 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   flex-shrink: 0;
 }
 .hp-event-platform .glyph.tt { background: rgba(255,255,255,0.95); position: relative; }
+.hp-event-platform .glyph.tiktok { background: rgba(255,255,255,0.95); position: relative; }
 .hp-event-platform .glyph.tt::after {
   content: "♪";
   position: absolute;
@@ -2443,6 +2452,41 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   color: var(--hp-card-accent);
   font-weight: 600;
 }
+.hp-event-platform .glyph.tiktok::after {
+  content: "♪";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--hp-primary);
+  font-weight: 700;
+}
+.hp-event-platform .glyph.instagram,
+.hp-event-platform .glyph.youtube,
+.hp-event-platform .glyph.facebook,
+.hp-event-platform .glyph.whatnot,
+.hp-event-platform .glyph.custom { background: rgba(255,255,255,0.95); position: relative; }
+.hp-event-platform .glyph.instagram::after,
+.hp-event-platform .glyph.youtube::after,
+.hp-event-platform .glyph.facebook::after,
+.hp-event-platform .glyph.whatnot::after,
+.hp-event-platform .glyph.custom::after {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--hp-primary);
+}
+.hp-event-platform .glyph.instagram::after { content: "◎"; }
+.hp-event-platform .glyph.youtube::after { content: "▶"; }
+.hp-event-platform .glyph.facebook::after { content: "f"; }
+.hp-event-platform .glyph.whatnot::after { content: "W"; }
+.hp-event-platform .glyph.custom::after { content: "↗"; }
 .hp-wibp-title {
   font-family: var(--hp-display-font);
   font-size: 32px;

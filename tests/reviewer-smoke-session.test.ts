@@ -274,6 +274,9 @@ describe('reviewer smoke session reset', () => {
           is_recurring: true,
           recurrence_group_id: '00000000-0000-4000-8000-000000000201',
           status: 'scheduled',
+          streaming_destinations: [
+            { platform: 'tiktok', url: 'https://www.tiktok.com/@sparklesuitereviewer' },
+          ],
         }),
         expect.objectContaining({
           id: '00000000-0000-4000-8000-000000000203',
@@ -281,6 +284,10 @@ describe('reviewer smoke session reset', () => {
           is_recurring: true,
           recurrence_group_id: '00000000-0000-4000-8000-000000000201',
           status: 'scheduled',
+          streaming_destinations: [
+            { platform: 'tiktok', url: 'https://www.tiktok.com/@sparklesuitereviewer' },
+            { platform: 'whatnot', url: 'https://www.whatnot.com/user/sparklesuitereviewer' },
+          ],
         }),
       ],
       { onConflict: 'id' },
