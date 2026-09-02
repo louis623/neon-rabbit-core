@@ -2229,3 +2229,13 @@ Reason: Louis needs current operating visibility without creating a competing fi
 Decision: Finder shares only bounded Nic-Nac cost telemetry through a dedicated bearer-protected read-only endpoint. Its database, customer auth, and deployment stay separate from Suite.
 
 Reason: Cross-product reporting should not merge customer security boundaries or grant Suite direct access to Finder's database.
+
+## 2026-09-02 - OpenAI attribution uses separate product projects
+
+Decision: Sparkle Suite and Sparkle Finder use separate OpenAI projects and restricted runtime keys. The Control Center uses a distinct read-only organization key for Costs API reads, with project IDs mapped in configuration rather than UI copy. Historical Default-project spend remains unallocated and is never blended into a product class.
+
+Reason: Project attribution must be authoritative at request time. Per-run estimates remain useful operational evidence, but they cannot replace provider-reported actuals or justify retroactively assigning old shared-project spend.
+
+Decision: The dashboard may say whether an observed run matches configured model policy, but it must not claim that model is optimal without comparative workflow replays scoring answer quality, tool correctness, latency, and cost together.
+
+Reason: Model names and spend alone do not establish task fitness. Purpose telemetry plus controlled eval evidence is required for a defensible optimization decision.

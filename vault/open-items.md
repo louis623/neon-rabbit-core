@@ -616,5 +616,12 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   workflow state, then clean up all synthetic records. Alert on failure. Do
   not use Louis's or any customer's account, and do not create customer-facing
   changes, provider actions, or Live Queue state as part of the canary.
-- [ ] **Complete OpenAI provider-actual setup for Cost & Capacity** — with Louis's explicit key authorization, configure a dedicated organization admin key as `OPENAI_ADMIN_KEY` and map the exact OpenAI project ids in `NIC_NAC_OPENAI_SUITE_PROJECT_IDS` and `NIC_NAC_OPENAI_FINDER_PROJECT_IDS`. Do not scrape Billing or reuse a broad interactive credential. Verify actual costs remain separate by product.
+- [x] **Complete OpenAI provider-actual setup for Cost & Capacity** — completed September 2, 2026 with a read-only organization key, separate Suite/Finder project mappings, restricted product runtime keys, and live refresh verification. Billing remains unscraped and actuals remain separated by product.
 - [ ] **Add Finder cached-token telemetry** — persist cached input tokens from Finder model responses so Cost & Capacity can replace the current explicit unavailable cells. This is telemetry work only; do not infer cached tokens from totals.
+
+## Nic-Nac cost and capacity follow-up
+
+- [ ] Run the secured synthetic authenticated Finder Nic-Nac production smoke once its write-only smoke token is available to the approved smoke runner. Do not use Louis's signed-in Finder account or a customer account.
+- [ ] Build a bounded comparative replay set by workload before changing model tiers. Score quality, correct tool use, latency, and cost; policy-match labels alone do not prove that another model is better.
+- [ ] With Louis's explicit deletion/revocation authorization, remove the unused duplicate OpenAI project and the first unused Finder runtime key created during the setup UI retry. Audit dependencies before revoking any older shared/general OpenAI key.
+- [ ] Keep historical Default-project provider spend unallocated. If it later appears in the Control Center, show it as a separate legacy/unallocated amount outside Suite, Finder, and their combined product total.

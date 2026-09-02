@@ -320,3 +320,10 @@
 - The route fails closed without its dedicated bearer token or Finder service role. The token is configured as a Vercel Secret in Finder and Suite production/preview.
 - Focused route tests, lint, local production build, Vercel production build, custom-domain deployment inspection, and a live unauthenticated `401` check passed.
 - Commit `97903157` is live as deployment `dpl_CCyNBUN9XUSW4vCfZ9mSxMkoynv5` on `https://yoursparklefinder.com`.
+
+## 2026-09-02 - Dedicated OpenAI project and model-purpose telemetry
+
+- Finder production traffic now uses its own OpenAI project and a restricted model-request runtime key.
+- Commit `91273c87` expands the read-only cost bridge with persisted reasoning and requested-intent evidence so Suite can show workload, expected model/reasoning, and policy fit without sharing customer auth or conversation content.
+- Deployment `dpl_9W8PJNL7xKZ88uKfgcb6omrcirfd` is `READY` and aliased at `https://yoursparklefinder.com`; the live signed-in surface loaded successfully.
+- The final synthetic authenticated model smoke remains pending because the production smoke token is write-only and unavailable to the terminal. Louis's signed-in account was not used for reviewer testing.

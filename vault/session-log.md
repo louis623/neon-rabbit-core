@@ -5972,3 +5972,13 @@ Lessons retained:
 - Verification passed 12 focused Suite/Finder tests, changed-file lint, both production builds, exact domain/deployment inspection, and signed-in live Control Center smoke. Manual Refresh visibly transitioned `Refresh` → `Refreshing…` → `Refresh`.
 - Finder deployment: `dpl_CCyNBUN9XUSW4vCfZ9mSxMkoynv5`. Final Suite deployment: `dpl_3Uj5brd9CCSLa1bLnG5rAmY6bNV1`.
 - Remaining provider setup is explicit: supply a dedicated OpenAI organization admin key and map distinct OpenAI project ids to Suite and Finder. Until then actual provider spend and balance remain unavailable rather than estimated or scraped.
+
+## 2026-09-02 - OpenAI cost attribution and model-fit release
+
+- Created separate OpenAI projects for Sparkle Suite Production and Sparkle Finder Production. Each product now uses its own restricted runtime key with model-request capability only; the Suite Control Center uses a separate read-only organization key for the OpenAI Costs API.
+- Configured explicit Suite/Finder project-id mappings. Historical spend in the OpenAI Default project remains unallocated and is not blended into either product class.
+- Released commit `91273c87`, adding workload labels, actual-versus-expected model, policy tier, reasoning level, model-fit status, cached/failure visibility, and the same fields in Lane's monthly export. Workload labels are derived from persisted workflow/intent telemetry; they do not route or steer Nic-Nac.
+- Finder deployment `dpl_9W8PJNL7xKZ88uKfgcb6omrcirfd` and Suite deployment `dpl_3jf6qWNJJKJgibFJZrCbnMgeMzWm` are `READY` and own their expected production domains.
+- Live Control Center verification confirmed refresh-on-open, the manual Refresh cycle, separate product classes, a current provider-fetch timestamp, and the new model-purpose/model-fit tables. Provider actuals currently show `$0.00` for the newly created product projects; provider reporting may lag.
+- A minimal Responses API request proved the Suite restricted runtime key can invoke the configured model family. Finder's final synthetic authenticated model smoke was not rerun because its write-only smoke token is unavailable to the terminal and the only visible browser session belongs to Louis; that account was not used for reviewer testing.
+- No billing, Stripe, bank, refund, auto-refill, customer, DNS, domain, alias, messaging, or scheduled-canary change was made. Untracked `artifacts/` and `test-results/` were preserved.

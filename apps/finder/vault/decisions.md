@@ -136,3 +136,9 @@ Reason: Customers use Finder as a stable comparison workspace while visiting mul
 Decision: Sparkle Finder exposes bounded Nic-Nac run-cost telemetry to the Suite owner Control Center through a dedicated bearer-protected internal GET endpoint. It does not share Finder customer auth, direct database credentials, conversation content, or mutable capabilities.
 
 Reason: Louis needs combined operating visibility while Finder must retain its separate application, auth, data, and deployment boundaries.
+
+## 2026-09-02 - Finder receives its own OpenAI cost boundary
+
+Decision: Sparkle Finder production uses a dedicated OpenAI project and restricted model-request runtime key. Suite may attribute Finder provider cost only through the configured project ID and may read Finder per-run evidence only through the existing bounded bridge.
+
+Reason: A shared provider key/project makes authoritative product attribution impossible and weakens operational isolation even when application databases and authentication remain separate.

@@ -2904,3 +2904,11 @@ Verification passed:
 - Finder telemetry crosses the product boundary through a bounded bearer-protected read-only endpoint. The shared bridge token is configured as a Vercel Secret in both apps for production and preview.
 - Suite commit `d570a2e9` is live as `dpl_3Uj5brd9CCSLa1bLnG5rAmY6bNV1` on both Suite production domains. Finder bridge commit `97903157` is live as `dpl_CCyNBUN9XUSW4vCfZ9mSxMkoynv5` on `https://yoursparklefinder.com`.
 - OpenAI provider actuals and prepaid balance remain honestly unavailable: no organization admin key/project mapping was created, and the application does not scrape Billing.
+
+## 2026-09-02 - Cost attribution and model fit are live
+
+- Application tip `91273c87` is live in Suite deployment `dpl_3jf6qWNJJKJgibFJZrCbnMgeMzWm` and Finder deployment `dpl_9W8PJNL7xKZ88uKfgcb6omrcirfd`.
+- OpenAI production traffic is separated by product project. Runtime keys are restricted to model requests; the dashboard's organization credential is read-only and used only for Costs API reads.
+- `/control-center/nic-nac-usage` shows workload purpose, actual and expected model, policy tier, actual and expected reasoning, and whether each row matches configured policy. It explicitly requires comparative replay evidence before declaring another model better.
+- Provider actuals refresh on page open and manual Refresh. Prepaid credit balance remains unavailable through the documented API and continues to link to Billing without scraping it.
+- Historical Default-project spend remains unallocated outside Suite/Finder totals.

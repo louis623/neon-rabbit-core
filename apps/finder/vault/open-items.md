@@ -38,3 +38,4 @@
   - Security check: `/api/internal/finder/nic-nac-telemetry-smoke` returns `401` without the bearer token.
 - Run one signed-in Control Center operator visual pass of the Sparkle Finder preset selector and save action when an authorized operator session is available. The live Finder rendering and Amethyst contract are already verified; do not bypass Control Center authentication with a customer or personal account.
 - Persist Finder cached-input token counts in `sparkle_finder_nic_nac_runs` when the provider exposes them, then include them in the read-only Cost & Capacity bridge. Until that schema/runtime change is made, the owner dashboard must continue to show Finder cached tokens as unavailable rather than zero.
+- Run the secured synthetic authenticated Finder Nic-Nac production smoke against deployment `dpl_9W8PJNL7xKZ88uKfgcb6omrcirfd` when the write-only smoke token is available to the approved runner. Do not substitute Louis's account or a customer account.
