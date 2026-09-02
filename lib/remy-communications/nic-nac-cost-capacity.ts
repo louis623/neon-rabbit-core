@@ -152,12 +152,18 @@ export function dollarsToIntegerCents(value: number | string | null) {
 export function normalizeSuiteRun(row: SuiteRunRow): CostCapacityRun {
   const purpose = policyPurpose(row.model_policy)
   const surface = row.surface ?? 'unknown'
+  const isStaticApplicationRun =
+    !row.model_provider &&
+    !row.model_policy &&
+    (row.input_tokens ?? 0) === 0 &&
+    (row.output_tokens ?? 0) === 0 &&
+    row.estimated_cost_cents === 0
   return {
     productClass: 'suite',
     costClass: classifyCost(purpose, surface),
     surface,
-    provider: row.model_provider ?? 'unknown',
-    model: row.model,
+    provider: isStaticApplicationRun ? 'application' : row.model_provider ?? 'unknown',
+    model: isStaticApplicationRun ? 'No model (static)' : row.model,
     purpose,
     runId: row.run_id,
     inputTokens: asCount(row.input_tokens),
@@ -181,8 +187,11 @@ export function normalizeFinderRun(row: FinderRunRow): CostCapacityRun {
     productClass: 'finder',
     costClass: classifyCost(purpose, surface),
     surface,
-    provider: row.model_provider ?? 'unknown',
-    model: row.model_name ?? 'static_or_unknown',
+    provider: row.status === 'redirected' ? 'application' : row.model_provider ?? 'unknown',
+    model:
+      row.status === 'redirected'
+        ? 'No model (static)'
+        : row.model_name ?? 'Unknown (not recorded)',
     purpose,
     runId: row.id,
     inputTokens: asCount(row.prompt_tokens),
@@ -261,8 +270,13 @@ function groupByModel(rows: CostCapacityRun[]) {
             ? Math.round(estimatedCents / aggregate.successfulWorkflows)
             : null,
         policyDrift:
-          model !== 'static_or_unknown' && model !== expectedModelForPurpose(purpose),
-        unknownPrice: model !== 'static_or_unknown' && !knownPriceModel(model),
+          model !== 'No model (static)' &&
+          model !== 'Unknown (not recorded)' &&
+          model !== expectedModelForPurpose(purpose),
+        unknownPrice:
+          model !== 'No model (static)' &&
+          model !== 'Unknown (not recorded)' &&
+          !knownPriceModel(model),
       }
     })
     .sort((a, b) => b.estimatedCents - a.estimatedCents || b.runs - a.runs)

@@ -92,6 +92,41 @@ describe('Nic-Nac Cost & Capacity', () => {
     expect(snapshot.coverageHoles).toContain('Finder bridge not configured.')
   })
 
+  it('does not mislabel zero-cost application actions as AI model drift', () => {
+    const staticRun = normalizeSuiteRun({
+      run_id: 'static-run',
+      product: 'sparkle_suite',
+      surface: 'rep_workspace',
+      model: 'personalized_greeting',
+      model_provider: null,
+      model_policy: null,
+      status: 'complete',
+      input_tokens: 0,
+      output_tokens: 0,
+      cache_read_tokens: null,
+      estimated_cost_cents: 0,
+      hard_fail_phrase_count: 0,
+      created_at: '2026-09-02T14:00:00.000Z',
+    })
+    const snapshot = buildCostCapacitySnapshot({
+      month: '2026-09',
+      start: new Date('2026-09-01T04:00:00.000Z'),
+      end: now,
+      now,
+      suiteRows: [staticRun],
+      finderRows: [],
+      finderIssue: null,
+      provider: {
+        suite: { actualCents: null, issue: null, projectIdsConfigured: 0 },
+        finder: { actualCents: null, issue: null, projectIdsConfigured: 0 },
+      },
+      providerCostsAt: null,
+    })
+    expect(staticRun).toMatchObject({ model: 'No model (static)', provider: 'application' })
+    expect(snapshot.byModel[0]).toMatchObject({ policyDrift: false, unknownPrice: false })
+    expect(snapshot.alerts).toEqual([])
+  })
+
   it('exports stable monthly evidence fields and Eastern timestamps', () => {
     const row = normalizeSuiteRun({
       run_id: 'suite-run',
