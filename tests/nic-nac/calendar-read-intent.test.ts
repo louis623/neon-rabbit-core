@@ -5,6 +5,9 @@ describe('Calendar read intent', () => {
   it.each([
     'Hey Nic-Nac, do I have anything on my calendar right now?',
     "What's on my schedule this week?",
+    'Whats on my calendar',
+    'What’s on my calendar?',
+    'Whens my next show?',
     'When is my next live?',
     'Do I have a show tonight?',
     'What events did I have last month?',

@@ -127,6 +127,7 @@ vi.mock('@/lib/nic-nac/probe-conversation-owner', () => ({
 
 vi.mock('@/lib/nic-nac/guardian-telemetry', () => ({
   logIncident: logIncidentMock,
+  logToolExecution: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@/lib/nic-nac/hitl-state', () => ({

@@ -30,7 +30,10 @@ import {
   type NicNacToolIntent,
 } from '@/lib/nic-nac/tools'
 import { probeConversationOwner } from '@/lib/nic-nac/probe-conversation-owner'
-import { logIncident } from '@/lib/nic-nac/guardian-telemetry'
+import {
+  logIncident,
+  logToolExecution,
+} from '@/lib/nic-nac/guardian-telemetry'
 import {
   decideAssistantMessageId,
   shouldCheckpointContinuation,
@@ -73,7 +76,9 @@ import {
   getNicNacToolFailure,
   isRenderableNicNacStreamChunk,
   NIC_NAC_EMPTY_RESPONSE_FALLBACK,
+  recoverNicNacEmptyCalendarRead,
 } from '@/lib/nic-nac/core/stream-output-guard'
+import { readMyShowsForNicNac } from '@/lib/nic-nac/tools/list-my-shows'
 import { buildPersonalizedRepGreeting } from '@/lib/nic-nac/core/rep-personalization'
 import { createConfiguredNicNacAgent } from '@/lib/nic-nac/agent'
 import {
@@ -1021,6 +1026,54 @@ export async function POST(request: Request) {
             emitHide(toolEverFired ? 'final-text' : 'plain-text')
           }
           writer.write(chunk)
+        }
+        if (
+          !streamAborted &&
+          !streamErrorMessage &&
+          !sawRenderableOutput &&
+          !toolOnlyRecoveryText
+        ) {
+          const calendarRecoveryStartedAt = Date.now()
+          const calendarRecovery = await recoverNicNacEmptyCalendarRead({
+            latestUserText,
+            executedToolNames,
+            readShows: (input) =>
+              readMyShowsForNicNac({ repId, supabase }, input),
+          })
+          if (calendarRecovery) {
+            executedToolNames.push(calendarRecovery.toolName)
+            toolOnlyRecoveryText = calendarRecovery.text
+            await logToolExecution({
+              toolName: calendarRecovery.toolName,
+              repId,
+              conversationId,
+              runId,
+              success: calendarRecovery.succeeded,
+              durationMs: Date.now() - calendarRecoveryStartedAt,
+              errorMessage: calendarRecovery.errorMessage ?? undefined,
+            })
+            if (!calendarRecovery.succeeded) {
+              toolFailures.push({
+                toolName: calendarRecovery.toolName,
+                errorTier: 'escalate',
+                code: 'EMPTY_TURN_CALENDAR_READ_FAILED',
+                stage: 'empty_turn_recovery',
+              })
+            }
+            await logIncident({
+              errorType: calendarRecovery.succeeded
+                ? 'empty_model_output_calendar_read_recovered'
+                : 'empty_model_output_calendar_read_recovery_failed',
+              repId,
+              conversationId,
+              severity: calendarRecovery.succeeded ? 'warn' : 'error',
+              details: {
+                runId,
+                toolName: calendarRecovery.toolName,
+                errorMessage: calendarRecovery.errorMessage,
+              },
+            })
+          }
         }
         if (!streamAborted && !streamErrorMessage && toolFailureRecoveryText) {
           const fallbackTextId = randomUUID()

@@ -110,6 +110,7 @@ describe('Nic-Nac tool choice policy', () => {
   it.each([
     'Hey Nic-Nac, do I have anything on my calendar right now?',
     "What's on my schedule this week?",
+    'Whats on my calendar',
     'When is my next live?',
     'Do I have a show tonight?',
   ])('pins natural Calendar reads directly to list_my_shows: %s', (latestUserText) => {

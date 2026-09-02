@@ -7,11 +7,11 @@ const CALENDAR_MUTATION_PATTERNS = [
 const CALENDAR_READ_PATTERNS = [
   /\bdo i have\b[\s\S]{0,100}\b(?:anything|shows?|lives?|events?|something)\b[\s\S]{0,80}\b(?:calendar|schedule|scheduled|today|tonight|tomorrow|week|month|right now)\b/i,
   /\bdo i have\b[\s\S]{0,80}\b(?:anything scheduled|a show|a live|an event)\b/i,
-  /\b(?:what(?:'s| is)?|which|when|how many|show me|list|check|tell me)\b[\s\S]{0,100}\b(?:calendar|schedule|scheduled|shows?|lives?|events?)\b/i,
+  /\b(?:what(?:['’]?s| is)?|which|when|how many|show me|list|check|tell me)\b[\s\S]{0,100}\b(?:calendar|schedule|scheduled|shows?|lives?|events?)\b/i,
   /\b(?:calendar|schedule)\b[\s\S]{0,80}\b(?:right now|today|tonight|tomorrow|this week|next week|this month|coming up|look like|on it)\b/i,
-  /\bwhen(?:'s| is)\b[\s\S]{0,50}\bnext\b[\s\S]{0,30}\b(?:show|live|event)\b/i,
+  /\bwhen(?:['’]?s| is)\b[\s\S]{0,50}\bnext\b[\s\S]{0,30}\b(?:show|live|event)\b/i,
   /\bam i\b[\s\S]{0,40}\b(?:scheduled|going live|live)\b[\s\S]{0,50}\b(?:today|tonight|tomorrow|this week|next week|on\s+\w+)\b/i,
-  /\bwhat(?:'s| is)\b[\s\S]{0,30}\bcoming up\b/i,
+  /\bwhat(?:['’]?s| is)\b[\s\S]{0,30}\bcoming up\b/i,
 ]
 
 /**

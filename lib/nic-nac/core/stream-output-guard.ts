@@ -1,9 +1,22 @@
 import type { UIMessageChunk } from 'ai'
+import { isCalendarReadQueryText } from '@/lib/nic-nac/calendar-read-intent'
 
 export const NIC_NAC_EMPTY_RESPONSE_FALLBACK =
   "I’m sorry—I didn’t produce a response that time. Please send that again."
 
 type ToolOutputRecord = Record<string, unknown>
+
+type CalendarReadFallbackInput = {
+  upcoming?: boolean
+  limit?: number
+}
+
+export type NicNacEmptyCalendarReadRecovery = {
+  text: string
+  toolName: 'list_my_shows'
+  succeeded: boolean
+  errorMessage: string | null
+}
 
 export type NicNacToolFailure = {
   toolName: string
@@ -495,6 +508,57 @@ export function getNicNacToolOnlyRecoveryText(
   if (toolName === 'list_my_shows') return summarizeShows(record, context)
 
   return null
+}
+
+function getCalendarReadFallbackInput(text: string): CalendarReadFallbackInput {
+  return /\b(?:past|previous|earlier|history|last\s+(?:week|month|year)|did i have|have i had)\b/i.test(
+    text,
+  )
+    ? { upcoming: false }
+    : {}
+}
+
+/**
+ * Final read-only safety net for a Calendar question when the provider ends a
+ * turn without text and without calling a tool. The ordinary agent/tool path
+ * remains primary; this only prevents an honest Calendar read from collapsing
+ * into the generic empty-response apology.
+ */
+export async function recoverNicNacEmptyCalendarRead(args: {
+  latestUserText: string
+  executedToolNames: readonly string[]
+  readShows: (input: CalendarReadFallbackInput) => Promise<unknown>
+}): Promise<NicNacEmptyCalendarReadRecovery | null> {
+  if (
+    args.executedToolNames.includes('list_my_shows') ||
+    !isCalendarReadQueryText(args.latestUserText)
+  ) {
+    return null
+  }
+
+  try {
+    const output = await args.readShows(
+      getCalendarReadFallbackInput(args.latestUserText),
+    )
+    const text = getNicNacToolOnlyRecoveryText('list_my_shows', output, {
+      latestUserText: args.latestUserText,
+    })
+    if (!text) return null
+    return {
+      text,
+      toolName: 'list_my_shows',
+      succeeded: true,
+      errorMessage: null,
+    }
+  } catch (err) {
+    return {
+      text:
+        'I couldn’t read your Calendar because Sparkle Suite hit a problem. I haven’t changed anything, and the issue has been logged for review.',
+      toolName: 'list_my_shows',
+      succeeded: false,
+      errorMessage: err instanceof Error ? err.message : String(err),
+    }
+  }
 }
 
 export function getNicNacMandatoryToolFollowUpText(

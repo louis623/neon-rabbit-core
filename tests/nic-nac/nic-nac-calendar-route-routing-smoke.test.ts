@@ -25,6 +25,7 @@ const {
   createConfiguredNicNacAgentMock,
   loadNicNacWorkflowTaskContinuityMock,
   agentStreamMock,
+  listMyShowsMock,
 } = vi.hoisted(() => ({
   supabaseMock: {},
   getPaidNicNacContextMock: vi.fn(),
@@ -50,6 +51,7 @@ const {
   createConfiguredNicNacAgentMock: vi.fn(),
   loadNicNacWorkflowTaskContinuityMock: vi.fn(),
   agentStreamMock: vi.fn(),
+  listMyShowsMock: vi.fn(),
 }))
 
 vi.mock('@/lib/nic-nac/auth', () => ({
@@ -84,6 +86,14 @@ vi.mock('@/lib/nic-nac/run-telemetry', () => ({
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: createAdminClientMock,
 }))
+
+vi.mock('@/lib/services/calendar', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/services/calendar')>()
+  return {
+    ...actual,
+    listMyShows: listMyShowsMock,
+  }
+})
 
 vi.mock('@/lib/nic-nac/workflows/trade-board-intake-context', async (importOriginal) => {
   const actual =
@@ -258,6 +268,7 @@ describe('Nic-Nac agent route integration', () => {
       estimatedCostCents: 0,
     })
     logNicNacRunMock.mockResolvedValue(undefined)
+    listMyShowsMock.mockResolvedValue({ events: [], totalCount: 0 })
     agentStreamMock.mockResolvedValue(textResult('I handled the latest request.'))
     createConfiguredNicNacAgentMock.mockImplementation((input) => {
       input.onFinish?.({ totalUsage: { inputTokens: 10, outputTokens: 5 } })
@@ -809,6 +820,37 @@ describe('Nic-Nac agent route integration', () => {
     expect(body).not.toContain('Please send that again')
     expect(logNicNacRunMock).toHaveBeenCalledWith(
       expect.objectContaining({ executedToolNames: ['list_my_trade_board'] }),
+    )
+  })
+
+  it('answers an apostrophe-free Calendar read when the provider emits no text or tool call', async () => {
+    agentStreamMock.mockResolvedValueOnce(
+      resultFromChunks([
+        { type: 'finish', finishReason: { unified: 'stop', raw: undefined } },
+      ]),
+    )
+
+    const response = await POST(requestFor('Whats on my calendar'))
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toContain(
+      'You don’t have any matching shows on your Calendar right now.',
+    )
+    expect(body).not.toContain('Please send that again')
+    expect(listMyShowsMock).toHaveBeenCalledWith(
+      supabaseMock,
+      '11111111-1111-4111-8111-111111111111',
+      {},
+    )
+    expect(logIncidentMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errorType: 'empty_model_output_calendar_read_recovered',
+        severity: 'warn',
+      }),
+    )
+    expect(logNicNacRunMock).toHaveBeenCalledWith(
+      expect.objectContaining({ executedToolNames: ['list_my_shows'] }),
     )
   })
 

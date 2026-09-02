@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   getNicNacMandatoryToolFollowUpText,
@@ -8,6 +8,7 @@ import {
   getNicNacToolFailure,
   isRenderableNicNacStreamChunk,
   NIC_NAC_EMPTY_RESPONSE_FALLBACK,
+  recoverNicNacEmptyCalendarRead,
 } from '@/lib/nic-nac/core/stream-output-guard'
 
 describe('Nic-Nac stream output guard', () => {
@@ -64,14 +65,77 @@ describe('Nic-Nac stream output guard', () => {
     expect(NIC_NAC_EMPTY_RESPONSE_FALLBACK).toContain('Please send that again')
     expect(NIC_NAC_EMPTY_RESPONSE_FALLBACK).not.toContain('error')
 
-    const routeSource = readFileSync(
-      resolve(process.cwd(), 'app/api/nic-nac/route.ts'),
-      'utf8',
-    )
-    expect(routeSource).toContain("if (chunk.type === 'finish')")
-    expect(routeSource).toContain('!sawRenderableOutput')
-    expect(routeSource).toContain('NIC_NAC_EMPTY_RESPONSE_FALLBACK')
-    expect(routeSource).toContain("'empty_model_output_recovered'")
+    for (const routePath of [
+      'app/api/nic-nac/route.ts',
+      'app/api/nic-nac/legacy-route.ts',
+    ]) {
+      const routeSource = readFileSync(resolve(process.cwd(), routePath), 'utf8')
+      expect(routeSource).toContain("if (chunk.type === 'finish')")
+      expect(routeSource).toContain('!sawRenderableOutput')
+      expect(routeSource).toContain('recoverNicNacEmptyCalendarRead')
+      expect(routeSource).toContain('NIC_NAC_EMPTY_RESPONSE_FALLBACK')
+      expect(routeSource).toContain("'empty_model_output_recovered'")
+    }
+  })
+
+  it('turns an apostrophe-free Calendar question into a read-only answer after a zero-output turn', async () => {
+    const readShows = vi.fn().mockResolvedValue({ count: 0, events: [] })
+
+    await expect(
+      recoverNicNacEmptyCalendarRead({
+        latestUserText: 'Whats on my calendar',
+        executedToolNames: [],
+        readShows,
+      }),
+    ).resolves.toEqual({
+      text: 'You don’t have any matching shows on your Calendar right now.',
+      toolName: 'list_my_shows',
+      succeeded: true,
+      errorMessage: null,
+    })
+    expect(readShows).toHaveBeenCalledWith({})
+  })
+
+  it('never converts a Calendar mutation into the read-only empty-turn fallback', async () => {
+    const readShows = vi.fn()
+
+    await expect(
+      recoverNicNacEmptyCalendarRead({
+        latestUserText: 'Add a show to my calendar tonight.',
+        executedToolNames: [],
+        readShows,
+      }),
+    ).resolves.toBeNull()
+    expect(readShows).not.toHaveBeenCalled()
+  })
+
+  it('does not duplicate a Calendar read that already produced a tool result', async () => {
+    const readShows = vi.fn()
+
+    await expect(
+      recoverNicNacEmptyCalendarRead({
+        latestUserText: 'Whats on my calendar',
+        executedToolNames: ['list_my_shows'],
+        readShows,
+      }),
+    ).resolves.toBeNull()
+    expect(readShows).not.toHaveBeenCalled()
+  })
+
+  it('reports an honest Calendar failure instead of the generic apology when recovery cannot read data', async () => {
+    const recovery = await recoverNicNacEmptyCalendarRead({
+      latestUserText: 'Whats on my calendar',
+      executedToolNames: [],
+      readShows: vi.fn().mockRejectedValue(new Error('database unavailable')),
+    })
+
+    expect(recovery).toMatchObject({
+      toolName: 'list_my_shows',
+      succeeded: false,
+      errorMessage: 'database unavailable',
+    })
+    expect(recovery?.text).toContain('couldn’t read your Calendar')
+    expect(recovery?.text).not.toContain('Please send that again')
   })
 
   it('turns resolver-only Dance Floor and Calendar completions into useful next questions', () => {
