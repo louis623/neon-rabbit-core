@@ -924,7 +924,7 @@ function LiveQueueStrip({ live, onOpen }) {
           <span>Live Reveal Queue</span>
         </div>
         <div className="hp-trade-preview-items">
-          {LIVE_QUEUE_ENTRIES.slice(0, 2).map((entry) => (
+          {LIVE_QUEUE_ENTRIES.slice(0, 4).map((entry) => (
             <button key={entry.position} type="button" onClick={onOpen} className="hp-trade-preview-pill">
               <span className="pos">{entry.position}</span>
               <span className="meta">

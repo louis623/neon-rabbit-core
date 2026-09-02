@@ -162,6 +162,7 @@ describe('Amethyst join page template data wiring', () => {
     expect(jsx).toContain('Live Reveal Queue')
     expect(jsx).toContain('View full queue')
     expect(jsx).toContain('function LiveQueueModal')
+    expect(jsx).toContain('LIVE_QUEUE_ENTRIES.slice(0, 4)')
     expect(jsx).not.toContain('Next to reveal')
     expect(jsx).not.toContain('Open dance floor')
     expect(css).toContain('.hp-queue-modal-mask')
