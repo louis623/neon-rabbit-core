@@ -42,7 +42,16 @@ describe('Nic-Nac permission-scoped capability catalog', () => {
     expect(catalog.toolNames).not.toContain('get_required_setup_state')
     expect(catalog.toolNames).not.toContain('unlock_required_setup')
     expect(catalog.toolNames).not.toContain('prepare_calendar_work')
-    expect(catalog.harnessExcludedToolNames).toEqual(['prepare_calendar_work'])
+    expect(catalog.toolNames).not.toContain('send_sms_notification')
+    expect(catalog.toolNames).not.toContain('send_email_notification')
+    expect(catalog.harnessExcludedToolNames).toEqual(
+      expect.arrayContaining([
+        'prepare_calendar_work',
+        'send_sms_notification',
+        'send_email_notification',
+      ]),
+    )
+    expect(catalog.harnessExcludedToolNames).toHaveLength(3)
     expect(catalog.requestedIntents).not.toContain('required_setup')
     expect(catalog.toolSafety).toHaveLength(catalog.toolNames.length)
     expect(catalog.toolSafety).toEqual(
@@ -142,10 +151,8 @@ describe('Nic-Nac permission-scoped capability catalog', () => {
     const cancelShow = catalog.tools.cancel_show as { needsApproval?: boolean }
 
     expect(cancelShow.needsApproval).toBe(true)
-    expect((catalog.tools.send_sms_notification as { needsApproval?: boolean }).needsApproval)
-      .toBe(true)
-    expect((catalog.tools.send_email_notification as { needsApproval?: boolean }).needsApproval)
-      .toBe(true)
+    expect(catalog.tools.send_sms_notification).toBeUndefined()
+    expect(catalog.tools.send_email_notification).toBeUndefined()
   })
 
   it('keeps overlapping Calendar and Dance Floor tool contracts unambiguous', () => {
@@ -161,7 +168,9 @@ describe('Nic-Nac permission-scoped capability catalog', () => {
     expect(description('list_my_shows')).toMatch(/Do not call prepare_calendar_work/i)
     expect(description('add_show')).toMatch(/immediately preceding turn was a Calendar read/i)
     expect(description('add_show')).toMatch(/never repeat the earlier read/i)
-    expect(description('list_my_trade_board')).toMatch(/what they have up for trade/i)
+    expect(description('list_my_trade_board')).toMatch(/dancers are on.*Dance Floor/i)
+    expect(description('add_listing')).toMatch(/put one or more dancers.*Dance Floor/i)
+    expect(description('search_jewelry_database')).toMatch(/Bomb Party jewelry/i)
     expect(description('prepare_trade_board_work')).toMatch(
       /Do not use it for a simple request to view the current Dance Floor/i,
     )

@@ -248,6 +248,151 @@ describe('Nic-Nac ToolLoopAgent factory', () => {
     ])
   })
 
+  it('replays an empty Calendar read then naturally collects the missing platform and adds the show', async () => {
+    const script: Array<
+      | { toolName: string; input: Record<string, unknown> }
+      | { text: string }
+    > = [
+      { toolName: 'list_my_shows', input: { upcoming: true } },
+      { text: 'You do not have any shows on your Calendar tonight.' },
+      { text: 'Absolutely. What platform should I put the show on?' },
+      {
+        toolName: 'add_show',
+        input: {
+          platform: 'TikTok',
+          eventTime: '2099-09-02T23:00:00.000Z',
+          timeZone: 'America/New_York',
+          title: 'Bunny Ears Live',
+          discountCodes: [{ code: 'AWESOME', description: '10% off' }],
+          featuredCollections: ['Bunny Ears'],
+        },
+      },
+      { text: 'Done — Bunny Ears Live is on your Calendar tonight at 7 p.m. Eastern.' },
+    ]
+    let scriptIndex = 0
+    const listExecutions: Array<Record<string, unknown>> = []
+    const addExecutions: Array<Record<string, unknown>> = []
+    const model = new MockLanguageModelV3({
+      doStream: async () => {
+        const step = script[scriptIndex++]
+        if (!step) throw new Error('Unexpected extra model step')
+        if ('toolName' in step) {
+          return {
+            stream: simulateReadableStream({
+              chunks: [
+                {
+                  type: 'tool-call',
+                  toolCallId: `calendar-replay-${scriptIndex}`,
+                  toolName: step.toolName,
+                  input: JSON.stringify(step.input),
+                },
+                {
+                  type: 'finish',
+                  finishReason: { unified: 'tool-calls', raw: undefined },
+                  usage: ZERO_USAGE,
+                },
+              ],
+            }),
+          }
+        }
+        return {
+          stream: simulateReadableStream({
+            chunks: [
+              { type: 'text-start', id: `calendar-text-${scriptIndex}` },
+              {
+                type: 'text-delta',
+                id: `calendar-text-${scriptIndex}`,
+                delta: step.text,
+              },
+              { type: 'text-end', id: `calendar-text-${scriptIndex}` },
+              {
+                type: 'finish',
+                finishReason: { unified: 'stop', raw: undefined },
+                usage: ZERO_USAGE,
+              },
+            ],
+          }),
+        }
+      },
+    })
+    const tools = {
+      list_my_shows: tool({
+        description: 'Read the rep’s Calendar.',
+        inputSchema: z.object({ upcoming: z.boolean().optional() }),
+        execute: async (input) => {
+          listExecutions.push(input)
+          return { count: 0, events: [] }
+        },
+      }),
+      add_show: tool({
+        description: 'Put a new show on the rep’s Calendar.',
+        inputSchema: z.object({
+          platform: z.string(),
+          eventTime: z.string(),
+          timeZone: z.string(),
+          title: z.string(),
+          discountCodes: z.array(
+            z.object({ code: z.string(), description: z.string() }),
+          ),
+          featuredCollections: z.array(z.string()),
+        }),
+        execute: async (input) => {
+          addExecutions.push(input)
+          return { count: 1, event: input }
+        },
+      }),
+      search_work_knowledge: tool({
+        description: 'Answer grounded live-show questions.',
+        inputSchema: z.object({ query: z.string() }),
+        execute: async () => ({ results: [] }),
+      }),
+    } satisfies ToolSet
+    const agent = createNicNacAgent({
+      model,
+      instructions:
+        'The latest request wins. Ask only for a material missing fact, then use the appropriate tool.',
+      tools,
+    })
+    const messages: Array<{ role: 'user' | 'assistant'; content: string }> = []
+
+    messages.push({ role: 'user', content: 'Do I have any shows on my Calendar?' })
+    const readResult = await agent.stream({ messages: [...messages] })
+    const readText = await readResult.text
+    messages.push({ role: 'assistant', content: readText })
+
+    messages.push({
+      role: 'user',
+      content:
+        'Cool, add a show tonight at 7 p.m. Eastern. Discount code AWESOME is 10% off, and the collection is Bunny Ears.',
+    })
+    const clarificationResult = await agent.stream({ messages: [...messages] })
+    const clarificationText = await clarificationResult.text
+    messages.push({ role: 'assistant', content: clarificationText })
+
+    messages.push({ role: 'user', content: 'TikTok.' })
+    const addResult = await agent.stream({ messages: [...messages] })
+    const addText = await addResult.text
+
+    expect(readText).toContain('do not have any shows')
+    expect(clarificationText).toBe('Absolutely. What platform should I put the show on?')
+    expect(clarificationText).not.toMatch(/do not have|no shows/i)
+    expect(addText).toContain('Bunny Ears Live is on your Calendar')
+    expect(listExecutions).toHaveLength(1)
+    expect(addExecutions).toEqual([
+      expect.objectContaining({
+        platform: 'TikTok',
+        timeZone: 'America/New_York',
+        discountCodes: [{ code: 'AWESOME', description: '10% off' }],
+        featuredCollections: ['Bunny Ears'],
+      }),
+    ])
+    expect(model.doStreamCalls).toHaveLength(5)
+    expect(model.doStreamCalls.every((call) => call.toolChoice?.type === 'auto')).toBe(true)
+    expect(model.doStreamCalls.length).toBeLessThanOrEqual(
+      NIC_NAC_AGENT_DEFAULT_MAX_STEPS,
+    )
+  })
+
   it('keeps the full catalog available while a conversation switches workflows between turns', async () => {
     const executions: string[] = []
     const script: Array<

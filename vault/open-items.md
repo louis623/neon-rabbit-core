@@ -554,6 +554,13 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Nic-Nac reliability
 
+- [x] **Apply Dex-reviewed ToolLoopAgent corrections** — continuity now renders
+  facts only, vague turns cannot fall into the latest stale workflow, agent
+  `add_show` arguments cannot be rewritten by old Calendar state, direct
+  SMS/email sends are absent from the default harness without a wording router,
+  and the exact Calendar read/clarify/add replay passes. Local verification is
+  complete; this correction has not been deployed or enabled for reps.
+
 - [x] **Implement the approved slice of the Nic-Nac agent-harness rebuild** —
   completed September 1. The default-off `ToolLoopAgent` harness, complete
   permission-scoped catalog, concise employee guide, safety ledger, grounded

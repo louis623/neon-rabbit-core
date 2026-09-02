@@ -4,6 +4,30 @@ Running log of significant work sessions. Most recent first.
 
 ---
 
+## September 1, 2026 - Dex-reviewed Nic-Nac corrections
+
+- Converted unfinished Calendar, Dance Floor, and trade continuity to neutral
+  collected/missing facts with no “continue this job,” active-status, or resume
+  language in the model-facing JSON.
+- Stopped vague turns from falling into the most recently updated workflow on
+  the new harness while preserving direct answers to Nic-Nac's preceding
+  clarification question.
+- Made ToolLoopAgent `add_show` arguments authoritative and added the exact
+  Calendar-empty → request show → ask platform → TikTok → add-show regression.
+  The old empty-read answer does not repeat, and the earlier time, discount,
+  and Bunny Ears facts survive the clarification.
+- Excluded direct SMS/email sends from the default harness rather than adding
+  a wording router; left the six-step default unchanged after the exact replay
+  completed within the bound. The legacy route remains available and unchanged.
+- Verification: 75/75 focused tests; 32/32 critical tests on three consecutive
+  runs (96/96); 1,396 Nic-Nac tests with one existing skip; 228/228 standard
+  tests; provider-free smoke with 53 registered/45 agent tools and zero paid
+  calls; changed-file ESLint; `git diff --check`; and the production build. No
+  deployment, cohort, paid replay, customer, message, billing, DNS, alias, or
+  Live Queue action occurred.
+
+---
+
 ## September 1, 2026 - Nic-Nac adversarial harness hardening
 
 - Closed the approval-integrity gap by matching every approval response to the

@@ -49,6 +49,11 @@ const AGENT_HARNESS_EXCLUDED_TOOL_NAMES = new Set([
   // tools. This legacy regex/text resolver remains available to the legacy
   // route but must not compete with the model inside the new harness.
   'prepare_calendar_work',
+  // Keep direct outbound sends out of the default agent catalog during this
+  // correction slice. Reintroducing them based on wording would recreate a
+  // pre-model intent router; the legacy path remains unchanged.
+  'send_sms_notification',
+  'send_email_notification',
 ])
 
 /**

@@ -4,7 +4,10 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { addShow } from '@/lib/services/calendar'
 import { ServiceError } from '@/lib/services/errors'
 import { NicNacToolError } from '@/lib/nic-nac/errors'
-import { reconcileAddShowInputWithCalendarPlan } from '@/lib/nic-nac/workflows/calendar-plan'
+import {
+  buildCalendarCreatePlan,
+  reconcileAddShowInputWithCalendarPlan,
+} from '@/lib/nic-nac/workflows/calendar-plan'
 import type { ToolContext, ToolDefinition } from './types'
 
 const inputSchema = z.object({
@@ -41,6 +44,7 @@ function explainServiceError(err: unknown): never {
 export function makeAddShowTool(ctx: {
   repId: string
   supabase: SupabaseClient
+  agentHarness?: boolean
   latestUserText?: string
   activeCalendarWorkflow?: ToolContext['activeCalendarWorkflow']
 }) {
@@ -54,11 +58,23 @@ export function makeAddShowTool(ctx: {
     inputSchema,
     execute: async (input) => {
       try {
-        const { input: safeInput, plan } = reconcileAddShowInputWithCalendarPlan({
-          input,
-          latestUserText: ctx.latestUserText,
-          activeCalendarWorkflow: ctx.activeCalendarWorkflow,
-        })
+        // On the ToolLoopAgent path, the validated structured arguments are
+        // authoritative. Saved Calendar context may help the model form those
+        // arguments, but it must never rewrite them after tool selection.
+        const { input: safeInput, plan } = ctx.agentHarness
+          ? {
+              input,
+              plan: buildCalendarCreatePlan({
+                source: 'model_input',
+                fields: input,
+                recurring: input.recurring,
+              }),
+            }
+          : reconcileAddShowInputWithCalendarPlan({
+              input,
+              latestUserText: ctx.latestUserText,
+              activeCalendarWorkflow: ctx.activeCalendarWorkflow,
+            })
         const result = await addShow(ctx.supabase, ctx.repId, safeInput)
         const firstEvent = result.events[0] ?? null
         const lastEvent = result.events[result.events.length - 1] ?? null
@@ -91,6 +107,7 @@ export const addShowTool: ToolDefinition = {
     makeAddShowTool({
       repId: ctx.repId,
       supabase: ctx.supabase,
+      agentHarness: ctx.agentHarness,
       latestUserText: ctx.latestUserText,
       activeCalendarWorkflow: ctx.activeCalendarWorkflow,
     }),

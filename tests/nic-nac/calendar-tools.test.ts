@@ -396,6 +396,75 @@ describe('calendar tools', () => {
     expect(forwardedInput.recurring).toBeUndefined()
   })
 
+  it('agent add_show does not reuse recurrence from a saved Calendar transaction', async () => {
+    addShowMock.mockResolvedValueOnce({ count: 1, events: [calendarEvent()] })
+    const recurring = { cadence: 'weekly' as const, duration: '3_months' as const }
+    const tool = makeAddShowTool({
+      ...makeCtx(),
+      agentHarness: true,
+      latestUserText:
+        'Add a weekly show from the old conversation even though this request is one time.',
+      activeCalendarWorkflow: {
+        ...makeCalendarWorkflow(recurring),
+        knownFields: {
+          title: 'Bunny Ears Live',
+          recurring,
+        },
+      },
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      platform: 'TikTok',
+      eventTime: '2099-07-04T19:00:00-04:00',
+      timeZone: 'America/New_York',
+      title: 'Bunny Ears Live',
+      durationMinutes: 60,
+    })
+
+    const forwardedInput = addShowMock.mock.calls[0][2] as { recurring?: unknown }
+    expect(forwardedInput.recurring).toBeUndefined()
+  })
+
+  it('agent add_show preserves the structured recurrence selected by the model', async () => {
+    addShowMock.mockResolvedValueOnce({
+      count: 2,
+      events: [calendarEvent(), calendarEvent({ id: 'event-2' })],
+    })
+    const tool = makeAddShowTool({
+      ...makeCtx(),
+      agentHarness: true,
+      latestUserText: 'An unrelated saved plan must not rewrite this exact request.',
+      activeCalendarWorkflow: makeCalendarWorkflow({
+        cadence: 'daily',
+        duration: 'ongoing',
+      }),
+    }) as unknown as ToolDef
+
+    await tool.execute({
+      platform: 'TikTok',
+      eventTime: '2099-07-07T19:00:00-04:00',
+      timeZone: 'America/New_York',
+      title: 'Two Bunny Ears Lives',
+      recurring: {
+        cadence: 'weekly',
+        duration: '1_month',
+        occurrenceCount: 2,
+      },
+    })
+
+    expect(addShowMock).toHaveBeenCalledWith(
+      expect.anything(),
+      'rep-1',
+      expect.objectContaining({
+        recurring: {
+          cadence: 'weekly',
+          duration: '1_month',
+          occurrenceCount: 2,
+        },
+      }),
+    )
+  })
+
   it('list_my_shows returns count + totalCount + discount code arrays', async () => {
     listMyShowsMock.mockResolvedValueOnce({
       events: [calendarEvent()],

@@ -14,7 +14,7 @@ export function makeGetShowSessionContextTool(ctx: {
 }) {
   return tool({
     description:
-      "Read the authenticated rep's current show-session context and structured memory categories. Use quietly during live-show or post-show work.",
+      "Recall the authenticated rep's current live-show notes and recent show events. Use quietly when helping during a live or wrapping up afterward.",
     inputSchema,
     execute: async ({ eventLimit = 20, memoryLimit = 10 }) =>
       loadNicNacShowSessionContext(ctx.supabase, ctx.repId, {

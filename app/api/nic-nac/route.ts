@@ -26,7 +26,7 @@ import {
   recordApprovalEvent,
 } from '@/lib/nic-nac/persistence'
 import {
-  getToolIntentsForText,
+  getToolIntentsForMessages,
   type NicNacToolIntent,
 } from '@/lib/nic-nac/tools'
 import { probeConversationOwner } from '@/lib/nic-nac/probe-conversation-owner'
@@ -687,11 +687,7 @@ export async function POST(request: Request) {
   const latestToolIntents: NicNacToolIntent[] =
     mode === 'required_setup'
       ? ['required_setup']
-      : getToolIntentsForText(latestUserText)
-  const latestTurnIntents =
-    mode === 'required_setup'
-      ? latestToolIntents
-      : getToolIntentsForText(latestUserText)
+      : getToolIntentsForMessages(messages)
   // Workflow arbitration now protects transaction state only. It does not
   // choose, retain, remove, or force tools. The permission-scoped agent catalog
   // below is independent of this text classifier, so an old workflow can never
@@ -716,10 +712,16 @@ export async function POST(request: Request) {
     nowIso: workflowNowIso,
     access: workflowContinuityAccess,
   })
-  const workflowTurn = arbitrateNicNacWorkflowTurn(latestTurnIntents, {
+  const workflowTurn = arbitrateNicNacWorkflowTurn(latestToolIntents, {
     tradeBoard: workflowTaskContinuity.tradeBoardSession?.updatedAt,
     trade: workflowTaskContinuity.tradeSession?.updatedAt,
     calendar: workflowTaskContinuity.calendarSession?.updatedAt,
+  }, {
+    // The new agent receives unfinished work as facts. A vague/unrecognized
+    // turn must not be silently assigned to whichever workflow was updated
+    // most recently. Deliberate immediate follow-ups are already recognized by
+    // getToolIntentsForMessages above.
+    allowImplicitPassiveContinuation: false,
   })
   const tradeBoardWorkflowContext =
     workflowContinuityAccess.tradeBoard && workflowTurn.tradeBoard
@@ -802,6 +804,7 @@ export async function POST(request: Request) {
       supabase,
       conversationId,
       runId,
+      agentHarness: true,
       latestUserText,
       latestUserHasImage:
         latestUserMessage?.parts?.some(

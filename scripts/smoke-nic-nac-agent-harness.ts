@@ -56,14 +56,21 @@ const catalog = buildNicNacCapabilityCatalog({
   productContext,
   toolContext,
 })
-assert.equal(catalog.toolNames.length, 47)
+assert.equal(catalog.toolNames.length, 45)
 assert.equal(catalog.toolSafety.length, catalog.toolNames.length)
 assert.ok(catalog.toolNames.includes('list_my_shows'))
 assert.ok(catalog.toolNames.includes('add_show'))
 assert.ok(catalog.toolNames.includes('list_my_trade_board'))
 assert.ok(catalog.toolNames.includes('search_work_knowledge'))
 assert.ok(!catalog.toolNames.includes('prepare_calendar_work'))
-assert.deepEqual(catalog.harnessExcludedToolNames, ['prepare_calendar_work'])
+assert.deepEqual(
+  [...catalog.harnessExcludedToolNames].sort(),
+  [
+    'prepare_calendar_work',
+    'send_email_notification',
+    'send_sms_notification',
+  ].sort(),
+)
 assert.ok(!catalog.toolNames.includes('unlock_required_setup'))
 
 const instructions = buildNicNacAgentInstructions({

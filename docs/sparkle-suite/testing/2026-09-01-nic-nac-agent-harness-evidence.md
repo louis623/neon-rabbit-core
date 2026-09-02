@@ -13,12 +13,13 @@ The production rollout is deliberately default-off. With no rollout environment 
 ## Implemented boundaries
 
 - A concise employee guide tells Nic-Nac to interpret the latest explicit request, switch tasks naturally, ask one focused clarification when a material fact is missing, and use current tools rather than hidden phrase scripts.
-- The permission-scoped tool catalog is assembled independently of user wording and old workflow state. The new harness deliberately excludes the legacy regex-based `prepare_calendar_work` resolver, so the model reasons directly among the real Calendar tools; the resolver remains only on the untouched legacy route.
+- The permission-scoped tool catalog is assembled independently of user wording and old workflow state. The new harness deliberately excludes the legacy regex-based `prepare_calendar_work` resolver, so the model reasons directly among the real Calendar tools; the resolver remains only on the untouched legacy route. Direct SMS and email sends are also temporarily absent from this default catalog rather than conditionally exposed through another wording router.
 - Every registered tool must have a safety-ledger classification before the agent can receive it. The ledger reconciles read/write behavior, approval metadata, side-effect risk, normal/setup surface access, and disclosed Support capability policy.
-- SMS and email sends retain explicit approval. Support remains restricted from owner, billing, Stripe, payment, authentication, entitlement, DNS, domain, and customer-domain authority.
+- SMS and email send tools remain registered and approval-gated on the legacy path, but are not exposed by the default ToolLoopAgent harness during this correction slice. Support remains restricted from owner, billing, Stripe, payment, authentication, entitlement, DNS, domain, and customer-domain authority.
 - Calendar reads finish as reads. A later explicit Calendar mutation replaces the read intent, while an unrelated explicit task can pause transaction context for that turn without being captured by it.
-- Durable unfinished Calendar, Dance Floor, and trade transactions are loaded once per turn and supplied as bounded, valid JSON recoverable facts. Strings, arrays, object breadth, and nesting are capped; embedded rep/customer text is labeled untrusted data. Optional continuity read failures degrade to no continuity instead of blocking an unrelated request. The records never set the current goal or select a tool. In disclosed Support, only workflow domains covered by the session's exact capabilities are queried or disclosed.
-- Passive replies are offered only to the most recently updated active workflow instead of being fanned into every active Calendar, Dance Floor, and trade ingestor. Explicit current requests still determine their own domain.
+- Durable unfinished Calendar, Dance Floor, and trade transactions are loaded once per turn and supplied as bounded, valid JSON recoverable facts. Strings, arrays, object breadth, and nesting are capped; embedded rep/customer text is labeled untrusted data. Optional continuity read failures degrade to no continuity instead of blocking an unrelated request. The rendered JSON contains collected and missing facts only—no active status, resume command, or “continue this job” wording. The records never set the current goal or select a tool. In disclosed Support, only workflow domains covered by the session's exact capabilities are queried or disclosed.
+- On the ToolLoopAgent path, a vague or unrecognized turn is no longer assigned to whichever workflow happened to be most recently updated. A deliberate immediate answer to Nic-Nac's preceding workflow question can still update that workflow; explicit current requests determine their own domain.
+- `add_show` treats its validated structured ToolLoopAgent arguments as authoritative. Saved Calendar state and phrase-extracted text cannot silently add, remove, or replace recurrence after the model selects the tool. The legacy route retains its existing reconciliation behavior for rollback.
 - Overlapping tool descriptions are now explicit: simple Calendar and Dance Floor questions call their direct read tools, while preflight tools are reserved for ambiguous mutations. An empty Calendar read cannot answer or block a later add request.
 - The unused scripted task reducer and its tests were removed. The remaining task-context type is only a compact data envelope for recoverable transaction facts; it does not classify text or move a hidden state machine.
 - Approval responses are accepted only when the final client assistant turn exactly matches the last canonical server-issued request: message ID, approval ID, tool name, tool-call ID, and input must all match. Approved work resumes through the actual `ToolLoopAgent`, so the model sees real tool success/failure and can continue with another tool; the old canned “Done” continuation was removed. Historical approvals are ignored on later user turns.
@@ -35,7 +36,7 @@ The production rollout is deliberately default-off. With no rollout environment 
 - Focused approval, task-continuity, tool-contract, show-session, agent-loop, and route suite — 92/92 passed after the final safety changes.
 - Complete Nic-Nac regression suite — 1,390 passed, one existing skip across 171 files. The file count dropped by one because the disconnected scripted task-reducer test file was intentionally retired.
 - Repository standard suite — 226/226 passed.
-- Provider-free harness smoke — passed with 53 registered tools, 47 Workspace agent tools, the legacy Calendar resolver explicitly excluded, zero approval-ledger findings, production default-off, exact-cohort enablement, and zero paid model calls.
+- Provider-free harness smoke — passed with 53 registered tools, 45 Workspace agent tools, the legacy Calendar resolver plus direct SMS/email sends explicitly excluded, zero approval-ledger findings, production default-off, exact-cohort enablement, and zero paid model calls.
 - Changed-file ESLint — passed with no findings.
 - Next.js 16.2.1 production build, including TypeScript and static generation — passed.
 - `git diff --check` — passed.
@@ -53,3 +54,14 @@ These checks were not silently broadened into the implementation authorization:
 - Browser-side Nic-Nac behavior was not claimed: the current in-app-browser runtime returned no claimable tab during preflight.
 
 The next controlled acceptance gate is an exact synthetic-reviewer cohort plus a separately approved paid-request cap. It should replay natural-language Calendar read-to-add and cross-tool switches on the live customer domain, prove tool selection and visible answer quality, confirm no unintended data changes, and exercise the kill switch before broader rollout.
+
+## Dex correction-slice verification
+
+- Exact recorded conversation: empty Calendar read; request for a 7 p.m. Eastern Bunny Ears show with `AWESOME` at 10% off; one natural platform clarification; `TikTok` answer; one `add_show` execution with the earlier facts preserved. The clarification did not repeat the empty Calendar result, and every model step used `toolChoice: auto`.
+- The recorded exchange used five model steps across its three rep turns, so the six-step default and eight-step hard ceiling were retained. No evidence justified increasing cost and loop exposure.
+- Focused correction suite: 75/75 passed.
+- Critical agent/route/arbitration set: 32/32 passed on each of three consecutive runs (96/96).
+- Complete Nic-Nac regression suite: 1,396 passed with one existing skip across 171 files.
+- Repository standard suite: 228/228 passed.
+- Changed-file ESLint, `git diff --check`, provider-free harness smoke, and the Next.js 16.2.1 production build including TypeScript/static generation passed.
+- No deployment, production cohort, paid model call, browser action, customer mutation, message send, billing action, DNS/domain/alias change, or Live Queue mutation occurred.

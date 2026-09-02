@@ -49,6 +49,24 @@ describe('Nic-Nac workflow turn arbitration', () => {
     })
   })
 
+  it('does not assign an unrecognized turn to stale work on the agent harness', () => {
+    expect(
+      arbitrateNicNacWorkflowTurn(
+        ['memory'],
+        {
+          tradeBoard: '2026-09-01T20:00:00.000Z',
+          trade: '2026-09-01T20:05:00.000Z',
+          calendar: '2026-09-01T20:10:00.000Z',
+        },
+        { allowImplicitPassiveContinuation: false },
+      ),
+    ).toEqual({
+      tradeBoard: false,
+      trade: false,
+      calendar: false,
+    })
+  })
+
   it('suspends product workflows for an explicit resource request', () => {
     expect(arbitrateNicNacWorkflowTurn(['resources'])).toEqual({
       tradeBoard: false,

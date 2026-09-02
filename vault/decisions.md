@@ -1,5 +1,29 @@
 # Decision Log
 
+## September 1, 2026 - Continuity is inert facts; agent tool arguments are authoritative
+
+**A saved workflow may provide facts but may not present itself as the current
+job.** Model-facing continuity contains collected and missing facts only. The
+new harness does not implicitly hand an unrecognized turn to whichever
+workflow was most recently active; only a recognized immediate answer or an
+explicit current request may update that workflow.
+
+**A ToolLoopAgent write uses the validated arguments the model actually
+selected.** `add_show` must not silently repair or rewrite recurrence from old
+Calendar state or phrase extraction after tool selection. Legacy reconciliation
+is retained only on the rollback route.
+
+**Do not shrink the catalog with another wording router.** Direct SMS/email
+sends are temporarily absent from the default harness. Reintroduction requires
+a deliberate capability design; it will not be driven by regex wording. Keep
+the six-step default until a real recorded job proves it insufficient.
+
+Reason: these choices remove the remaining sources of hidden steering while
+keeping application-owned validation, approval, tenant isolation, and workflow
+facts intact.
+
+---
+
 ## September 1, 2026 - The agent reasons; deterministic code guards execution
 
 **The new Nic-Nac harness does not expose the legacy regex Calendar resolver.**

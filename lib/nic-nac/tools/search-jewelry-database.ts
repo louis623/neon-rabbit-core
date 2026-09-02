@@ -34,8 +34,8 @@ function explainServiceError(err: unknown): never {
 export function makeSearchJewelryDatabaseTool(ctx: { repId: string }) {
   return tool({
     description:
-      'Free-text search of the shared jewelry catalog. ' +
-      'Use this when the rep asks to look up, find, or search for a piece by name, item number, material, stone, collection year, practical tag, or other keywords — e.g. "do we have a sapphire ring?", "find RG31452", "search for emerald necklaces". ' +
+      'Look up Bomb Party jewelry before answering a piece question or putting a dancer on the Dance Floor. ' +
+      'Use this when the rep asks to find a piece by name, item number, material, stone, collection year, practical tag, or other keywords — e.g. "do we have a sapphire ring?", "find RG31452", "search for emerald necklaces". ' +
       'Returns up to `limit` matching designs with isOnMyBoard (whether the requesting rep already has it listed and available) and activeListingsCount (how many reps total have it listed and available). ' +
       'This is the catalog, not the rep\'s own board — for the rep\'s board, use list_my_trade_board instead.',
     inputSchema,

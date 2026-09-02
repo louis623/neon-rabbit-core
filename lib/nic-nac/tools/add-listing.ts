@@ -2097,7 +2097,7 @@ export function makeAddListingTool(ctx: {
 }) {
   return tool({
     description:
-      "Adds one or more pieces to the authenticated rep's dance floor. Supports single + batch. " +
+      "Put one or more dancers on the authenticated rep's Dance Floor. Supports one dancer or several at once. " +
       "Three entry paths are supported: item number, label photo, or item number + label photo. When photos are attached to the conversation, extract the item number and supporting fields from the reveal box via vision before calling — don't ask the rep to type fields you can read off the photo. " +
       "For rings (RG item numbers), capture ringSize before saving. Ring size is usually printed on the box instead of the label; if you cannot read it from a box/details photo, ask the rep for the ring size. " +
       "If the resolved item exists in the jewelry database, pass mode:'single' and itemNumber for one piece, or mode:'batch' and items[] for several pieces at once. " +

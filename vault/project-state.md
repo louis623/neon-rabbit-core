@@ -1,5 +1,31 @@
 # Project State
 
+## September 1, 2026 - Dex-reviewed Nic-Nac correction slice
+
+- Removed the remaining action-like wording from ToolLoopAgent continuity.
+  Calendar, Dance Floor, and trade continuity now renders collected and missing
+  facts only; it does not expose active status or a resume command.
+- The new harness no longer assigns an unrecognized turn to the most recently
+  updated workflow. Direct replies to Nic-Nac's immediately preceding workflow
+  question remain resumable, while unrelated live-show questions stay with the
+  latest request.
+- `add_show` now treats validated agent tool arguments as authoritative. Saved
+  Calendar recurrence and phrase-extracted text cannot rewrite the requested
+  add on the ToolLoopAgent path; the legacy rollback path is unchanged.
+- Direct SMS/email sends are temporarily excluded from the default agent
+  catalog instead of reintroducing a wording router. The six-step default was
+  retained because the exact read-clarify-add replay completed in five model
+  steps across three turns.
+- Local proof: 75/75 focused tests, 96/96 consecutive critical replays,
+  1,396 Nic-Nac tests with one existing skip, 228/228 standard tests,
+  provider-free smoke with 53 registered/45 agent tools and zero paid calls,
+  changed-file ESLint, diff checks, and the production build. No deployment or
+  production cohort change occurred.
+
+**Last updated:** September 1, 2026
+
+---
+
 ## September 1, 2026 - Nic-Nac agent-harness adversarial hardening follow-up
 
 - The default-off harness now validates approval responses against the exact

@@ -321,6 +321,7 @@ describe('Nic-Nac agent route integration', () => {
         toolContext: expect.objectContaining({
           repId: '11111111-1111-4111-8111-111111111111',
           conversationId: 'agent-route-conversation',
+          agentHarness: true,
           latestUserText: 'What is on my calendar this week?',
         }),
       }),
@@ -370,6 +371,86 @@ describe('Nic-Nac agent route integration', () => {
       messages: expect.any(Array),
       abortSignal: expect.any(AbortSignal),
     })
+  })
+
+  it('does not feed an unrelated latest request into the most recent unfinished workflow', async () => {
+    loadNicNacWorkflowTaskContinuityMock.mockResolvedValueOnce({
+      context: {
+        schemaVersion: 1,
+        currentGoal: null,
+        pausedGoals: [{ id: 'calendar:calendar-workflow-1' }],
+        immediateContinuation: null,
+      },
+      promptText:
+        'Recoverable transaction facts: Calendar title Tonight Live; platform is still missing.',
+      calendarSession: {
+        id: 'calendar-workflow-1',
+        status: 'active',
+        intent: 'add_show',
+        knownFields: { title: 'Tonight Live' },
+        missingFields: ['platform'],
+        updatedAt: '2026-09-01T20:10:00.000Z',
+      },
+      tradeBoardSession: null,
+      tradeSession: null,
+    })
+
+    await (await POST(requestFor('Give me three strong opening lines for a live show.'))).text()
+
+    expect(getOrCreateCalendarWorkflowContextMock).not.toHaveBeenCalled()
+    expect(getOrCreateTradeBoardIntakeContextMock).not.toHaveBeenCalled()
+    expect(getOrCreateTradeWorkflowContextMock).not.toHaveBeenCalled()
+    expect(agentStreamMock).toHaveBeenCalledOnce()
+  })
+
+  it('still lets a direct answer to the immediately preceding Calendar question update that workflow', async () => {
+    const pausedCalendar = {
+      id: 'calendar-workflow-1',
+      status: 'active',
+      intent: 'add_show',
+      knownFields: { title: 'Tonight Live' },
+      missingFields: ['platform'],
+      updatedAt: '2026-09-01T20:10:00.000Z',
+    }
+    loadNicNacWorkflowTaskContinuityMock.mockResolvedValueOnce({
+      context: {
+        schemaVersion: 1,
+        currentGoal: null,
+        pausedGoals: [{ id: 'calendar:calendar-workflow-1' }],
+        immediateContinuation: null,
+      },
+      promptText: 'Recoverable Calendar facts: title Tonight Live; missing platform.',
+      calendarSession: pausedCalendar,
+      tradeBoardSession: null,
+      tradeSession: null,
+    })
+
+    await (
+      await POST(
+        requestForMessages([
+          {
+            id: 'calendar-user-1',
+            role: 'user',
+            parts: [{ type: 'text', text: 'Add a show tonight at 7 Eastern.' }],
+          },
+          {
+            id: 'calendar-assistant-1',
+            role: 'assistant',
+            parts: [{ type: 'text', text: 'What platform should I use for the show?' }],
+          },
+          {
+            id: 'calendar-user-2',
+            role: 'user',
+            parts: [{ type: 'text', text: 'TikTok.' }],
+          },
+        ]),
+      )
+    ).text()
+
+    expect(getOrCreateCalendarWorkflowContextMock).toHaveBeenCalledWith(
+      expect.objectContaining({ preloadedSession: pausedCalendar }),
+    )
+    expect(getOrCreateTradeBoardIntakeContextMock).not.toHaveBeenCalled()
   })
 
   it('switches from a Calendar read to an add request in the same conversation without route pinning', async () => {

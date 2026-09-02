@@ -37,9 +37,9 @@ function explainTradeBoardError(err: unknown): never {
 export function makeListMyTradeBoardTool(ctx: { repId: string; supabase: SupabaseClient }) {
   return tool({
     description:
-      "List the authenticated rep's dance floor (their jewelry listings). " +
-      'Use this whenever the user asks about their board, their listings, what they have up for trade, or their inventory. ' +
-      'Optionally filter by status.',
+      "See which dancers are on the authenticated rep's Dance Floor right now. " +
+      'Use this for questions about the rep’s dancers, pieces available for trade, or what is currently on their Dance Floor. ' +
+      'This is a read only; optionally filter dancers by status.',
     inputSchema,
     execute: async ({ statusFilter, limit }) => {
       try {
