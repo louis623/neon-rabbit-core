@@ -2895,3 +2895,12 @@ Verification passed:
   repository suite, provider-free harness smoke, changed-file lint, diff
   checks, and the production build. Evidence is in
   `docs/sparkle-suite/testing/2026-09-01-nic-nac-agent-harness-evidence.md`.
+
+## 2026-09-02 - Nic-Nac Cost & Capacity live
+
+- Owner-only Control Center page `/control-center/nic-nac-usage` is live with automatic refresh-on-open and a visible manual Refresh control.
+- The read model keeps Sparkle Suite and Sparkle Finder as separate spend classes plus a combined total, stores displayed money as integer cents, distinguishes provider actuals from per-run estimates, and separates customer-facing work from Lab/utility work.
+- Run evidence includes product, surface, actual model or explicit no-model label, purpose, run id, input/output/cached tokens, estimated cents, success/hard-fail, and America/New_York time. Monthly CSV export is owner-authenticated and read-only.
+- Finder telemetry crosses the product boundary through a bounded bearer-protected read-only endpoint. The shared bridge token is configured as a Vercel Secret in both apps for production and preview.
+- Suite commit `d570a2e9` is live as `dpl_3Uj5brd9CCSLa1bLnG5rAmY6bNV1` on both Suite production domains. Finder bridge commit `97903157` is live as `dpl_CCyNBUN9XUSW4vCfZ9mSxMkoynv5` on `https://yoursparklefinder.com`.
+- OpenAI provider actuals and prepaid balance remain honestly unavailable: no organization admin key/project mapping was created, and the application does not scrape Billing.

@@ -130,3 +130,9 @@ Reason: This gives Louis one place to operate both products and consistent visua
 Decision: Real HTTP(S) destinations outside Sparkle Finder open in a new tab with `noopener noreferrer`. Finder-local routes, including fixture-backed preview routes, remain in the current tab.
 
 Reason: Customers use Finder as a stable comparison workspace while visiting multiple reps, Dance Floors, and shows. The browser should preserve their Finder search context by default.
+
+## 2026-09-02 - Finder cost telemetry stays behind a narrow read bridge
+
+Decision: Sparkle Finder exposes bounded Nic-Nac run-cost telemetry to the Suite owner Control Center through a dedicated bearer-protected internal GET endpoint. It does not share Finder customer auth, direct database credentials, conversation content, or mutable capabilities.
+
+Reason: Louis needs combined operating visibility while Finder must retain its separate application, auth, data, and deployment boundaries.

@@ -313,3 +313,10 @@
 - Added one external-aware link component and routed dynamic rep, Dance Floor, show, availability, Showcase, and Nic-Nac destinations through it.
 - External HTTP(S) links now render `target="_blank"` plus `rel="noopener noreferrer"`; internal and fixture-preview Finder links remain same-tab.
 - Commit `15f60885` passed 59 test files / 765 tests, lint, production build, and local signed-in browser QA. Deployment `dpl_EEA1gzkRrdMwJk35KHnF1DzZat3s` is live on `https://yoursparklefinder.com`.
+
+## 2026-09-02 - Read-only Control Center cost telemetry bridge
+
+- Added `GET /api/internal/finder/control-center-nic-nac-usage`, limited to a 32-day window and 10,000 rows, returning only run/cost telemetry fields needed by the owner-only Suite dashboard.
+- The route fails closed without its dedicated bearer token or Finder service role. The token is configured as a Vercel Secret in Finder and Suite production/preview.
+- Focused route tests, lint, local production build, Vercel production build, custom-domain deployment inspection, and a live unauthenticated `401` check passed.
+- Commit `97903157` is live as deployment `dpl_CCyNBUN9XUSW4vCfZ9mSxMkoynv5` on `https://yoursparklefinder.com`.

@@ -616,3 +616,5 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   workflow state, then clean up all synthetic records. Alert on failure. Do
   not use Louis's or any customer's account, and do not create customer-facing
   changes, provider actions, or Live Queue state as part of the canary.
+- [ ] **Complete OpenAI provider-actual setup for Cost & Capacity** — with Louis's explicit key authorization, configure a dedicated organization admin key as `OPENAI_ADMIN_KEY` and map the exact OpenAI project ids in `NIC_NAC_OPENAI_SUITE_PROJECT_IDS` and `NIC_NAC_OPENAI_FINDER_PROJECT_IDS`. Do not scrape Billing or reuse a broad interactive credential. Verify actual costs remain separate by product.
+- [ ] **Add Finder cached-token telemetry** — persist cached input tokens from Finder model responses so Cost & Capacity can replace the current explicit unavailable cells. This is telemetry work only; do not infer cached tokens from totals.

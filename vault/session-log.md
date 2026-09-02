@@ -5962,3 +5962,13 @@ Lessons retained:
   before an agent can safely receive a broad tool catalog.
 - Deterministic mocked tool-loop tests prove orchestration and safety; live
   answer quality still needs a separately capped model-backed reviewer replay.
+
+## 2026-09-02 - Nic-Nac Cost & Capacity dashboard
+
+- Built and released owner-only `/control-center/nic-nac-usage` with a prominent manual Refresh button and fresh server reads on page open.
+- Added separate Suite/Finder estimates and actual-provider slots, customer-facing versus Lab/utility cost classes, burn and usage rates, cached-token/failure visibility, cost per successful workflow, policy/price alerts, recent run evidence, separate freshness stamps, and monthly CSV export.
+- Added Finder's bounded read-only internal telemetry endpoint and configured its dedicated shared bearer token as a Vercel Secret in Suite and Finder production/preview. The unauthenticated live route returned `401`.
+- The first live smoke exposed legacy zero-cost application action names in the `model` column. Commit `d570a2e9` corrected them to `No model (static)` so they no longer create false unknown-price or policy-drift alerts.
+- Verification passed 12 focused Suite/Finder tests, changed-file lint, both production builds, exact domain/deployment inspection, and signed-in live Control Center smoke. Manual Refresh visibly transitioned `Refresh` → `Refreshing…` → `Refresh`.
+- Finder deployment: `dpl_CCyNBUN9XUSW4vCfZ9mSxMkoynv5`. Final Suite deployment: `dpl_3Uj5brd9CCSLa1bLnG5rAmY6bNV1`.
+- Remaining provider setup is explicit: supply a dedicated OpenAI organization admin key and map distinct OpenAI project ids to Suite and Finder. Until then actual provider spend and balance remain unavailable rather than estimated or scraped.

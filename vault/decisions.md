@@ -2219,3 +2219,13 @@ Support surface before those stores are queried.
 Reason: Useful facts should survive a natural interruption, but a stale task
 must not become another conversation-owning router or disclose unrelated rep
 work through a narrower Support capability.
+
+## 2026-09-02 - AI cost monitoring is an operations view, not the ledger
+
+Decision: Nic-Nac Cost & Capacity lives in the owner-only Sparkle Suite Control Center. Sparkle Suite and Sparkle Finder remain distinct spend classes with a combined total only when both inputs are complete. Provider Costs API values are labeled actual; per-run telemetry is labeled estimated; prepaid balance is never scraped or presented as authoritative when OpenAI does not expose it through a documented API. Page open and the manual Refresh button use the same uncached read path.
+
+Reason: Louis needs current operating visibility without creating a competing finance ledger or blending products. Lane continues to post the books from OpenAI invoices/costs plus bank evidence.
+
+Decision: Finder shares only bounded Nic-Nac cost telemetry through a dedicated bearer-protected read-only endpoint. Its database, customer auth, and deployment stay separate from Suite.
+
+Reason: Cross-product reporting should not merge customer security boundaries or grant Suite direct access to Finder's database.
