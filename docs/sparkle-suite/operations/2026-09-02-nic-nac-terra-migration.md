@@ -79,4 +79,48 @@ restore a legacy route or automatically replay a turn after a tool may start.
 - [Terra model](https://developers.openai.com/api/docs/models/gpt-5.6-terra)
 - [Responses tool strictness](https://developers.openai.com/api/docs/guides/function-calling)
 
-Deployment/live evidence is recorded in the session closeout after verification.
+## Verified release closeout
+
+- Application commit `2a1e5ad10e33de012c96b321081ff72cb15d798f` was pushed and
+  manually deployed as Ready `dpl_AvHkaLxN2UAvA91wK6qjDNLjGsZ1` /
+  `sparkle-suite-glkw5g8tb-louis-2849s-projects.vercel.app`.
+- Direct Vercel inspection of each Suite hostname resolved to this deployment.
+  Customer www hostnames remained on `dpl_3jf6qWNJJKJgibFJZrCbnMgeMzWm`.
+  The CLI also assigned its standard project alias automatically. Deployment
+  alias arrays retained stale names, so direct hostname resolution was used.
+- Chrome protected `/start` launcher now works; synthetic Britt Test Rep
+  (`f2fdba81-4122-4de4-9695-f9caf9c4aba5`) reached `/nic-nac` without checkout.
+  No personal/customer account was used. Plain `/start` still redirects to
+  prelaunch without exposing reviewer controls. Apex canonicalizes to www;
+  the live landing page remains stable after hydration.
+- Live Calendar read run `214b10d0-9dd4-4165-8383-5f45edcd72aa` succeeded on
+  Terra medium: 21,251 input / 113 output / 10,445 cached, estimated 4 cents.
+- Live read-to-add run `8114f92b-ff0e-42dd-8aab-b68f3062a3f2` succeeded on
+  Terra medium: 22,932 input / 196 output / 11,174 cached, estimated 4 cents.
+  Calendar confirmed exactly one `Terra Verification Sep 2` show on September
+  4 at 7–8 PM Eastern, no recurrence, TEST10 / 10% off, Reviewer Smoke
+  Collection. A fresh customer-site load displayed it as the second upcoming
+  show in the exact synthetic rep context.
+- After Louis separately authorized cancelling only that synthetic show,
+  the app requested confirmation and cancellation was approved through its UI.
+  Runs `9275729c-1edc-4f72-9fb8-742fb66d83c4` and
+  `e69ad45c-3f3f-4fcf-9087-58a6d99b8bc5` succeeded on Terra, 1 cent each.
+  A full workspace reload showed the test event cancelled, two seeded shows
+  still scheduled, and an intact cancellation history. No deletion/reset was
+  used to erase the test evidence.
+- Dashboard Refresh visibly updated telemetry/provider fetch timestamps,
+  showed the actual Terra runs and unchanged other tiers/Finder baseline.
+  Combined verification estimate: 95 cents temporary-key tests + 10 cents
+  live tests = $1.05, below the $3 cap. Provider actuals can lag; this is not
+  an invoice amount. Temporary key revocation was visibly confirmed.
+- Live API/database health remained green with zero recent errors; no error
+  logs were found for the new deployment. No billing, DNS, real customer,
+  outbound-message or scheduled-canary changes were made.
+
+Known limits: this is a bounded migration smoke, not an exhaustive workflow
+certification. Literal negated-photo phrase flags remain available for later
+evaluation work. Some read-only turns retain broad catalog-purpose telemetry
+labels; these labels alone cannot certify model quality or exact task purpose.
+Direct SQL assertions were not used; persistence was checked by reloaded
+workspace and separate customer-site reads. Reviewer secrets are not in Git
+or Open Brain.

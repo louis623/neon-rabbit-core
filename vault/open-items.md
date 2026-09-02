@@ -622,12 +622,11 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 ## Nic-Nac cost and capacity follow-up
 
 - [ ] Run the secured synthetic authenticated Finder Nic-Nac production smoke once its write-only smoke token is available to the approved smoke runner. Do not use Louis's signed-in Finder account or a customer account.
-- [ ] Finish the same-day GPT-5.6 Terra release and live reviewer verification.
-  Authorized paid replay used 95 conservative estimated cents; temporary key
-  revoked. Final calendar/approval replay, 1,312 tests, safety smoke and build
-  pass. Reviewer token repaired and Suite default env updated; still requires
-  exact-tip commit/push/manual deployment and live-domain synthetic proof.
-  Keep medium reasoning, other tiers and Finder unchanged; preserve explicit
-  GPT-5.4 rollback. See the September 2 Terra migration evidence document.
+- [x] Complete the same-day GPT-5.6 Terra human-default migration. Application
+  `2a1e5ad1` / Ready `dpl_AvHkaLxN2UAvA91wK6qjDNLjGsZ1` verified on both Suite
+  domains. Repaired reviewer path; live synthetic read/add/public visibility/
+  approved cancellation passed. Total estimate $1.05; temporary key revoked.
+  Medium reasoning, other tiers, Finder and protected customer domains remain
+  unchanged. See the September 2 migration document for evidence and limits.
 - Standing rule: leave the unused duplicate OpenAI project and first unused Finder runtime key untouched. They are not cleanup work and should be revisited only if evidence shows a security, billing, access, or operational problem. Any future deletion or revocation still requires Louis's explicit authorization and a dependency audit.
 - [ ] Keep historical Default-project provider spend unallocated. If it later appears in the Control Center, show it as a separate legacy/unallocated amount outside Suite, Finder, and their combined product total.

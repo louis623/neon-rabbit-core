@@ -1,5 +1,25 @@
 # Project State
 
+## September 2, 2026 - Terra is live and reviewer smoke is restored
+
+- Suite human-default is now `gpt-5.6-terra` at medium. Application commit
+  `2a1e5ad10e33de012c96b321081ff72cb15d798f` is Ready deployment
+  `dpl_AvHkaLxN2UAvA91wK6qjDNLjGsZ1`. Both Suite hostnames resolve directly to
+  it; customer domains remain on their prior deployment. Other model tiers and
+  Finder are unchanged. GPT-5.4 remains an explicit rollback option.
+- Repaired reviewer token unlocked the existing synthetic Britt Test Rep path.
+  Real live read → add → Calendar details → customer-site visibility passed.
+  Louis separately authorized cancellation; the normal approval UI ran, and
+  reload confirmed only the test show cancelled with both seeded shows intact.
+- Cost & Capacity Refresh shows actual Terra medium runs and independent
+  Suite/Finder policies. Four live run rows total 10 estimated cents; all
+  verification totals $1.05 estimated under the $3 cap. Temporary test key is
+  revoked; working keys remain unchanged. API/DB health and landing stability
+  are green. Detailed provenance/limits are in the September 2 migration doc.
+- No DNS, customer-domain mapping, billing/Stripe, outbound message, customer
+  account, scheduled canary, or unrelated project/key cleanup. Synthetic
+  cancellation history is preserved; untracked artifacts/test-results intact.
+
 ## September 2, 2026 - Terra verification complete; release in progress
 
 - Supersedes the preparation blocker below. Louis authorized the temporary

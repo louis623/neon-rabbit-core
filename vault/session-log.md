@@ -2,6 +2,27 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 2, 2026 - Terra production release and live reviewer closeout
+
+- Pushed application `2a1e5ad1`, manually deployed Ready
+  `dpl_AvHkaLxN2UAvA91wK6qjDNLjGsZ1`, and directly verified both Suite domain
+  targets. Protected customer www domains remained on the previous deployment.
+- Chrome synthetic reviewer sign-in worked using the repaired secret. Verified
+  live Calendar read, one-time add with correct timezone/discount/collection,
+  saved Calendar details, and fresh synthetic customer-site next-two-shows
+  display. Cost dashboard Refresh confirmed actual Terra medium usage.
+- User separately approved cancellation of only the test event after a safety
+  gate held cleanup. The app's confirmation UI was honored; reload showed the
+  cancelled test entry and two unchanged seeded shows. Cancellation history
+  remains recoverable; no real customer data or provider messages were changed.
+- Four live run IDs, token counts, and replay caveats are in the migration
+  evidence document. Total conservative estimate is $1.05 ($0.95 temporary-key
+  tests plus $0.10 live tests); temporary key was revoked and existing keys
+  preserved. Root/apex stability, protected reviewer gating and API/DB health
+  passed. No error logs found. No scheduled canary or unrelated cleanup.
+
+---
+
 ## September 2, 2026 - Authorized Terra tests and reviewer-token repair
 
 - Completed real GPT-5.4/Terra comparative synthetic tests with zero business
