@@ -142,3 +142,9 @@ Reason: Louis needs combined operating visibility while Finder must retain its s
 Decision: Sparkle Finder production uses a dedicated OpenAI project and restricted model-request runtime key. Suite may attribute Finder provider cost only through the configured project ID and may read Finder per-run evidence only through the existing bounded bridge.
 
 Reason: A shared provider key/project makes authoritative product attribution impossible and weakens operational isolation even when application databases and authentication remain separate.
+
+## 2026-09-02 - Unused Finder runtime key remains untouched
+
+Decision: Leave the first unused Finder runtime key unchanged indefinitely unless concrete evidence shows a security, billing, access, or operational problem. It is not pending cleanup. Any later revocation requires Louis's explicit authorization and a dependency audit.
+
+Reason: The active Finder configuration is working, and speculative credential cleanup is not worth risking another setup setback.

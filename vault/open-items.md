@@ -623,5 +623,5 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 - [ ] Run the secured synthetic authenticated Finder Nic-Nac production smoke once its write-only smoke token is available to the approved smoke runner. Do not use Louis's signed-in Finder account or a customer account.
 - [ ] Build a bounded comparative replay set by workload before changing model tiers. Score quality, correct tool use, latency, and cost; policy-match labels alone do not prove that another model is better.
-- [ ] With Louis's explicit deletion/revocation authorization, remove the unused duplicate OpenAI project and the first unused Finder runtime key created during the setup UI retry. Audit dependencies before revoking any older shared/general OpenAI key.
+- Standing rule: leave the unused duplicate OpenAI project and first unused Finder runtime key untouched. They are not cleanup work and should be revisited only if evidence shows a security, billing, access, or operational problem. Any future deletion or revocation still requires Louis's explicit authorization and a dependency audit.
 - [ ] Keep historical Default-project provider spend unallocated. If it later appears in the Control Center, show it as a separate legacy/unallocated amount outside Suite, Finder, and their combined product total.

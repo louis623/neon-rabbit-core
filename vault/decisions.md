@@ -2239,3 +2239,9 @@ Reason: Project attribution must be authoritative at request time. Per-run estim
 Decision: The dashboard may say whether an observed run matches configured model policy, but it must not claim that model is optimal without comparative workflow replays scoring answer quality, tool correctness, latency, and cost together.
 
 Reason: Model names and spend alone do not establish task fitness. Purpose telemetry plus controlled eval evidence is required for a defensible optimization decision.
+
+## 2026-09-02 - Unused OpenAI setup artifacts remain untouched
+
+Decision: The unused duplicate OpenAI project and first unused Finder runtime key are not a cleanup task. Leave them unchanged indefinitely unless concrete evidence shows a security, billing, access, or operational reason to intervene. Any later revocation or deletion requires Louis's explicit authorization and a dependency audit.
+
+Reason: The working production separation is stable, and speculative cleanup is not worth introducing another setup setback.
