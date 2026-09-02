@@ -467,6 +467,15 @@ export function SupportCommandCenter({
               </Link>
               <Link
                 className="mt-1 flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
+                href="/control-center/nic-nac-usage"
+              >
+                AI Cost &amp; Capacity
+                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs text-violet-700">
+                  New
+                </span>
+              </Link>
+              <Link
+                className="mt-1 flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
                 href="/control-center/lab"
               >
                 Sparkle Lab
