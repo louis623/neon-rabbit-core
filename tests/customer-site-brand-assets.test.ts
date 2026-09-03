@@ -4,6 +4,7 @@ import {
   getCustomerSiteMark,
   getCustomerSiteMarkFontFamily,
   getCustomerSiteSharePalette,
+  getCustomerSiteShareTagline,
 } from '@/lib/amethyst/customer-site-brand-assets'
 
 describe('customer-site brand assets', () => {
@@ -12,21 +13,39 @@ describe('customer-site brand assets', () => {
     expect(getCustomerSiteMark('  ', 'Avery')).toBe('A')
   })
 
-  it('uses the BlingKitchen header typeface for its compact B mark', () => {
+  it('normalizes the legacy live-show welcome copy for sharing', () => {
+    expect(getCustomerSiteShareTagline('Welcome to Kim Live Show site.')).toBe(
+      "Welcome to Kim's Live Show Site.",
+    )
+    expect(getCustomerSiteShareTagline('Follow along for new reveals.')).toBe(
+      'Follow along for new reveals.',
+    )
+  })
+
+  it('uses the embedded display typeface for every compact mark', () => {
     expect(getCustomerSiteMarkFontFamily('theblingkitchen.com')).toBe(
       '"Playfair Display", Georgia, serif',
     )
     expect(getCustomerSiteMarkFontFamily('www.theblingkitchen.com')).toBe(
       '"Playfair Display", Georgia, serif',
     )
-    expect(getCustomerSiteMarkFontFamily('brisglowtique.com')).toBe('Georgia, serif')
+    expect(getCustomerSiteMarkFontFamily('brisglowtique.com')).toBe(
+      '"Playfair Display", Georgia, serif',
+    )
   })
 
   it('keeps the share card tied to the selected customer-site skin', () => {
+    expect(getCustomerSiteSharePalette('sparkle_suite_morganite')).toMatchObject({
+      background: '#5b1e3b',
+      accent: '#ee2c9b',
+    })
     expect(getCustomerSiteSharePalette('emerald_garden')).toMatchObject({
       background: '#123c35',
       accent: '#059669',
     })
-    expect(getCustomerSiteSharePalette('rose_gold').accent).toBe('#e04f73')
+    expect(getCustomerSiteSharePalette('rose_gold')).toMatchObject({
+      background: '#54202f',
+      accent: '#e04f73',
+    })
   })
 })

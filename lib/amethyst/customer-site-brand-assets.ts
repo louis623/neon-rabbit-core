@@ -24,22 +24,29 @@ export interface CustomerSiteBrandAssetContext {
 }
 
 const BRI_CUSTOM_DOMAINS = new Set(['brisglowtique.com', 'www.brisglowtique.com'])
-const BLING_KITCHEN_CUSTOM_DOMAINS = new Set([
-  'theblingkitchen.com',
-  'www.theblingkitchen.com',
-])
 
 const SHARE_BACKGROUNDS: Partial<Record<AmethystAppearancePresetId, string>> = {
   amethyst: '#2b155c',
+  sparkle_suite_morganite: '#5b1e3b',
   black_diamond: '#161313',
   moonstone: '#272938',
   emerald_garden: '#123c35',
+  rose_gold: '#54202f',
   garnet: '#4a1218',
   velvet: '#321142',
 }
 
 function cleanText(value: string | null | undefined) {
   return value?.replace(/\s+/g, ' ').trim() || ''
+}
+
+export function getCustomerSiteShareTagline(tagline: string | null | undefined) {
+  const cleaned = cleanText(tagline)
+  const genericLiveShowMatch = cleaned.match(/^Welcome to (.+?) Live Show site\.?$/i)
+
+  return genericLiveShowMatch
+    ? `Welcome to ${genericLiveShowMatch[1]}'s Live Show Site.`
+    : cleaned
 }
 
 export function getCustomerSiteSharePalette(
@@ -72,12 +79,11 @@ function getCustomerSiteMarkAssetPath(customDomain: string) {
 }
 
 export function getCustomerSiteMarkFontFamily(customDomain: string) {
-  // BlingKitchen's header wordmark uses Playfair Display. Keep that same
-  // distinctive letterform in its compact B mark rather than introducing a
-  // second logo style for the favicon and share card.
-  return BLING_KITCHEN_CUSTOM_DOMAINS.has(customDomain)
-    ? '"Playfair Display", Georgia, serif'
-    : 'Georgia, serif'
+  // `next/og` needs an embedded font, rather than a browser's serif fallback.
+  // A single display face keeps every rep's compact monogram consistent while
+  // the business initial itself remains stable across skin changes.
+  void customDomain
+  return '"Playfair Display", Georgia, serif'
 }
 
 /**
@@ -95,7 +101,7 @@ export async function getCustomerSiteBrandAssetContext(
 
   const templateData = await loadAmethystPreviewTemplateData({ repId: customDomain })
   const businessName = cleanText(templateData.homepage.businessName)
-  const tagline = cleanText(templateData.homepage.tagline)
+  const tagline = getCustomerSiteShareTagline(templateData.homepage.tagline)
   const preset = templateData.appearancePreset
 
   return {

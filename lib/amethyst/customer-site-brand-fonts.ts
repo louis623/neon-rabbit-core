@@ -19,22 +19,19 @@ async function loadPlayfairDisplay800() {
 
 /**
  * `next/og` does not inherit web fonts from the customer-site HTML. Supply
- * BlingKitchen's header font directly so its compact B uses the real mark
- * rather than a renderer fallback.
+ * the display font directly for every generated brand image so custom-domain
+ * icons and share cards render consistently in both local and production
+ * image runtimes.
  */
 export async function getCustomerSiteBrandImageFonts(
-  brand: CustomerSiteBrandAssetContext | null,
+  _brand: CustomerSiteBrandAssetContext | null,
 ) {
-  if (brand?.markFontFamily.includes('Playfair Display')) {
-    return [
-      {
-        data: await loadPlayfairDisplay800(),
-        name: 'Playfair Display',
-        style: 'normal' as const,
-        weight: 800 as const,
-      },
-    ]
-  }
-
-  return []
+  return [
+    {
+      data: await loadPlayfairDisplay800(),
+      name: 'Playfair Display',
+      style: 'normal' as const,
+      weight: 800 as const,
+    },
+  ]
 }
