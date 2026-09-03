@@ -45,8 +45,8 @@ describe('durable rep account classification', () => {
   it('keeps the operator launch ledger separate from rep self-setup', () => {
     expect(onboardingSkill).toContain('operator launch checklist')
     expect(onboardingSkill).toContain('rep-facing self-serve checklist')
-    expect(onboardingSkill).toContain('waiting_on_rep')
-    expect(onboardingSkill).toContain('not_applicable')
+    expect(onboardingSkill).toContain('done/not-done checkbox')
+    expect(onboardingSkill).toContain('do not add statuses, proof notes')
     expect(onboardingSkill).toMatch(/identity-guarded rep\s+domain mapping/)
     expect(onboardingSkill).toMatch(/favicon\s+plus social-share card render/)
     expect(onboardingSkill).toContain('do not reuse the legacy `onboarding_status`')

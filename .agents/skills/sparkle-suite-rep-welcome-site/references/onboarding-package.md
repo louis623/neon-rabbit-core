@@ -35,23 +35,21 @@ Use this reference only when a request includes more than the public starter gui
 This is internal operational continuity, not the rep's self-serve checklist and
 not evidence that the rep has made an attestation. When the Control Center
 implements it, show it as a nested, collapsible section in the expanded
-Customer Database profile. Persist status and safe evidence per step so a later
-operator can resume without reverse-engineering a session.
+Customer Database profile. Use a simple done/not-done checkbox per step so a
+later operator can resume without reverse-engineering a session.
 
-| Check | Required evidence | Optional/blocked handling |
+| Check | What to finish | When it applies |
 | --- | --- | --- |
 | Identity and placement | Exact rep resolved; `customer` classification; Customer Database placement | Stop on ambiguous identity. |
 | Workspace access | Intended trial/entitlement plus no unintended checkout path | Never create Stripe objects as a workaround. |
 | Public-site foundation | Slug, Site Settings, business basics, and customer social handles present | Leave unknown rep details blank and name the gap. |
 | Public-route proof | Live Home, Dance Floor, and Join each resolve to the rep’s own copy | Check direct routes too; hidden navigation does not excuse stale demo content. |
-| Show and Live Queue readiness | Configured platform social links, Calendar behavior, and Live Queue setup or handoff | Mark `waiting_on_rep` or `blocked` rather than inferring completion. |
+| Show and Live Queue readiness | Configured platform social links, Calendar behavior, and Live Queue setup or handoff | Leave unchecked rather than inferring completion. |
 | Communication | Welcome draft/sent state with its separate authorization | A draft is not a sent message. |
-| Optional custom domain | Registrar authority, Vercel attachment, minimal DNS change, identity-guarded mapping, live root/Trade/Join, favicon, and social card | Use `not_applicable` unless requested; never change unrelated DNS, aliases, forwarding, contacts, or billing. |
-| Closeout | Live URLs, evidence summary, and remaining owner/rep action | Keep credentials and raw private data out of the ledger. |
+| Optional custom domain | Registrar authority, Vercel attachment, minimal DNS change, identity-guarded mapping, live root/Trade/Join, favicon, and social card | Use only when requested; never change unrelated DNS, aliases, forwarding, contacts, or billing. |
+| Closeout | Remaining owner/rep action is clear | Keep credentials and raw private data out of the product. |
 
-Suggested statuses are `not_started`, `in_progress`, `waiting_on_rep`,
-`blocked`, `complete`, and `not_applicable`. A timestamp and short safe evidence
-summary belong to every changed item. The legacy `onboarding_status` and a
+The checklist is intentionally checkbox-only. The legacy `onboarding_status` and a
 dashboard-unlocked flag must not be repurposed as the launch ledger.
 
 ## Starter-guide content map

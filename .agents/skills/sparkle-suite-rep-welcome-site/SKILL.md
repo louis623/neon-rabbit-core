@@ -61,11 +61,9 @@ complete merely because the former has a completed setup session.
 - Keep one durable, operator-only checklist per real customer in the Control
   Center when that surface is available. It belongs inside the expanded customer
   profile, not in the Demo Database or a public guide.
-- Each item needs a status (`not_started`, `in_progress`, `waiting_on_rep`,
-  `blocked`, `complete`, or `not_applicable`), a safe evidence summary or
-  blocker, and an updated timestamp. Never place credentials, DNS login
-  details, addresses, private codes, payment links, or raw support transcripts
-  in checklist evidence.
+- Keep the operator UI intentionally simple: each item is one plain-English
+  description with a done/not-done checkbox. Do not add statuses, proof notes,
+  or an attestation workflow unless Louis explicitly asks to expand it.
 - Do not reuse the legacy `onboarding_status` or a dashboard-unlocked flag as
   this ledger. Those answer different questions and can conceal a missing public
   site, trial, domain, or launch verification.
@@ -80,24 +78,23 @@ complete merely because the former has a completed setup session.
      copy and no stale demo promotion or identity;
   5. Calendar and customer-show readiness: configured platform social links
      are the source for public watch actions, never event-specific URLs;
-  6. Live Queue operational setup or an explicit `waiting_on_rep`/`blocked`
-     handoff—not an assumption that a guide was read;
+  6. Live Queue operational setup or a clear unfinished handoff—not an
+     assumption that a guide was read;
   7. approved welcome communication state (drafted, sent only when separately
      authorized, or intentionally not needed);
   8. closeout: exact live URLs checked, remaining owner/rep actions, and no
      unresolved safety-sensitive blocker.
-- Add the optional custom-domain path only when the rep asks for it. Record
-  the domain as `not_applicable` otherwise. When it applies, the checklist
+- Use the custom-domain items only when the rep asks for that work. When it
+  applies, the checklist
   must separately cover: verified domain ownership/registrar authority;
   Vercel attachment; the smallest DNS change required; an identity-guarded rep
   domain mapping; live root, Trade, and Join verification; and a stable favicon
   plus social-share card render. Preserve unrelated aliases, nameservers,
   forwarding, contacts, billing, and other DNS records unless Louis explicitly
   authorizes a specific change.
-- An operator may update checklist state only after the named observation or
-  verification actually succeeds. A `blocked` or `waiting_on_rep` item is a
-  valid, visible outcome—not a reason to substitute access, guess a setting, or
-  use the rep's credentials.
+- Check an item only after the named work actually succeeds. An unchecked item
+  is enough to show something remains open; do not substitute access, guess a
+  setting, or use the rep's credentials to force completion.
 
 ### Public starter guide
 

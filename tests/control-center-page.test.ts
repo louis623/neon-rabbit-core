@@ -242,7 +242,7 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('Prefers text for urgent billing questions.')
     expect(html).toContain('aria-label="Expand Jane Roberts profile"')
     expect(html).toContain('Onboarding checklist')
-    expect(html).toContain('Gather the About-section intake')
+    expect(html).toContain('Get what you need for their About page')
   })
 
   it('switches to Sparkle Finder controls with the shared skin options', async () => {
