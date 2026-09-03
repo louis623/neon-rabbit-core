@@ -1,16 +1,20 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 function accountingViewerDestination(value: string | null) {
   if (value === '/control-center/accounting' || value === '/control-center/accounting?product=finder') return value
   return '/control-center'
 }
 
+function accountingViewerDestinationFromWindow() {
+  if (typeof window === 'undefined') return '/control-center'
+  return accountingViewerDestination(new URLSearchParams(window.location.search).get('redirect'))
+}
+
 export default function ControlCenterLoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +32,7 @@ export default function ControlCenterLoginPage() {
       })
       const payload = (await response.json()) as { error?: string }
       if (!response.ok) throw new Error(payload.error ?? 'Unable to sign in.')
-      router.replace(accountingViewerDestination(searchParams.get('redirect')))
+      router.replace(accountingViewerDestinationFromWindow())
       router.refresh()
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to sign in.')
