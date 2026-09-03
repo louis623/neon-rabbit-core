@@ -2426,3 +2426,20 @@ subscriptions are not treated as paid revenue.
 
 Reason: The owner needs forecast visibility from the client list without
 concealing late payments, cancellations, refunds, or expense variance.
+
+## 2026-09-03 - Lane gets a separate append-only accounting connector
+
+Decision: Keep the shared Sparkle Suite Control Center MCP read-only. A
+dedicated Lane-only endpoint may append validated, aggregate monthly snapshots
+for Suite or Finder. It must use its own credential; it cannot share the
+Control Center bearer because that bearer cannot enforce which bot is calling.
+
+Each snapshot contains only period-bound aggregate counts, cents, source
+status, money basis, and an initial, correction, or restatement reason.
+Corrections append a new revision. The connector cannot inspect or mutate
+customers, transactions, banking, Stripe, Bluevine, Shopify, invoices,
+refunds, transfers, or UI configuration.
+
+Reason: Lane needs a safe way to publish reconciled totals to the accounting
+dashboard without turning a shared operational connector into a financial
+write surface.

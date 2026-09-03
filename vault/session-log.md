@@ -6292,3 +6292,26 @@ Lessons retained:
   `95272bd1` was manually released as `dpl_CyBQpBseq7sNZCJqAJ4bAhYZp8So`;
   both Suite aliases resolve to it and Kim's custom-domain alias was confirmed
   unchanged.
+
+## September 3, 2026 - Lane accounting handoff and safe write foundation
+
+- Used Grok Bot computer controls to consult Lane and Sam. Lane confirmed the
+  shared Control Center connector targets the correct Suite endpoint but its
+  mcp-remote helper retains a stale 14-tool catalog. Restarting did not refresh
+  it. No connector was re-added and no credential was changed.
+- Louis clarified that Lane must be able to supply verified accounting figures,
+  not merely read them. Lane recommended a separate credential and an
+  append-only aggregate monthly snapshot tool; shared Control Center MCP stays
+  read-only because its bearer cannot distinguish one bot from another.
+- Implemented the separate Lane endpoint, append-only aggregate ledger,
+  latest-snapshot dashboard rendering, and dedicated bearer boundary. Focused
+  tests passed (7 files, 18 tests); production build passed; migration
+  20260903150000_lane_accounting_snapshots.sql applied successfully.
+- Committed and pushed 9b5e463e and manually released it as Ready deployment
+  dpl_BrPj6ip6Dzne1QKQJXA4G5VDy9Vf. Both Suite aliases were moved to that
+  exact deployment; Kim's domain was confirmed unchanged at
+  dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH.
+- Secure credential provisioning was blocked before any secret was created:
+  the runtime rejected generating a Vercel production write credential with a
+  clipboard handoff. The Lane connector remains unconfigured and no snapshot,
+  money movement, billing action, or provider action occurred.

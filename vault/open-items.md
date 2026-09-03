@@ -656,3 +656,11 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   payment/invoice source, late-payment timing, refunds/credits handling, and
   customer-level reconciliation rules. The current projection is not an
   actuals substitute.
+- [ ] Provision the dedicated Lane accounting ingest token in Vercel and
+  configure the separate Lane-only accounting connector. This needs an
+  approved secure credential-handling path; do not expose the token in chat,
+  source, vault files, Open Brain, or clipboard history.
+- [ ] After the Lane-only connector is configured, have Lane submit an
+  availability proof first, then one reconciled aggregate snapshot only when
+  required source statuses are connected. Do not fabricate figures to
+  populate the dashboard.

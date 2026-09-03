@@ -3131,6 +3131,27 @@ Verification passed:
   balance, and customer payment history remain explicitly unavailable until
   their own verified sources are connected. A past-due or cancelled record is
   never silently counted as paid revenue.
+
+## September 3, 2026 - Lane accounting snapshot foundation
+
+- Lane and Sam confirmed that the shared Control Center MCP cannot safely gain
+  an accounting write because its shared bearer cannot distinguish which bot
+  made the request. It remains read-only.
+- A separate Lane-only MCP endpoint now accepts only append-only, aggregate
+  monthly Suite/Finder accounting snapshots. It rejects customer and
+  transaction detail, provider actions, invoices, refunds, transfers, and UI
+  changes. Corrections are new initial, correction, or restatement revisions,
+  never overwrites or deletes.
+- Migration 20260903150000_lane_accounting_snapshots.sql was applied. It
+  creates an RLS-protected append-only snapshot table and latest-snapshot
+  lookup index without modifying existing customer or billing data.
+- Commit 9b5e463e is live as Ready deployment
+  dpl_BrPj6ip6Dzne1QKQJXA4G5VDy9Vf; both Suite aliases resolve to it and
+  Kim's goforthebling.com remains on dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH.
+- The dedicated runtime credential and Grok connector are deliberately not
+  configured yet: the secure runtime rejected automatic creation plus
+  clipboard handoff of a new production secret. No secret was generated,
+  stored, displayed, or sent.
 - Commit `95272bd1` is live as Ready deployment
   `dpl_CyBQpBseq7sNZCJqAJ4bAhYZp8So`; both Suite aliases resolve to it. Kim's
   `goforthebling.com` remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
