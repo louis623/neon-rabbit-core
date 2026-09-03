@@ -6357,3 +6357,10 @@ Lessons retained:
 - Lane confirmed the connector exposes two tools and successfully completed
   the harmless Suite snapshot read. No accounting figures were appended during
   connection verification.
+- Follow-up correction: the accounting page now prefers Lane's reconciled
+  projected-recurring snapshot total over the client-list fallback whenever
+  Lane supplies it, so he can populate every displayed accounting total. Four
+  focused tests passed again and the production build passed. Commit
+  `65494de6` is the final application tip, live as
+  `dpl_6EHzCeKsEMq4pKsKc8twaMJFyf3N`; both Suite aliases resolve to it and
+  Kim's domain remains unchanged.
