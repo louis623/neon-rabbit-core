@@ -6364,3 +6364,19 @@ Lessons retained:
   `65494de6` is the final application tip, live as
   `dpl_6EHzCeKsEMq4pKsKc8twaMJFyf3N`; both Suite aliases resolve to it and
   Kim's domain remains unchanged.
+
+## September 3, 2026 - Accounting cents display correction
+
+- Display-only correction: Control Center Accounting now formats integer cents
+  with exactly two USD decimal places. Examples verified in tests: `12799` →
+  `$127.99`, `6` → `$0.06`, `9998` → `$99.98`, and `0` → `$0.00`.
+  Null source values remain `—` / Not connected rather than becoming zero.
+- Applied across Suite, Finder, and the scoped accounting-viewer route because
+  they share the same dashboard component. Refunds and credits now render as
+  separate fields so a missing one cannot be silently converted to `$0.00`.
+- No books data, source integration, MCP contract, schema, customer, billing,
+  payment, refund, payout, or provider state was changed.
+- Four focused accounting test files passed (9 tests) and production build
+  passed. Commit `2fb315a1` is live as Ready deployment
+  `dpl_FGVMmph4EBoTKmTrEJackiDvgnXj`; both Suite aliases resolve to it.
+  Kim's `goforthebling.com` remains at `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
