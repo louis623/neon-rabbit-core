@@ -1,11 +1,34 @@
-import { timingSafeEqual } from 'node:crypto'
+import { createHash, timingSafeEqual } from 'node:crypto'
 import { NextResponse } from 'next/server'
+
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const ALLOWED_ORIGINS = new Set(['https://grok.com', 'https://www.grok.com'])
 
-export function laneAccountingSecurityResponse(request: Request) {
-  const token = process.env.LANE_ACCOUNTING_INGEST_TOKEN?.trim() ?? ''
-  if (!token) {
+function tokenDigest(token: string) {
+  return createHash('sha256').update(token).digest()
+}
+
+async function configuredDigest() {
+  const environmentToken = process.env.LANE_ACCOUNTING_INGEST_TOKEN?.trim()
+  if (environmentToken) return tokenDigest(environmentToken)
+
+  // The connector's bootstrap token is stored only as a hash in Supabase. This
+  // lets Lane authenticate without a second hosting-provider secret surface.
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null
+  const { data, error } = await createAdminClient()
+    .from('lane_accounting_mcp_tokens')
+    .select('token_digest')
+    .eq('id', 'lane')
+    .eq('revoked', false)
+    .maybeSingle()
+  if (error) throw new Error('Could not load Lane MCP credential: ' + error.message)
+  return data?.token_digest ? Buffer.from(data.token_digest, 'hex') : null
+}
+
+export async function laneAccountingSecurityResponse(request: Request) {
+  const expected = await configuredDigest()
+  if (!expected) {
     return NextResponse.json({ error: 'Lane accounting connector is not configured.' }, { status: 503 })
   }
 
@@ -18,8 +41,7 @@ export function laneAccountingSecurityResponse(request: Request) {
   const supplied = authorization?.startsWith('Bearer ')
     ? authorization.slice('Bearer '.length)
     : ''
-  const actual = Buffer.from(supplied)
-  const expected = Buffer.from(token)
+  const actual = tokenDigest(supplied)
   if (!actual.length || actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
     return NextResponse.json({ error: 'unauthorized' }, {
       status: 401,

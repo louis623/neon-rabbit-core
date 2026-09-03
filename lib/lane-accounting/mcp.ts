@@ -4,6 +4,7 @@ import { createMcpHandler, McpServer } from '@modelcontextprotocol/server'
 import { z } from 'zod'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { loadCurrentAccountingSnapshot } from '@/lib/control-center/accounting'
 
 const basis = z.enum(['actual', 'projected', 'estimated'])
 const source = z.enum(['connected', 'not_connected', 'stale', 'error'])
@@ -24,6 +25,7 @@ const snapshotInput = z.object({
   }),
   money: z.object({
     projectedRecurring: money.optional(),
+    projectedExpenses: money.optional(),
     actualCollected: money.optional(),
     refunds: money.optional(),
     credits: money.optional(),
@@ -49,6 +51,9 @@ function validate(input: SnapshotInput) {
   const amounts = input.money
   if (amounts.projectedRecurring?.cents != null && !['projected', 'estimated'].includes(amounts.projectedRecurring.basis)) {
     throw new Error('projectedRecurring must use projected or estimated basis.')
+  }
+  if (amounts.projectedExpenses?.cents != null && !['projected', 'estimated'].includes(amounts.projectedExpenses.basis)) {
+    throw new Error('projectedExpenses must use projected or estimated basis.')
   }
   const stripeAmounts = [
     amounts.actualCollected, amounts.refunds, amounts.credits, amounts.disputes,
@@ -92,6 +97,7 @@ export function createLaneAccountingMcpServer() {
         past_due_client_count: input.counts.pastDue ?? null,
         cancelled_client_count: input.counts.cancelled ?? null,
         projected_recurring_cents: value(input.money.projectedRecurring),
+        projected_expenses_cents: value(input.money.projectedExpenses),
         actual_collected_cents: value(input.money.actualCollected),
         refunds_cents: value(input.money.refunds),
         credits_cents: value(input.money.credits),
@@ -109,6 +115,24 @@ export function createLaneAccountingMcpServer() {
           recordedAt: data.recorded_at,
           mode: 'append_only',
           notice: 'Aggregate snapshot saved. No payment, bank, billing, customer, or provider state was changed.',
+        }) }],
+      }
+    },
+  )
+  server.registerTool(
+    'lane_get_current_accounting_snapshot',
+    {
+      description: 'Read the latest aggregate monthly accounting snapshot currently displayed for one product. This returns no customer, invoice, payment, banking, or provider-object details.',
+      inputSchema: z.object({ product: z.enum(['suite', 'finder']) }),
+    },
+    async ({ product }) => {
+      const snapshot = await loadCurrentAccountingSnapshot(createAdminClient(), product)
+      return {
+        content: [{ type: 'text', text: JSON.stringify({
+          product,
+          snapshot,
+          mode: 'read_only_aggregate',
+          notice: 'This is the aggregate snapshot the Control Center uses for the current Eastern calendar month.',
         }) }],
       }
     },

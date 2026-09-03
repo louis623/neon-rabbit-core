@@ -5,7 +5,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 async function handle(request: Request) {
-  const securityResponse = laneAccountingSecurityResponse(request)
+  const securityResponse = await laneAccountingSecurityResponse(request)
   if (securityResponse) return securityResponse
   return laneAccountingMcpHandler.fetch(request)
 }

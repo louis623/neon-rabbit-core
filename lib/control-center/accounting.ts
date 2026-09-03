@@ -37,6 +37,7 @@ export type AccountingMonthlySnapshot = {
   pastDueClientCount: number | null
   cancelledClientCount: number | null
   projectedRecurringCents: number | null
+  projectedExpensesCents: number | null
   actualCollectedCents: number | null
   refundsCents: number | null
   creditsCents: number | null
@@ -145,6 +146,7 @@ export async function loadCurrentAccountingSnapshot(
     pastDueClientCount: data.past_due_client_count,
     cancelledClientCount: data.cancelled_client_count,
     projectedRecurringCents: data.projected_recurring_cents,
+    projectedExpensesCents: data.projected_expenses_cents,
     actualCollectedCents: data.actual_collected_cents,
     refundsCents: data.refunds_cents,
     creditsCents: data.credits_cents,
