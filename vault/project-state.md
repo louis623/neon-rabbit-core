@@ -1,5 +1,21 @@
 # Project State
 
+## September 3, 2026 - Control Center projection now mirrors Lane's books snapshot
+
+- The Suite Control Center home tile for projected monthly revenue now reads
+  only the current-month Lane accounting snapshot's
+  `projected_recurring_cents`, matching the accounting page exactly. It formats
+  the integer-cent value as USD with two decimals (for example, `12799` is
+  `$127.99`).
+- The former active-customer plan-price calculation is no longer a fallback for
+  that tile. If Lane has not supplied a current snapshot, it visibly reports
+  `Not connected yet` instead of inventing a projection from another source.
+- This is display-only: no books snapshot, MCP contract, schema, customer,
+  invoice, payment, refund, payout, Stripe, or bank record changed. Commit
+  `5894f97b` is live as Ready deployment
+  `dpl_3WBVWNBdcpr26zjrGtDdj43vnx4M`; both Suite aliases resolve to it. Kim's
+  `goforthebling.com` remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+
 ## September 3, 2026 - Lane has a scoped accounting-viewer login
 
 - Lane's dedicated Control Center credential can view only the Suite/Finder

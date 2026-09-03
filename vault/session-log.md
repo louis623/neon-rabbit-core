@@ -2,6 +2,25 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 3, 2026 - Lane snapshot promoted to Control Center home metric
+
+- Replaced the Control Center home's projected-monthly-revenue client-list
+  calculation with the exact current-month Suite accounting snapshot supplied
+  by Lane. `projected_recurring_cents` is formatted in cents, so the current
+  `12799` snapshot renders as `$127.99` both inside Accounting and on the
+  Control Center home.
+- No fallback remains: an unavailable Lane snapshot renders `Not connected
+  yet` rather than a plan-price total. No accounting, billing, payment,
+  provider, MCP, or schema state changed.
+- Focused Control Center tests passed (30 tests), changed-file lint and the
+  production build passed. Commit `5894f97b` was pushed and manually released
+  as Ready deployment `dpl_3WBVWNBdcpr26zjrGtDdj43vnx4M`; both Suite aliases
+  resolve to it and Kim's custom domain remains on
+  `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`. Live authenticated visual review remains
+  pending a safe reviewer session; no personal account was used.
+
+---
+
 ## September 2, 2026 - Session memory reconciliation
 
 - Reconciled the completed Terra release against Open Brain and all four vault
