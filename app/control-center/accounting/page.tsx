@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 
 import { AccountingDashboard } from '@/app/control-center/_components/AccountingDashboard'
+import { loadSparkleSuiteAccountingProjection } from '@/lib/control-center/accounting'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { AuthError, getControlCenterAccess, OperatorAuthError } from '@/lib/supabase/operator-auth'
 
 export const runtime = 'nodejs'
@@ -15,5 +17,9 @@ export default async function ControlCenterAccountingPage({ searchParams }: { se
     throw error
   }
   const product = (await searchParams)?.product === 'finder' ? 'finder' : 'suite'
-  return <AccountingDashboard product={product} />
+  const suiteProjection =
+    product === 'suite'
+      ? await loadSparkleSuiteAccountingProjection(createAdminClient())
+      : null
+  return <AccountingDashboard product={product} suiteProjection={suiteProjection} />
 }

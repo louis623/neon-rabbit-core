@@ -404,6 +404,17 @@ export function SupportCommandCenter({
   const demoAccounts = customers.filter(
     (customer) => !isCustomerDatabaseAccount(customer),
   )
+  const projectedRevenueAccounts = customerAccounts.filter(
+    (customer) =>
+      customer.accountStatus === 'active' &&
+      customer.billing.status === 'active' &&
+      typeof customer.billing.monthlyAmount === 'number' &&
+      customer.billing.monthlyAmount > 0,
+  )
+  const projectedMonthlyRevenue = projectedRevenueAccounts.reduce(
+    (total, customer) => total + (customer.billing.monthlyAmount ?? 0),
+    0,
+  )
 
   return (
     <main className="control-center-surface min-h-screen bg-slate-50 px-5 py-8 text-slate-950">
@@ -573,7 +584,12 @@ export function SupportCommandCenter({
         </section>
 
         <section className="grid gap-4 md:grid-cols-3" aria-label="Accounting overview">
-          {['Monthly revenue', 'Monthly expenses', 'Net for the month'].map((title) => (
+          <Link className="rounded-lg border border-emerald-200 bg-white p-4 shadow-sm hover:bg-emerald-50" href="/control-center/accounting">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-700">Projected monthly revenue</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-950">{formatMoney(projectedMonthlyRevenue)}</p>
+            <p className="mt-2 text-sm font-medium text-slate-600">From {projectedRevenueAccounts.length} active client{projectedRevenueAccounts.length === 1 ? '' : 's'} with a recurring amount</p>
+          </Link>
+          {['Actual revenue collected', 'Actual expenses paid'].map((title) => (
             <Link className="rounded-lg border border-amber-200 bg-amber-50 p-4 shadow-sm hover:bg-amber-100" href="/control-center/accounting" key={title}>
               <p className="text-xs font-bold uppercase tracking-wide text-amber-900">{title}</p>
               <p className="mt-2 text-3xl font-semibold text-amber-950">—</p>

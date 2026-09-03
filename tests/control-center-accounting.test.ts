@@ -5,13 +5,24 @@ import { describe, expect, it } from 'vitest'
 import { AccountingDashboard } from '@/app/control-center/_components/AccountingDashboard'
 
 describe('Control Center accounting foundations', () => {
-  it('keeps Suite financial values visibly unavailable until a verified source is connected', () => {
-    const html = renderToStaticMarkup(createElement(AccountingDashboard, { product: 'suite' }))
+  it('separates Suite projected revenue from unavailable actuals', () => {
+    const html = renderToStaticMarkup(createElement(AccountingDashboard, {
+      product: 'suite',
+      suiteProjection: {
+        monthlyRevenue: 98,
+        activeClientCount: 2,
+        pricedActiveClientCount: 2,
+        clientsMissingMonthlyAmount: 0,
+        clientBilling: [{ clientName: 'Jane Roberts', plan: 'founder', monthlyAmount: 49 }],
+      },
+    }))
     expect(html).toContain('Sparkle Suite')
-    expect(html).toContain('Monthly revenue')
-    expect(html).toContain('Monthly expenses')
-    expect(html).toContain('Net for the month')
+    expect(html).toContain('Projected monthly revenue')
+    expect(html).toContain('$98')
+    expect(html).toContain('Actual revenue collected')
+    expect(html).toContain('Actual expenses paid')
     expect(html).toContain('Customer billing and payment history')
+    expect(html).toContain('Jane Roberts')
     expect(html).toContain('Expense ledger')
     expect(html).toContain('Not connected')
     expect(html).toContain('bg-amber-50')
