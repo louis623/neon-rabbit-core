@@ -10,6 +10,7 @@ import { listOperatorOnboardingChecklists } from '@/lib/services/operator-onboar
 import { listOperatorSupportReports } from '@/lib/services/support-reports'
 import { loadCustomerWaitlist } from '@/lib/prelaunch/customer-waitlist'
 import { loadBugHuntItems } from '@/lib/control-center/bug-hunt'
+import { loadCurrentAccountingSnapshot } from '@/lib/control-center/accounting'
 import { FinderAppearanceControlCenter } from '@/app/control-center/_components/FinderAppearanceControlCenter'
 import { SiteSupportConsole } from '@/app/control-center/_components/SiteSupportConsole'
 import { loadSparkleFinderAppearanceSetting } from '@/lib/sparkle-finder/appearance'
@@ -80,7 +81,7 @@ export default async function SparkleSuiteControlCenterPage({
     return <FinderAppearanceControlCenter initialAppearance={appearance} />
   }
 
-  const [reports, customers, waitlist, bugHuntItems] = await Promise.all([
+  const [reports, customers, waitlist, bugHuntItems, suiteAccountingSnapshot] = await Promise.all([
     listOperatorSupportReports(admin, {
       limit: 50,
     }),
@@ -89,6 +90,7 @@ export default async function SparkleSuiteControlCenterPage({
     }),
     loadCustomerWaitlist(admin),
     loadBugHuntItems(admin),
+    loadCurrentAccountingSnapshot(admin, 'suite'),
   ])
   const onboardingChecklists = await listOperatorOnboardingChecklists(
     admin,
@@ -102,6 +104,7 @@ export default async function SparkleSuiteControlCenterPage({
       waitlist={waitlist}
       bugHuntItems={bugHuntItems}
       onboardingChecklists={onboardingChecklists}
+      suiteAccountingSnapshot={suiteAccountingSnapshot}
     />
   )
 }

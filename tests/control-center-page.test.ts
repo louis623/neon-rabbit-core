@@ -10,6 +10,7 @@ const listOperatorOnboardingChecklistsMock = vi.fn()
 const loadCustomerWaitlistMock = vi.fn()
 const loadBugHuntItemsMock = vi.fn()
 const loadSparkleFinderAppearanceSettingMock = vi.fn()
+const loadCurrentAccountingSnapshotMock = vi.fn()
 const redirectMock = vi.fn((target: string) => {
   throw new Error(`redirect:${target}`)
 })
@@ -62,6 +63,12 @@ vi.mock('@/lib/sparkle-finder/appearance', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/sparkle-finder/appearance')>()),
   loadSparkleFinderAppearanceSetting: (...args: unknown[]) =>
     loadSparkleFinderAppearanceSettingMock(...args),
+}))
+
+vi.mock('@/lib/control-center/accounting', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/control-center/accounting')>()),
+  loadCurrentAccountingSnapshot: (...args: unknown[]) =>
+    loadCurrentAccountingSnapshotMock(...args),
 }))
 
 vi.mock(
@@ -126,6 +133,7 @@ describe('SparkleSuiteControlCenterPage', () => {
     loadCustomerWaitlistMock.mockReset()
     loadBugHuntItemsMock.mockReset()
     loadSparkleFinderAppearanceSettingMock.mockReset()
+    loadCurrentAccountingSnapshotMock.mockReset()
     redirectMock.mockClear()
     getControlCenterAccessMock.mockResolvedValue({
       method: 'control_center_session',
@@ -197,6 +205,29 @@ describe('SparkleSuiteControlCenterPage', () => {
       },
     ])
     listOperatorOnboardingChecklistsMock.mockResolvedValue({})
+    loadCurrentAccountingSnapshotMock.mockResolvedValue({
+      product: 'suite',
+      periodStart: '2026-09-01',
+      periodEndExclusive: '2026-10-01',
+      asOf: '2026-09-03T12:00:00.000Z',
+      recordedAt: '2026-09-03T12:01:00.000Z',
+      reason: 'initial',
+      sourceStatus: { stripe: 'connected', bluevine: 'connected', productDb: 'connected' },
+      activeClientCount: 1,
+      pastDueClientCount: 0,
+      cancelledClientCount: 0,
+      projectedRecurringCents: 12799,
+      projectedExpensesCents: null,
+      actualCollectedCents: null,
+      refundsCents: null,
+      creditsCents: null,
+      disputesCents: null,
+      pastDueBalanceCents: null,
+      processorAvailableCents: null,
+      payoutsInTransitCents: null,
+      expensesCents: null,
+      netCents: null,
+    })
   })
 
   it('renders the Sparkle Suite Control Center with support and customer database sections', async () => {
@@ -217,6 +248,10 @@ describe('SparkleSuiteControlCenterPage', () => {
       { from: expect.any(Function) },
       ['rep-1'],
     )
+    expect(loadCurrentAccountingSnapshotMock).toHaveBeenCalledWith(
+      { from: expect.any(Function) },
+      'suite',
+    )
     expect(html).toContain('Sparkle Suite Control Center')
     expect(html).toContain('href="/control-center?product=suite"')
     expect(html).toContain('href="/control-center?product=finder"')
@@ -229,7 +264,8 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('href="/control-center/accounting"')
     expect(html).toContain('Accounting')
     expect(html).toContain('Projected monthly revenue')
-    expect(html).toContain('$49')
+    expect(html).toContain('$127.99')
+    expect(html).toContain('Lane’s latest reconciled expected recurring revenue')
     expect(html).toContain('Actual revenue collected')
     expect(html).toContain('Not connected yet')
     expect(html).toContain('Publisher')
@@ -256,6 +292,17 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('aria-label="Expand Jane Roberts profile"')
     expect(html).toContain('Onboarding checklist')
     expect(html).toContain('Get what you need for their About page')
+  })
+
+  it('does not substitute the customer-list total when Lane has no current Suite snapshot', async () => {
+    loadCurrentAccountingSnapshotMock.mockResolvedValueOnce(null)
+
+    const page = await SparkleSuiteControlCenterPage()
+    const html = renderToStaticMarkup(page)
+
+    expect(html).toContain('Projected monthly revenue')
+    expect(html).toContain('Not connected yet')
+    expect(html).not.toContain('From 1 active client with a recurring amount')
   })
 
   it('switches to Sparkle Finder controls with the shared skin options', async () => {

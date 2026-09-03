@@ -13,6 +13,7 @@ import {
   type OperatorOnboardingChecklistItem,
 } from '@/lib/control-center/operator-onboarding-checklist'
 import type { CustomerWaitlistLead } from '@/lib/prelaunch/customer-waitlist'
+import type { AccountingMonthlySnapshot } from '@/lib/control-center/accounting'
 
 export type SupportReportRecord = {
   id: string
@@ -73,6 +74,7 @@ interface SupportCommandCenterProps {
   waitlist: CustomerWaitlistLead[]
   bugHuntItems: BugHuntItem[]
   onboardingChecklists?: Record<string, OperatorOnboardingChecklistItem[]>
+  suiteAccountingSnapshot?: AccountingMonthlySnapshot | null
 }
 
 function label(value: string | null | undefined) {
@@ -116,6 +118,16 @@ function formatMoney(value: number | null | undefined) {
     maximumFractionDigits: 0,
     style: 'currency',
   }).format(value)
+}
+
+function formatCents(value: number | null | undefined) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return '—'
+  return new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    style: 'currency',
+  }).format(value / 100)
 }
 
 function formatCount(value: number | null | undefined) {
@@ -398,23 +410,14 @@ export function SupportCommandCenter({
   waitlist,
   bugHuntItems,
   onboardingChecklists = {},
+  suiteAccountingSnapshot = null,
 }: SupportCommandCenterProps) {
   const openReports = reports.filter((report) => report.status !== 'closed')
   const customerAccounts = customers.filter(isCustomerDatabaseAccount)
   const demoAccounts = customers.filter(
     (customer) => !isCustomerDatabaseAccount(customer),
   )
-  const projectedRevenueAccounts = customerAccounts.filter(
-    (customer) =>
-      customer.accountStatus === 'active' &&
-      customer.billing.status === 'active' &&
-      typeof customer.billing.monthlyAmount === 'number' &&
-      customer.billing.monthlyAmount > 0,
-  )
-  const projectedMonthlyRevenue = projectedRevenueAccounts.reduce(
-    (total, customer) => total + (customer.billing.monthlyAmount ?? 0),
-    0,
-  )
+  const projectedMonthlyRevenueCents = suiteAccountingSnapshot?.projectedRecurringCents
 
   return (
     <main className="control-center-surface min-h-screen bg-slate-50 px-5 py-8 text-slate-950">
@@ -584,10 +587,10 @@ export function SupportCommandCenter({
         </section>
 
         <section className="grid gap-4 md:grid-cols-3" aria-label="Accounting overview">
-          <Link className="rounded-lg border border-emerald-200 bg-white p-4 shadow-sm hover:bg-emerald-50" href="/control-center/accounting">
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-700">Projected monthly revenue</p>
-            <p className="mt-2 text-3xl font-semibold text-slate-950">{formatMoney(projectedMonthlyRevenue)}</p>
-            <p className="mt-2 text-sm font-medium text-slate-600">From {projectedRevenueAccounts.length} active client{projectedRevenueAccounts.length === 1 ? '' : 's'} with a recurring amount</p>
+          <Link className={`rounded-lg border p-4 shadow-sm ${projectedMonthlyRevenueCents == null ? 'border-amber-200 bg-amber-50 hover:bg-amber-100' : 'border-emerald-200 bg-white hover:bg-emerald-50'}`} href="/control-center/accounting">
+            <p className={`text-xs font-bold uppercase tracking-wide ${projectedMonthlyRevenueCents == null ? 'text-amber-900' : 'text-slate-700'}`}>Projected monthly revenue</p>
+            <p className={`mt-2 text-3xl font-semibold ${projectedMonthlyRevenueCents == null ? 'text-amber-950' : 'text-slate-950'}`}>{formatCents(projectedMonthlyRevenueCents)}</p>
+            <p className={`mt-2 text-sm font-medium ${projectedMonthlyRevenueCents == null ? 'text-amber-900' : 'text-slate-600'}`}>{projectedMonthlyRevenueCents == null ? 'Not connected yet' : 'Lane’s latest reconciled expected recurring revenue'}</p>
           </Link>
           {['Actual revenue collected', 'Actual expenses paid'].map((title) => (
             <Link className="rounded-lg border border-amber-200 bg-amber-50 p-4 shadow-sm hover:bg-amber-100" href="/control-center/accounting" key={title}>
