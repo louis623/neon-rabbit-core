@@ -1,6 +1,9 @@
 import Link from 'next/link'
 
-import type { SparkleSuiteAccountingProjection } from '@/lib/control-center/accounting'
+import type {
+  AccountingMonthlySnapshot,
+  SparkleSuiteAccountingProjection,
+} from '@/lib/control-center/accounting'
 
 import { ControlCenterProductSwitcher } from './ControlCenterProductSwitcher'
 
@@ -21,6 +24,10 @@ function formatMoney(value: number) {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value)
+}
+
+function formatCents(value: number | null | undefined) {
+  return value == null ? '—' : formatMoney(value / 100)
 }
 
 function Status({ children, connected }: { children: React.ReactNode; connected: boolean }) {
@@ -47,9 +54,11 @@ function MetricCard({ metric }: { metric: Metric }) {
 export function AccountingDashboard({
   product,
   suiteProjection,
+  snapshot,
 }: {
   product: AccountingProduct
   suiteProjection?: SparkleSuiteAccountingProjection | null
+  snapshot?: AccountingMonthlySnapshot | null
 }) {
   const productName = product === 'suite' ? 'Sparkle Suite' : 'Sparkle Finder'
   const productQuery = product === 'finder' ? '?product=finder' : ''
@@ -74,9 +83,9 @@ export function AccountingDashboard({
     {
       title: 'Actual revenue collected',
       description: 'Confirmed payments received this month, including late payments when they clear.',
-      value: '—',
-      status: 'Not connected',
-      connected: false,
+      value: formatCents(snapshot?.actualCollectedCents),
+      status: snapshot?.actualCollectedCents == null ? 'Not connected' : 'Lane verified',
+      connected: snapshot?.actualCollectedCents != null,
     },
     {
       title: 'Projected monthly expenses',
@@ -88,23 +97,23 @@ export function AccountingDashboard({
     {
       title: 'Actual expenses paid',
       description: 'Business costs actually paid this month.',
-      value: '—',
-      status: 'Not connected',
-      connected: false,
+      value: formatCents(snapshot?.expensesCents),
+      status: snapshot?.expensesCents == null ? 'Not connected' : 'Lane verified',
+      connected: snapshot?.expensesCents != null,
     },
     {
       title: 'Actual net for the month',
       description: 'Actual revenue collected minus actual expenses paid.',
-      value: '—',
-      status: 'Not connected',
-      connected: false,
+      value: formatCents(snapshot?.netCents),
+      status: snapshot?.netCents == null ? 'Not connected' : 'Lane verified',
+      connected: snapshot?.netCents != null,
     },
     {
       title: 'Past-due balance',
       description: 'Invoices still unpaid after their due date.',
-      value: '—',
-      status: 'Not connected',
-      connected: false,
+      value: formatCents(snapshot?.pastDueBalanceCents),
+      status: snapshot?.pastDueBalanceCents == null ? 'Not connected' : 'Lane verified',
+      connected: snapshot?.pastDueBalanceCents != null,
     },
   ]
 

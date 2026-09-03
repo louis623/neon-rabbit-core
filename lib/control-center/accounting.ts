@@ -21,6 +21,33 @@ export type SparkleSuiteAccountingProjection = {
   clientBilling: ProjectedClientBilling[]
 }
 
+export type AccountingMonthlySnapshot = {
+  product: 'suite' | 'finder'
+  periodStart: string
+  periodEndExclusive: string
+  asOf: string
+  recordedAt: string
+  reason: 'initial' | 'correction' | 'restatement'
+  sourceStatus: {
+    stripe: 'connected' | 'not_connected' | 'stale' | 'error'
+    bluevine: 'connected' | 'not_connected' | 'stale' | 'error'
+    productDb: 'connected' | 'not_connected' | 'stale' | 'error'
+  }
+  activeClientCount: number | null
+  pastDueClientCount: number | null
+  cancelledClientCount: number | null
+  projectedRecurringCents: number | null
+  actualCollectedCents: number | null
+  refundsCents: number | null
+  creditsCents: number | null
+  disputesCents: number | null
+  pastDueBalanceCents: number | null
+  processorAvailableCents: number | null
+  payoutsInTransitCents: number | null
+  expensesCents: number | null
+  netCents: number | null
+}
+
 function isActiveProjectedClient(customer: OperatorCustomerProfile) {
   return (
     customer.accountClassification === 'customer' &&
@@ -79,4 +106,53 @@ export async function loadSparkleSuiteAccountingProjection(
 ): Promise<SparkleSuiteAccountingProjection> {
   const customers = await listOperatorCustomerProfiles(supabase, { limit: 500 })
   return summarizeSparkleSuiteProjectedRevenue(customers)
+}
+
+function easternMonthStart(now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+  }).formatToParts(now)
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? ''
+  return value('year') + '-' + value('month') + '-01'
+}
+
+export async function loadCurrentAccountingSnapshot(
+  supabase: SupabaseClient,
+  product: 'suite' | 'finder',
+): Promise<AccountingMonthlySnapshot | null> {
+  const { data, error } = await supabase
+    .from('accounting_monthly_snapshots')
+    .select('*')
+    .eq('product', product)
+    .eq('period_start', easternMonthStart())
+    .order('recorded_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) throw error
+  if (!data) return null
+  return {
+    product: data.product,
+    periodStart: data.period_start,
+    periodEndExclusive: data.period_end_exclusive,
+    asOf: data.as_of,
+    recordedAt: data.recorded_at,
+    reason: data.reason,
+    sourceStatus: data.source_status,
+    activeClientCount: data.active_client_count,
+    pastDueClientCount: data.past_due_client_count,
+    cancelledClientCount: data.cancelled_client_count,
+    projectedRecurringCents: data.projected_recurring_cents,
+    actualCollectedCents: data.actual_collected_cents,
+    refundsCents: data.refunds_cents,
+    creditsCents: data.credits_cents,
+    disputesCents: data.disputes_cents,
+    pastDueBalanceCents: data.past_due_balance_cents,
+    processorAvailableCents: data.processor_available_cents,
+    payoutsInTransitCents: data.payouts_in_transit_cents,
+    expensesCents: data.expenses_cents,
+    netCents: data.net_cents,
+  }
 }
