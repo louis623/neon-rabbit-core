@@ -6210,3 +6210,20 @@ Lessons retained:
   Database profiles; it remains a proposal pending Louis's approval for the
   data model and UI implementation. Captured the audit and proposal in Open
   Brain without credentials or private account data.
+
+## September 3, 2026 - Customer Database onboarding ledger release
+
+- Implemented the user-approved operator launch checklist with exact manual
+  About intake prompts: origin story, live vibe, big reveal, just-for-fun
+  details, and customer promise. The UI deliberately says to write About copy
+  manually and not put those answers into the operator ledger.
+- The owner-only PATCH route validates the fixed checklist catalog and status
+  values before service-role upsert. The new table is RLS-enabled and grants
+  only service-role access; reps receive no direct data access.
+- `supabase db push` applied migration `20260903100000_ss_operator_onboarding_checklists.sql`.
+  14 focused tests passed; `npm run build` completed. The repository-wide
+  TypeScript check still reports pre-existing unrelated test-fixture errors.
+- Pushed and manually released `3afa7508` as Ready deployment
+  `dpl_GkNy8qnefpyYJLpfRbiwPx7wXLWz`. Assigned only `www.yoursparklesuite.com`
+  and `yoursparklesuite.com`; read-only Vercel inspection confirmed Kim's
+  `goforthebling.com` remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.

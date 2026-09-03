@@ -3059,3 +3059,18 @@ Verification passed:
   expanded Customer Database profile, not a rep-facing checklist or a reuse of
   `onboarding_status`. It has not been implemented or deployed yet; no customer
   data, DNS, billing, or communication state changed during the audit.
+
+## September 3, 2026 - Operator onboarding checklist is live
+
+- Louis authorized the persistent Customer Database implementation. Commit
+  `3afa7508` adds the operator-only `operator_onboarding_checklist_items`
+  ledger and nests an expandable Onboarding checklist in each expanded
+  customer profile.
+- It is separate from self-serve onboarding and keeps only status, safe proof
+  notes, timestamps, and operator attribution. Customer intake answers are not
+  stored there. The About step carries the five approved manual prompts from
+  Kim's email.
+- Migration `20260903100000_ss_operator_onboarding_checklists.sql` is applied.
+  Focused UI, route, and checklist tests (14) plus a production build passed.
+  Deployment `dpl_GkNy8qnefpyYJLpfRbiwPx7wXLWz` is Ready and both Suite aliases
+  resolve to it. Kim's domain remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.

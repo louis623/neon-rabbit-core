@@ -636,3 +636,9 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   one TikTok + Whatnot card, and the Google/Outlook/Apple-or-other calendar
   chooser on the exact live customer page; never use Louis's or a customer
   account.
+
+- [ ] Run one owner-authorized Control Center visual click-through of the new
+  Customer Database Onboarding checklist when an approved non-personal
+  operator session is available. Verify an item save and refresh. Do not use
+  Louis's personal account or create a customer-facing change merely for this
+  check.

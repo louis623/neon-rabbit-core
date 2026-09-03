@@ -2360,3 +2360,16 @@ work awaiting the rep, rather than relying on brittle session reconstruction.
 
 Status: Design and reusable skill guidance are complete; the Control Center data
 model and UI are not implemented until Louis authorizes that product change.
+
+## 2026-09-03 - Operator checklist stores launch proof, not customer content
+
+Decision: The Customer Database onboarding checklist is a fixed, owner-only
+operator ledger. It stores only per-item status, a concise non-sensitive proof
+or follow-up note, timestamps, and operator attribution. It does not copy
+customer emails, credentials, private intake answers, or the rep's self-serve
+setup state. The five-question About intake is displayed as manual guidance;
+the resulting About copy remains a deliberate operator edit.
+
+Reason: This makes launch continuity durable without turning an internal
+handoff tool into a second customer profile or a store of unnecessary personal
+information.
