@@ -6,7 +6,12 @@ import { CustomerWaitlistPanel } from '@/app/control-center/_components/Customer
 import { BugHuntPanel } from '@/app/control-center/_components/BugHuntPanel'
 import { ControlCenterProductSwitcher } from '@/app/control-center/_components/ControlCenterProductSwitcher'
 import { OperatorSupportAccessPanel } from '@/app/control-center/_components/OperatorSupportAccessPanel'
+import { OperatorOnboardingChecklist } from '@/app/control-center/_components/OperatorOnboardingChecklist'
 import type { BugHuntItem } from '@/lib/control-center/bug-hunt'
+import {
+  buildOperatorOnboardingChecklist,
+  type OperatorOnboardingChecklistItem,
+} from '@/lib/control-center/operator-onboarding-checklist'
 import type { CustomerWaitlistLead } from '@/lib/prelaunch/customer-waitlist'
 
 export type SupportReportRecord = {
@@ -66,6 +71,7 @@ interface SupportCommandCenterProps {
   customers: OperatorCustomerRecord[]
   waitlist: CustomerWaitlistLead[]
   bugHuntItems: BugHuntItem[]
+  onboardingChecklists?: Record<string, OperatorOnboardingChecklistItem[]>
 }
 
 function label(value: string | null | undefined) {
@@ -178,9 +184,11 @@ function InfoBlock({
 
 function CustomerProfile({
   customer,
+  onboardingChecklist,
   profileType = 'customer',
 }: {
   customer: OperatorCustomerRecord
+  onboardingChecklist?: OperatorOnboardingChecklistItem[]
   profileType?: 'customer' | 'demo'
 }) {
   const socialLinks = objectEntries(customer.socialHandles)
@@ -225,6 +233,14 @@ function CustomerProfile({
           repEmail={customer.email}
           targetRepId={customer.repId}
         />
+
+        {profileType === 'customer' ? (
+          <OperatorOnboardingChecklist
+            clientName={customer.clientName}
+            initialItems={onboardingChecklist ?? buildOperatorOnboardingChecklist()}
+            repId={customer.repId}
+          />
+        ) : null}
 
         <section className="rounded-lg border border-slate-200 bg-white p-4">
           <h3 className="text-sm font-semibold">Contact</h3>
@@ -359,6 +375,7 @@ export function SupportCommandCenter({
   reports,
   waitlist,
   bugHuntItems,
+  onboardingChecklists = {},
 }: SupportCommandCenterProps) {
   const openReports = reports.filter((report) => report.status !== 'closed')
   const customerAccounts = customers.filter(isCustomerDatabaseAccount)
@@ -587,7 +604,11 @@ export function SupportCommandCenter({
               ) : (
                 <div className="border-t border-slate-200">
                   {customerAccounts.map((customer) => (
-                    <CustomerProfile customer={customer} key={customer.repId} />
+                    <CustomerProfile
+                      customer={customer}
+                      key={customer.repId}
+                      onboardingChecklist={onboardingChecklists[customer.repId]}
+                    />
                   ))}
                 </div>
               )}

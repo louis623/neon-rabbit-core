@@ -6,6 +6,7 @@ const getControlCenterAccessMock = vi.fn()
 const createAdminClientMock = vi.fn()
 const listOperatorSupportReportsMock = vi.fn()
 const listOperatorCustomerProfilesMock = vi.fn()
+const listOperatorOnboardingChecklistsMock = vi.fn()
 const loadCustomerWaitlistMock = vi.fn()
 const loadBugHuntItemsMock = vi.fn()
 const loadSparkleFinderAppearanceSettingMock = vi.fn()
@@ -41,6 +42,11 @@ vi.mock('@/lib/services/support-reports', () => ({
 vi.mock('@/lib/services/client-account-profiles', () => ({
   listOperatorCustomerProfiles: (...args: unknown[]) =>
     listOperatorCustomerProfilesMock(...args),
+}))
+
+vi.mock('@/lib/services/operator-onboarding-checklists', () => ({
+  listOperatorOnboardingChecklists: (...args: unknown[]) =>
+    listOperatorOnboardingChecklistsMock(...args),
 }))
 
 vi.mock('@/lib/prelaunch/customer-waitlist', () => ({
@@ -115,6 +121,7 @@ describe('SparkleSuiteControlCenterPage', () => {
     createAdminClientMock.mockReset()
     listOperatorSupportReportsMock.mockReset()
     listOperatorCustomerProfilesMock.mockReset()
+    listOperatorOnboardingChecklistsMock.mockReset()
     loadCustomerWaitlistMock.mockReset()
     loadBugHuntItemsMock.mockReset()
     loadSparkleFinderAppearanceSettingMock.mockReset()
@@ -187,6 +194,7 @@ describe('SparkleSuiteControlCenterPage', () => {
         },
       },
     ])
+    listOperatorOnboardingChecklistsMock.mockResolvedValue({})
   })
 
   it('renders the Sparkle Suite Control Center with support and customer database sections', async () => {
@@ -202,6 +210,10 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(listOperatorCustomerProfilesMock).toHaveBeenCalledWith(
       { from: expect.any(Function) },
       { limit: 200 },
+    )
+    expect(listOperatorOnboardingChecklistsMock).toHaveBeenCalledWith(
+      { from: expect.any(Function) },
+      ['rep-1'],
     )
     expect(html).toContain('Sparkle Suite Control Center')
     expect(html).toContain('href="/control-center?product=suite"')
@@ -229,6 +241,8 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('jane.example')
     expect(html).toContain('Prefers text for urgent billing questions.')
     expect(html).toContain('aria-label="Expand Jane Roberts profile"')
+    expect(html).toContain('Onboarding checklist')
+    expect(html).toContain('Gather the About-section intake')
   })
 
   it('switches to Sparkle Finder controls with the shared skin options', async () => {

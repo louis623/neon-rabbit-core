@@ -6,6 +6,7 @@ import {
   type SupportReportRecord,
 } from '@/app/control-center/_components/SupportCommandCenter'
 import { listOperatorCustomerProfiles } from '@/lib/services/client-account-profiles'
+import { listOperatorOnboardingChecklists } from '@/lib/services/operator-onboarding-checklists'
 import { listOperatorSupportReports } from '@/lib/services/support-reports'
 import { loadCustomerWaitlist } from '@/lib/prelaunch/customer-waitlist'
 import { loadBugHuntItems } from '@/lib/control-center/bug-hunt'
@@ -89,6 +90,10 @@ export default async function SparkleSuiteControlCenterPage({
     loadCustomerWaitlist(admin),
     loadBugHuntItems(admin),
   ])
+  const onboardingChecklists = await listOperatorOnboardingChecklists(
+    admin,
+    customers.map((customer) => customer.repId),
+  )
 
   return (
     <SupportCommandCenter
@@ -96,6 +101,7 @@ export default async function SparkleSuiteControlCenterPage({
       reports={reports as unknown as SupportReportRecord[]}
       waitlist={waitlist}
       bugHuntItems={bugHuntItems}
+      onboardingChecklists={onboardingChecklists}
     />
   )
 }
