@@ -43,6 +43,7 @@ export function FinderAppearanceControlCenter({ initialAppearance }: { initialAp
             </p>
           </div>
           <ControlCenterProductSwitcher active="finder" />
+          <a className="text-sm font-bold text-violet-700 underline underline-offset-4" href="/control-center/accounting?product=finder">Open Sparkle Finder accounting</a>
         </header>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-7">

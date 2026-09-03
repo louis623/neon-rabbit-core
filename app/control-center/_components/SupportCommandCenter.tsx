@@ -450,6 +450,13 @@ export function SupportCommandCenter({
                   Publisher
                 </span>
               </Link>
+              <Link
+                className="mt-1 flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-violet-800 hover:bg-violet-50"
+                href="/control-center/accounting"
+              >
+                Accounting
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">Setup</span>
+              </Link>
               <a
                 className="mt-1 flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
                 href="#support-tickets"
@@ -526,7 +533,7 @@ export function SupportCommandCenter({
           </aside>
 
           <div className="flex min-w-0 flex-col gap-6">
-            <section className="grid gap-4 md:grid-cols-4">
+        <section className="grid gap-4 md:grid-cols-4">
               <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Open reports
@@ -563,7 +570,17 @@ export function SupportCommandCenter({
                   {demoAccounts.length}
                 </p>
               </div>
-            </section>
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-3" aria-label="Accounting overview">
+          {['Monthly revenue', 'Monthly expenses', 'Net for the month'].map((title) => (
+            <Link className="rounded-lg border border-amber-200 bg-amber-50 p-4 shadow-sm hover:bg-amber-100" href="/control-center/accounting" key={title}>
+              <p className="text-xs font-bold uppercase tracking-wide text-amber-900">{title}</p>
+              <p className="mt-2 text-3xl font-semibold text-amber-950">—</p>
+              <p className="mt-2 text-sm font-medium text-amber-900">Not connected yet</p>
+            </Link>
+          ))}
+        </section>
 
             <section
               className="control-center-panel scroll-mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
