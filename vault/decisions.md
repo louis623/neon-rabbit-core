@@ -2343,3 +2343,20 @@ Settings value.
 
 Reason: This corrects the public share presentation without expanding a visual
 asset release into an unrequested customer-data change.
+
+## 2026-09-03 - Separate operator launch continuity from rep self-setup
+
+Decision: The future Control Center onboarding checklist will be an
+operator-only, durable launch ledger nested under the expanded Customer Database
+profile. It is not the rep's self-serve setup checklist and may not be inferred
+from `dashboard_unlocked` or the legacy `onboarding_status` row. Per-item state
+must allow `not_started`, `in_progress`, `waiting_on_rep`, `blocked`,
+`complete`, and `not_applicable`, with safe evidence and timestamps.
+
+Reason: Kim's launch showed that account placement and dashboard access can be
+correct while external launch work is still incomplete. A persistent, explicit
+operator record is needed so a later session can distinguish verified work from
+work awaiting the rep, rather than relying on brittle session reconstruction.
+
+Status: Design and reusable skill guidance are complete; the Control Center data
+model and UI are not implemented until Louis authorizes that product change.

@@ -3043,3 +3043,19 @@ Verification passed:
 - Focused brand-asset tests and local/Vercel production builds passed. Live
   public root, `/icon`, and `/opengraph-image` verification passed without any
   customer/admin sign-in or changes to customer data, billing, DNS, or messages.
+
+## 2026-09-03 - Operator onboarding checklist design is ready
+
+- Kim's launch exposed that a real customer may be Customer Database-classified
+  and dashboard-unlocked while still missing public-site, trial, domain, or
+  brand-launch evidence. The rep-facing self-serve checklist is instructional;
+  it is not an internal launch ledger.
+- The reusable rep-welcome skill/reference now require an operator-owned
+  checklist with safe evidence and timestamps, explicit statuses, public-route
+  and tenant-copy proof, Calendar/Live Queue readiness, authorized message
+  state, and an optional custom-domain branch. Commit `aed3ce8d` includes a
+  contract test for those requirements.
+- The intended product is a persistent, nested collapsible section in each
+  expanded Customer Database profile, not a rep-facing checklist or a reuse of
+  `onboarding_status`. It has not been implemented or deployed yet; no customer
+  data, DNS, billing, or communication state changed during the audit.

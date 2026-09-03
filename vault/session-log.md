@@ -6190,3 +6190,23 @@ Lessons retained:
   occurred. The customer public tab was read-only and left at the site root.
 - Captured this release in Open Brain as an observation without credentials or
   private account data.
+
+## September 3, 2026 - Operator onboarding audit
+
+- Reviewed Kim's session history, repository records, and Open Brain launch
+  evidence. The repeatable gaps were: independently proving actual Workspace
+  access, public-site/social readiness, optional custom-domain authority and
+  minimal DNS work, direct public-route copy, and customer-domain brand assets.
+- Live Control Center browser review was read-only and stopped at the operator
+  login screen; no personal-account test or sign-in was attempted. Source and
+  existing tests confirm the Customer Database has expanded per-rep profiles,
+  while the live database has no dedicated operator onboarding-checklist table.
+- Strengthened `.agents/skills/sparkle-suite-rep-welcome-site` and its package
+  reference with a separate operator launch ledger. It defines safe status and
+  evidence rules plus the required optional-domain path. Extended the existing
+  classification contract test; 4 focused tests pass.
+- Pushed `aed3ce8d` (skill/reference/test only). The recommended next product
+  slice is a durable, operator-only nested checklist in expanded Customer
+  Database profiles; it remains a proposal pending Louis's approval for the
+  data model and UI implementation. Captured the audit and proposal in Open
+  Brain without credentials or private account data.
