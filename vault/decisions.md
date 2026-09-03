@@ -2415,3 +2415,14 @@ with payments actually received.
 Reason: Financial screens must not imply that an estimate, entitlement, or
 pricing configuration is a booked payment. Keeping Finder separate preserves
 its independent product boundary while sources are designed deliberately.
+
+## 2026-09-03 - Show projection and actuals as distinct accounting measures
+
+Decision: Sparkle Suite projected recurring revenue is calculated from active
+customer subscriptions with a stored positive monthly amount. Actual revenue
+is a separate measure that must come from confirmed payments. Expenses and net
+also require separate projected and actual sources. Past-due or cancelled
+subscriptions are not treated as paid revenue.
+
+Reason: The owner needs forecast visibility from the client list without
+concealing late payments, cancellations, refunds, or expense variance.

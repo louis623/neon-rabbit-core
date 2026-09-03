@@ -6278,3 +6278,17 @@ Lessons retained:
   passed. Commit `10f48a77` was pushed and manually released as
   `dpl_CcfQ2UP2c1wVSj2UNv7dJ6fsSc77`. Both Suite aliases resolve to that
   deployment; Kim's custom domain was read-only verified unchanged.
+
+## September 3, 2026 - Projected-versus-actual accounting correction
+
+- Louis clarified that the accounting view needs both projections and actuals
+  so late payments, cancellations, refunds, and other exceptions are visible.
+- The Suite projection now reads the existing owner-only client/subscription
+  list and includes only active customer subscriptions with a positive stored
+  recurring amount. Actual payment and expense figures remain unavailable,
+  rather than being inferred from the projection. Finder remains independently
+  unavailable pending its own product-specific source.
+- Four focused test files (11 tests) and the production build passed. Commit
+  `95272bd1` was manually released as `dpl_CyBQpBseq7sNZCJqAJ4bAhYZp8So`;
+  both Suite aliases resolve to it and Kim's custom-domain alias was confirmed
+  unchanged.

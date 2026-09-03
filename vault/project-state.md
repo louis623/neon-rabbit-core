@@ -3120,3 +3120,17 @@ Verification passed:
 - Commit `10f48a77` is live as Ready deployment
   `dpl_CcfQ2UP2c1wVSj2UNv7dJ6fsSc77`; both Suite aliases resolve to it. Kim's
   `goforthebling.com` remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+
+## September 3, 2026 - Accounting separates projected from actual
+
+- Projected Sparkle Suite monthly revenue now comes from the current active
+  customer list: only active subscriptions with a positive stored recurring
+  monthly amount are included. The owner can see the per-customer projected
+  amount and any active customers missing an amount.
+- Actual revenue collected, projected/actual expenses, actual net, past-due
+  balance, and customer payment history remain explicitly unavailable until
+  their own verified sources are connected. A past-due or cancelled record is
+  never silently counted as paid revenue.
+- Commit `95272bd1` is live as Ready deployment
+  `dpl_CyBQpBseq7sNZCJqAJ4bAhYZp8So`; both Suite aliases resolve to it. Kim's
+  `goforthebling.com` remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.

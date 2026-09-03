@@ -652,3 +652,7 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [ ] Separately design and explicitly authorize the Sparkle Finder accounting
   sources and reconciliation rule. Keep Finder customer and billing data in
   its own product boundary; do not bridge data merely to fill the dashboard.
+- [ ] Connect Sparkle Suite actual revenue only after defining the confirmed
+  payment/invoice source, late-payment timing, refunds/credits handling, and
+  customer-level reconciliation rules. The current projection is not an
+  actuals substitute.
