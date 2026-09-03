@@ -639,6 +639,6 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 - [ ] Run one owner-authorized Control Center visual click-through of the new
   Customer Database Onboarding checklist when an approved non-personal
-  operator session is available. Verify an item save and refresh. Do not use
+  operator session is available. Verify a checkbox toggle and refresh. Do not use
   Louis's personal account or create a customer-facing change merely for this
   check.

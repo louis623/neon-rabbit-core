@@ -3074,3 +3074,15 @@ Verification passed:
   Focused UI, route, and checklist tests (14) plus a production build passed.
   Deployment `dpl_GkNy8qnefpyYJLpfRbiwPx7wXLWz` is Ready and both Suite aliases
   resolve to it. Kim's domain remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+
+## September 3, 2026 - Onboarding checklist simplified
+
+- Louis clarified that the Control Center should be a simple checklist, not a
+  launch-audit system. The UI now has only a checkbox, plain-English item name,
+  and short plain-English description for each task.
+- The migration removes the prior status, proof-note, operator-attribution, and
+  completion-metadata columns. It preserves completion during conversion, then
+  stores only `is_completed` for each customer/item pair.
+- Commit `4cd9c5d2` is live as Ready deployment
+  `dpl_22uiQGhTj9tmqAxeUSFPu55b5ioP`; both Suite aliases resolve to it. Kim's
+  customer alias remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.

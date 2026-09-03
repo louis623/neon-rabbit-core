@@ -6227,3 +6227,18 @@ Lessons retained:
   `dpl_GkNy8qnefpyYJLpfRbiwPx7wXLWz`. Assigned only `www.yoursparklesuite.com`
   and `yoursparklesuite.com`; read-only Vercel inspection confirmed Kim's
   `goforthebling.com` remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+
+## September 3, 2026 - Checklist-only correction
+
+- Replaced the status/select, safe-note, and Save-button interface with a
+  checkbox-only Customer Database checklist. The first identity-and-placement
+  check was removed because onboarding is handled one person at a time.
+- Short descriptions were rewritten in plain English. The About item retains
+  the five approved questions and directs the operator to write the copy
+  manually.
+- Migration `20260903110000_ss_operator_onboarding_checkboxes.sql` is applied.
+  It removes unused audit-style columns and leaves only per-item completion.
+  Four focused test files (14 tests) and the production build passed.
+- Commit `4cd9c5d2` is deployed as `dpl_22uiQGhTj9tmqAxeUSFPu55b5ioP`; both
+  Suite aliases resolve to it and Kim's domain was verified unchanged. No
+  personal account, customer record, or checklist item was toggled for smoke.

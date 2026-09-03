@@ -2373,3 +2373,13 @@ the resulting About copy remains a deliberate operator edit.
 Reason: This makes launch continuity durable without turning an internal
 handoff tool into a second customer profile or a store of unnecessary personal
 information.
+
+## 2026-09-03 - Keep the operator checklist checkbox-only
+
+Decision: The Customer Database onboarding checklist presents only a checkbox,
+a plain-English task name, and a short description. It does not include item
+statuses, proof notes, save buttons, or a prerequisite identity checkbox.
+
+Reason: Louis is onboarding one known person at a time and needs a lightweight
+reminder list, not an audit process. The five About prompts remain visible as
+manual copy-gathering guidance.
