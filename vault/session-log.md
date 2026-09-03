@@ -6168,3 +6168,25 @@ Lessons retained:
   Louis. No personal/admin or customer account was used.
 - Captured the decision, deployment evidence, and public verification in Open
   Brain without credentials or private account data.
+
+## September 3, 2026 - Kim customer-site brand assets
+
+- Louis approved the local proof for a GofortheBling `G` favicon and a
+  Morganite blush/plum share card. The share copy was corrected to “Welcome to
+  Kim's Live Show Site.” in the card layer without changing Kim's Site Settings.
+- Focused brand-asset tests (4) passed, as did the local and Vercel production
+  builds. The local renderer initially exposed that generic image routes had no
+  embedded font under the current Next runtime; the released image-font helper
+  now embeds the approved display font for consistent generation.
+- Pushed commit `79324566` and manually deployed it as Ready
+  `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH` /
+  `sparkle-suite-a7xes63pg-louis-2849s-projects.vercel.app`. The exact intended
+  Suite aliases and `goforthebling.com` were reassigned; no other customer alias
+  was moved.
+- Direct Vercel inspection confirmed all three aliases resolve to that exact
+  deployment. Public live `goforthebling.com/` returned 200, and live `/icon`
+  and `/opengraph-image` visually matched the approved `G` mark and possessive
+  Kim wording. No account, billing, DNS, provider, or outbound-message action
+  occurred. The customer public tab was read-only and left at the site root.
+- Captured this release in Open Brain as an observation without credentials or
+  private account data.

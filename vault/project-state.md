@@ -3027,3 +3027,19 @@ Verification passed:
   GofortheBling/Kim page title, hero, FAQ, and final CTA with no Sasha copy or
   demo promo. Focused data/template/route tests, lint, and the production build
   passed.
+
+## 2026-09-03 - Kim customer-site favicon and social card are live
+
+- Customer custom-domain branding now supplies a stable single-letter `G` mark
+  for `goforthebling.com` and a 1200×630 theme-aware social card. The card uses
+  the saved Sparkle Suite/Morganite palette, current business name/domain, and
+  the corrected “Welcome to Kim's Live Show Site.” share wording.
+- Generic customer image routes now embed the display font required by the
+  current Next image runtime, so their icon and social card render consistently
+  locally and in production. The mark stays stable if a rep later changes skin.
+- Commit `793245662e820515b2199b0dec693c3289134b02` is Ready as
+  `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`. Only the two Suite aliases and
+  `goforthebling.com` were moved; other customer aliases were preserved.
+- Focused brand-asset tests and local/Vercel production builds passed. Live
+  public root, `/icon`, and `/opengraph-image` verification passed without any
+  customer/admin sign-in or changes to customer data, billing, DNS, or messages.

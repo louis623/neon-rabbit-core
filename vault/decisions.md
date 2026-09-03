@@ -2323,3 +2323,23 @@ or demo surface.
   in the name’s order.
 - Customer `Add to calendar` opens a provider chooser: Google Calendar,
   Outlook Calendar, or an ICS file for Apple Calendar/another compatible app.
+
+## 2026-09-03 - Customer-site share assets are stable marks over live skins
+
+Decision: Customer custom domains use a durable single-letter business mark for
+their favicon and a 1200×630 social card driven by the resolved customer
+domain, live business information, and selected appearance preset. The mark
+does not change with a skin; the card palette does. Image routes embed their
+display font rather than relying on a system fallback.
+
+Reason: Browser icons need durable recognition, while shared links should look
+like the rep's current customer site and render consistently in local and
+production image runtimes. The platform host retains Sparkle Suite branding.
+
+Decision: A legacy generic live-show greeting is normalized only in the
+social-card presentation layer to grammatical possessive wording (for example,
+“Welcome to Kim's Live Show Site.”); it does not silently mutate the rep's Site
+Settings value.
+
+Reason: This corrects the public share presentation without expanding a visual
+asset release into an unrequested customer-data change.
