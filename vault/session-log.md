@@ -2,6 +2,22 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 3, 2026 - Lane actuals added to the Control Center home
+
+- Connected the Control Center home’s Actual revenue collected and Actual
+  expenses paid cards to Lane's aggregate current-month accounting snapshot,
+  alongside the existing projected revenue card. All three use the same
+  integer-cent display formatting and no client-plan fallback.
+- Null accounting fields stay visibly unavailable, preserving the distinction
+  between no reported actual and `$0.00`. No books, money movement, customer,
+  provider, MCP, or schema state changed.
+- Focused Control Center tests passed (30 tests), changed-file lint and the
+  production build passed. Commit `92f882a8` was manually released as Ready
+  deployment `dpl_DkbtvrvJp3EZM7pJz4ki9XNmXWuz`; both Suite aliases resolve to
+  it. Kim's custom domain remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+
+---
+
 ## September 3, 2026 - Lane snapshot promoted to Control Center home metric
 
 - Replaced the Control Center home's projected-monthly-revenue client-list

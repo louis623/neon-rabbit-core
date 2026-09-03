@@ -1,5 +1,18 @@
 # Project State
 
+## September 3, 2026 - Control Center home accounting cards mirror Lane
+
+- The Suite Control Center home now reads all three summary values from the
+  same current-month Lane snapshot used by Accounting: projected recurring
+  revenue (`projected_recurring_cents`), actual collected revenue
+  (`actual_collected_cents`), and actual expenses paid (`expenses_cents`).
+- Each value is rendered from integer cents with two decimals. A null Lane
+  value remains `Not connected yet`; the UI never substitutes plan amounts or
+  invented zeroes for a missing actual.
+- This is display-only. Commit `92f882a8` is live as Ready deployment
+  `dpl_DkbtvrvJp3EZM7pJz4ki9XNmXWuz`; both Suite aliases resolve to it. Kim's
+  `goforthebling.com` remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+
 ## September 3, 2026 - Control Center projection now mirrors Lane's books snapshot
 
 - The Suite Control Center home tile for projected monthly revenue now reads
