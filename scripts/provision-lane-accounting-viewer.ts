@@ -10,12 +10,11 @@ import * as path from 'node:path'
 dotenv.config({ path: path.resolve(__dirname, '..', '.env.local') })
 
 const email = (process.env.CONTROL_CENTER_ACCOUNTING_VIEWER_OPERATOR_EMAIL ?? '').trim().toLowerCase()
-const password = process.env.CONTROL_CENTER_ACCOUNTING_VIEWER_PASSWORD ?? ''
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-if (!email || !password || password.length < 20 || !supabaseUrl || !serviceRoleKey) {
-  throw new Error('The accounting-viewer email, a 20+ character password, and local Supabase service credentials are required.')
+if (!email || !supabaseUrl || !serviceRoleKey) {
+  throw new Error('The accounting-viewer email and local Supabase service credentials are required.')
 }
 
 const admin = createClient(supabaseUrl, serviceRoleKey, {
@@ -31,7 +30,6 @@ async function main() {
   if (!authUser) {
     const { data, error } = await admin.auth.admin.createUser({
       email,
-      password,
       email_confirm: true,
     })
     if (error || !data.user) throw new Error(`Could not create accounting-viewer identity: ${error?.message ?? 'no user returned'}`)
