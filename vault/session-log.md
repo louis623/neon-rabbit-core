@@ -6242,3 +6242,15 @@ Lessons retained:
 - Commit `4cd9c5d2` is deployed as `dpl_22uiQGhTj9tmqAxeUSFPu55b5ioP`; both
   Suite aliases resolve to it and Kim's domain was verified unchanged. No
   personal account, customer record, or checklist item was toggled for smoke.
+
+## September 3, 2026 - Internal Live Queue code lookup
+
+- Added a read-only `live_queue` lookup to Customer Database profiles and a
+  “Live Queue code” field in Contact. It displays “Not assigned” when there is
+  no existing code and does not call the code-generation service.
+- Focused Customer Database, account-profile service, and support-access UI
+  coverage passed (24 tests), along with the production build.
+- Commit `20634a06` is live as `dpl_23b8rh7pvD8YoPzh5BcCTYntu1iN`; only the
+  two Suite aliases moved. The production Control Center visual check remains
+  pending an approved non-personal operator session, so no Live Queue code was
+  opened or copied during verification.

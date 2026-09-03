@@ -2383,3 +2383,13 @@ statuses, proof notes, save buttons, or a prerequisite identity checkbox.
 Reason: Louis is onboarding one known person at a time and needs a lightweight
 reminder list, not an audit process. The five About prompts remain visible as
 manual copy-gathering guidance.
+
+## 2026-09-03 - Surface Live Queue codes in the internal Contact panel
+
+Decision: The owner-only Customer Database Contact panel may show a rep's
+existing Live Queue sync code for quick support lookup. It reads the canonical
+`live_queue` record and shows “Not assigned” if no code exists; it must not
+create, replace, publish, or log the code.
+
+Reason: Louis needs quick internal access when helping reps with Live Queue,
+without creating another code store or changing live-show configuration.

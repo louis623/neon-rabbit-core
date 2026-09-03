@@ -3086,3 +3086,12 @@ Verification passed:
 - Commit `4cd9c5d2` is live as Ready deployment
   `dpl_22uiQGhTj9tmqAxeUSFPu55b5ioP`; both Suite aliases resolve to it. Kim's
   customer alias remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+
+## September 3, 2026 - Customer Database shows Live Queue codes
+
+- The internal Contact section now displays the existing Live Queue sync code
+  for each rep, or “Not assigned” when none exists. It reads the existing
+  `live_queue` row only and never creates, rotates, or changes a code.
+- Commit `20634a06` is live as Ready deployment
+  `dpl_23b8rh7pvD8YoPzh5BcCTYntu1iN`; both Suite aliases resolve to it. Kim's
+  customer alias remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
