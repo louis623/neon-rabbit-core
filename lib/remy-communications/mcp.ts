@@ -25,6 +25,8 @@ import {
 } from '@/lib/remy-communications/waitlist'
 import { getControlCenterOperatorHealth } from '@/lib/remy-communications/operator-health'
 import { getControlCenterNicNacUsage } from '@/lib/remy-communications/nic-nac-usage'
+import { buildAccountingAgentSummary } from '@/lib/control-center/accounting-agent-api'
+import { loadSparkleSuiteAccountingProjection } from '@/lib/control-center/accounting'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const ACTOR_KEY = 'sparkle-control-center'
@@ -45,6 +47,7 @@ const toolNames = [
   'control_center_get_waitlist_lead',
   'control_center_get_operator_health',
   'control_center_get_nic_nac_usage',
+  'control_center_get_accounting_summary',
 ] as const
 
 type ToolName = (typeof toolNames)[number]
@@ -534,6 +537,26 @@ export function createControlCenterMcpServer() {
       async () => ({
         result: await getControlCenterNicNacUsage(createAdminClient()),
       }),
+    ),
+  )
+
+  server.registerTool(
+    'control_center_get_accounting_summary',
+    {
+      description: 'Read a versioned, aggregate-only accounting snapshot for Sparkle Suite or Sparkle Finder. It contains no customer identities, credentials, bank details, or financial write action. Projected recurring revenue is separate from actual cash; actuals remain unavailable until their sources are connected.',
+      inputSchema: z.object({ product: z.enum(['suite', 'finder']) }),
+    },
+    async ({ product }) => runTool(
+      'control_center_get_accounting_summary',
+      { product },
+      async () => {
+        const suiteProjection = product === 'suite'
+          ? await loadSparkleSuiteAccountingProjection(createAdminClient())
+          : null
+        return {
+          result: buildAccountingAgentSummary({ product, suiteProjection }),
+        }
+      },
     ),
   )
 

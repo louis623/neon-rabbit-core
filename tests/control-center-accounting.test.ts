@@ -11,6 +11,8 @@ describe('Control Center accounting foundations', () => {
       suiteProjection: {
         monthlyRevenue: 98,
         activeClientCount: 2,
+        pastDueClientCount: 0,
+        cancelledClientCount: 0,
         pricedActiveClientCount: 2,
         clientsMissingMonthlyAmount: 0,
         clientBilling: [{ clientName: 'Jane Roberts', plan: 'founder', monthlyAmount: 49 }],

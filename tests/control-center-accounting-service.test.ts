@@ -77,6 +77,8 @@ describe('Sparkle Suite projected accounting', () => {
     expect(summary).toEqual({
       monthlyRevenue: 49,
       activeClientCount: 2,
+      pastDueClientCount: 1,
+      cancelledClientCount: 0,
       pricedActiveClientCount: 1,
       clientsMissingMonthlyAmount: 1,
       clientBilling: [

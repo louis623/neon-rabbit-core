@@ -21,6 +21,7 @@ describe('Sparkle Suite Control Center MCP contract', () => {
       'control_center_get_waitlist_lead',
       'control_center_get_operator_health',
       'control_center_get_nic_nac_usage',
+      'control_center_get_accounting_summary',
     ])
     expect(remyMcpToolNames).toBe(controlCenterMcpToolNames)
   })

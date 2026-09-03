@@ -15,6 +15,8 @@ export type SparkleSuiteAccountingProjection = {
   monthlyRevenue: number
   pricedActiveClientCount: number
   activeClientCount: number
+  pastDueClientCount: number
+  cancelledClientCount: number
   clientsMissingMonthlyAmount: number
   clientBilling: ProjectedClientBilling[]
 }
@@ -38,6 +40,9 @@ export function summarizeSparkleSuiteProjectedRevenue(
   customers: OperatorCustomerProfile[],
 ): SparkleSuiteAccountingProjection {
   const activeClients = customers.filter(isActiveProjectedClient)
+  const customerSubscriptions = customers.filter(
+    (customer) => customer.accountClassification === 'customer',
+  )
   const pricedClients = activeClients.flatMap((customer) => {
     const amount = monthlyAmount(customer)
     return amount === null
@@ -55,6 +60,12 @@ export function summarizeSparkleSuiteProjectedRevenue(
       0,
     ),
     activeClientCount: activeClients.length,
+    pastDueClientCount: customerSubscriptions.filter(
+      (customer) => customer.billing.status === 'past_due',
+    ).length,
+    cancelledClientCount: customerSubscriptions.filter(
+      (customer) => customer.billing.status === 'cancelled',
+    ).length,
     pricedActiveClientCount: pricedClients.length,
     clientsMissingMonthlyAmount: activeClients.length - pricedClients.length,
     clientBilling: pricedClients.sort((left, right) =>
