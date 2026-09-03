@@ -20,7 +20,7 @@ describe('Control Center accounting foundations', () => {
     }))
     expect(html).toContain('Sparkle Suite')
     expect(html).toContain('Projected monthly revenue')
-    expect(html).toContain('$98')
+    expect(html).toContain('$98.00')
     expect(html).toContain('Actual revenue collected')
     expect(html).toContain('Actual expenses paid')
     expect(html).toContain('Customer billing and payment history')
@@ -52,11 +52,11 @@ describe('Control Center accounting foundations', () => {
         activeClientCount: 3,
         pastDueClientCount: 1,
         cancelledClientCount: 0,
-        projectedRecurringCents: 12000,
-        projectedExpensesCents: 2500,
-        actualCollectedCents: 11000,
-        refundsCents: 300,
-        creditsCents: 200,
+        projectedRecurringCents: 12799,
+        projectedExpensesCents: 6,
+        actualCollectedCents: 9998,
+        refundsCents: 0,
+        creditsCents: null,
         disputesCents: 0,
         pastDueBalanceCents: 1000,
         processorAvailableCents: 8000,
@@ -67,12 +67,29 @@ describe('Control Center accounting foundations', () => {
     }))
     expect(html).toContain('Projected monthly expenses')
     expect(html).toContain('Lane’s latest reconciled expected recurring revenue')
-    expect(html).toContain('$120')
-    expect(html).toContain('$25')
-    expect(html).toContain('Refunds and credits')
-    expect(html).toContain('$5')
+    expect(html).toContain('$127.99')
+    expect(html).toContain('$0.06')
+    expect(html).toContain('$99.98')
+    expect(html).toContain('>Refunds</dt><dd class="mt-1 text-lg font-semibold">$0.00</dd>')
+    expect(html).toContain('>Credits</dt><dd class="mt-1 text-lg font-semibold">—</dd>')
     expect(html).toContain('Payouts in transit')
     expect(html).not.toContain('<input')
     expect(html).not.toContain('<textarea')
+  })
+
+  it('formats a cents snapshot identically for Suite and Finder', () => {
+    const snapshot = {
+      product: 'suite' as const,
+      periodStart: '2026-09-01', periodEndExclusive: '2026-10-01', asOf: '2026-09-03T12:00:00.000Z', recordedAt: '2026-09-03T12:01:00.000Z', reason: 'initial' as const,
+      sourceStatus: { stripe: 'connected' as const, bluevine: 'connected' as const, productDb: 'not_connected' as const },
+      activeClientCount: null, pastDueClientCount: null, cancelledClientCount: null,
+      projectedRecurringCents: 12799, projectedExpensesCents: null, actualCollectedCents: null,
+      refundsCents: null, creditsCents: null, disputesCents: null, pastDueBalanceCents: null,
+      processorAvailableCents: null, payoutsInTransitCents: null, expensesCents: null, netCents: null,
+    }
+    const suite = renderToStaticMarkup(createElement(AccountingDashboard, { product: 'suite', snapshot }))
+    const finder = renderToStaticMarkup(createElement(AccountingDashboard, { product: 'finder', snapshot: { ...snapshot, product: 'finder' } }))
+    expect(suite).toContain('$127.99')
+    expect(finder).toContain('$127.99')
   })
 })
