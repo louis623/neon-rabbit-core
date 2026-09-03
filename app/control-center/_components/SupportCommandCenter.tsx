@@ -124,6 +124,10 @@ function formatCount(value: number | null | undefined) {
     : '0'
 }
 
+function firstName(value: string | null | undefined) {
+  return value?.trim().split(/\s+/)[0] ?? null
+}
+
 function statusClass(value: string | null | undefined) {
   if (value === 'showtime_urgent' || value === 'failed' || value === 'timed_out') {
     return 'border-rose-200 bg-rose-50 text-rose-700'
@@ -194,26 +198,39 @@ function CustomerProfile({
 }) {
   const socialLinks = objectEntries(customer.socialHandles)
   const streamingLinks = objectEntries(customer.streamingLinks)
+  const checklist = onboardingChecklist ?? buildOperatorOnboardingChecklist()
+  const hasIncompleteChecklist =
+    profileType === 'customer' && checklist.some((item) => !item.entry.isCompleted)
+  const repFirstName = firstName(customer.primaryContactName)
 
   return (
-    <details className="group border-t border-slate-100 first:border-t-0">
+    <details
+      className={`group border-t first:border-t-0 ${
+        hasIncompleteChecklist ? 'border-amber-200 bg-amber-50/70' : 'border-slate-100'
+      }`}
+    >
       <summary
         aria-label={`Expand ${customer.clientName} profile`}
-        className="grid cursor-pointer list-none gap-3 px-4 py-4 marker:hidden md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.85fr)_auto]"
+        className={`grid cursor-pointer list-none gap-3 px-4 py-4 marker:hidden md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.85fr)_auto] ${
+          hasIncompleteChecklist ? 'hover:bg-amber-100/70' : ''
+        }`}
       >
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-base font-semibold text-slate-950">
-              {customer.clientName}
+              {customer.showName}
+              {repFirstName ? ` (${repFirstName})` : ''}
             </span>
             <ChevronDown
               aria-hidden="true"
               className="h-4 w-4 text-slate-400 transition group-open:rotate-180"
             />
           </div>
-          <p className="mt-1 truncate text-sm text-slate-600">
-            {customer.showName}
-          </p>
+          {hasIncompleteChecklist ? (
+            <p className="mt-1 text-sm font-medium text-amber-800">
+              Onboarding checklist incomplete
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {profileType === 'demo' ? <Pill value="demo_account" /> : null}
@@ -238,7 +255,7 @@ function CustomerProfile({
         {profileType === 'customer' ? (
           <OperatorOnboardingChecklist
             clientName={customer.clientName}
-            initialItems={onboardingChecklist ?? buildOperatorOnboardingChecklist()}
+            initialItems={checklist}
             repId={customer.repId}
           />
         ) : null}
