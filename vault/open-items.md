@@ -645,6 +645,10 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Control Center accounting follow-up
 
+- [ ] Have Lane complete one read-only visual sign-in and report only display
+  issues for the Suite and Finder accounting views. Do not use the credential
+  for customer, billing, provider, or operational work.
+
 - [ ] Design and explicitly authorize the Sparkle Suite accounting sources:
   paid invoices/payments, refunds/credits, balances, and a separate expense
   ledger with a month-end reconciliation rule. Do not use plan prices as cash

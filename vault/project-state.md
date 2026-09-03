@@ -1,5 +1,15 @@
 # Project State
 
+## September 3, 2026 - Lane has a scoped accounting-viewer login
+
+- Lane's dedicated Control Center credential can view only the Suite/Finder
+  accounting pages. It is not a Google Workspace or regular Sparkle Suite
+  Workspace login, and server-side scope checks deny all other Control Center
+  areas. The separate Lane accounting-write connector remains unconfigured.
+- Exact application tip `34a364df1aec4ef97ea64b1924dae610f424c4c7` is Ready
+  as `dpl_BsK4RYKN5z5MzoXAiPe1HQvhibXr`; both Suite aliases resolve to it.
+  Kim's `goforthebling.com` remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+
 ## September 2, 2026 - Terra is live and reviewer smoke is restored
 
 - Suite human-default is now `gpt-5.6-terra` at medium. Application commit

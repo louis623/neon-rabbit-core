@@ -6315,3 +6315,21 @@ Lessons retained:
   the runtime rejected generating a Vercel production write credential with a
   clipboard handoff. The Lane connector remains unconfigured and no snapshot,
   money movement, billing action, or provider action occurred.
+
+## September 3, 2026 - Lane read-only accounting viewer released
+
+- Lane now has a dedicated Control Center username/password login for only
+  `/control-center/accounting` and its Sparkle Finder view. The role is
+  server-enforced: it cannot access the Control Center home, customer data,
+  messages, settings, deployments, billing/provider actions, or money flows.
+- The password was entered through Vercel's interactive Secret prompt and
+  delivered only to Lane's named Grok secure field; it was not added to source,
+  vault, Open Brain, chat, clipboard, or a Workspace account. Lane's required
+  internal Supabase Auth principal has no Google Workspace relationship,
+  no Google login, and no password.
+- Focused authorization/accounting tests passed (9 tests). The initial
+  isolated deployment failed because `useSearchParams` lacked a Suspense
+  boundary; no aliases moved. The corrected exact branch tip `34a364df` was
+  released as Ready deployment `dpl_BsK4RYKN5z5MzoXAiPe1HQvhibXr`.
+  Both Suite aliases resolve to it; Kim's `goforthebling.com` remains on
+  `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.

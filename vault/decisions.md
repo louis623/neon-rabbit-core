@@ -2443,3 +2443,15 @@ refunds, transfers, or UI configuration.
 Reason: Lane needs a safe way to publish reconciled totals to the accounting
 dashboard without turning a shared operational connector into a financial
 write surface.
+
+## 2026-09-03 - Lane's visual accounting review is a separate, scoped login
+
+Decision: Lane uses a dedicated `accounting_viewer` Control Center credential
+for only the Suite/Finder accounting routes. The login is independent from
+Google Workspace and the regular Sparkle Suite Workspace. Its backing internal
+principal is required by the existing session integrity check, but has no
+password or general Workspace access.
+
+Reason: Lane needs to inspect the displayed accounting books without receiving
+an owner session or any ability to see customer information, alter operations,
+or perform payment/provider actions.
