@@ -6333,3 +6333,27 @@ Lessons retained:
   released as Ready deployment `dpl_BsK4RYKN5z5MzoXAiPe1HQvhibXr`.
   Both Suite aliases resolve to it; Kim's `goforthebling.com` remains on
   `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+
+## September 3, 2026 - Lane Accounting MCP connected
+
+- Kept Lane's Control Center URL strictly visual and read-only. Accounting
+  inspection and writes are handled by the one dedicated Lane Accounting MCP,
+  not by the website login and not by the shared Control Center MCP.
+- Extended the append-only aggregate snapshot ledger with projected monthly
+  expenses, and exposed the remaining reconciliation totals on the accounting
+  display. Added `lane_get_current_accounting_snapshot` as its harmless
+  aggregate read tool; the append tool remains the only write capability.
+- The dedicated credential is stored only as a SHA-256 digest in the existing
+  Supabase database. The bearer was saved only in Lane's named secure connector
+  field, never in source, chat, vault, Open Brain, or a Vercel secret. This
+  avoids a separate hosting-provider secret surface while retaining a unique
+  credential boundary.
+- Migrations `20260903162000` and `20260903170000` applied successfully.
+  Four focused test files passed (8 tests) and the production build passed.
+  Commit `af4d5bc` was manually released as Ready deployment
+  `dpl_BUGBdLnVDi4zhsWztVUWouu9ett2`; both Suite aliases resolve to it.
+  Kim's `goforthebling.com` remains unchanged at
+  `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+- Lane confirmed the connector exposes two tools and successfully completed
+  the harmless Suite snapshot read. No accounting figures were appended during
+  connection verification.

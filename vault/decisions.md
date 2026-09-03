@@ -2455,3 +2455,16 @@ password or general Workspace access.
 Reason: Lane needs to inspect the displayed accounting books without receiving
 an owner session or any ability to see customer information, alter operations,
 or perform payment/provider actions.
+
+## 2026-09-03 - Keep Lane accounting writes in the single dedicated MCP
+
+Decision: Lane's website credential remains visual-review-only. The single
+dedicated Lane Accounting MCP is the only channel that can read aggregate
+current-month snapshots or append validated aggregate monthly snapshots. It
+authenticates against a dedicated SHA-256 token digest stored in Supabase;
+the bearer itself lives only in Lane's secure connector field. Do not add a
+second accounting MCP or make the website viewer editable.
+
+Reason: This keeps visual proof and bookkeeping work clearly separate, gives
+Lane the write ability needed for his bookkeeper role, and avoids sharing the
+Control Center bearer or adding a Vercel-secret dependency.
