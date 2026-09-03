@@ -418,6 +418,18 @@ export function SupportCommandCenter({
     (customer) => !isCustomerDatabaseAccount(customer),
   )
   const projectedMonthlyRevenueCents = suiteAccountingSnapshot?.projectedRecurringCents
+  const actualRevenueCollectedCents = suiteAccountingSnapshot?.actualCollectedCents
+  const actualExpensesPaidCents = suiteAccountingSnapshot?.expensesCents
+  const accountingCards = [
+    {
+      title: 'Actual revenue collected',
+      valueCents: actualRevenueCollectedCents,
+    },
+    {
+      title: 'Actual expenses paid',
+      valueCents: actualExpensesPaidCents,
+    },
+  ]
 
   return (
     <main className="control-center-surface min-h-screen bg-slate-50 px-5 py-8 text-slate-950">
@@ -592,11 +604,11 @@ export function SupportCommandCenter({
             <p className={`mt-2 text-3xl font-semibold ${projectedMonthlyRevenueCents == null ? 'text-amber-950' : 'text-slate-950'}`}>{formatCents(projectedMonthlyRevenueCents)}</p>
             <p className={`mt-2 text-sm font-medium ${projectedMonthlyRevenueCents == null ? 'text-amber-900' : 'text-slate-600'}`}>{projectedMonthlyRevenueCents == null ? 'Not connected yet' : 'Lane’s latest reconciled expected recurring revenue'}</p>
           </Link>
-          {['Actual revenue collected', 'Actual expenses paid'].map((title) => (
-            <Link className="rounded-lg border border-amber-200 bg-amber-50 p-4 shadow-sm hover:bg-amber-100" href="/control-center/accounting" key={title}>
-              <p className="text-xs font-bold uppercase tracking-wide text-amber-900">{title}</p>
-              <p className="mt-2 text-3xl font-semibold text-amber-950">—</p>
-              <p className="mt-2 text-sm font-medium text-amber-900">Not connected yet</p>
+          {accountingCards.map(({ title, valueCents }) => (
+            <Link className={`rounded-lg border p-4 shadow-sm ${valueCents == null ? 'border-amber-200 bg-amber-50 hover:bg-amber-100' : 'border-emerald-200 bg-white hover:bg-emerald-50'}`} href="/control-center/accounting" key={title}>
+              <p className={`text-xs font-bold uppercase tracking-wide ${valueCents == null ? 'text-amber-900' : 'text-slate-700'}`}>{title}</p>
+              <p className={`mt-2 text-3xl font-semibold ${valueCents == null ? 'text-amber-950' : 'text-slate-950'}`}>{formatCents(valueCents)}</p>
+              <p className={`mt-2 text-sm font-medium ${valueCents == null ? 'text-amber-900' : 'text-slate-600'}`}>{valueCents == null ? 'Not connected yet' : 'Lane’s latest reconciled monthly total'}</p>
             </Link>
           ))}
         </section>

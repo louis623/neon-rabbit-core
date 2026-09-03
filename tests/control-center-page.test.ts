@@ -218,14 +218,14 @@ describe('SparkleSuiteControlCenterPage', () => {
       cancelledClientCount: 0,
       projectedRecurringCents: 12799,
       projectedExpensesCents: null,
-      actualCollectedCents: null,
+      actualCollectedCents: 9998,
       refundsCents: null,
       creditsCents: null,
       disputesCents: null,
       pastDueBalanceCents: null,
       processorAvailableCents: null,
       payoutsInTransitCents: null,
-      expensesCents: null,
+      expensesCents: 1800,
       netCents: null,
     })
   })
@@ -267,7 +267,10 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('$127.99')
     expect(html).toContain('Lane’s latest reconciled expected recurring revenue')
     expect(html).toContain('Actual revenue collected')
-    expect(html).toContain('Not connected yet')
+    expect(html).toContain('$99.98')
+    expect(html).toContain('Actual expenses paid')
+    expect(html).toContain('$18.00')
+    expect(html).toContain('Lane’s latest reconciled monthly total')
     expect(html).toContain('Publisher')
     expect(html).toContain('Support Inbox')
     expect(html).toContain('Customer Database')
