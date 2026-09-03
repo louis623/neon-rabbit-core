@@ -6264,3 +6264,17 @@ Lessons retained:
   did the production build. No checklist state was changed for verification.
 - Commit `1c431305` is live as `dpl_9WuP3ujTv99nNRFva4iB4Z513CQZ`; only Suite
   aliases moved and Kim's custom-domain alias was confirmed unchanged.
+
+## September 3, 2026 - Accounting foundation release
+
+- Built a deliberately disconnected accounting area for the owner-only
+  Control Center. Suite and Finder have independent routes and product labels;
+  each expected financial area is visibly light orange until a verified source
+  is approved.
+- The implementation does not query or write Stripe, payment, invoice, refund,
+  customer, or expense data. It avoids presenting subscription prices as cash
+  revenue.
+- Focused Control Center tests passed (11 tests) and the production build
+  passed. Commit `10f48a77` was pushed and manually released as
+  `dpl_CcfQ2UP2c1wVSj2UNv7dJ6fsSc77`. Both Suite aliases resolve to that
+  deployment; Kim's custom domain was read-only verified unchanged.

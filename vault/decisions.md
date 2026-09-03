@@ -2403,3 +2403,15 @@ incomplete cue.
 
 Reason: This lets Louis scan customer profiles for pending onboarding work
 without opening each record.
+
+## 2026-09-03 - Keep accounting values unavailable until their source is reconciled
+
+Decision: The Control Center Accounting views begin as separate Suite and
+Finder foundations. A metric, billing-history field, or expense ledger is
+light orange and marked unavailable unless it has an approved source and a
+defined reconciliation rule. Subscription/plan amounts are not interchangeable
+with payments actually received.
+
+Reason: Financial screens must not imply that an estimate, entitlement, or
+pricing configuration is a booked payment. Keeping Finder separate preserves
+its independent product boundary while sources are designed deliberately.

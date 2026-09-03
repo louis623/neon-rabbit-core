@@ -642,3 +642,13 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
   operator session is available. Verify a checkbox toggle and refresh. Do not use
   Louis's personal account or create a customer-facing change merely for this
   check.
+
+## Control Center accounting follow-up
+
+- [ ] Design and explicitly authorize the Sparkle Suite accounting sources:
+  paid invoices/payments, refunds/credits, balances, and a separate expense
+  ledger with a month-end reconciliation rule. Do not use plan prices as cash
+  received.
+- [ ] Separately design and explicitly authorize the Sparkle Finder accounting
+  sources and reconciliation rule. Keep Finder customer and billing data in
+  its own product boundary; do not bridge data merely to fill the dashboard.

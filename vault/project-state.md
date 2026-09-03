@@ -3106,3 +3106,17 @@ Verification passed:
 - Commit `1c431305` is live as Ready deployment
   `dpl_9WuP3ujTv99nNRFva4iB4Z513CQZ`; both Suite aliases resolve to it and
   Kim's customer alias remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+
+## September 3, 2026 - Control Center accounting foundation is live
+
+- The owner-only Control Center now has separate Sparkle Suite and Sparkle
+  Finder accounting views. Both include monthly revenue, monthly expenses,
+  net, expected revenue, past-due, refunds/credits, customer billing history,
+  an expense ledger, and month-end checks.
+- Every financial surface is intentionally light orange and explicitly marked
+  “Not connected” until it has an approved, reconciled source. No existing
+  plan price was treated as received revenue, and no billing, payment, or
+  expense record was created or changed.
+- Commit `10f48a77` is live as Ready deployment
+  `dpl_CcfQ2UP2c1wVSj2UNv7dJ6fsSc77`; both Suite aliases resolve to it. Kim's
+  `goforthebling.com` remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
