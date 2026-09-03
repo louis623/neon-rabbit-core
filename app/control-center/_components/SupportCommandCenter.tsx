@@ -51,6 +51,7 @@ export type OperatorCustomerRecord = {
   shopLink: string | null
   streamingLinks: Record<string, unknown>
   socialHandles: Record<string, unknown>
+  liveQueueSyncCode: string | null
   internalNotes: string | null
   setupStatus: string | null
   setupCurrentStep: string | null
@@ -254,6 +255,10 @@ function CustomerProfile({
               value={customer.phone ?? 'Not provided'}
             />
             <InfoBlock term="Show title" value={customer.showName} />
+            <InfoBlock
+              term="Live Queue code"
+              value={customer.liveQueueSyncCode ?? 'Not assigned'}
+            />
             <InfoBlock
               term="Promo code"
               value={customer.referral.code ?? 'Not provided'}

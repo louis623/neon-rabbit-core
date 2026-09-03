@@ -99,6 +99,7 @@ function customerProfile(overrides: Record<string, unknown> = {}) {
     shopLink: null,
     streamingLinks: {},
     socialHandles: {},
+    liveQueueSyncCode: null,
     internalNotes: null,
     setupStatus: 'dashboard_unlocked',
     setupCurrentStep: 'final_preview_approval',
@@ -181,6 +182,7 @@ describe('SparkleSuiteControlCenterPage', () => {
         shopLink: 'https://shop.example/jane',
         streamingLinks: { tiktok: 'https://www.tiktok.com/@janesparkle' },
         socialHandles: { instagram: '@janesparkle' },
+        liveQueueSyncCode: 'JSP-1234',
         internalNotes: 'Prefers text for urgent billing questions.',
         setupStatus: 'dashboard_unlocked',
         setupCurrentStep: 'final_preview_approval',
@@ -238,6 +240,8 @@ describe('SparkleSuiteControlCenterPage', () => {
     expect(html).toContain('SS-JANE12')
     expect(html).toContain('Promo uses')
     expect(html).toContain('3')
+    expect(html).toContain('Live Queue code')
+    expect(html).toContain('JSP-1234')
     expect(html).toContain('jane.example')
     expect(html).toContain('Prefers text for urgent billing questions.')
     expect(html).toContain('aria-label="Expand Jane Roberts profile"')

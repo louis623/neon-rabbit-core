@@ -9,6 +9,7 @@ type TableName =
   | 'self_serve_setup_sessions'
   | 'subscriptions'
   | 'client_account_profiles'
+  | 'live_queue'
   | 'rep_referrals'
 
 function makeSingleResult(data: unknown, error: unknown = null) {
@@ -85,6 +86,7 @@ function makeListClient(options: {
   subscriptions: Record<string, unknown>[]
   profiles: Record<string, unknown>[]
   setupSessions: Record<string, unknown>[]
+  liveQueue?: Record<string, unknown>[]
   repReferrals?: Record<string, unknown>[]
 }) {
   const queries = {
@@ -92,6 +94,7 @@ function makeListClient(options: {
     subscriptions: makeListResult(options.subscriptions),
     client_account_profiles: makeListResult(options.profiles),
     self_serve_setup_sessions: makeListResult(options.setupSessions),
+    live_queue: makeListResult(options.liveQueue ?? []),
     rep_referrals: makeListResult(options.repReferrals ?? []),
   } satisfies Record<TableName, unknown>
 
@@ -302,6 +305,9 @@ describe('listOperatorCustomerProfiles', () => {
           updated_at: '2026-06-12T12:00:00.000Z',
         },
       ],
+      liveQueue: [
+        { rep_id: 'rep-1', sync_code: 'JSP-1234', created_at: '2026-06-01T12:00:00.000Z' },
+      ],
       repReferrals: [
         {
           referrer_rep_id: 'rep-1',
@@ -322,6 +328,7 @@ describe('listOperatorCustomerProfiles', () => {
     expect(client.from).toHaveBeenCalledWith('subscriptions')
     expect(client.from).toHaveBeenCalledWith('client_account_profiles')
     expect(client.from).toHaveBeenCalledWith('self_serve_setup_sessions')
+    expect(client.from).toHaveBeenCalledWith('live_queue')
     expect(queries.reps.select).toHaveBeenCalledWith(
       'id, account_classification, display_name, business_name, email, phone, status, referral_code, public_site_slug, custom_domain, shop_link, streaming_links, social_handles, created_at, updated_at',
     )
@@ -353,6 +360,7 @@ describe('listOperatorCustomerProfiles', () => {
         shopLink: 'https://shop.example/jane',
         streamingLinks: { tiktok: 'https://www.tiktok.com/@janesparkle' },
         socialHandles: { instagram: '@janesparkle' },
+        liveQueueSyncCode: 'JSP-1234',
         internalNotes: 'Prefers text for urgent billing questions.',
         setupStatus: 'dashboard_unlocked',
         setupCurrentStep: 'final_preview_approval',

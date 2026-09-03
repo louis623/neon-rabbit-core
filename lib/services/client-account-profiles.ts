@@ -39,6 +39,7 @@ export interface OperatorCustomerProfile {
   shopLink: string | null
   streamingLinks: JsonObject
   socialHandles: JsonObject
+  liveQueueSyncCode: string | null
   internalNotes: string | null
   setupStatus: string | null
   setupCurrentStep: string | null
@@ -117,6 +118,12 @@ interface OperatorSetupSessionRow {
   current_step: string | null
   dashboard_unlocked_at: string | null
   updated_at: string | null
+}
+
+interface OperatorLiveQueueRow {
+  rep_id: string
+  sync_code: string | null
+  created_at: string | null
 }
 
 function isObject(value: unknown): value is JsonObject {
@@ -280,7 +287,7 @@ export async function listOperatorCustomerProfiles(
 ): Promise<OperatorCustomerProfile[]> {
   const limit = Math.min(Math.max(options.limit ?? 200, 1), 500)
 
-  const [repsResult, subscriptionsResult, profilesResult, setupSessionsResult] =
+  const [repsResult, subscriptionsResult, profilesResult, setupSessionsResult, liveQueueResult] =
     await Promise.all([
       supabase
         .from('reps')
@@ -310,12 +317,18 @@ export async function listOperatorCustomerProfiles(
         )
         .order('updated_at', { ascending: false })
         .limit(limit * 2),
+      supabase
+        .from('live_queue')
+        .select('rep_id, sync_code, created_at')
+        .order('created_at', { ascending: true })
+        .limit(limit * 2),
     ])
 
   if (repsResult.error) throw repsResult.error
   if (subscriptionsResult.error) throw subscriptionsResult.error
   if (profilesResult.error) throw profilesResult.error
   if (setupSessionsResult.error) throw setupSessionsResult.error
+  if (liveQueueResult.error) throw liveQueueResult.error
 
   const repRows = (repsResult.data ?? []) as OperatorRepRow[]
   const repIds = repRows.map((rep) => rep.id)
@@ -345,6 +358,11 @@ export async function listOperatorCustomerProfiles(
     if (!setupByRep.has(row.rep_id)) setupByRep.set(row.rep_id, row)
   }
 
+  const liveQueueByRep = new Map<string, OperatorLiveQueueRow>()
+  for (const row of (liveQueueResult.data ?? []) as OperatorLiveQueueRow[]) {
+    if (!liveQueueByRep.has(row.rep_id)) liveQueueByRep.set(row.rep_id, row)
+  }
+
   const referralUsageByRep = new Map<string, number>()
   for (const row of (referralRowsResult.data ?? []) as OperatorReferralRow[]) {
     const current = referralUsageByRep.get(row.referrer_rep_id) ?? 0
@@ -355,6 +373,7 @@ export async function listOperatorCustomerProfiles(
     const profile = profilesByRep.get(rep.id)
     const subscription = subscriptionsByRep.get(rep.id)
     const setup = setupByRep.get(rep.id)
+    const liveQueue = liveQueueByRep.get(rep.id)
     const fallbackName =
       textOrNull(rep.business_name) ??
       textOrNull(rep.display_name) ??
@@ -400,6 +419,7 @@ export async function listOperatorCustomerProfiles(
       shopLink: textOrNull(rep.shop_link),
       streamingLinks: objectOrEmpty(rep.streaming_links),
       socialHandles: objectOrEmpty(rep.social_handles),
+      liveQueueSyncCode: textOrNull(liveQueue?.sync_code),
       internalNotes: textOrNull(profile?.internal_notes),
       setupStatus: textOrNull(setup?.status),
       setupCurrentStep: textOrNull(setup?.current_step),
