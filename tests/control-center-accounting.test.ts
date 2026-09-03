@@ -66,6 +66,8 @@ describe('Control Center accounting foundations', () => {
       },
     }))
     expect(html).toContain('Projected monthly expenses')
+    expect(html).toContain('Lane’s latest reconciled expected recurring revenue')
+    expect(html).toContain('$120')
     expect(html).toContain('$25')
     expect(html).toContain('Refunds and credits')
     expect(html).toContain('$5')

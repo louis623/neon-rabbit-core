@@ -63,7 +63,15 @@ export function AccountingDashboard({
   const productName = product === 'suite' ? 'Sparkle Suite' : 'Sparkle Finder'
   const productQuery = product === 'finder' ? '?product=finder' : ''
   const projectedRevenue =
-    product === 'suite' && suiteProjection
+    snapshot?.projectedRecurringCents != null
+      ? {
+          title: 'Projected monthly revenue',
+          description: 'Lane’s latest reconciled expected recurring revenue for this product and month.',
+          value: formatCents(snapshot.projectedRecurringCents),
+          status: 'Lane verified',
+          connected: true,
+        }
+      : product === 'suite' && suiteProjection
       ? {
           title: 'Projected monthly revenue',
           description: `${suiteProjection.pricedActiveClientCount} of ${suiteProjection.activeClientCount} active clients have a recurring monthly amount.`,
