@@ -15,7 +15,7 @@ type ControlCenterSession = {
   repId: string
 }
 
-export type ControlCenterOperatorScope = 'owner' | 'site_support'
+export type ControlCenterOperatorScope = 'owner' | 'site_support' | 'accounting_viewer'
 
 export type ControlCenterAccess = {
   method: 'control_center_session'
@@ -44,7 +44,13 @@ function getOperatorEmails() {
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean)
     : ['louis@neonrabbit.net']
-  return [...new Set([...internal, ...getSiteSupportOperatorEmails()])]
+  return [
+    ...new Set([
+      ...internal,
+      ...getSiteSupportOperatorEmails(),
+      ...getAccountingViewerOperatorEmails(),
+    ]),
+  ]
 }
 
 function isControlCenterDevAuthBypassEnabled() {
@@ -58,6 +64,13 @@ function getSiteSupportOperatorEmails() {
     .filter(Boolean)
 }
 
+function getAccountingViewerOperatorEmails() {
+  return (process.env.CONTROL_CENTER_ACCOUNTING_VIEWER_OPERATOR_EMAILS ?? '')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean)
+}
+
 function getControlCenterOwnerEmails() {
   return (process.env.CONTROL_CENTER_OWNER_EMAILS ?? 'louis@neonrabbit.net')
     .split(',')
@@ -66,6 +79,7 @@ function getControlCenterOwnerEmails() {
 }
 
 function getControlCenterOperatorScope(email: string): ControlCenterOperatorScope | null {
+  if (getAccountingViewerOperatorEmails().includes(email)) return 'accounting_viewer'
   if (getSiteSupportOperatorEmails().includes(email)) return 'site_support'
   if (getControlCenterOwnerEmails().includes(email)) return 'owner'
   return null
@@ -90,6 +104,13 @@ function getAdditionalControlCenterCredentials(): AdditionalControlCenterCredent
   }
 }
 
+function getAccountingViewerCredential(): AdditionalControlCenterCredential[] {
+  const username = process.env.CONTROL_CENTER_ACCOUNTING_VIEWER_USERNAME?.trim().toLowerCase()
+  const password = process.env.CONTROL_CENTER_ACCOUNTING_VIEWER_PASSWORD
+  const operatorEmail = process.env.CONTROL_CENTER_ACCOUNTING_VIEWER_OPERATOR_EMAIL?.trim().toLowerCase()
+  return username && password && operatorEmail ? [{ username, password, operatorEmail }] : []
+}
+
 function getConfiguredControlCenterCredentials(): AdditionalControlCenterCredential[] {
   const configuredUsername = process.env.CONTROL_CENTER_USERNAME?.trim().toLowerCase()
   const configuredPassword = process.env.CONTROL_CENTER_PASSWORD
@@ -97,7 +118,7 @@ function getConfiguredControlCenterCredentials(): AdditionalControlCenterCredent
   const legacy = configuredUsername && configuredPassword && configuredOperatorEmail
     ? [{ username: configuredUsername, password: configuredPassword, operatorEmail: configuredOperatorEmail }]
     : []
-  return [...legacy, ...getAdditionalControlCenterCredentials()]
+  return [...legacy, ...getAdditionalControlCenterCredentials(), ...getAccountingViewerCredential()]
 }
 
 function credentialMatches(value: string, expected: string) {
@@ -264,17 +285,20 @@ async function getScopedControlCenterAccess(): Promise<ControlCenterAccess> {
 }
 
 // Owner-only is the safe default for existing Control Center pages and routes.
-// Site-support access must opt in through the narrow helper below.
+// Narrow non-owner roles must opt in page by page.
 export async function getControlCenterAccess(
-  options: { allowSiteSupport?: boolean } = {},
+  options: { allowSiteSupport?: boolean; allowAccountingViewer?: boolean } = {},
 ): Promise<ControlCenterAccess> {
   const access = await getScopedControlCenterAccess()
-  return options.allowSiteSupport ? access : requireControlCenterOwner(access)
+  if (access.scope === 'owner') return access
+  if (access.scope === 'site_support' && options.allowSiteSupport) return access
+  if (access.scope === 'accounting_viewer' && options.allowAccountingViewer) return access
+  return requireControlCenterOwner(access)
 }
 
 export function requireControlCenterOwner(access: ControlCenterAccess) {
   if (access.scope !== 'owner') {
-    throw new OperatorAuthError('This Control Center operator is limited to customer-site support.')
+    throw new OperatorAuthError('This Control Center operator is limited to its assigned area.')
   }
   return access
 }

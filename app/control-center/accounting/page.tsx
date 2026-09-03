@@ -12,14 +12,14 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export default async function ControlCenterAccountingPage({ searchParams }: { searchParams?: Promise<{ product?: string | string[] }> } = {}) {
+  const product = (await searchParams)?.product === 'finder' ? 'finder' : 'suite'
   try {
-    await getControlCenterAccess()
+    await getControlCenterAccess({ allowAccountingViewer: true })
   } catch (error) {
-    if (error instanceof AuthError) redirect('/control-center/login')
-    if (error instanceof OperatorAuthError) return <main className="min-h-screen bg-slate-50 px-5 py-12 text-slate-950"><section className="mx-auto max-w-xl rounded-lg border border-slate-200 bg-white p-8 shadow-sm"><h1 className="text-2xl font-semibold">Operator access required</h1><p className="mt-3 text-sm leading-6 text-slate-600">Accounting is limited to internal owners.</p></section></main>
+    if (error instanceof AuthError) redirect(`/control-center/login?redirect=${encodeURIComponent(`/control-center/accounting${product === 'finder' ? '?product=finder' : ''}`)}`)
+    if (error instanceof OperatorAuthError) return <main className="min-h-screen bg-slate-50 px-5 py-12 text-slate-950"><section className="mx-auto max-w-xl rounded-lg border border-slate-200 bg-white p-8 shadow-sm"><h1 className="text-2xl font-semibold">Operator access required</h1><p className="mt-3 text-sm leading-6 text-slate-600">Accounting is limited to authorized internal viewers.</p></section></main>
     throw error
   }
-  const product = (await searchParams)?.product === 'finder' ? 'finder' : 'suite'
   const suiteProjection =
     product === 'suite'
       ? await loadSparkleSuiteAccountingProjection(createAdminClient())
