@@ -225,6 +225,27 @@ function firstText(...values: Array<string | null | undefined>) {
   return ''
 }
 
+function resolveTenantTeamName(
+  configuredTeamName: string | null | undefined,
+  businessName: string,
+) {
+  const configured = clean(configuredTeamName)
+  const normalizedConfigured = configured.toLowerCase()
+  const normalizedBusinessName = clean(businessName).toLowerCase()
+
+  // These are the two historical demo identities. Keep them only when they
+  // genuinely belong to the same business; otherwise a customer page must use
+  // its owning rep's public business name rather than leak demo copy.
+  if (
+    normalizedConfigured === 'sparkle by sasha' &&
+    normalizedConfigured !== normalizedBusinessName
+  ) {
+    return businessName
+  }
+
+  return firstText(configured, businessName)
+}
+
 function asRecord(value: unknown): Record<string, string> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
 
@@ -358,7 +379,10 @@ function targetedHomepageAboutParagraphs(
   ) as [string, string, string]
 }
 
-function targetedJoinFaq(teamName: string, repName: string): AmethystJoinTemplateData['faqAnswers'] {
+function buildRepOwnedJoinFaq(
+  teamName: string,
+  repName: string,
+): AmethystJoinTemplateData['faqAnswers'] {
   const publicRepName = getPublicRepName(repName)
   return {
     whatIsTeam: `${teamName} details will appear after ${publicRepName} adds team information.`,
@@ -476,7 +500,7 @@ function applyCustomerTarget(
           }
         : data.join.footerColumn,
       faqAnswers: scrubGenericJoin
-        ? targetedJoinFaq(data.join.teamName, data.join.repName)
+        ? buildRepOwnedJoinFaq(data.join.teamName, data.join.repName)
         : data.join.faqAnswers,
       footerLinks: {
         ...data.join.footerLinks,
@@ -523,7 +547,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
     ...defaultAmethystHomepageTemplateData,
     repName,
     businessName,
-    teamName: firstText(settings.teamName, defaultAmethystHomepageTemplateData.teamName),
+    teamName: resolveTenantTeamName(settings.teamName, businessName),
     memberTeamName: settings.memberTeamName?.trim() || undefined,
     tagline,
     heroHeadline: firstText(heroHeadlineOverride, defaultAmethystHomepageTemplateData.heroHeadline),
@@ -649,7 +673,7 @@ export function mapPreviewSettingsToJoinTemplateData(
     settings.businessName,
     defaultAmethystJoinTemplateData.businessName,
   )
-  const teamName = firstText(settings.teamName, defaultAmethystJoinTemplateData.teamName)
+  const teamName = resolveTenantTeamName(settings.teamName, businessName)
   const shopUrl = resolveShopUrl(extras)
   const streamingLinks = asRecord(extras.streamingLinks)
   const joinUrl = clean(streamingLinks.join) || shopUrl
@@ -664,12 +688,14 @@ export function mapPreviewSettingsToJoinTemplateData(
     memberTeamName: settings.memberTeamName?.trim() || undefined,
     heroTitle: `Join ${teamName}`,
     heroPitch: `Join ${teamName} with ${repName}. Build your Bomb Party business with a clear live-show path, support, and a Sparkle Suite-ready customer hub.`,
+    promoText: '',
     finalPitch: `Pick your starter pack, follow the steps on Bomb Party, and connect with ${repName} for the next onboarding step.`,
     bpReferralUrl: joinUrl,
     tickerTopText: buildTicker(settings, defaultAmethystJoinTemplateData.tickerTopText),
     shopUrl,
     footerTagline: firstText(settings.tagline, defaultAmethystJoinTemplateData.footerTagline),
     legalDisclaimer: buildLegalDisclaimer(businessName, 'join'),
+    faqAnswers: buildRepOwnedJoinFaq(teamName, repName),
     repSocialLinks: {
       tiktok: normalizeSocialUrl('tiktok', settings.socialHandles.tiktok),
       website: shopUrl,

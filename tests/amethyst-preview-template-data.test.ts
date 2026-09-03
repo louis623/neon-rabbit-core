@@ -375,6 +375,41 @@ describe('Amethyst preview template data', () => {
     )
   })
 
+  it('replaces a mismatched demo team name with the owning rep identity', async () => {
+    const data = await loadAmethystPreviewTemplateData({
+      repId: 'rep-kim',
+      env: {
+        NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+      },
+      dependencies: {
+        createAdminClient:
+          vi.fn(() => ({ from: vi.fn() })) as unknown as typeof createAdminClient,
+        resolveAmethystPreviewRep: vi.fn(async () => ({
+          id: 'rep-kim',
+          email: 'kim@example.com',
+          shop_link: 'https://example.com/shop',
+          streaming_links: {},
+          public_site_slug: 'goforthebling',
+        })),
+        getSiteSettingsDashboard: vi.fn(async () => ({
+          ...demoSettings,
+          displayName: 'Kim',
+          businessName: 'GofortheBling',
+          teamName: 'Sparkle by Sasha',
+        })),
+        getJoinTeamRoster: vi.fn(async () => []),
+      },
+    })
+
+    expect(data.join.teamName).toBe('GofortheBling')
+    expect(data.join.heroTitle).toBe('Join GofortheBling')
+    expect(data.join.heroPitch).toContain('Join GofortheBling with Kim')
+    expect(data.join.finalPitch).toContain('connect with Kim')
+    expect(data.join.promoText).toBe('')
+    expect(JSON.stringify(data.join.faqAnswers)).not.toContain('Sasha')
+  })
+
   it('keeps Join Team hidden after applying a customer target', async () => {
     const data = await loadAmethystPreviewTemplateData({
       repId: 'rep-hidden-join',
