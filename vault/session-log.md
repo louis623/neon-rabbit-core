@@ -6254,3 +6254,13 @@ Lessons retained:
   two Suite aliases moved. The production Control Center visual check remains
   pending an approved non-personal operator session, so no Live Queue code was
   opened or copied during verification.
+
+## September 3, 2026 - Customer Database collapsed-row cues
+
+- Reworked customer profile summaries for fast scanning: show name first,
+  then the rep's first name in parentheses. Incomplete checklists now produce
+  a light amber summary background and a plain-language incomplete cue.
+- Focused Customer Database/checklist/account-profile tests passed (13), as
+  did the production build. No checklist state was changed for verification.
+- Commit `1c431305` is live as `dpl_9WuP3ujTv99nNRFva4iB4Z513CQZ`; only Suite
+  aliases moved and Kim's custom-domain alias was confirmed unchanged.

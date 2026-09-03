@@ -3095,3 +3095,14 @@ Verification passed:
 - Commit `20634a06` is live as Ready deployment
   `dpl_23b8rh7pvD8YoPzh5BcCTYntu1iN`; both Suite aliases resolve to it. Kim's
   customer alias remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.
+
+## September 3, 2026 - Customer Database scanability
+
+- Collapsed customer rows now lead with the show name followed by the rep's
+  first name in parentheses (for example, `Bling Kitchen (Heather)`).
+- A customer with any unchecked onboarding item has a light orange collapsed
+  row and an “Onboarding checklist incomplete” cue, making follow-up work
+  visible before the profile is opened.
+- Commit `1c431305` is live as Ready deployment
+  `dpl_9WuP3ujTv99nNRFva4iB4Z513CQZ`; both Suite aliases resolve to it and
+  Kim's customer alias remains on `dpl_Fr6JTn8snhNY1jmqJFoudTt3oqWH`.

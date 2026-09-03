@@ -2393,3 +2393,13 @@ create, replace, publish, or log the code.
 
 Reason: Louis needs quick internal access when helping reps with Live Queue,
 without creating another code store or changing live-show configuration.
+
+## 2026-09-03 - Use collapsed-row cues for unfinished onboarding
+
+Decision: Customer Database summaries show the customer-facing show name first
+with the rep's first name in parentheses. If any onboarding checkbox remains
+unchecked, the collapsed summary gets a light orange background and an
+incomplete cue.
+
+Reason: This lets Louis scan customer profiles for pending onboarding work
+without opening each record.
