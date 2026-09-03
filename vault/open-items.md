@@ -12,14 +12,13 @@ future work.
   and live-show questions. Do not use a customer account or create billing,
   outbound-message, DNS, or Live Queue side effects during the review.
 
-- [ ] **Connect Kim's custom domain after expanded Namecheap DNS access** -
-  Louis sent the request for Advanced DNS / Host Records permission after the
-  accepted manager invitation proved view-only for DNS. Wait for that access;
-  do not change ownership, contacts, nameservers, billing, or DNS meanwhile.
-  On resumption, first verify the Vercel attachment state (the previous CLI
-  result was blank and is unverified), inspect current records, make only the
-  necessary DNS changes, update the exact guarded customer-domain mapping with
-  an audit trail, and verify the custom-domain root plus `/trade` live.
+- [x] **Connect Kim's custom domain after expanded Namecheap DNS access** -
+  completed September 3. `goforthebling.com` is attached to the `sparkle-suite`
+  Vercel project and the exact active customer record is identity-guarded
+  mapped to that custom domain. The former root URL redirect was replaced by
+  the required external-DNS `A @ → 76.76.21.21` record; nameservers, email
+  forwarding, ownership, contacts, and billing were not changed. Public
+  verification passed at the custom-domain root, `/trade`, and `/join`.
 
 - [x] **Publish Kim's approved About section** - completed September 1 through
   disclosed support. The concise approved copy was visually verified on the

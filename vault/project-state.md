@@ -2992,3 +2992,20 @@ Verification passed:
   Outlook Calendar, and Apple Calendar/another compatible app (ICS download).
   Reviewer-synthetic multi-platform proof remains pending the separate,
   explicit authorization to reactivate or replace the archived reviewer.
+
+## 2026-09-03 - Kim customer custom domain is live
+
+- `goforthebling.com` is attached to the production `sparkle-suite` Vercel
+  project and the active GofortheBling customer record is mapped to the custom
+  domain through an identity-guarded update.
+- The registrar remains Namecheap with external DNS. The previous root URL
+  redirect was replaced by the only required record: `A @ → 76.76.21.21`
+  (automatic TTL). Nameservers, email forwarding, ownership, contacts, and
+  billing were deliberately preserved.
+- Vercel reports the custom domain valid. Its optional future DNS
+  recommendation was not adopted because the current required configuration
+  is working and the task did not authorize a broader DNS change.
+- Public production checks proved the root, `/trade`, and `/join` remain on
+  `https://goforthebling.com` and render Kim/GofortheBling content. The custom
+  domain inherits root-relative Sparkle Suite customer-site navigation; no
+  separate per-subpage Vercel aliases are needed.

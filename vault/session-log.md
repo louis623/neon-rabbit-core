@@ -6118,3 +6118,28 @@ Lessons retained:
   corrected event-destination approach, commits/deployments, test and live
   evidence, reviewer constraint, and the Vercel alias lesson as an Open Brain
   observation on September 2, 2026. No credentials or private tokens included.
+
+## September 3, 2026 - Kim custom-domain migration
+
+- Confirmed the active workspace provenance before the change: local repo
+  `louis623/sparkle-suite`, allowlisted branch `codex/nic-nac-trade-hardening`,
+  and expected current tip. The existing `artifacts/` and `test-results/`
+  directories remained untracked and untouched.
+- Read Kim's and Namecheap's current email replies only. Kim offered account
+  credentials, but they were neither requested nor used; Louis had already
+  signed into Namecheap.
+- Attached `goforthebling.com` to the Sparkle Suite Vercel project and updated
+  only the exact active GofortheBling customer record, guarded by its id,
+  status, customer classification, and slug, to use that custom domain.
+- At Namecheap, removed the prior root URL redirect and added exactly
+  `A @ → 76.76.21.21` with automatic TTL. Did not change nameservers, email
+  forwarding, ownership, contacts, or billing. Public DNS resolved to the new
+  A record and Vercel reported the external-DNS configuration valid; its later
+  DNS recommendation is optional and was not applied.
+- Public no-auth Chrome verification passed at `https://goforthebling.com/`,
+  `https://goforthebling.com/trade`, and `https://goforthebling.com/join`.
+  All retained the custom hostname and rendered Kim/GofortheBling tenant
+  content. No personal/admin or customer account was used, and no Suite or
+  protected customer aliases were moved.
+- Captured the completed migration as an Open Brain observation without
+  credentials or private account data.
