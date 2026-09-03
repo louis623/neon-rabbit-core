@@ -3009,3 +3009,21 @@ Verification passed:
   `https://goforthebling.com` and render Kim/GofortheBling content. The custom
   domain inherits root-relative Sparkle Suite customer-site navigation; no
   separate per-subpage Vercel aliases are needed.
+
+## 2026-09-03 - Join Team pages use their owning rep identity
+
+- A customer record may still carry one of the historical demo team names.
+  The public mapper now uses the customer’s business name when a known demo
+  identity conflicts with that business, while preserving a legitimate matching
+  identity for the actual demo/default surface.
+- Ordinary Join Team FAQ copy is generated from the page’s current team and
+  rep, and the stale default promo is removed. Bespoke customer variants retain
+  their own explicit content branches.
+- Commit `0ecc2f2c` is Ready as `dpl_4mUvuM9HdXoYMxoS8d5z5rgZ9c7z`.
+  Both Suite aliases and the newly migrated `goforthebling.com` are assigned to
+  that deployment; Bri's and Bling Kitchen's protected customer aliases remain
+  on their prior deployment.
+- Public no-auth Chrome smoke at `https://goforthebling.com/join` verified the
+  GofortheBling/Kim page title, hero, FAQ, and final CTA with no Sasha copy or
+  demo promo. Focused data/template/route tests, lint, and the production build
+  passed.

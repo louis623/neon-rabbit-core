@@ -2297,6 +2297,19 @@ Calendar first, followed by one Watch-on action per event destination.
 Reason: Rep-wide social/profile links cannot truthfully identify a specific
 show's host, cannot represent dual-streaming, and previously caused the public
 card to silently omit or misdirect watch actions.
+
+## 2026-09-03 - Public Join Team copy is tenant-owned
+
+Decision: Every ordinary customer Join Team page must derive its team and rep
+references from the resolved customer record. Known demo identities may remain
+only when they match that same business; otherwise the page falls back to the
+customer’s public business name. Default generic FAQ and promotional content
+must not introduce a different rep or demo identity.
+
+Reason: Kim's direct customer `/join` route proved that a hidden navigation
+link does not make stale demo content harmless. Public pages must be correct
+for their resolved tenant at every direct route, not merely for the dashboard
+or demo surface.
 # September 2, 2026 — Calendar watch actions use configured customer-site social handles
 
 - Supersedes the earlier event-owned destination decision for customer show cards.

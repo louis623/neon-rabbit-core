@@ -6143,3 +6143,28 @@ Lessons retained:
   protected customer aliases were moved.
 - Captured the completed migration as an Open Brain observation without
   credentials or private account data.
+
+## September 3, 2026 - Join Team tenant-copy correction
+
+- Louis identified a customer-visible legacy demo leak on Kim's direct
+  `/join` route: the page said “Join Sparkle by Sasha” despite belonging to
+  GofortheBling/Kim. The ordinary customer header intentionally hid the route,
+  but direct access correctly exposed the public page and its copy still had to
+  be tenant-owned.
+- The template mapper now rejects a known demo team identity only when it
+  conflicts with the current business name, falls back to that business name,
+  generates ordinary FAQ copy from the current team and rep, and clears the
+  stale generic promo. Custom team names and bespoke customer variants remain
+  supported.
+- Focused preview/data-scrub tests (35), Join template/route tests (17),
+  changed-file lint, and the allowlisted-branch production build passed.
+- Pushed `0ecc2f2c` and manually released it as Ready Vercel deployment
+  `dpl_4mUvuM9HdXoYMxoS8d5z5rgZ9c7z`. Assigned only the two Suite aliases and
+  `goforthebling.com`, which needed the exact fix. Bri's and Bling Kitchen's
+  protected aliases were inspected and preserved on their prior deployment.
+- Public no-auth Chrome smoke on `https://goforthebling.com/join` confirmed
+  the title, hero, FAQ, and final CTA all identify GofortheBling/Kim and that
+  no Sasha or default promo copy remains. The corrected page is left open for
+  Louis. No personal/admin or customer account was used.
+- Captured the decision, deployment evidence, and public verification in Open
+  Brain without credentials or private account data.
