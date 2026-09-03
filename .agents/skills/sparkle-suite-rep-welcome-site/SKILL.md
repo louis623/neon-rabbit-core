@@ -51,6 +51,54 @@ Use only the pieces the user asks for. Do not make one request imply every exter
 - Generate or set a temporary password, private Live Queue code, or other credential only through the approved product flow. Treat it as sensitive: never put it on the public guide or in durable memory, and confirm immediately before transmitting it to the rep.
 - Do not mutate billing, pricing reservations, subscription records, Stripe, DNS, production configuration, or the Live Queue extension unless the user explicitly asks for that exact action.
 
+### Operator launch checklist
+
+Treat the rep-facing self-serve checklist and the operator launch checklist as
+two different things. The rep checklist teaches the rep; the operator checklist
+prevents Sparkle Suite from overlooking launch work. Do not mark the latter
+complete merely because the former has a completed setup session.
+
+- Keep one durable, operator-only checklist per real customer in the Control
+  Center when that surface is available. It belongs inside the expanded customer
+  profile, not in the Demo Database or a public guide.
+- Each item needs a status (`not_started`, `in_progress`, `waiting_on_rep`,
+  `blocked`, `complete`, or `not_applicable`), a safe evidence summary or
+  blocker, and an updated timestamp. Never place credentials, DNS login
+  details, addresses, private codes, payment links, or raw support transcripts
+  in checklist evidence.
+- Do not reuse the legacy `onboarding_status` or a dashboard-unlocked flag as
+  this ledger. Those answer different questions and can conceal a missing public
+  site, trial, domain, or launch verification.
+- Start every customer with these operator-owned checks:
+  1. exact rep identity and durable `customer` classification, including
+     Customer Database placement;
+  2. intended Workspace access/trial or entitlement, verified without a live
+     checkout or charge;
+  3. public-site slug, prepared Site Settings, business/contact basics, and
+     customer-facing social handles;
+  4. live public Home, Dance Floor, and Join routes, including tenant-owned
+     copy and no stale demo promotion or identity;
+  5. Calendar and customer-show readiness: configured platform social links
+     are the source for public watch actions, never event-specific URLs;
+  6. Live Queue operational setup or an explicit `waiting_on_rep`/`blocked`
+     handoff—not an assumption that a guide was read;
+  7. approved welcome communication state (drafted, sent only when separately
+     authorized, or intentionally not needed);
+  8. closeout: exact live URLs checked, remaining owner/rep actions, and no
+     unresolved safety-sensitive blocker.
+- Add the optional custom-domain path only when the rep asks for it. Record
+  the domain as `not_applicable` otherwise. When it applies, the checklist
+  must separately cover: verified domain ownership/registrar authority;
+  Vercel attachment; the smallest DNS change required; an identity-guarded rep
+  domain mapping; live root, Trade, and Join verification; and a stable favicon
+  plus social-share card render. Preserve unrelated aliases, nameservers,
+  forwarding, contacts, billing, and other DNS records unless Louis explicitly
+  authorizes a specific change.
+- An operator may update checklist state only after the named observation or
+  verification actually succeeds. A `blocked` or `waiting_on_rep` item is a
+  valid, visible outcome—not a reason to substitute access, guess a setting, or
+  use the rep's credentials.
+
 ### Public starter guide
 
 Use [assets/rep-welcome-site-template.md](assets/rep-welcome-site-template.md) for a published guide. It is educational and encouraging, not a promotional landing page.
@@ -88,4 +136,4 @@ Use [assets/rep-welcome-site-template.md](assets/rep-welcome-site-template.md) f
 
 Report each requested component as prepared, published, sent, or intentionally left as a draft. Include coverage holes and exact recipient/delivery verification for Message Center. Do not claim a website, email, account, payment link, or message is complete until its destination confirms the outcome.
 
-When a broadly useful improvement comes from a real onboarding, update this skill and its tokenized template without copying a rep’s private data. Closeout must include read-only verification of the account classification and Control Center placement.
+When a broadly useful improvement comes from a real onboarding, update this skill and its tokenized template without copying a rep’s private data. Closeout must include read-only verification of the account classification and Control Center placement. If a Control Center operator checklist is not yet implemented, record its unresolved launch checks in the session closeout and do not imply that the product has a durable checklist.

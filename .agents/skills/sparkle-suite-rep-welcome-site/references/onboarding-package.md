@@ -30,6 +30,30 @@ Use this reference only when a request includes more than the public starter gui
 - Demo, reviewer, smoke, and sample accounts must opt into `demo` explicitly.
 - Before closeout, read the durable classification and confirm a real rep appears under **Customer Database**, not **Demo Database**.
 
+## Operator launch ledger
+
+This is internal operational continuity, not the rep's self-serve checklist and
+not evidence that the rep has made an attestation. When the Control Center
+implements it, show it as a nested, collapsible section in the expanded
+Customer Database profile. Persist status and safe evidence per step so a later
+operator can resume without reverse-engineering a session.
+
+| Check | Required evidence | Optional/blocked handling |
+| --- | --- | --- |
+| Identity and placement | Exact rep resolved; `customer` classification; Customer Database placement | Stop on ambiguous identity. |
+| Workspace access | Intended trial/entitlement plus no unintended checkout path | Never create Stripe objects as a workaround. |
+| Public-site foundation | Slug, Site Settings, business basics, and customer social handles present | Leave unknown rep details blank and name the gap. |
+| Public-route proof | Live Home, Dance Floor, and Join each resolve to the rep’s own copy | Check direct routes too; hidden navigation does not excuse stale demo content. |
+| Show and Live Queue readiness | Configured platform social links, Calendar behavior, and Live Queue setup or handoff | Mark `waiting_on_rep` or `blocked` rather than inferring completion. |
+| Communication | Welcome draft/sent state with its separate authorization | A draft is not a sent message. |
+| Optional custom domain | Registrar authority, Vercel attachment, minimal DNS change, identity-guarded mapping, live root/Trade/Join, favicon, and social card | Use `not_applicable` unless requested; never change unrelated DNS, aliases, forwarding, contacts, or billing. |
+| Closeout | Live URLs, evidence summary, and remaining owner/rep action | Keep credentials and raw private data out of the ledger. |
+
+Suggested statuses are `not_started`, `in_progress`, `waiting_on_rep`,
+`blocked`, `complete`, and `not_applicable`. A timestamp and short safe evidence
+summary belong to every changed item. The legacy `onboarding_status` and a
+dashboard-unlocked flag must not be repurposed as the launch ledger.
+
 ## Starter-guide content map
 
 - **Welcome and meeting:** a precise date/time with time-zone abbreviation; meeting link only when explicitly approved.
