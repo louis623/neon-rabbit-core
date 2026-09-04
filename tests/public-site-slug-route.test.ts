@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 const createAdminClientMock = vi.hoisted(() => vi.fn())
 const resolveAmethystPreviewRepMock = vi.hoisted(() => vi.fn())
 const loadAmethystPreviewTemplateDataMock = vi.hoisted(() => vi.fn())
+const getSiteSettingsDashboardMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: createAdminClientMock,
@@ -12,6 +13,10 @@ vi.mock('@/lib/supabase/admin', () => ({
 
 vi.mock('@/lib/amethyst/preview-rep', () => ({
   resolveAmethystPreviewRep: resolveAmethystPreviewRepMock,
+}))
+
+vi.mock('@/lib/services/site-settings', () => ({
+  getSiteSettingsDashboard: getSiteSettingsDashboardMock,
 }))
 
 vi.mock('@/lib/amethyst/preview-template-data', async (importOriginal) => {
@@ -43,7 +48,12 @@ describe('public site slug route', () => {
     createAdminClientMock.mockReset()
     resolveAmethystPreviewRepMock.mockReset()
     loadAmethystPreviewTemplateDataMock.mockReset()
+    getSiteSettingsDashboardMock.mockReset()
     loadAmethystPreviewTemplateDataMock.mockResolvedValue(defaultAmethystPreviewTemplateData)
+    getSiteSettingsDashboardMock.mockResolvedValue({
+      joinTeamAccessEnabled: true,
+      showJoinPage: true,
+    })
   })
 
   it('returns 404 for invalid public site slugs', async () => {
@@ -106,10 +116,10 @@ describe('public site slug route', () => {
     expect(html).toContain('href="/amethyst/tokens.css?v=20260725-emerald-garden"')
     expect(html).toContain('href="/amethyst/components.css?v=20260725-emerald-garden"')
     expect(html).toContain(
-      'href="/amethyst/homepage.css?v=20260802-explainer-card-readability"',
+      'href="/amethyst/homepage.css?v=20260904-event-notes"',
     )
     expect(html).toContain('src="/amethyst/tweaks-panel.jsx?v=20260725-emerald-garden"')
-    expect(html).toContain('src="/amethyst/homepage.jsx?v=20260816-inline-ticker-links"')
+    expect(html).toContain('src="/amethyst/homepage.jsx?v=20260904-event-notes"')
     expect(html).toContain(
       '/api/amethyst/homepage-template?c=rep-gracie&amp;publicSiteSlug=graciesparkleparty',
     )

@@ -1574,6 +1574,18 @@ function EventCodeRow({ code, desc }) {
   );
 }
 
+function getVisibleEventDescription(event) {
+  const description = typeof event?.description === "string" ? event.description.trim() : "";
+  if (!description) return null;
+
+  const title = typeof event?.name === "string" ? event.name.trim() : "";
+  if (title && description.localeCompare(title, undefined, { sensitivity: "base" }) === 0) {
+    return null;
+  }
+
+  return description;
+}
+
 function Events({ count }) {
   const [calendarEvent, setCalendarEvent] = useState(null);
   return (
@@ -1587,6 +1599,7 @@ function Events({ count }) {
         <div className="hp-event-grid" style={{ gridTemplateColumns: count === 1 ? "1fr" : undefined }}>
           {HOMEPAGE_EVENT_PAYLOAD.slice(0, count).map((rawEvent, i) => { const event = normalizeHomepageEvent(rawEvent); const ev = event;
             const [dateStr, timeStr = ""] = ev.when.split(" - ");
+            const visibleDescription = getVisibleEventDescription(event);
             return (
               <article key={i} className={`hp-event-card ${ev.featured ? "featured" : ""}`}>
                 {ev.featured && <span className="hp-event-pill"><span className="pip" />Featured</span>}
@@ -1605,6 +1618,12 @@ function Events({ count }) {
                     <span>{timeStr}</span>
                   </div>
                 </div>
+
+                {visibleDescription && (
+                  <p className="hp-event-description slot" data-slot="event description">
+                    {visibleDescription}
+                  </p>
+                )}
 
                 {ev.codes.length > 0 && (
                   <div className="hp-event-section">

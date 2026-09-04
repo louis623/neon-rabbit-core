@@ -2204,6 +2204,35 @@ body.homepage h1, body.homepage h2, body.homepage h3, body.homepage h4 {
   color: var(--hp-primary);
 }
 
+/* Show note — a restrained editorial inset that stays readable across skins. */
+.hp-event-description {
+  position: relative;
+  margin: 0;
+  padding: 11px 14px 11px 17px;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+  color: var(--hp-card-muted);
+  background: color-mix(in srgb, var(--hp-card-accent) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hp-card-accent) 18%, transparent);
+  border-radius: 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.58;
+  letter-spacing: 0.005em;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 38%, transparent);
+}
+.hp-event-description::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 7px;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--hp-card-accent);
+  opacity: 0.7;
+}
+
 /* Section heading w/ icon */
 .hp-event-section {
   display: flex;

@@ -83,7 +83,7 @@ describe('Amethyst homepage template data wiring', () => {
       resolve(process.cwd(), 'public/amethyst/Homepage.html'),
       'utf8',
     )
-    expect(homepage).toContain('homepage.jsx?v=20260827-media-provider-copy')
+    expect(homepage).toContain('homepage.jsx?v=20260904-event-notes')
 
     const join = readFileSync(
       resolve(process.cwd(), 'public/amethyst/Join.html'),
@@ -544,6 +544,29 @@ describe('Amethyst homepage template data wiring', () => {
     for (const icon of ['video', 'camera', 'shopping-bag', 'gift', 'calendar', 'external-link', 'tiktok', 'youtube', 'instagram', 'facebook']) {
       expect(icons).toContain(`id="${icon}"`)
     }
+  })
+
+  it('renders show descriptions as polished skin-aware notes without duplicating fallback titles', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
+      'utf8',
+    )
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('function getVisibleEventDescription(event)')
+    expect(jsx).toContain('const visibleDescription = getVisibleEventDescription(event);')
+    expect(jsx).toContain('data-slot="event description"')
+    expect(jsx).toContain('{visibleDescription}')
+    expect(jsx).toContain('description.localeCompare(title, undefined, { sensitivity: "base" }) === 0')
+    expect(css).toMatch(
+      /\.hp-event-description\s*\{[\s\S]*?color:\s*var\(--hp-card-muted\);/,
+    )
+    expect(css).toMatch(
+      /\.hp-event-description::before\s*\{[\s\S]*?background:\s*var\(--hp-card-accent\);/,
+    )
   })
 
   it('ships crawl and sharing metadata with the locked homepage export', () => {
