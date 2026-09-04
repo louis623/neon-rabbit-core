@@ -8,8 +8,6 @@ const CUSTOMER_SITE_ROUTES: Record<string, string> = {
   '/trade': '/customer-site/trade',
   '/join': '/customer-site/join',
   '/in-the-pantry': '/customer-site/in-the-pantry',
-  '/sitemap.xml': '/api/customer-site-sitemap',
-  '/robots.txt': '/api/customer-site-robots',
 }
 
 export function proxy(request: NextRequest) {
@@ -39,5 +37,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/trade', '/join', '/in-the-pantry', '/sitemap.xml', '/robots.txt', '/api/:path*'],
+  matcher: ['/', '/trade', '/join', '/in-the-pantry', '/api/:path*'],
 }

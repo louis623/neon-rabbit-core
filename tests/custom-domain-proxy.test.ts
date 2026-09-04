@@ -10,8 +10,6 @@ describe('custom-domain customer site proxy', () => {
     ['/trade', '/customer-site/trade'],
     ['/join', '/customer-site/join'],
     ['/in-the-pantry', '/customer-site/in-the-pantry'],
-    ['/sitemap.xml', '/api/customer-site-sitemap'],
-    ['/robots.txt', '/api/customer-site-robots'],
   ])('rewrites %s to its customer-site asset on a custom domain', (path, assetPath) => {
     const response = proxy(
       new NextRequest(`https://brisglowtique.com${path}`, {
