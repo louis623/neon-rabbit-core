@@ -39,6 +39,9 @@ Running log of significant work sessions. Most recent first.
   was used. The pre-existing non-final signature route was already present in
   the prior 12:09 deployment; this release did not edit Gmail or drafts and
   does not make the signature work approved.
+- OpenBrain capture was completed and verified after release with four durable
+  entries: implementation/provenance, architecture decisions, production
+  lessons, and the remaining private-onboarding/reviewer/signature follow-ups.
 
 ## September 4, 2026 - Gmail identity/signature attempt closed as incomplete
 
