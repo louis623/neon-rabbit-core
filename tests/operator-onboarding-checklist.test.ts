@@ -11,4 +11,12 @@ describe('operator onboarding checklist', () => {
   it('starts every checklist item unchecked', () => {
     expect(buildOperatorOnboardingChecklist().every((item) => item.entry.isCompleted === false)).toBe(true)
   })
+  it('includes a plain-language search visibility check', () => {
+    const searchVisibility = OPERATOR_ONBOARDING_CHECKLIST_ITEMS.find(
+      (item) => item.key === 'search_visibility',
+    )
+    expect(searchVisibility?.title).toBe('Make their site easy to find')
+    expect(searchVisibility?.description).toContain('Google and Bing')
+    expect(searchVisibility?.description).toContain('not a demo')
+  })
 })

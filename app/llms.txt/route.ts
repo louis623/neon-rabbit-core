@@ -1,11 +1,19 @@
 import { buildDefaultSparkleLlmsText } from '@/lib/seo/llms'
 import { resolveSparkleRequestOrigin } from '@/lib/seo/sparkle-crawl'
+import {
+  buildCustomerSiteLlmsText,
+  loadCustomerSiteCrawlData,
+} from '@/lib/seo/customer-site-crawl'
 
 export const dynamic = 'force-dynamic'
 
-export function GET(request: Request) {
+export async function GET(request: Request) {
+  const origin = resolveSparkleRequestOrigin(request)
+  const customerSite = await loadCustomerSiteCrawlData(origin)
   return new Response(
-    buildDefaultSparkleLlmsText(resolveSparkleRequestOrigin(request)),
+    customerSite
+      ? buildCustomerSiteLlmsText(origin, customerSite)
+      : buildDefaultSparkleLlmsText(origin),
     {
       headers: {
         'Cache-Control': 'public, max-age=0, must-revalidate',

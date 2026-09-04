@@ -82,14 +82,24 @@ complete merely because the former has a completed setup session.
      assumption that a guide was read;
   7. approved welcome communication state (drafted, sent only when separately
      authorized, or intentionally not needed);
-  8. closeout: exact live URLs checked, remaining owner/rep actions, and no
+  8. public search visibility: their public crawl files use the rep's real
+     business, public routes, and domain—not a demo identity. Confirm the
+     canonical metadata, favicon and sharing image, `robots.txt`,
+     `sitemap.xml`, `llms.txt`, and structured data are correct before asking
+     any search provider to crawl it. Submit to Google Search Console and Bing
+     Webmaster Tools only with the owner's verified property access and exact
+     authorization; search indexing is asynchronous and is not proof of a
+     same-day result;
+  9. closeout: exact live URLs checked, remaining owner/rep actions, and no
      unresolved safety-sensitive blocker.
 - Use the custom-domain items only when the rep asks for that work. When it
   applies, the checklist
   must separately cover: verified domain ownership/registrar authority;
   Vercel attachment; the smallest DNS change required; an identity-guarded rep
   domain mapping; live root, Trade, and Join verification; and a stable favicon
-  plus social-share card render. Preserve unrelated aliases, nameservers,
+  plus social-share card render. The final public search check must verify that
+  the customer domain's sitemap contains its actual public routes and that the
+  crawl files do not retain another rep's or a demo site's name. Preserve unrelated aliases, nameservers,
   forwarding, contacts, billing, and other DNS records unless Louis explicitly
   authorizes a specific change.
 - Check an item only after the named work actually succeeds. An unchecked item

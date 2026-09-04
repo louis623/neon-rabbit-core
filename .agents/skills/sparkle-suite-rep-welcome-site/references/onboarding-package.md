@@ -47,6 +47,7 @@ later operator can resume without reverse-engineering a session.
 | Show and Live Queue readiness | Configured platform social links, Calendar behavior, and Live Queue setup or handoff | Leave unchecked rather than inferring completion. |
 | Communication | Welcome draft/sent state with its separate authorization | A draft is not a sent message. |
 | Optional custom domain | Registrar authority, Vercel attachment, minimal DNS change, identity-guarded mapping, live root/Trade/Join, favicon, and social card | Use only when requested; never change unrelated DNS, aliases, forwarding, contacts, or billing. |
+| Search and AI visibility | Canonical metadata, favicon/share card, `robots.txt`, `sitemap.xml`, `llms.txt`, and structured data identify this rep and this domain; Google and Bing submission only after owner access and exact authorization | Crawling/indexing can take days or weeks. An external provider result is not a same-day launch proof. |
 | Closeout | Remaining owner/rep action is clear | Keep credentials and raw private data out of the product. |
 
 The checklist is intentionally checkbox-only. The legacy `onboarding_status` and a

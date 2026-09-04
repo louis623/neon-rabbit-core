@@ -1,4 +1,4 @@
-export type OperatorOnboardingChecklistItemKey = 'workspace_access' | 'about_section_intake' | 'public_site_foundation' | 'public_route_proof' | 'calendar_and_show_links' | 'live_queue_readiness' | 'welcome_communication' | 'custom_domain_authority' | 'custom_domain_vercel' | 'custom_domain_dns' | 'custom_domain_mapping' | 'custom_domain_route_proof' | 'custom_domain_brand_assets' | 'closeout'
+export type OperatorOnboardingChecklistItemKey = 'workspace_access' | 'about_section_intake' | 'public_site_foundation' | 'public_route_proof' | 'calendar_and_show_links' | 'live_queue_readiness' | 'welcome_communication' | 'custom_domain_authority' | 'custom_domain_vercel' | 'custom_domain_dns' | 'custom_domain_mapping' | 'custom_domain_route_proof' | 'custom_domain_brand_assets' | 'search_visibility' | 'closeout'
 
 export interface OperatorOnboardingChecklistItemDefinition { key: OperatorOnboardingChecklistItemKey; title: string; description: string; guidance?: readonly string[] }
 
@@ -17,6 +17,7 @@ export const OPERATOR_ONBOARDING_CHECKLIST_ITEMS: readonly OperatorOnboardingChe
   { key: 'custom_domain_mapping', title: 'Link the domain to the right website', description: 'Make sure the domain opens this rep’s Sparkle Suite site.' },
   { key: 'custom_domain_route_proof', title: 'Check their custom-domain pages', description: 'Open the home page and subpages on their domain to make sure they work.' },
   { key: 'custom_domain_brand_assets', title: 'Check their sharing image and favicon', description: 'Make sure their browser icon and link-preview image are ready; previews can take time to update.' },
+  { key: 'search_visibility', title: 'Make their site easy to find', description: 'Check that their sitemap, search details, and AI-friendly public information use their real site—not a demo. Submit it to Google and Bing only after that is correct.' },
   { key: 'closeout', title: 'Finish up and share next steps', description: 'Make sure the rep knows what happens next and any remaining tasks are clear.' },
 ]
 

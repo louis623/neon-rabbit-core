@@ -6,6 +6,10 @@ import {
   buildSparkleSitemap,
   resolveSparkleRequestOriginFromHeaders,
 } from '@/lib/seo/sparkle-crawl'
+import {
+  buildCustomerSiteSitemap,
+  loadCustomerSiteCrawlData,
+} from '@/lib/seo/customer-site-crawl'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,5 +22,9 @@ async function resolveSitemapOrigin() {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  return buildSparkleSitemap(await resolveSitemapOrigin())
+  const origin = await resolveSitemapOrigin()
+  const customerSite = await loadCustomerSiteCrawlData(origin)
+  return customerSite
+    ? buildCustomerSiteSitemap(origin, customerSite)
+    : buildSparkleSitemap(origin)
 }
