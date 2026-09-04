@@ -210,11 +210,13 @@ export async function removeJoinTeamMember(
     )
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('join_team_members')
     .delete()
     .eq('rep_id', repId)
     .eq('id', normalizedId)
+    .select('id')
+    .maybeSingle()
 
   if (error) {
     throw toServiceError(
@@ -225,7 +227,17 @@ export async function removeJoinTeamMember(
     )
   }
 
-  return { memberId: normalizedId }
+  if (!data) {
+    throw toServiceError(
+      'JOIN_TEAM_MEMBER_NOT_FOUND',
+      'join team member was not found for the authenticated rep',
+      "I couldn't find that team member on your Join Team roster.",
+      new Error('join team member delete returned no row'),
+      404,
+    )
+  }
+
+  return { memberId: (data as { id: string }).id }
 }
 
 export async function reorderJoinTeamRoster(

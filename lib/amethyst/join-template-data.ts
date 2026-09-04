@@ -64,6 +64,7 @@ export interface AmethystJoinTemplateData {
   heroCtaText: string
   finalPitch: string
   bpReferralUrl: string
+  hasRecruitingLink: boolean
   bpIncomeDisclosureUrl: string
   tickerTopText: string
   tradeBoardTickerItems?: AmethystTradeBoardTickerItem[]
@@ -120,6 +121,7 @@ export interface AmethystJoinTweakDefaults {
   heroCtaText: string
   finalPitch: string
   bpReferralUrl: string
+  hasRecruitingLink: boolean
   showTicker: boolean
   showHero: boolean
   showTeam: boolean
@@ -159,13 +161,14 @@ export const defaultAmethystJoinTemplateData: AmethystJoinTemplateData = {
   teamName: 'Sparkle by Sasha',
   heroTitle: 'Welcome to Sparkle by Sasha',
   promoText:
-    'November Promo: New reps get a guaranteed Diamond in their first launch pack.',
+    'Check the official Bomb Party enrollment page for current starter-pack details and promotions.',
   heroPitch:
-    "Join a crew of independent reps building real businesses on their own terms. We do live jewelry reveals, support each other through it, and yes, we have a lot of fun. There's a spot waiting for you.",
+    'Learn what it takes to become an independent rep, review the official requirements, and ask the team lead what support is currently available.',
   heroCtaText: 'See starter packs',
   finalPitch:
-    "Pick your starter pack, follow the steps on Bomb Party, and you're in. We'll set up your onboarding call within 24 hours.",
+    'Review the current official starter-pack options and enrollment requirements, then ask the team lead any questions before you decide.',
   bpReferralUrl: 'https://bombparty.com/?ref=sparklebysasha',
+  hasRecruitingLink: true,
   bpIncomeDisclosureUrl:
     'https://bombpartyassets.blob.core.windows.net/exigoresourcelibraryassets/Rep%20Use%20Documents/Bomb%20Party_Income%20Disclosure%20Statement_2025%20%281%29.pdf',
   tickerTopText:
@@ -267,17 +270,17 @@ export const defaultAmethystJoinTemplateData: AmethystJoinTemplateData = {
   ],
   faqAnswers: {
     whatIsTeam:
-      "Sparkle by Sasha is a tight-knit team of independent Bomb Party reps led by Sasha. We're a group of women running our own businesses on our own terms, sharing what works, cheering each other on, and having a ridiculous amount of fun doing live jewelry reveals.",
+      'Sparkle by Sasha is a team of independent Bomb Party reps led by Sasha. Ask the team lead how the group communicates and what support is currently available.',
     cost:
-      "Bomb Party starter packs typically run $169-$249 and include sample jewelry boxes plus business tools to get you started. The exact options change with current promotions, so tap the join button and you'll see the latest packs available.",
+      'Starter-pack options, contents, and prices can change. Review the current official enrollment page before making a decision.',
     experience:
-      "Not at all. Most of us started with zero sales experience. If you can talk to your phone and have fun on camera, you can do this. We'll walk you through the rest.",
+      'Review the current official requirements and ask the team lead what training or onboarding help is available for new reps.',
     timeCommitment:
-      "Totally up to you. Some reps go live a few times a month for fun money, others run multiple shows a week as their full-time gig. There's no minimum, just whatever fits your life.",
+      'The time needed depends on your goals and how you run your independent business. Review the official policies and plan a schedule that is realistic for you.',
     support:
-      "Personalized 1:1 onboarding, our private team chat for daily questions, weekly group coaching calls, plus all the Bomb Party corporate training and tools. You're never figuring this out alone.",
+      'Support differs by team and can change. Ask the team lead which onboarding, communication, and training resources are available now.',
     income:
-      "Yes, and it varies a lot. Income depends on the shows you put in, the customers you build, and how you grow. We'll be honest with you about realistic expectations and show you how to set goals that fit your life.",
+      'Income is not guaranteed and results vary. Read the current Income Disclosure Statement and consider your costs, time, and goals before enrolling.',
   },
 }
 
@@ -295,6 +298,7 @@ const lockedTweakDefaults: Omit<
   | 'heroCtaText'
   | 'finalPitch'
   | 'bpReferralUrl'
+  | 'hasRecruitingLink'
   | 'tickerTopText'
 > = {
   showPromo: true,
@@ -345,6 +349,7 @@ export function buildAmethystJoinTweakDefaults(
     heroCtaText: data.heroCtaText,
     finalPitch: redactPublicRepFullName(data.finalPitch, data.repName),
     bpReferralUrl: data.bpReferralUrl,
+    hasRecruitingLink: data.hasRecruitingLink,
     tickerTopText: data.tickerTopText,
     ...lockedTweakDefaults,
   }, appearancePreset)

@@ -371,6 +371,33 @@ export async function getSiteSettingsDashboard(
   })
 }
 
+export async function getTargetedJoinPageAccessFlags(
+  supabase: SupabaseClient,
+  repId: string,
+) {
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('join_team_access_enabled, show_join_page')
+    .eq('rep_id', repId)
+    .maybeSingle<
+      Pick<SiteSettingsRow, 'join_team_access_enabled' | 'show_join_page'>
+    >()
+
+  if (error) {
+    throw toServiceError(
+      'SITE_SETTINGS_LOOKUP_FAILED',
+      'failed to load targeted Join page access settings',
+      "I couldn't load this Join page right now.",
+      error,
+    )
+  }
+
+  return {
+    joinTeamAccessEnabled: data?.join_team_access_enabled === true,
+    showJoinPage: data?.show_join_page === true,
+  }
+}
+
 export async function updateSiteSettingsDashboard(
   supabase: SupabaseClient,
   repId: string,

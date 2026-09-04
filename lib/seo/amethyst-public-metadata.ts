@@ -24,7 +24,7 @@ export interface AmethystPublicMetadata {
   canonicalUrl: string
   openGraph: {
     type: 'website'
-    siteName: 'Sparkle Suite'
+    siteName: string
     title: string
     description: string
     url: string

@@ -328,7 +328,7 @@ describe('Britt With Bling hybrid public site contract', () => {
     expect((join as { heroTitle?: string }).heroTitle).toBe(
       'WELCOME TO THE VIRTUOUS FIZZERS',
     )
-    expect(join.heroCtaText).toBe('CLAIM MY DIAMOND AND START MY CLIMB')
+    expect(join.heroCtaText).toBe('REVIEW OFFICIAL JOIN DETAILS')
     expect(join.bpReferralUrl).toBe(BRITT_WITH_BLING_PROFILE.joinPackUrl)
     expect(join.teamMembers).toEqual([])
   })

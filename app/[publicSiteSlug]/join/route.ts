@@ -32,5 +32,6 @@ export async function GET(
     repIdOverride: rep.id,
     canonicalPathOverride: `/${slug}/join`,
     publicSiteSlugOverride: slug,
+    joinVisibilityVerified: true,
   })
 }

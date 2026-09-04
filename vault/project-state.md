@@ -1,5 +1,40 @@
 # Project State
 
+## September 4, 2026 - Team Management, private onboarding, and Join are hardened locally
+
+- On allowlisted branch `codex/nic-nac-trade-hardening`, the approved Rocky plan
+  has been implemented for PR review only. No deployment, alias, DNS, account,
+  billing, customer, email, ChatGPT Site, or real invite change was made.
+- Team Management roster APIs/tools now require `manual_beta` or `active`; card
+  removal is confirmed and permanent, while linked onboarding participants
+  preserve their history. Nic-Nac removal remains approval-gated.
+- Private onboarding uses exact approved ChatGPT Sites bases, PII-minimized
+  first-name/lead/team paths, opaque query tokens, public DTO scrubbing, and
+  bounded IP/action plus invite-fingerprint rate limits. Rotation validates a
+  replacement URL before invalidating the old token.
+- Targeted Join is strictly gated by both explicit database flags, distinguishes
+  business/show from managed-team identity, renders honest unavailable CTAs,
+  removes unsupported recruiting claims, and ships a production React bundle
+  instead of browser Babel/development runtimes.
+- The synthetic reviewer reset now clears onboarding conversations/messages
+  before Team Management participants and cards so the documented Alex
+  walkthrough is repeatable. Manual
+  ChatGPT Sites provisioning remains the outstanding provider hook.
+
+## September 4, 2026 - Gmail brand signatures remain non-final
+
+- Louis asked for five brand signatures on `louis@neonrabbit.net`. The alias
+  routing and five named Gmail signatures exist, but Louis reviewed the
+  Compose result and rejected the visual outcome as not good enough. Do not
+  describe this work as complete or ready without fresh visual approval.
+- The current marks are interim only. The canonical Neon Rabbit mark is the
+  multicolor badge; never substitute a white or monochrome rabbit. Future work
+  must inspect approved source assets first and validate each signature at real
+  Gmail Compose width, including crop margins, logo proportion, alignment, and
+  white-background legibility.
+- No email was sent and no customer draft was changed. The legacy `Louis Neon
+  Rabbit` signature was preserved. New-mail default remains `Neon Rabbit`.
+
 ## September 3, 2026 - Control Center home accounting cards mirror Lane
 
 - The Suite Control Center home now reads all three summary values from the

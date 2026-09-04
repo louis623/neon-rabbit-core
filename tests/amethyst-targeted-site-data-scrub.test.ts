@@ -23,6 +23,10 @@ vi.mock('@/lib/amethyst/preview-template-data', () => ({
     mocks.loadAmethystPreviewTemplateData(...args),
 }))
 
+vi.mock('@/lib/amethyst/join-page-access', () => ({
+  canServeTargetedAmethystJoinPage: vi.fn(async () => true),
+}))
+
 vi.mock('@/lib/amethyst/trade-board-listings', async () => {
   const actual = await vi.importActual<typeof import('@/lib/amethyst/trade-board-listings')>(
     '@/lib/amethyst/trade-board-listings',

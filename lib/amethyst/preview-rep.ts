@@ -18,6 +18,7 @@ interface ResolveAmethystPreviewRepOptions {
   repId?: string | null
   publicSiteSlug?: string | null
   select?: string
+  strict?: boolean
 }
 
 type PreviewAdminClient = {
@@ -172,6 +173,7 @@ export async function resolveAmethystPreviewRep(
 
     const rep = await loadRepById(admin, repId, select)
     if (rep) return (await canServePublicCustomerSite(admin, rep.id)) ? rep : null
+    if (options.strict) return null
   }
 
   for (const email of getCandidateEmails(env)) {

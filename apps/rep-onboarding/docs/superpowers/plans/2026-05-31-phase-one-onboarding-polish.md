@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> Historical terminology note (September 4, 2026): the product name is **Team Management**. Older “Manage My Team” wording below describes the same feature and is retained only as historical plan context.
+
 **Goal:** Improve the Britt with Bling new-rep onboarding demo with the approved Phase 1 polish and onboarding flow upgrades, while leaving Sparkle Suite question inbox integration for Phase 2.
 
 **Architecture:** Keep the app as a data-driven Vite/React prototype. Improve the rep-facing experience through focused component/state/CSS changes in the existing files, with no backend, authentication, export workflow, or Sparkle Suite sync in Phase 1.

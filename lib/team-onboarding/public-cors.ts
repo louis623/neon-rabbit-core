@@ -1,42 +1,24 @@
-const DEFAULT_TEAM_ONBOARDING_ORIGIN =
-  'https://onboarding.yoursparklesuite.com'
-const LEGACY_TEAM_ONBOARDING_ORIGIN =
-  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
-
-function normalizedOrigin(value: string) {
-  try {
-    return new URL(value).origin
-  } catch {
-    return null
-  }
-}
-
-export function getTeamOnboardingAllowedOrigins() {
-  const configured = (process.env.TEAM_ONBOARDING_ALLOWED_ORIGINS ?? '')
-    .split(',')
-    .map((value) => normalizedOrigin(value.trim()))
-    .filter((value): value is string => Boolean(value))
-  const configuredBaseUrl = normalizedOrigin(process.env.TEAM_ONBOARDING_BASE_URL ?? '')
-  const customDomainEnabled =
-    process.env.TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED === 'true'
-
-  return new Set([
-    ...(customDomainEnabled ? [DEFAULT_TEAM_ONBOARDING_ORIGIN] : []),
-    LEGACY_TEAM_ONBOARDING_ORIGIN,
-    ...configured,
-    ...(customDomainEnabled && configuredBaseUrl ? [configuredBaseUrl] : []),
-  ])
-}
+import { getTeamOnboardingAllowedOrigins } from '@/lib/team-onboarding/invite-url'
 
 export function getTeamOnboardingCorsHeaders(request: Request) {
   const headers = new Headers()
   const origin = request.headers.get('origin')
-  if (!origin || !getTeamOnboardingAllowedOrigins().has(origin)) return headers
+  if (!origin) return headers
+
+  headers.set('Vary', 'Origin')
+  if (!getTeamOnboardingAllowedOrigins().has(origin)) return headers
 
   headers.set('Access-Control-Allow-Origin', origin)
   headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   headers.set('Access-Control-Allow-Headers', 'Content-Type')
   headers.set('Access-Control-Max-Age', '86400')
-  headers.set('Vary', 'Origin')
+  return headers
+}
+
+export function getTeamOnboardingPublicHeaders(request: Request) {
+  const headers = getTeamOnboardingCorsHeaders(request)
+  headers.set('Cache-Control', 'no-store, max-age=0')
+  headers.set('Pragma', 'no-cache')
+  headers.set('Referrer-Policy', 'no-referrer')
   return headers
 }

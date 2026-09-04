@@ -132,7 +132,7 @@ function applyRequiredSetupDraftToSettings(
     draft.customerFacingDisplayName,
     settings.businessName,
   )
-  const teamName = firstDraftText(draft.liveShowName, businessName, settings.teamName)
+  const teamName = firstDraftText(settings.teamName)
   const tagline = firstDraftText(draft.welcomeSupportingLine, settings.tagline)
   const bannerText = firstDraftText(draft.welcomeHeadline, settings.bannerText)
 
@@ -382,14 +382,17 @@ function targetedHomepageAboutParagraphs(
 function buildRepOwnedJoinFaq(
   teamName: string,
   repName: string,
+  hasRecruitingLink: boolean,
 ): AmethystJoinTemplateData['faqAnswers'] {
   const publicRepName = getPublicRepName(repName)
   return {
-    whatIsTeam: `${teamName} details will appear after ${publicRepName} adds team information.`,
-    cost: 'Review current starter pack details before joining.',
-    experience: `${publicRepName} can answer onboarding and experience questions directly.`,
-    timeCommitment: `${publicRepName} can discuss schedule expectations and what setup looks like.`,
-    support: 'Support details will appear after this rep configures them.',
+    whatIsTeam: `${teamName} is the team ${publicRepName} manages. Ask ${publicRepName} for the current team details before deciding whether it is right for you.`,
+    cost: hasRecruitingLink
+      ? 'Starter pack options and prices can change. Use the official link on this page to review the current details before joining.'
+      : `Starter pack details are not connected on this page yet. Ask ${publicRepName} for the current official options before joining.`,
+    experience: `${publicRepName} can explain the current onboarding requirements and answer experience questions directly.`,
+    timeCommitment: `${publicRepName} can discuss what setup and a realistic show schedule can look like.`,
+    support: `Ask ${publicRepName} what support is currently available to new team members.`,
     income: 'Review the income disclosure before joining. Income varies by effort, sales, and time.',
   }
 }
@@ -500,7 +503,11 @@ function applyCustomerTarget(
           }
         : data.join.footerColumn,
       faqAnswers: scrubGenericJoin
-        ? buildRepOwnedJoinFaq(data.join.teamName, data.join.repName)
+        ? buildRepOwnedJoinFaq(
+            data.join.teamName,
+            data.join.repName,
+            data.join.hasRecruitingLink,
+          )
         : data.join.faqAnswers,
       footerLinks: {
         ...data.join.footerLinks,
@@ -676,7 +683,8 @@ export function mapPreviewSettingsToJoinTemplateData(
   const teamName = resolveTenantTeamName(settings.teamName, businessName)
   const shopUrl = resolveShopUrl(extras)
   const streamingLinks = asRecord(extras.streamingLinks)
-  const joinUrl = clean(streamingLinks.join) || shopUrl
+  const joinUrl = clean(streamingLinks.join) || clean(extras.shopLink)
+  const hasRecruitingLink = Boolean(joinUrl)
 
   const join: AmethystJoinTemplateData = {
     ...defaultAmethystJoinTemplateData,
@@ -687,15 +695,18 @@ export function mapPreviewSettingsToJoinTemplateData(
     teamName,
     memberTeamName: settings.memberTeamName?.trim() || undefined,
     heroTitle: `Join ${teamName}`,
-    heroPitch: `Join ${teamName} with ${repName}. Build your Bomb Party business with a clear live-show path, support, and a Sparkle Suite-ready customer hub.`,
+    heroPitch: `Explore what it takes to join ${teamName} with ${repName}, review the current official details, and ask questions before you decide.`,
     promoText: '',
-    finalPitch: `Pick your starter pack, follow the steps on Bomb Party, and connect with ${repName} for the next onboarding step.`,
+    finalPitch: hasRecruitingLink
+      ? `Review the current official starter pack options, then connect with ${repName} for the next onboarding step.`
+      : `Starter pack details are not connected here yet. Connect with ${repName} for the current official options and next steps.`,
     bpReferralUrl: joinUrl,
+    hasRecruitingLink,
     tickerTopText: buildTicker(settings, defaultAmethystJoinTemplateData.tickerTopText),
     shopUrl,
     footerTagline: firstText(settings.tagline, defaultAmethystJoinTemplateData.footerTagline),
     legalDisclaimer: buildLegalDisclaimer(businessName, 'join'),
-    faqAnswers: buildRepOwnedJoinFaq(teamName, repName),
+    faqAnswers: buildRepOwnedJoinFaq(teamName, repName, hasRecruitingLink),
     repSocialLinks: {
       tiktok: normalizeSocialUrl('tiktok', settings.socialHandles.tiktok),
       website: shopUrl,
@@ -741,12 +752,12 @@ function mapJoinTeamRosterToTemplateMembers(
     bio: member.bio || undefined,
     isVisible: member.isVisible,
     socialLinks: {
-      tiktok: member.links.tiktok,
-      facebook: member.links.facebook,
-      instagram: member.links.instagram,
-      website: member.links.website,
-      youtube: member.links.youtube,
-      whatnot: member.links.whatnot,
+      ...(member.links.tiktok ? { tiktok: member.links.tiktok } : {}),
+      ...(member.links.facebook ? { facebook: member.links.facebook } : {}),
+      ...(member.links.instagram ? { instagram: member.links.instagram } : {}),
+      ...(member.links.website ? { website: member.links.website } : {}),
+      ...(member.links.youtube ? { youtube: member.links.youtube } : {}),
+      ...(member.links.whatnot ? { whatnot: member.links.whatnot } : {}),
     },
   }))
 }

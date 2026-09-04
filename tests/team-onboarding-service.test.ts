@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   createTeamOnboardingParticipant,
@@ -30,6 +30,14 @@ function createQueryResult(data: unknown, error: unknown = null) {
 }
 
 describe('team onboarding service', () => {
+  beforeEach(() => {
+    process.env.TEAM_ONBOARDING_BASE_URL =
+      'https://approved-lead-onboarding.chatgpt.site'
+    process.env.TEAM_ONBOARDING_ALLOWED_ORIGINS =
+      'https://approved-lead-onboarding.chatgpt.site,https://onboarding.yoursparklesuite.com'
+    process.env.TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED = 'true'
+  })
+
   it('creates a URL-safe team name without exposing a person name', () => {
     expect(createTeamOnboardingUrlSlug('The Virtuous Fizzers')).toBe(
       'virtuous-fizzers',
@@ -62,6 +70,7 @@ describe('team onboarding service', () => {
       displayName: ' Lindsey ',
       contactEmail: ' lindsey@example.com ',
       baseUrl: 'https://onboarding.yoursparklesuite.com',
+      leadDisplayName: 'Brittany James',
       teamName: 'The Virtuous Fizzers',
       tokenFactory: () => 'visible-token-for-lindsey',
     })
@@ -80,7 +89,7 @@ describe('team onboarding service', () => {
       'visible-token-for-lindsey',
     )
     expect(result.accessUrl).toBe(
-      'https://onboarding.yoursparklesuite.com/virtuous-fizzers?invite=visible-token-for-lindsey',
+      'https://onboarding.yoursparklesuite.com/lindsey-brittany-virtuous-fizzers?invite=visible-token-for-lindsey',
     )
     expect(result.participant.displayName).toBe('Lindsey')
   })
@@ -112,6 +121,7 @@ describe('team onboarding service', () => {
     const result = await createTeamOnboardingParticipant(supabase, 'rep-britt', {
       displayName: 'Ignored client name',
       joinTeamMemberId: 'member-rayna',
+      leadDisplayName: 'Brittany James',
       teamName: 'The Virtuous Fizzers',
       tokenFactory: () => 'rayna-visible-token',
     })
@@ -129,7 +139,7 @@ describe('team onboarding service', () => {
   })
 
   it('creates a fresh link for the same participant without losing progress identity', async () => {
-    const participantQuery = createQueryResult({
+    const participantRow = {
       id: 'participant-rayna',
       owner_rep_id: 'rep-britt',
       join_team_member_id: 'member-rayna',
@@ -143,9 +153,12 @@ describe('team onboarding service', () => {
       last_activity_at: '2026-08-30T12:30:00.000Z',
       archived_at: null,
       workspace_conversation_id: 'conversation-rayna',
-    })
+    }
+    const participantLookupQuery = createQueryResult(participantRow)
+    const participantUpdateQuery = createQueryResult(participantRow)
+    const queries = [participantLookupQuery, participantUpdateQuery]
     const supabase = {
-      from: vi.fn(() => participantQuery),
+      from: vi.fn(() => queries.shift()),
     } as never
 
     const result = await refreshTeamOnboardingParticipantAccess(
@@ -154,19 +167,49 @@ describe('team onboarding service', () => {
       'participant-rayna',
       {
         teamName: 'The Virtuous Fizzers',
+        leadDisplayName: 'Brittany James',
         tokenFactory: () => 'fresh-visible-token',
       },
     )
 
-    expect(participantQuery.update).toHaveBeenCalledWith(
+    expect(participantUpdateQuery.update).toHaveBeenCalledWith(
       expect.objectContaining({ access_token_hash: expect.any(String) }),
     )
-    expect(participantQuery.eq).toHaveBeenCalledWith('owner_rep_id', 'rep-britt')
-    expect(participantQuery.eq).toHaveBeenCalledWith('id', 'participant-rayna')
-    expect(participantQuery.neq).toHaveBeenCalledWith('status', 'archived')
+    expect(participantLookupQuery.eq).toHaveBeenCalledWith('owner_rep_id', 'rep-britt')
+    expect(participantLookupQuery.eq).toHaveBeenCalledWith('id', 'participant-rayna')
+    expect(participantUpdateQuery.neq).toHaveBeenCalledWith('status', 'archived')
     expect(result.participant.id).toBe('participant-rayna')
     expect(result.accessUrl).toContain('invite=fresh-visible-token')
-    expect(result.accessUrl).toContain('/virtuous-fizzers?')
+    expect(result.accessUrl).toContain('/rayna-brittany-virtuous-fizzers?')
+  })
+
+  it('does not rotate a token when the participant identity cannot produce a safe URL', async () => {
+    const participantLookupQuery = createQueryResult({
+      id: 'participant-unsafe',
+      owner_rep_id: 'rep-britt',
+      display_name: 'unsafe@example.com',
+      status: 'started',
+    })
+    const participantUpdateQuery = createQueryResult(null)
+    const queries = [participantLookupQuery, participantUpdateQuery]
+    const supabase = {
+      from: vi.fn(() => queries.shift()),
+    } as never
+
+    await expect(
+      refreshTeamOnboardingParticipantAccess(
+        supabase,
+        'rep-britt',
+        'participant-unsafe',
+        {
+          leadDisplayName: 'Brittany James',
+          tokenFactory: () => 'unused-fresh-token',
+        },
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT' })
+
+    expect(supabase.from).toHaveBeenCalledTimes(1)
+    expect(participantUpdateQuery.update).not.toHaveBeenCalled()
   })
 
   it('lists participants with progress and unread message counts for the owning rep', async () => {

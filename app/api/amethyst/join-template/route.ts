@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server'
 
 import { buildAmethystJoinBootstrapScript } from '@/lib/amethyst/join-template-data'
 import { loadAmethystPreviewTemplateData } from '@/lib/amethyst/preview-template-data'
+import { canServeTargetedAmethystJoinPage } from '@/lib/amethyst/join-page-access'
 import { resolveAmethystRequestCustomDomainHost } from '@/lib/amethyst/host-routing'
 import { applyCustomDomainToTemplateData } from '@/lib/amethyst/public-site-links'
 import { resolveAmethystRequestTarget } from '@/lib/amethyst/request-rep-target'
 import { loadAmethystTradeBoardPreviewListings } from '@/lib/amethyst/trade-board-listings'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   const target = resolveAmethystRequestTarget(request)
@@ -16,6 +20,12 @@ export async function GET(request: Request) {
   const lookupTarget = {
     ...(publicSiteSlug ? { publicSiteSlug } : {}),
     repId,
+  }
+  if (!(await canServeTargetedAmethystJoinPage(target))) {
+    return new NextResponse('Not found', {
+      status: 404,
+      headers: { 'cache-control': 'no-store' },
+    })
   }
   const [templateData, tradeBoardListings] = await Promise.all([
     loadAmethystPreviewTemplateData(lookupTarget),

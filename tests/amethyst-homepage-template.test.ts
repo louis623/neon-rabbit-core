@@ -58,11 +58,10 @@ describe('Amethyst homepage template data wiring', () => {
     expect(serialized).not.toContain("Jane's Sparkle Party")
   })
 
-  it('loads public JSX exports with the React Babel preset', () => {
+  it('loads legacy public JSX exports with Babel and ships Join as a production bundle', () => {
     const htmlFiles = [
       'public/amethyst/Homepage.html',
       'public/amethyst/Trade.html',
-      'public/amethyst/Join.html',
       'public/amethyst/Pantry.html',
       'public/amethyst/Unsubscribe.html',
     ]
@@ -85,6 +84,15 @@ describe('Amethyst homepage template data wiring', () => {
       'utf8',
     )
     expect(homepage).toContain('homepage.jsx?v=20260827-media-provider-copy')
+
+    const join = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/Join.html'),
+      'utf8',
+    )
+    expect(join).toContain('src="join-runtime.js?')
+    expect(join).not.toContain('type="text/babel"')
+    expect(join).not.toContain('react.development')
+    expect(join).not.toContain('babel')
   })
 
   it('keeps the shared tweaks helper scoped while exporting controls on window', () => {

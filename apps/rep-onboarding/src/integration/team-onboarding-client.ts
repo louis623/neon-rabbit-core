@@ -22,9 +22,16 @@ function getNormalizedApiBaseUrl(apiBaseUrl: string) {
   return apiBaseUrl.replace(/\/+$/, '');
 }
 
+function buildInviteEndpoint(apiBaseUrl: string, endpoint = '') {
+  const url = new URL(
+    `${getNormalizedApiBaseUrl(apiBaseUrl)}/api/team-onboarding/access${endpoint}`,
+  );
+  return url;
+}
+
 export function getConfiguredInviteToken(): string | null {
   const params = new URLSearchParams(window.location.search);
-  return params.get('invite') ?? import.meta.env.VITE_TEAM_ONBOARDING_INVITE_TOKEN ?? null;
+  return params.get('invite');
 }
 
 export function getSparkleSuiteApiBaseUrl(): string | null {
@@ -35,8 +42,9 @@ export async function fetchRemoteOnboardingState({
   apiBaseUrl,
   inviteToken,
 }: RemoteOnboardingRequest): Promise<RemoteOnboardingState> {
-  const baseUrl = getNormalizedApiBaseUrl(apiBaseUrl);
-  const response = await fetch(`${baseUrl}/api/team-onboarding/access/${encodeURIComponent(inviteToken)}`);
+  const url = buildInviteEndpoint(apiBaseUrl);
+  url.searchParams.set('invite', inviteToken);
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(`Could not load Sparkle Suite onboarding state (${response.status} ${response.statusText}).`);
@@ -50,8 +58,9 @@ export async function submitRemoteProgress({
   inviteToken,
   submission,
 }: RemoteProgressRequest): Promise<void> {
-  const baseUrl = getNormalizedApiBaseUrl(apiBaseUrl);
-  const response = await fetch(`${baseUrl}/api/team-onboarding/access/${encodeURIComponent(inviteToken)}/progress`, {
+  const url = buildInviteEndpoint(apiBaseUrl, '/progress');
+  url.searchParams.set('invite', inviteToken);
+  const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(submission),
@@ -67,8 +76,9 @@ export async function submitRemoteQuestion({
   inviteToken,
   submission,
 }: RemoteMessageRequest): Promise<RemoteMessageReceipt> {
-  const baseUrl = getNormalizedApiBaseUrl(apiBaseUrl);
-  const response = await fetch(`${baseUrl}/api/team-onboarding/access/${encodeURIComponent(inviteToken)}/messages`, {
+  const url = buildInviteEndpoint(apiBaseUrl, '/messages');
+  url.searchParams.set('invite', inviteToken);
+  const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(submission),

@@ -16,12 +16,15 @@ import {
   loadAmethystPreviewTemplateData,
 } from '@/lib/amethyst/preview-template-data'
 import { resolveAmethystRequestRepId } from '@/lib/amethyst/request-rep-target'
+import { resolveAmethystRequestTarget } from '@/lib/amethyst/request-rep-target'
+import { canServeTargetedAmethystJoinPage } from '@/lib/amethyst/join-page-access'
 import { getPublicRepName } from '@/lib/amethyst/public-rep-name'
 
 interface RenderAmethystPublicAssetResponseOptions {
   repIdOverride?: string | null
   canonicalPathOverride?: string | null
   publicSiteSlugOverride?: string | null
+  joinVisibilityVerified?: boolean
 }
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -40,6 +43,7 @@ const AMETHYST_ASSETS = new Set([
   'homepage.jsx',
   'join.css',
   'Join.html',
+  'join-runtime.js',
   'join.jsx',
   'pantry.css',
   'Pantry.html',
@@ -134,7 +138,7 @@ function buildTargetedPageText(
       return {
         title: "Join Heather's BlingKitchen Team - Opal Sparkling Gems",
         description:
-          "Join Heather Daugherty's Opal Sparkling Gems team and build a Bomb Party business with warm, practical mentorship.",
+          "Learn about Heather Daugherty's Opal Sparkling Gems team, review official enrollment details, and ask what support is currently available.",
       }
     }
 
@@ -238,6 +242,45 @@ function applyCanonicalPathOverride(
   }
 }
 
+function buildRenderedPublicMetadata(
+  page: AmethystPublicPage,
+  origin: string,
+  templateData?: AmethystPreviewTemplateData | null,
+  canonicalPathOverride?: string | null,
+) {
+  if (!templateData) {
+    return applyCanonicalPathOverride(
+      buildAmethystPublicMetadata(page, { origin }),
+      origin,
+      canonicalPathOverride,
+    )
+  }
+
+  const pageText = buildTargetedPageText(page, templateData)
+  const defaultMetadata = applyCanonicalPathOverride(
+    buildAmethystPublicMetadata(page, { origin }),
+    origin,
+    canonicalPathOverride,
+  )
+  return {
+    ...defaultMetadata,
+    ...pageText,
+    openGraph: {
+      ...defaultMetadata.openGraph,
+      ...pageText,
+      siteName: templateData.homepage.businessName,
+    },
+    twitter: {
+      ...defaultMetadata.twitter,
+      ...pageText,
+    },
+  }
+
+}
+
+export const buildRenderedAmethystPublicMetadataForTest =
+  buildRenderedPublicMetadata
+
 function renderMetadataBlock(
   page: AmethystPublicPage,
   origin: string,
@@ -247,35 +290,12 @@ function renderMetadataBlock(
   const faviconTag = `<link rel="icon" type="image/png" href="${escapeHtmlAttribute(
     new URL('/icon', origin).toString(),
   )}" />`
-
-  if (!templateData) {
-    const metadata = applyCanonicalPathOverride(
-      buildAmethystPublicMetadata(page, { origin }),
-      origin,
-      canonicalPathOverride,
-    )
-    return `${buildMetadataTagsFromPublicMetadata(metadata).map(renderMetaTag).join('\n')}\n${faviconTag}`
-  }
-
-  const pageText = buildTargetedPageText(page, templateData)
-  const defaultMetadata = applyCanonicalPathOverride(
-    buildAmethystPublicMetadata(page, { origin }),
+  const metadata = buildRenderedPublicMetadata(
+    page,
     origin,
+    templateData,
     canonicalPathOverride,
   )
-  const metadata = {
-    ...defaultMetadata,
-    ...pageText,
-    openGraph: {
-      ...defaultMetadata.openGraph,
-      ...pageText,
-    },
-    twitter: {
-      ...defaultMetadata.twitter,
-      ...pageText,
-    },
-  }
-
   return `${buildMetadataTagsFromPublicMetadata(metadata).map(renderMetaTag).join('\n')}\n${faviconTag}`
 }
 
@@ -401,6 +421,15 @@ export async function renderAmethystPublicAssetResponse(
     const page = AMETHYST_PUBLIC_HTML_PAGES[assetPath]
     const templateScriptPage = AMETHYST_TEMPLATE_SCRIPT_PAGES[assetPath]
     const requestUrl = new URL(request.url)
+    if (page === 'join' && !options.joinVisibilityVerified) {
+      const target = resolveAmethystRequestTarget(request)
+      if (!(await canServeTargetedAmethystJoinPage(target))) {
+        return new Response('Not found', {
+          status: 404,
+          headers: { 'Cache-Control': 'no-store' },
+        })
+      }
+    }
     const repId = options.repIdOverride?.trim() || resolveAmethystRequestRepId(request)
     const resolvedOptions = repId ? { ...options, repIdOverride: repId } : options
     const templateData =

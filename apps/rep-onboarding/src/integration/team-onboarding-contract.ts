@@ -1,5 +1,4 @@
 export interface RemoteOnboardingParticipant {
-  id: string;
   displayName: string;
   status: 'invited' | 'started' | 'needs_help' | 'completed' | 'archived';
   createdAt: string | null;
@@ -7,14 +6,12 @@ export interface RemoteOnboardingParticipant {
 }
 
 export interface RemoteOnboardingTeam {
-  ownerRepId: string;
   displayName: string;
   businessName: string;
   teamName: string;
 }
 
 export interface RemoteOnboardingProgress {
-  participantId: string;
   stepId: string;
   status: 'not_started' | 'done' | 'needs_help';
   completedAt: string | null;
@@ -22,8 +19,6 @@ export interface RemoteOnboardingProgress {
 }
 
 export interface RemoteOnboardingMessage {
-  id: string;
-  participantId: string;
   senderType: 'participant' | 'team_lead';
   body: string;
   readAt: string | null;

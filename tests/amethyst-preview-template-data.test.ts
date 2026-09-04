@@ -203,7 +203,27 @@ describe('Amethyst preview template data', () => {
     expect(join.bpReferralUrl).toBe(
       'https://www.bombparty.com/shop/sparkle-suite-demo/packs',
     )
+    expect(join.hasRecruitingLink).toBe(true)
     expect(join.footerLinks.contact).toBe('mailto:demo@example.com')
+  })
+
+  it('uses only an explicit recruiting or exact shop link and stays honest when neither exists', () => {
+    const exactShop = mapPreviewSettingsToJoinTemplateData(demoSettings, {
+      shopLink: 'https://www.bombparty.com/shop/exact-rep',
+      streamingLinks: {},
+    })
+    const noLink = mapPreviewSettingsToJoinTemplateData(demoSettings, {
+      streamingLinks: {},
+    })
+
+    expect(exactShop.bpReferralUrl).toBe(
+      'https://www.bombparty.com/shop/exact-rep',
+    )
+    expect(exactShop.hasRecruitingLink).toBe(true)
+    expect(noLink.bpReferralUrl).toBe('')
+    expect(noLink.hasRecruitingLink).toBe(false)
+    expect(noLink.finalPitch).toContain('not connected here yet')
+    expect(noLink.faqAnswers.cost).toContain('not connected on this page yet')
   })
 
   it('renders only saved social profiles and supports a Whatnot handle', () => {
@@ -404,7 +424,7 @@ describe('Amethyst preview template data', () => {
 
     expect(data.join.teamName).toBe('GofortheBling')
     expect(data.join.heroTitle).toBe('Join GofortheBling')
-    expect(data.join.heroPitch).toContain('Join GofortheBling with Kim')
+    expect(data.join.heroPitch).toContain('join GofortheBling with Kim')
     expect(data.join.finalPitch).toContain('connect with Kim')
     expect(data.join.promoText).toBe('')
     expect(JSON.stringify(data.join.faqAnswers)).not.toContain('Sasha')
@@ -459,7 +479,7 @@ describe('Amethyst preview template data', () => {
           businessName: 'Gracie Smoke',
           bannerText: 'Welcome to Gracie Smoke',
           tagline: 'A polished place to shop Gracie Smoke.',
-          teamName: 'Gracie Smoke',
+          teamName: "Gracie's Team",
         })),
         getRequiredSetupState: vi.fn(async () => ({
           id: 'setup-gracie',
@@ -508,7 +528,7 @@ describe('Amethyst preview template data', () => {
 
     expect(data.appearancePreset).toBe('rose_quartz')
     expect(data.homepage.businessName).toBe("Gracie's Sparkle Party")
-    expect(data.homepage.teamName).toBe("Gracie's Sparkle Party Live")
+    expect(data.homepage.teamName).toBe("Gracie's Team")
     expect(data.homepage.heroHeadline).toBe("Welcome to Gracie's Sparkle Party.")
     expect(data.homepage.heroSub).toBe(
       'Join me for fun jewelry reveals, friendly live shows, and sparkle you can shop anytime.',

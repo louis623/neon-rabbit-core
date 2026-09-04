@@ -5,12 +5,29 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Provision approved lead-specific ChatGPT Sites for private onboarding**
+  — the application now fails closed unless an exact approved base and origin
+  are configured, and it will not emit the retired personal Britt host. The
+  provider provisioning hook remains manual. Before any real invite or release,
+  approve the Site source/host, configure the documented environment values,
+  and run the synthetic Alex checklist. Do not create a real invite during PR
+  review.
+
 - [ ] **Locate the canonical Sparkle Suite email signature asset** - use the
   actual approved `S` seal/wordmark export, not a recreated approximation.
   Replace the two existing unsent draft signatures only after visual Gmail
   proof. The tentative signature route in pushed commit `6e5a553e` is
   unapproved and must not be deployed; either replace it with the canonical
   asset or remove it in the same approved future change.
+
+- [ ] **Rebuild and obtain visual approval for Louis's five Gmail signatures**
+  — current Gmail signature work is an explicitly non-final interim state.
+  Begin with approved source assets, preserve the legacy `Louis Neon Rabbit`
+  signature, and QA every named signature in the real Gmail Compose viewport.
+  Verify brand accuracy, crop margins, proportion, alignment, and
+  white-background legibility before claiming completion. Never send mail or
+  alter customer drafts during QA; do not message Bunny/other agents unless
+  Louis gives fresh instruction.
 
 - [ ] **Louis smoke-test the sole-agent Nic-Nac in the internal demo
   account** - production now has one Nic-Nac route and reports orchestrator
@@ -45,14 +62,10 @@ future work.
   operator explicitly ends it; no countdown, server timestamp rejection, or
   automatic expiry worker remains. The existing active session was preserved.
 
-- [ ] **Activate and release team-branded onboarding links** - Codex Sites
-  version 9 and application commit `4913f93a` are ready. Sign in to GoDaddy,
-  add the custom-domain CNAME and validation TXT records requested by Codex
-  Sites for `onboarding.yoursparklesuite.com`, wait for SSL/hostname activation,
-  then manually deploy the exact active-branch tip and smoke-test a safe
-  Team Management link creation. Confirm new links use
-  `/virtuous-fizzers?invite=<opaque-code>` and that the old Sites origin stays
-  valid for existing private invitations. Never record or expose invite tokens.
+- [x] **Supersede the former Suite-owned-only onboarding-host plan** — Rocky's
+  September 4 hardening plan now controls. This PR does not authorize GoDaddy,
+  DNS, alias, ChatGPT Sites, or production changes. Follow the new lead-specific
+  manual provisioning item above and the operator guide before release.
 
 - [x] **Simplify Brittany's onboarding guide and make Nic-Nac the first stop** -
   completed August 31 in Sites source commit

@@ -9,7 +9,10 @@ import {
   mapPreviewSettingsToTradeTemplateData,
   type AmethystPreviewTemplateData,
 } from '@/lib/amethyst/preview-template-data'
-import { buildTargetedAmethystPublicPageTextForTest } from '@/lib/amethyst/public-asset-response'
+import {
+  buildRenderedAmethystPublicMetadataForTest,
+  buildTargetedAmethystPublicPageTextForTest,
+} from '@/lib/amethyst/public-asset-response'
 import { buildAmethystHomepageBootstrapScript } from '@/lib/amethyst/homepage-template-data'
 import {
   buildAmethystPantryBootstrapScript,
@@ -298,5 +301,18 @@ describe('BlingKitchen hybrid public site contract', () => {
       buildTargetedAmethystPublicPageTextForTest('homepage', templateData)
         .description,
     ).toContain('Shop live jewelry reveals')
+    expect(
+      buildTargetedAmethystPublicPageTextForTest('join', templateData).title,
+    ).toBe('Join Opal Sparkling Gems')
+    expect(join.businessName).toBe('BlingKitchen')
+    expect(join.teamName).toBe('Opal Sparkling Gems')
+    const metadata = buildRenderedAmethystPublicMetadataForTest(
+      'join',
+      'https://goforthebling.com',
+      templateData,
+      '/join',
+    )
+    expect(metadata.title).toBe('Join Opal Sparkling Gems')
+    expect(metadata.openGraph.siteName).toBe('BlingKitchen')
   })
 })

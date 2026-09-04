@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+
+vi.mock('@/lib/amethyst/join-page-access', () => ({
+  canServeTargetedAmethystJoinPage: vi.fn(async () => true),
+}))
 
 import { GET } from '@/app/amethyst/[...asset]/route'
 
@@ -14,7 +18,7 @@ describe('Amethyst static asset route', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toContain('text/html')
     await expect(response.text()).resolves.toContain(
-      'homepage.jsx?v=20260816-inline-ticker-links',
+      'homepage.jsx?v=20260827-media-provider-copy',
     )
   })
 
@@ -97,7 +101,12 @@ describe('Amethyst static asset route', () => {
       const html = await response.text()
 
       expect(html).toContain('src="/amethyst/template-loader.js"')
-      expect(html).toContain('src="/amethyst/tweaks-panel.jsx?v=20260725-emerald-garden"')
+      if (assetName === 'Join.html') {
+        expect(html).toContain('src="/amethyst/join-runtime.js?v=20260904-team-management-hardening"')
+        expect(html).not.toContain('tweaks-panel.jsx')
+      } else {
+        expect(html).toContain('src="/amethyst/tweaks-panel.jsx?v=20260725-emerald-garden"')
+      }
       expect(html).toContain(
         `data-template-src="/api/amethyst/${endpoint}?c=rep-clean"`,
       )

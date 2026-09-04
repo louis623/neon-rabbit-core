@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { errors } from '@/lib/services/errors'
 
 const getJoinTeamRosterMock = vi.fn()
+const getTeamOnboardingAccessMock = vi.fn()
 const upsertJoinTeamMemberMock = vi.fn()
 const removeJoinTeamMemberMock = vi.fn()
 const reorderJoinTeamRosterMock = vi.fn()
@@ -14,6 +15,11 @@ vi.mock('@/lib/services/join-team-roster', () => ({
     removeJoinTeamMemberMock(...args),
   reorderJoinTeamRoster: (...args: unknown[]) =>
     reorderJoinTeamRosterMock(...args),
+}))
+
+vi.mock('@/lib/services/team-onboarding', () => ({
+  getTeamOnboardingAccess: (...args: unknown[]) =>
+    getTeamOnboardingAccessMock(...args),
 }))
 
 import {
@@ -39,10 +45,44 @@ function makeCtx() {
 
 describe('join team roster Nic-Nac tools', () => {
   beforeEach(() => {
+    getTeamOnboardingAccessMock.mockReset()
+    getTeamOnboardingAccessMock.mockResolvedValue({
+      enabled: true,
+      status: 'manual_beta',
+      source: 'manual_beta',
+    })
     getJoinTeamRosterMock.mockReset()
     upsertJoinTeamMemberMock.mockReset()
     removeJoinTeamMemberMock.mockReset()
     reorderJoinTeamRosterMock.mockReset()
+  })
+
+  it('blocks both roster tools when Team Management is not enabled', async () => {
+    getTeamOnboardingAccessMock.mockResolvedValue({
+      enabled: false,
+      status: 'not_enabled',
+      source: null,
+    })
+    const listTool = makeListJoinTeamRosterTool(makeCtx()) as unknown as ToolDef
+    const manageTool = makeManageJoinTeamRosterTool(makeCtx()) as unknown as ToolDef
+
+    await expect(listTool.execute({})).rejects.toMatchObject({
+      name: 'NicNacToolError',
+      code: 'TEAM_MANAGEMENT_ADDON_REQUIRED',
+      userMessage: 'Team Management is not enabled for this workspace.',
+    })
+    await expect(
+      manageTool.execute({
+        action: 'upsert',
+        member: { displayName: 'Blocked member' },
+      }),
+    ).rejects.toMatchObject({
+      name: 'NicNacToolError',
+      code: 'TEAM_MANAGEMENT_ADDON_REQUIRED',
+      userMessage: 'Team Management is not enabled for this workspace.',
+    })
+    expect(getJoinTeamRosterMock).not.toHaveBeenCalled()
+    expect(upsertJoinTeamMemberMock).not.toHaveBeenCalled()
   })
 
   it('lists editable roster cards including hidden cards and links', async () => {

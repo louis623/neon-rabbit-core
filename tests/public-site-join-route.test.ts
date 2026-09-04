@@ -69,7 +69,23 @@ describe('public Join Team route', () => {
         repIdOverride: 'rep-1',
         canonicalPathOverride: '/milehighfizz/join',
         publicSiteSlugOverride: 'milehighfizz',
+        joinVisibilityVerified: true,
       }),
     )
+  })
+
+  it('returns not found when the rep hides Join even with operator access', async () => {
+    getSiteSettingsDashboardMock.mockResolvedValue({
+      joinTeamAccessEnabled: true,
+      showJoinPage: false,
+    })
+
+    const response = await GET(
+      new Request('https://www.yoursparklesuite.com/goforthebling/join'),
+      { params: Promise.resolve({ publicSiteSlug: 'goforthebling' }) },
+    )
+
+    expect(response.status).toBe(404)
+    expect(renderAmethystPublicAssetResponseMock).not.toHaveBeenCalled()
   })
 })

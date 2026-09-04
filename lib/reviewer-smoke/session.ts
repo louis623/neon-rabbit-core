@@ -173,6 +173,29 @@ async function clearReviewerNicNacHistory(admin: AdminClient, repId: string) {
   }
 }
 
+async function clearReviewerTeamManagementData(
+  admin: AdminClient,
+  repId: string,
+) {
+  const { error: conversationError } = await admin
+    .from('workspace_conversations')
+    .delete()
+    .match({ created_by_rep_id: repId, conversation_type: 'team_onboarding' })
+  if (conversationError) throw conversationError
+
+  const { error: participantError } = await admin
+    .from('team_onboarding_participants')
+    .delete()
+    .eq('owner_rep_id', repId)
+  if (participantError) throw participantError
+
+  const { error: rosterError } = await admin
+    .from('join_team_members')
+    .delete()
+    .eq('rep_id', repId)
+  if (rosterError) throw rosterError
+}
+
 async function ensureReviewerSubscription(admin: AdminClient, repId: string) {
   const now = new Date()
   const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
@@ -412,6 +435,7 @@ export async function resetReviewerSmokeSession(
     },
     existingRepId,
   )
+  await clearReviewerTeamManagementData(admin, repId)
   await clearReviewerNicNacHistory(admin, repId)
   await clearReviewerFulfillmentSmokeData(admin)
   await clearReviewerCalendarSmokeData(admin, repId)

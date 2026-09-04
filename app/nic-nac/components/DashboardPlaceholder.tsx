@@ -1640,6 +1640,24 @@ export function getRecipeDraftSavePayload(
   }
 }
 
+export function buildJoinTeamRosterRemovalPayload(memberId: string) {
+  return {
+    action: 'remove' as const,
+    memberId,
+    confirmed: true,
+  }
+}
+
+export function confirmJoinTeamRosterRemoval(
+  member: Pick<JoinTeamMember, 'displayName'>,
+  confirmRemoval: (message: string) => boolean = (message) =>
+    window.confirm(message),
+) {
+  return confirmRemoval(
+    `Remove ${member.displayName}'s public team card permanently? Their onboarding history will be preserved.`,
+  )
+}
+
 function recipeDraftFingerprint(draft: RecipeDraft) {
   return JSON.stringify({
     ...draft,
@@ -5486,10 +5504,7 @@ export function DashboardPlaceholder(props: DashboardPlaceholderProps = {}) {
         method: 'POST',
         credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          action: 'remove',
-          memberId,
-        }),
+        body: JSON.stringify(buildJoinTeamRosterRemovalPayload(memberId)),
       })
       const payload = (await response.json().catch(() => null)) as
         | { error?: string }
@@ -10409,6 +10424,26 @@ function PublicTeamRosterPanel({
         </Link>
       </div>
 
+      <div className={styles.teamMessagePreview}>
+        <strong>Before you share the Join Team page</strong>
+        <ul>
+          <li>
+            {members.some((member) => member.isVisible)
+              ? 'At least one public team card is visible.'
+              : 'Make one team card visible, or preview the honest no-cards state.'}
+          </li>
+          <li>
+            Connect the current official starter-pack link, or leave it unconnected
+            so the page tells visitors to ask you for current details.
+          </li>
+          <li>
+            Create a private onboarding link and confirm its address shows the new
+            rep&apos;s first name and your lead identity.
+          </li>
+          <li>Open onboarding questions through the Message Center.</li>
+        </ul>
+      </div>
+
       <div className={styles.teamRosterWorkspace}>
         <div className={styles.teamRosterEditor}>
           <div className={styles.walletSettingsTitle}>Add team member card</div>
@@ -10837,7 +10872,14 @@ function PublicTeamRosterPanel({
                         actionState?.pendingKey ===
                         `public-team:remove:${member.id}`
                       }
-                      onClick={() => onRemove?.(member.id)}
+                      onClick={() => {
+                        if (
+                          !confirmJoinTeamRosterRemoval(member)
+                        ) {
+                          return
+                        }
+                        onRemove?.(member.id)
+                      }}
                     >
                       Remove
                     </button>

@@ -8,23 +8,10 @@ import {
   listTeamOnboardingParticipants,
 } from '@/lib/services/team-onboarding'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resolveTeamOnboardingBaseUrl } from '@/lib/team-onboarding/invite-url'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-
-const LEGACY_ONBOARDING_BASE_URL =
-  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
-
-function customOnboardingDomainEnabled() {
-  return process.env.TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED === 'true'
-}
-
-function getDefaultOnboardingBaseUrl() {
-  return customOnboardingDomainEnabled()
-    ? process.env.TEAM_ONBOARDING_BASE_URL ??
-        'https://onboarding.yoursparklesuite.com'
-    : LEGACY_ONBOARDING_BASE_URL
-}
 
 function serviceErrorResponse(error: ServiceError) {
   return NextResponse.json(
@@ -64,24 +51,19 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { repId, supabase } = await getPaidNicNacContext()
+    const { repId, rep, supabase } = await getPaidNicNacContext()
     const access = await getTeamOnboardingAccess(supabase, repId)
     if (!access.enabled) return addonRequiredResponse(access)
 
+    const baseUrl = resolveTeamOnboardingBaseUrl(body?.baseUrl)
     const admin = createAdminClient()
-    const useCustomDomain = customOnboardingDomainEnabled()
-    const teamName = useCustomDomain
-      ? await getTeamOnboardingTeamName(admin, repId)
-      : undefined
+    const teamName = await getTeamOnboardingTeamName(admin, repId)
     const result = await createTeamOnboardingParticipant(admin, repId, {
       displayName: body?.displayName,
       contactEmail: body?.contactEmail,
       joinTeamMemberId: body?.joinTeamMemberId,
-      baseUrl: useCustomDomain
-        ? getDefaultOnboardingBaseUrl()
-        : typeof body?.baseUrl === 'string' && body.baseUrl.trim()
-          ? body.baseUrl.trim()
-          : LEGACY_ONBOARDING_BASE_URL,
+      baseUrl,
+      leadDisplayName: rep.display_name,
       teamName,
     })
 

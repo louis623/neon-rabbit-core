@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { tool } from 'ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { ServiceError } from '@/lib/services/errors'
+import { getTeamOnboardingAccess } from '@/lib/services/team-onboarding'
 import {
   getJoinTeamRoster,
   removeJoinTeamMember,
@@ -62,6 +63,21 @@ function throwToolError(error: unknown): never {
   throw error
 }
 
+async function requireTeamManagementAccess(ctx: {
+  repId: string
+  supabase: SupabaseClient
+}) {
+  const access = await getTeamOnboardingAccess(ctx.supabase, ctx.repId)
+  if (access.enabled) return
+
+  throw new ServiceError({
+    code: 'TEAM_MANAGEMENT_ADDON_REQUIRED',
+    message: 'team management entitlement is not enabled',
+    userMessage: 'Team Management is not enabled for this workspace.',
+    statusCode: 403,
+  })
+}
+
 export function makeListJoinTeamRosterTool(ctx: {
   repId: string
   supabase: SupabaseClient
@@ -72,6 +88,7 @@ export function makeListJoinTeamRosterTool(ctx: {
     inputSchema: z.object({}),
     execute: async () => {
       try {
+        await requireTeamManagementAccess(ctx)
         const members = await getJoinTeamRoster(ctx.supabase, ctx.repId, {
           visibleOnly: false,
         })
@@ -97,6 +114,7 @@ export function makeManageJoinTeamRosterTool(ctx: {
     needsApproval: (input) => input.action === 'remove',
     execute: async (input) => {
       try {
+        await requireTeamManagementAccess(ctx)
         if (input.action === 'remove') {
           return {
             action: 'remove',

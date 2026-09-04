@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> Historical terminology note (September 4, 2026): the product name is **Team Management**. Older “Manage My Team” wording below describes the same feature and is retained only as historical plan context.
+
 **Goal:** Connect the Britt with Bling onboarding site questions to Sparkle Suite so Brittany can manage new-rep questions inside her Team Management workspace.
 
 **Architecture:** Sparkle Suite becomes the source of truth for team onboarding questions, team members, and onboarding site registrations. The training site submits public questions to a guarded Sparkle Suite API, while the authenticated Sparkle Suite Team Management section reads and manages those questions for the correct team lead. The preferred long-term host model is same-origin inside Sparkle Suite; a cross-origin Vercel demo bridge is included for the current standalone training site.

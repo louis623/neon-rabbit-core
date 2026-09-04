@@ -6,6 +6,13 @@ import {
   listTeamOnboardingConversationMessages,
   sendTeamOnboardingConversationMessage,
 } from '@/lib/services/workspace-team-conversations'
+import {
+  buildTeamOnboardingAccessUrl,
+  createTeamOnboardingUrlSlug,
+  resolveTeamOnboardingBaseUrl,
+} from '@/lib/team-onboarding/invite-url'
+
+export { createTeamOnboardingUrlSlug }
 
 export type TeamManagementEntitlementStatus =
   | 'not_enabled'
@@ -74,17 +81,26 @@ export interface TeamOnboardingMessage {
 export interface TeamOnboardingPublicAccess {
   participant: Pick<
     TeamOnboardingParticipantSummary,
-    'id' | 'displayName' | 'status' | 'createdAt' | 'lastActivityAt'
+    'displayName' | 'status' | 'createdAt' | 'lastActivityAt'
   >
   team: {
-    ownerRepId: string
     displayName: string
     businessName: string
     teamName: string
   }
-  progress: TeamOnboardingProgressItem[]
-  messages: TeamOnboardingMessage[]
+  progress: TeamOnboardingPublicProgressItem[]
+  messages: TeamOnboardingPublicMessage[]
 }
+
+export type TeamOnboardingPublicProgressItem = Pick<
+  TeamOnboardingProgressItem,
+  'stepId' | 'status' | 'completedAt' | 'updatedAt'
+>
+
+export type TeamOnboardingPublicMessage = Pick<
+  TeamOnboardingMessage,
+  'senderType' | 'body' | 'readAt' | 'createdAt'
+>
 
 type ParticipantRow = {
   id: string
@@ -129,9 +145,6 @@ const PARTICIPANT_SELECT =
 const PRIVATE_PARTICIPANT_SELECT = `${PARTICIPANT_SELECT}, access_token_hash`
 const PROGRESS_SELECT = 'participant_id, step_id, status, completed_at, updated_at'
 const MESSAGE_SELECT = 'id, participant_id, sender_type, body, read_at, created_at'
-const DEFAULT_ONBOARDING_BASE_URL =
-  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
-
 function normalizeText(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
 }
@@ -191,6 +204,28 @@ function mapMessageRow(row: MessageRow): TeamOnboardingMessage {
   }
 }
 
+export function toTeamOnboardingPublicProgressItem(
+  item: TeamOnboardingProgressItem,
+): TeamOnboardingPublicProgressItem {
+  return {
+    stepId: item.stepId,
+    status: item.status,
+    completedAt: item.completedAt,
+    updatedAt: item.updatedAt,
+  }
+}
+
+export function toTeamOnboardingPublicMessage(
+  message: TeamOnboardingMessage,
+): TeamOnboardingPublicMessage {
+  return {
+    senderType: message.senderType,
+    body: message.body,
+    readAt: message.readAt,
+    createdAt: message.createdAt,
+  }
+}
+
 function createAccessSlug(displayName: string) {
   const stem =
     displayName
@@ -209,66 +244,29 @@ export function createTeamOnboardingToken() {
   return randomBytes(24).toString('base64url')
 }
 
-export function createTeamOnboardingUrlSlug(teamName: unknown) {
-  return (
-    normalizeText(teamName)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .replace(/^the-/, '')
-      .slice(0, 64) || 'team'
-  )
-}
-
-function buildAccessUrl(
-  baseUrl: string | undefined,
-  token: string,
-  teamName: unknown,
-) {
-  const url = new URL(baseUrl || DEFAULT_ONBOARDING_BASE_URL)
-  if (normalizeText(teamName)) {
-    const basePath = url.pathname.replace(/\/+$/, '')
-    url.pathname = `${basePath}/${createTeamOnboardingUrlSlug(teamName)}`
-  }
-  url.hash = ''
-  url.searchParams.set('invite', token)
-  return url.toString()
-}
-
 export async function getTeamOnboardingTeamName(
   supabase: SupabaseClient,
   ownerRepId: string,
 ) {
-  const [settingsResult, repResult] = await Promise.all([
-    supabase
-      .from('site_settings')
-      .select('team_name')
-      .eq('rep_id', ownerRepId)
-      .maybeSingle(),
-    supabase
-      .from('reps')
-      .select('business_name')
-      .eq('id', ownerRepId)
-      .maybeSingle(),
-  ])
+  const settingsResult = await supabase
+    .from('site_settings')
+    .select('team_name')
+    .eq('rep_id', ownerRepId)
+    .maybeSingle()
 
-  if (settingsResult.error || repResult.error) {
+  if (settingsResult.error) {
     throw toServiceError(
       'TEAM_ONBOARDING_TEAM_NAME_LOOKUP_FAILED',
       'failed to load the onboarding team name',
       "I couldn't prepare that team's onboarding address right now.",
-      settingsResult.error ?? repResult.error,
+      settingsResult.error,
     )
   }
 
   const teamName = normalizeText(
     (settingsResult.data as { team_name?: unknown } | null)?.team_name,
   )
-  const businessName = normalizeText(
-    (repResult.data as { business_name?: unknown } | null)?.business_name,
-  )
-
-  return teamName || businessName || 'Team'
+  return teamName
 }
 
 async function touchParticipantActivity(
@@ -320,11 +318,21 @@ export async function createTeamOnboardingParticipant(
     displayName?: unknown
     contactEmail?: unknown
     joinTeamMemberId?: unknown
-    baseUrl?: string
+    baseUrl?: unknown
+    leadDisplayName?: unknown
     teamName?: unknown
     tokenFactory?: () => string
   },
 ) {
+  const baseUrl = resolveTeamOnboardingBaseUrl(input.baseUrl)
+  const leadDisplayName = normalizeText(input.leadDisplayName)
+  if (!leadDisplayName) {
+    throw errors.INVALID_INPUT(
+      'team lead identity required',
+      'Add the team lead name before creating this private onboarding link.',
+    )
+  }
+
   const joinTeamMemberId = normalizeText(input.joinTeamMemberId) || null
   let displayName = normalizeText(input.displayName)
 
@@ -360,6 +368,13 @@ export async function createTeamOnboardingParticipant(
 
   const token = input.tokenFactory?.() ?? createTeamOnboardingToken()
   const accessTokenHash = hashTeamOnboardingToken(token)
+  const accessUrl = buildTeamOnboardingAccessUrl({
+    baseUrl,
+    token,
+    participantDisplayName: displayName,
+    leadDisplayName,
+    teamName: input.teamName,
+  })
   const { data, error } = await supabase
     .from('team_onboarding_participants')
     .insert({
@@ -390,7 +405,7 @@ export async function createTeamOnboardingParticipant(
 
   return {
     participant: mapParticipantRow(data as ParticipantRow),
-    accessUrl: buildAccessUrl(input.baseUrl, token, input.teamName),
+    accessUrl,
   }
 }
 
@@ -399,17 +414,51 @@ export async function refreshTeamOnboardingParticipantAccess(
   ownerRepId: string,
   participantId: string,
   input: {
-    baseUrl?: string
+    baseUrl?: unknown
+    leadDisplayName?: unknown
     teamName?: unknown
     tokenFactory?: () => string
   } = {},
 ) {
+  const baseUrl = resolveTeamOnboardingBaseUrl(input.baseUrl)
+  const leadDisplayName = normalizeText(input.leadDisplayName)
+  if (!leadDisplayName) {
+    throw errors.INVALID_INPUT(
+      'team lead identity required',
+      'Add the team lead name before creating this private onboarding link.',
+    )
+  }
+
   const normalizedId = normalizeText(participantId)
   if (!normalizedId) {
     throw errors.INVALID_INPUT('participant id required', 'Which rep is this for?')
   }
 
   const token = input.tokenFactory?.() ?? createTeamOnboardingToken()
+  const { data: existingData, error: existingError } = await supabase
+    .from('team_onboarding_participants')
+    .select(PRIVATE_PARTICIPANT_SELECT)
+    .eq('owner_rep_id', ownerRepId)
+    .eq('id', normalizedId)
+    .neq('status', 'archived')
+    .single()
+
+  if (existingError || !existingData) {
+    throw toServiceError(
+      'TEAM_ONBOARDING_ACCESS_REFRESH_FAILED',
+      'failed to load team onboarding participant before refreshing access',
+      "I couldn't create a fresh onboarding link right now.",
+      existingError ?? new Error('participant lookup returned no row'),
+    )
+  }
+
+  const accessUrl = buildTeamOnboardingAccessUrl({
+    baseUrl,
+    token,
+    participantDisplayName: (existingData as ParticipantRow).display_name,
+    leadDisplayName,
+    teamName: input.teamName,
+  })
   const now = new Date().toISOString()
   const { data, error } = await supabase
     .from('team_onboarding_participants')
@@ -434,7 +483,7 @@ export async function refreshTeamOnboardingParticipantAccess(
 
   return {
     participant: mapParticipantRow(data as ParticipantRow),
-    accessUrl: buildAccessUrl(input.baseUrl, token, input.teamName),
+    accessUrl,
   }
 }
 
@@ -828,24 +877,23 @@ export async function getTeamOnboardingParticipantByToken(
 
   return {
     participant: {
-      id: participant.id,
       displayName: participant.display_name,
       status: participant.status,
       createdAt: participant.created_at,
       lastActivityAt: participant.last_activity_at,
     },
     team: {
-      ownerRepId: participant.owner_rep_id,
       displayName: normalizeText(rep.display_name) || 'Your team lead',
       businessName: normalizeText(rep.business_name) || 'Your team',
       teamName:
-        normalizeText(siteSettings.team_name) ||
-        normalizeText(rep.business_name) ||
-        'Your team',
+        normalizeText(siteSettings.team_name) || 'Your team',
     },
-    progress: ((progressResult.data ?? []) as ProgressRow[]).map(mapProgressRow),
-    messages:
+    progress: ((progressResult.data ?? []) as ProgressRow[])
+      .map(mapProgressRow)
+      .map(toTeamOnboardingPublicProgressItem),
+    messages: (
       (await listTeamOnboardingConversationMessages(supabase, participant.id)) ??
-      ((messagesResult.data ?? []) as MessageRow[]).map(mapMessageRow),
+      ((messagesResult.data ?? []) as MessageRow[]).map(mapMessageRow)
+    ).map(toTeamOnboardingPublicMessage),
   }
 }

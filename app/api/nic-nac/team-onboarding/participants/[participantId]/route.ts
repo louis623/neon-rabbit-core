@@ -8,23 +8,10 @@ import {
   refreshTeamOnboardingParticipantAccess,
 } from '@/lib/services/team-onboarding'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resolveTeamOnboardingBaseUrl } from '@/lib/team-onboarding/invite-url'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-
-const LEGACY_ONBOARDING_BASE_URL =
-  'https://brittwithbling-start-strong.louis526569.chatgpt.site'
-
-function customOnboardingDomainEnabled() {
-  return process.env.TEAM_ONBOARDING_CUSTOM_DOMAIN_ENABLED === 'true'
-}
-
-function getDefaultOnboardingBaseUrl() {
-  return customOnboardingDomainEnabled()
-    ? process.env.TEAM_ONBOARDING_BASE_URL ??
-        'https://onboarding.yoursparklesuite.com'
-    : LEGACY_ONBOARDING_BASE_URL
-}
 
 function serviceErrorResponse(error: ServiceError) {
   return NextResponse.json(
@@ -40,7 +27,7 @@ export async function PATCH(
   try {
     const body = await request.json()
     const { participantId } = await params
-    const { repId, supabase } = await getPaidNicNacContext()
+    const { repId, rep, supabase } = await getPaidNicNacContext()
     const access = await getTeamOnboardingAccess(supabase, repId)
 
     if (!access.enabled) {
@@ -62,8 +49,12 @@ export async function PATCH(
     }
 
     const admin = createAdminClient()
+    const baseUrl =
+      body.action === 'refresh_access'
+        ? resolveTeamOnboardingBaseUrl(body?.baseUrl)
+        : undefined
     const teamName =
-      body.action === 'refresh_access' && customOnboardingDomainEnabled()
+      body.action === 'refresh_access'
         ? await getTeamOnboardingTeamName(admin, repId)
         : undefined
     const result =
@@ -72,7 +63,11 @@ export async function PATCH(
             admin,
             repId,
             participantId,
-            { baseUrl: getDefaultOnboardingBaseUrl(), teamName },
+            {
+              baseUrl,
+              leadDisplayName: rep.display_name,
+              teamName,
+            },
           )
         : await archiveTeamOnboardingParticipant(
             admin,

@@ -536,15 +536,16 @@ export function applyBrittWithBlingJoin(
     repState: 'Florida',
     heroTitle: `WELCOME TO ${join.teamName.toUpperCase()}`,
     promoText:
-      '$599 Launch Pack. Guaranteed Diamond reveal. MSRP up to $3,500. 10 years of sparkle.',
+      'Review Bomb Party\'s current official starter-pack options and promotions before enrolling.',
     heroPitch:
-      `Your sparkle story starts here. Join ${join.teamName} with ${join.repName} and build your Bomb Party business with mentorship, community, and VIP energy.`,
-    heroCtaText: 'CLAIM MY DIAMOND AND START MY CLIMB',
+      `Learn about the independent rep opportunity, review the official requirements, and ask ${join.repName} what support ${join.teamName} currently offers.`,
+    heroCtaText: 'REVIEW OFFICIAL JOIN DETAILS',
     finalPitch:
-      `Join ${join.teamName} and turn your passion for jewelry into a thriving business.`,
+      `Review the current official enrollment details, then ask ${join.repName} any questions about ${join.teamName} before you decide.`,
     bpReferralUrl: BRITT_WITH_BLING_PROFILE.joinPackUrl,
+    hasRecruitingLink: true,
     tickerTopText:
-      `Join ${join.teamName} | Supportive Community | Flexible Income | Training & Mentorship | Amazing Products | Work From Anywhere | Growth Opportunities`,
+      `Explore ${join.teamName} | Review official requirements | Ask about current team support | Income is not guaranteed`,
     footerTagline:
       `Build your Bomb Party business with ${join.repName} and ${join.teamName}.`,
     shopUrl: BRITT_WITH_BLING_PROFILE.shopUrl,
@@ -574,15 +575,15 @@ export function applyBrittWithBlingJoin(
     teamMembers: normalizeBrittWithBlingTeamMemberAssets(teamMembers),
     faqAnswers: {
       whatIsTeam:
-        `${join.teamName} is ${join.repName}'s Bomb Party rep team - a supportive community that celebrates wins, shares what works, and helps new reps build with confidence.`,
+        `${join.teamName} is ${join.repName}'s team of independent Bomb Party reps. Ask ${join.repName} how the team communicates and what support is available now.`,
       cost:
-        'Starter pack details and current promotions are handled by Bomb Party. The current offer highlights a $599 Launch Pack with a guaranteed Diamond reveal.',
+        'Starter-pack options, contents, and prices can change. Review the current official Bomb Party enrollment page before making a decision.',
       experience:
-        `No experience required. ${join.repName} and the team focus on training, mentorship, and practical support as you get started.`,
+        `Review the official requirements and ask ${join.repName} what training or onboarding help is available for new reps.`,
       timeCommitment:
-        'Work on your own schedule. Whether you want extra income or a full-time opportunity, you control your success.',
+        'The time needed depends on your goals and how you run your independent business. Review the official policies and plan a realistic schedule.',
       support:
-        `Get tools, training, community, and one-on-one support from ${join.teamName}.`,
+        `Support can change. Ask ${join.repName} which communication, onboarding, and training resources ${join.teamName} currently offers.`,
       income:
         'Income varies by effort, sales, and time. Review the Bomb Party income disclosure before enrolling.',
     },

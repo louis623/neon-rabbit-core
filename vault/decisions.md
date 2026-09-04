@@ -1,5 +1,30 @@
 # Decision Log
 
+## 2026-09-04 - Team Management and Join hardening supersedes the August 31 link shape
+
+Rocky's approved hardening plan supersedes the August 31 decision that private
+onboarding URLs must omit the recruit's name and always use one Suite-owned
+host. New private invite URLs use an operator-approved ChatGPT Sites base and a
+readable path containing only the new rep's first name, the sending lead's first
+name, and the managed-team slug when available; the opaque token remains solely
+in `?invite=`. Email, phone, arbitrary paths, unapproved origins, and the retired
+personal Britt host are rejected before token persistence.
+
+Public Join and private onboarding remain separate. Targeted Join requires both
+`join_team_access_enabled = true` and `show_join_page = true`; null is not opted
+in. Business/show identity never substitutes for managed-team identity. Public
+team-card deletion is confirmed and permanent while onboarding history retains
+its participant record through the `ON DELETE SET NULL` roster reference.
+
+## 2026-09-04 - Gmail signature visual approval is an owner gate
+
+Gmail signature work is not complete merely because an image URL loads, Gmail
+Settings shows an image, or one automated Compose preview appears plausible.
+Owner visual approval of the full, brand-accurate Compose result is the
+acceptance gate. Use only the approved original brand asset or a faithful
+derivative made from it. In particular, Neon Rabbit uses the canonical
+multicolor badge; never use a white/monochrome rabbit surrogate.
+
 ## 2026-09-04 - Never approximate the Sparkle Suite email logo
 
 For Sparkle Suite email signatures, use the real approved exported logo asset

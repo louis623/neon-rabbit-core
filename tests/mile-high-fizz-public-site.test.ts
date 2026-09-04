@@ -312,13 +312,12 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect((join as { heroTitle?: string }).heroTitle).toBe(
       'Welcome to the Diamond Peak Society',
     )
-    expect(join.promoText).toContain('$599 Launch Pack')
-    expect(join.heroPitch).toContain('Turn Your Passion into Profit')
-    expect(join.heroPitch).toContain('Diamond reveal')
-    expect(join.finalPitch).toContain('turn your passion for jewelry into a thriving business')
-    expect(join.faqAnswers.whatIsTeam).toContain('Supportive Community')
+    expect(join.promoText).toContain('current official starter-pack options')
+    expect(join.heroPitch).toContain('official requirements')
+    expect(join.finalPitch).toContain('before you decide')
+    expect(join.faqAnswers.whatIsTeam).toContain('support is available now')
     expect(join.faqAnswers.whatIsTeam).toContain('Diamond Peak Society')
-    expect(join.faqAnswers.support).toContain('one-on-one support')
+    expect(join.faqAnswers.support).toContain('currently available')
     expect(join.footerLinks.home).toBe('/amethyst/Homepage.html')
     expect(join.footerLinks.tradeBoard).toBe('/amethyst/Trade.html')
     expect(join.footerLinks.joinTeam).toBe('/amethyst/Join.html')
@@ -367,9 +366,8 @@ describe('Mile High Fizz hybrid public site contract', () => {
     expect((data.join as { heroTitle?: string }).heroTitle).toBe(
       'Welcome to the Diamond Peak Society',
     )
-    expect(data.join.heroPitch).toContain('Turn Your Passion into Profit')
-    expect(data.join.heroPitch).toContain('Diamond reveal')
-    expect(data.join.faqAnswers.whatIsTeam).toContain('Supportive Community')
+    expect(data.join.heroPitch).toContain('official requirements')
+    expect(data.join.faqAnswers.whatIsTeam).toContain('support is available now')
     expect(data.homepage.footerLinks.home).toBe('/milehighfizz')
     expect(data.homepage.footerLinks.tradeBoard).toBe('/milehighfizz/trade')
     expect(data.homepage.footerLinks.joinTeam).toBe('/milehighfizz/join')

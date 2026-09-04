@@ -96,10 +96,10 @@ export function applyBlingKitchenHomepage(
     joinTeamTitle: "Join Heather's Team",
     joinTeamSub:
       'Start your Bomb Party business with a warm, no-pressure mentor rooted in care, precision, and community.',
-    joinTeamUrl: '/amethyst/Join.html',
+    joinTeamUrl: homepage.showJoinPage ? '/amethyst/Join.html' : '',
     footerTagline:
       'A calm, welcoming space to connect, share recipes, and find your sparkle.',
-    showJoinPage: true,
+    showJoinPage: homepage.showJoinPage,
     streamLinks: {
       ...homepage.streamLinks,
       shop: BLING_KITCHEN_PROFILE.shopUrl,
@@ -112,7 +112,7 @@ export function applyBlingKitchenHomepage(
       ...homepage.footerLinks,
       home: '/amethyst/Homepage.html',
       tradeBoard: '/amethyst/Trade.html',
-      joinTeam: '/amethyst/Join.html',
+      joinTeam: homepage.showJoinPage ? '/amethyst/Join.html' : undefined,
       catalog: BLING_KITCHEN_PROFILE.shopUrl,
       preOrders: BLING_KITCHEN_PROFILE.shopUrl,
       pastShows: '#events',
@@ -173,6 +173,7 @@ export function applyBlingKitchenJoin(
     finalPitch:
       "Join Heather's team today and build a business that brings joy, community, and financial freedom.",
     bpReferralUrl: BLING_KITCHEN_PROFILE.joinPackUrl,
+    hasRecruitingLink: true,
     tickerTopText:
       'Join Heather at BlingKitchen | No-pressure mentorship | Warm community | Work from home | Build at your own pace',
     footerTagline:

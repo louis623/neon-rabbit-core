@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ServiceError, errors } from '@/lib/services/errors'
 
 const getPaidNicNacContextMock = vi.fn()
+const getTeamOnboardingAccessMock = vi.fn()
 const getJoinTeamRosterMock = vi.fn()
 const upsertJoinTeamMemberMock = vi.fn()
 const removeJoinTeamMemberMock = vi.fn()
@@ -11,6 +12,11 @@ vi.mock('@/lib/nic-nac/auth', () => ({
   AuthError: class AuthError extends Error {},
   getPaidNicNacContext: (...args: unknown[]) =>
     getPaidNicNacContextMock(...args),
+}))
+
+vi.mock('@/lib/services/team-onboarding', () => ({
+  getTeamOnboardingAccess: (...args: unknown[]) =>
+    getTeamOnboardingAccessMock(...args),
 }))
 
 vi.mock('@/lib/services/join-team-roster', () => ({
@@ -29,6 +35,12 @@ import { AuthError } from '@/lib/nic-nac/auth'
 describe('/api/nic-nac/join-team-roster', () => {
   beforeEach(() => {
     getPaidNicNacContextMock.mockReset()
+    getTeamOnboardingAccessMock.mockReset()
+    getTeamOnboardingAccessMock.mockResolvedValue({
+      enabled: true,
+      status: 'manual_beta',
+      source: 'manual_beta',
+    })
     getJoinTeamRosterMock.mockReset()
     upsertJoinTeamMemberMock.mockReset()
     removeJoinTeamMemberMock.mockReset()
@@ -150,7 +162,11 @@ describe('/api/nic-nac/join-team-roster', () => {
       new Request('http://localhost/api/nic-nac/join-team-roster', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ action: 'remove', memberId: 'member-old' }),
+        body: JSON.stringify({
+          action: 'remove',
+          memberId: 'member-old',
+          confirmed: true,
+        }),
       }),
     )
     const reorderResponse = await POST(
@@ -182,6 +198,72 @@ describe('/api/nic-nac/join-team-roster', () => {
       ok: true,
       updatedCount: 2,
     })
+  })
+
+  it('requires an enabled Team Management entitlement for reads and writes', async () => {
+    getPaidNicNacContextMock
+      .mockResolvedValueOnce({
+        repId: 'rep-locked',
+        supabase: { marker: 'supabase' },
+      })
+      .mockResolvedValueOnce({
+        repId: 'rep-locked',
+        supabase: { marker: 'supabase' },
+      })
+    getTeamOnboardingAccessMock.mockResolvedValue({
+      enabled: false,
+      status: 'not_enabled',
+      source: null,
+    })
+
+    const getResponse = await GET()
+    const postResponse = await POST(
+      new Request('http://localhost/api/nic-nac/join-team-roster', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'upsert',
+          member: { displayName: 'Blocked member' },
+        }),
+      }),
+    )
+
+    expect(getResponse.status).toBe(403)
+    expect(postResponse.status).toBe(403)
+    await expect(getResponse.json()).resolves.toEqual({
+      code: 'TEAM_MANAGEMENT_ADDON_REQUIRED',
+      error: 'Team Management is not enabled for this workspace.',
+      access: { enabled: false, status: 'not_enabled', source: null },
+    })
+    await expect(postResponse.json()).resolves.toEqual({
+      code: 'TEAM_MANAGEMENT_ADDON_REQUIRED',
+      error: 'Team Management is not enabled for this workspace.',
+      access: { enabled: false, status: 'not_enabled', source: null },
+    })
+    expect(getJoinTeamRosterMock).not.toHaveBeenCalled()
+    expect(upsertJoinTeamMemberMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects an API removal until the caller explicitly confirms it', async () => {
+    getPaidNicNacContextMock.mockResolvedValueOnce({
+      repId: 'rep-britt',
+      supabase: { marker: 'supabase' },
+    })
+
+    const response = await POST(
+      new Request('http://localhost/api/nic-nac/join-team-roster', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'remove', memberId: 'member-old' }),
+      }),
+    )
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toEqual({
+      code: 'JOIN_TEAM_MEMBER_REMOVE_CONFIRMATION_REQUIRED',
+      error: 'Confirm removal before deleting this public team card.',
+    })
+    expect(removeJoinTeamMemberMock).not.toHaveBeenCalled()
   })
 
   it('returns auth and service errors as API-safe responses', async () => {

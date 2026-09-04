@@ -24,6 +24,8 @@ import {
   WorkspaceAppHeader,
   WorkspaceAccessNotice,
   buildJoinTeamRosterSavePayload,
+  buildJoinTeamRosterRemovalPayload,
+  confirmJoinTeamRosterRemoval,
   getJoinTeamRosterDraft,
   moveJoinTeamRosterMember,
   buildShowCalendarCells,
@@ -1241,6 +1243,11 @@ describe('DashboardPlaceholder', () => {
     expect(html).toContain('Private links never appear on the customer-facing site.')
     expect(html).toContain('Visible on Join Team page')
     expect(html).toContain('Preview Join Team page')
+    expect(html).toContain('Before you share the Join Team page')
+    expect(html).toContain('At least one public team card is visible.')
+    expect(html).toContain('current official starter-pack link')
+    expect(html).toContain('new rep&#x27;s first name and your lead identity')
+    expect(html).toContain('Message Center')
     expect(html).not.toContain('Optional email')
     expect(html).not.toContain('Send text')
 
@@ -1250,6 +1257,27 @@ describe('DashboardPlaceholder', () => {
     )
     expect(source).toContain("fetch('/api/nic-nac/join-team-roster/photo'")
     expect(source).toContain('TEAM_PROFILE_PHOTO_MAX_BYTES = 3 * 1024 * 1024')
+  })
+
+  it('requires explicit UI confirmation and sends the confirmed hard-delete contract', () => {
+    const confirmRemoval = vi.fn<(message: string) => boolean>(() => false)
+    expect(
+      confirmJoinTeamRosterRemoval(
+        { displayName: 'Alex' },
+        confirmRemoval,
+      ),
+    ).toBe(false)
+    expect(confirmRemoval).toHaveBeenCalledWith(
+      expect.stringContaining('Remove Alex'),
+    )
+    expect(confirmRemoval.mock.calls[0][0]).toContain(
+      'onboarding history will be preserved',
+    )
+    expect(buildJoinTeamRosterRemovalPayload('member-alex')).toEqual({
+      action: 'remove',
+      memberId: 'member-alex',
+      confirmed: true,
+    })
   })
 
   it('keeps onboarding usable if public team cards fail to load', () => {

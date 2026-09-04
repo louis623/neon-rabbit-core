@@ -94,7 +94,7 @@ export default function App() {
     };
   }, [apiBaseUrl, inviteToken]);
 
-  const teamLabel = team?.teamName || team?.businessName || 'Your team';
+  const teamLabel = team?.teamName || 'Your team';
   const teamLeadName = team?.displayName || 'your team lead';
 
   useEffect(() => {

@@ -154,17 +154,18 @@ export function applyMileHighFizzJoin(
     repState: 'Colorado',
     heroTitle: `Welcome to the ${join.teamName}`,
     promoText:
-      '$599 Launch Pack includes a guaranteed Diamond reveal for the 10th Anniversary Special.',
+      'Review Bomb Party\'s current official starter-pack options and promotions before enrolling.',
     heroPitch:
-      `Turn Your Passion into Profit. Be part of something special. Build your own Bomb Party business with the support and energy of the ${join.teamName}. For a limited time, start with a Diamond reveal in your launch pack.`,
-    heroCtaText: 'Join the Team Now',
+      `Learn about the independent rep opportunity, review the official requirements, and ask ${join.repName} what support the ${join.teamName} currently offers.`,
+    heroCtaText: 'Review Official Join Details',
     finalPitch:
-      `Join the ${join.teamName} today and turn your passion for jewelry into a thriving business.`,
+      `Review the current official enrollment details, then ask ${join.repName} any questions about the ${join.teamName} before you decide.`,
     bpReferralUrl: MILE_HIGH_FIZZ_PROFILE.joinPackUrl,
+    hasRecruitingLink: true,
     tickerTopText:
-      `Join the ${join.teamName} | Supportive community | Flexible income | Training and mentorship | Work from anywhere`,
+      `Explore the ${join.teamName} | Review official requirements | Ask about current team support | Income is not guaranteed`,
     footerTagline:
-      `Build your own Bomb Party business with the support and energy of the ${join.teamName}.`,
+      `Learn about the independent rep opportunity and the ${join.teamName}.`,
     repSocialLinks: {
       ...join.repSocialLinks,
     },
@@ -187,17 +188,17 @@ export function applyMileHighFizzJoin(
     teamMembers: [],
     faqAnswers: {
       whatIsTeam:
-        `${join.teamName} is the community of independent Bomb Party Representatives led by ${join.repName} under the ${join.businessName} banner. ${join.repName} is part of The Virtuous Fizzers, and ${join.teamName} is the team they lead. Supportive Community: join a team that celebrates your wins, supports your growth, and makes every day fun.`,
+        `${join.teamName} is the team of independent Bomb Party Representatives led by ${join.repName} under the ${join.businessName} banner. Ask ${join.repName} how the team communicates and what support is available now.`,
       cost:
         'Starter pack details and current promotions are handled by Bomb Party. Use the join button to review the current options.',
       experience:
-        'No experience required. Mile High Fizz focuses on training, mentorship, and practical support as you get started.',
+        `Review the official requirements and ask ${join.repName} what training or onboarding help is available for new reps.`,
       timeCommitment:
-        'Work on your own schedule. Whether you want extra income or a full-time opportunity, you control your success.',
+        'The time needed depends on your goals and how you run your independent business. Review the official policies and plan a realistic schedule.',
       support:
-        'Get all the tools, training, and one-on-one support you need to succeed.',
+        `Support can change. Ask ${join.repName} which communication, onboarding, and training resources are currently available.`,
       income:
-        'Income varies by sales, effort, and time. Build your own team, earn bonuses, and unlock rewards as your business grows.',
+        'Income is not guaranteed and results vary. Review the current Income Disclosure Statement and consider costs, time, and goals before enrolling.',
     },
   }
 }

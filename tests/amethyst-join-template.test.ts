@@ -94,8 +94,18 @@ describe('Amethyst join page template data wiring', () => {
       '<script src="template-loader.js" data-template-src="/api/amethyst/join-template"></script>',
     )
     expect(html.indexOf('template-loader.js')).toBeLessThan(
-      html.indexOf('join.jsx'),
+      html.indexOf('join-runtime.js'),
     )
+    expect(html).not.toContain('react.development')
+    expect(html).not.toContain('@babel/standalone')
+    expect(html).not.toContain('type="text/babel"')
+    expect(html).not.toContain('join.jsx')
+    expect(
+      readFileSync(
+        resolve(process.cwd(), 'public/amethyst/join-runtime.js'),
+        'utf8',
+      ).length,
+    ).toBeGreaterThan(10_000)
   })
 
   it('ships crawl and sharing metadata with the locked join export', () => {
@@ -130,6 +140,20 @@ describe('Amethyst join page template data wiring', () => {
     expect(jsx).toContain('Dance Floor')
     expect(jsx).toContain('Join Team')
     expect(jsx).toContain('"/amethyst/Homepage.html"')
+  })
+
+  it('renders honest non-link actions instead of dead starter-pack anchors', () => {
+    const jsx = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/join.jsx'),
+      'utf8',
+    )
+
+    expect(jsx).toContain('function RecruitingAction')
+    expect(jsx).toContain('enabled={hasRecruitingLink}')
+    expect(jsx).toContain('Ask ${repName} for current join details')
+    expect(jsx).toContain('No additional public team cards have been added yet')
+    expect(jsx).not.toContain("Earn from your shows and a cut of your team's")
+    expect(jsx).not.toContain('The product practically sells itself')
   })
 
   it('does not render a duplicate leader card when the editable roster already includes the rep', () => {

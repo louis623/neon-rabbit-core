@@ -2,7 +2,7 @@
 
 This is the preserved rep-facing onboarding/resource site imported from `louis623/sparkle-rep-onboarding`.
 
-The app remains the working baseline for the rep onboarding experience. Sparkle Suite owns the surrounding Manage My Team control plane: site records, invite/access records, team member records, Nic-Nac draft publishing, and onboarding question routing.
+The app remains the working baseline for the rep onboarding experience. Sparkle Suite owns the surrounding Team Management control plane: site records, invite/access records, team member records, Nic-Nac draft publishing, and onboarding question routing.
 
 ## Local Development
 
@@ -23,11 +23,13 @@ npm run build
 Set these variables when the app should talk to Sparkle Suite:
 
 ```text
-VITE_SPARKLE_SUITE_API_BASE_URL=https://sparklesuite.com
-VITE_TEAM_ONBOARDING_SITE_SLUG=britt-with-bling-start-strong
+VITE_SPARKLE_SUITE_API_BASE_URL=https://www.yoursparklesuite.com
 ```
 
-Without these variables, the app runs in local/demo mode using its existing local state.
+The private invite token must arrive only through the `?invite=` URL parameter;
+never place it in a `VITE_*` variable because Vite exposes those values in the
+public browser bundle. Without the API base variable or an invite parameter, the
+app runs in local/demo mode using its existing local state.
 
 ## Content Sources
 

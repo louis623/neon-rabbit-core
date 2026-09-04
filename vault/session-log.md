@@ -2,6 +2,34 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 4, 2026 - Rocky Team Management and onboarding hardening implemented
+
+- Re-audited interrupted work with independent security and product reviewers,
+  then corrected token-rotation ordering, arbitrary base paths, rotating-token
+  rate-limit evasion, bespoke Join overclaims, null visibility gating,
+  business/team conflation, and incomplete reviewer reset documentation.
+- Final local evidence: standard `npm test` passed 233 tests; the focused Team
+  Management/onboarding/Join/reviewer set passed 325 tests; Amethyst QA passed
+  89 tests plus local link checks; the rep-onboarding static smoke and production
+  build passed; the full Next.js production build and TypeScript phase passed.
+- The rebuilt generic Join page was opened in the installed Codex in-app browser,
+  visually inspected, and its **Learn more** anchor verified. The rendered FAQ,
+  promo, support, cost, and income copy no longer makes the rejected claims.
+- This remains PR-only. No production deployment or external/customer mutation
+  was performed. The manual approved ChatGPT Sites provision/configuration hook
+  is documented for later owner-authorized release work.
+
+## September 4, 2026 - Gmail identity/signature attempt closed as incomplete
+
+- Configured and reviewed Gmail brand-signature work for
+  `louis@neonrabbit.net`. Louis rejected the final visual quality. This is
+  incomplete work, not a release or handoff.
+- Lesson: Compose-level visual validation must use approved source material and
+  must catch clipping, sizing, alignment, and contrast; do not infer success
+  from public asset availability or Gmail Settings state.
+- No email was sent and no customer draft was changed. Open Brain capture was
+  completed with the same lesson and follow-up requirement.
+
 ## September 4, 2026 - Email-draft handoff and signature-asset correction
 
 - Created two requested Sparkle Suite waitlist follow-up Gmail drafts only; both

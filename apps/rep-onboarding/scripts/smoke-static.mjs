@@ -21,7 +21,7 @@ const requiredFiles = [
 const requiredPhrases = [
   { file: "src/App.tsx", phrase: "New Rep Onboarding" },
   { file: "src/App.tsx", phrase: "getConfiguredInviteToken" },
-  { file: "src/integration/team-onboarding-client.ts", phrase: "/api/team-onboarding/access/" },
+  { file: "src/integration/team-onboarding-client.ts", phrase: "/api/team-onboarding/access" },
   { file: "src/App.tsx", phrase: "teamLeadName" },
   { file: "src/data.ts", phrase: "Sparkle Suite" },
   {

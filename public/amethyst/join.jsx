@@ -15,12 +15,13 @@ const DEFAULTS = window.JOIN_TWEAK_DEFAULTS || {
   businessName: "Sparkle by Sasha",
   teamMemberCount: 6,
   showPromo: true,
-  promoText: "November Promo: New reps get a guaranteed Diamond in their first launch pack.",
+  promoText: "Check the official Bomb Party enrollment page for current starter-pack details and promotions.",
   heroTitle: "Welcome to Sparkle by Sasha",
-  heroPitch: "Join a crew of independent reps building real businesses on their own terms. We do live jewelry reveals, support each other through it, and yes, we have a lot of fun. There's a spot waiting for you.",
+  heroPitch: "Learn what it takes to become an independent rep, review the official requirements, and ask the team lead what support is currently available.",
   heroCtaText: "See starter packs",
-  finalPitch: "Pick your starter pack, follow the steps on Bomb Party, and you're in. We'll set up your onboarding call within 24 hours.",
+  finalPitch: "Review the current official starter-pack options and enrollment requirements, then ask the team lead any questions before you decide.",
   bpReferralUrl: "https://bombparty.com/?ref=sparklebysasha",
+  hasRecruitingLink: true,
   showTicker: true,
   showHero: true,
   showTeam: true,
@@ -87,6 +88,17 @@ function linkProps(href) {
   return isExternalHref(href)
     ? { href, target: "_blank", rel: "noreferrer noopener" }
     : { href: href || "#" };
+}
+
+function RecruitingAction({ enabled, href, className, unavailableText, children, ...props }) {
+  if (!enabled || !href || href === "#") {
+    return (
+      <span className={className} aria-disabled="true" {...props}>
+        {unavailableText}
+      </span>
+    );
+  }
+  return <a {...linkProps(href)} className={className} {...props}>{children}</a>;
 }
 
 function SocialLogo({ label, shortLabel }) {
@@ -644,7 +656,7 @@ function LiveQueueModal({ open, onClose }) {
   );
 }
 
-function Hero({ teamName, title, pitch, ctaText, ctaUrl, showPromo, promoText, repName, locationLabel }) {
+function Hero({ teamName, title, pitch, ctaText, ctaUrl, hasRecruitingLink, showPromo, promoText, repName, locationLabel }) {
   return (
     <section className="jp-hero">
       <div className="jp-hero-media slot" data-slot="hero photo" />
@@ -665,10 +677,16 @@ function Hero({ teamName, title, pitch, ctaText, ctaUrl, showPromo, promoText, r
             Led by <span className="slot" data-slot="rep name">{repName}</span>{locationLabel ? <> in <span className="slot" data-slot="rep city and state">{locationLabel}</span></> : null}.
           </p>
           <div className="jp-hero-ctas">
-            <a {...linkProps(ctaUrl)} className="hp-btn-primary hp-btn-sparkle solid-light slot" data-slot="CTA to BP referral page">
+            <RecruitingAction
+              enabled={hasRecruitingLink}
+              href={ctaUrl}
+              className="hp-btn-primary hp-btn-sparkle solid-light slot"
+              data-slot="CTA to BP referral page"
+              unavailableText={`Ask ${repName} for current join details`}
+            >
               {ctaText}
               <span className="spark" /><span className="spark" /><span className="spark" /><span className="spark" />
-            </a>
+            </RecruitingAction>
             <a href="#why" className="hp-btn-outline" style={{ color: "white", borderColor: "rgba(255,255,255,0.4)" }}>Learn more</a>
           </div>
           <p className="jp-hero-compliance">
@@ -756,19 +774,27 @@ function TeamCard({ member, isLeader }) {
   );
 }
 
-function SpotCard({ ctaUrl, ctaText }) {
+function SpotCard({ ctaUrl, ctaText, hasRecruitingLink, repName }) {
   return (
     <article className="jp-team-card is-spot">
       <div className="jp-spot-glyph">+</div>
       <div className="jp-team-business" style={{ background: "none", color: "var(--hp-primary)", WebkitTextFillColor: "var(--hp-primary)" }}>Open Spot</div>
       <h3 className="jp-spot-title">This is Your Spot</h3>
-      <p className="jp-spot-sub">Could be you next. Apply to join the team and we'll show you the ropes.</p>
-      <a {...linkProps(ctaUrl)} className="jp-spot-btn slot" data-slot="CTA → BP referral page">{ctaText}</a>
+      <p className="jp-spot-sub">Interested in joining? Review the official details and ask the team lead what support is currently available.</p>
+      <RecruitingAction
+        enabled={hasRecruitingLink}
+        href={ctaUrl}
+        className="jp-spot-btn slot"
+        data-slot="CTA → BP referral page"
+        unavailableText={`Ask ${repName} for current details`}
+      >
+        {ctaText}
+      </RecruitingAction>
     </article>
   );
 }
 
-function TeamSection({ rep, members, ctaUrl, ctaText }) {
+function TeamSection({ rep, members, ctaUrl, ctaText, hasRecruitingLink }) {
   const leaderAlreadyAppearsInRoster = members.some((member) =>
     member.name?.trim().toLowerCase() === rep.name?.trim().toLowerCase() &&
     member.business?.trim().toLowerCase() === rep.business?.trim().toLowerCase(),
@@ -785,8 +811,11 @@ function TeamSection({ rep, members, ctaUrl, ctaText }) {
         <div className="jp-team-grid">
           {!leaderAlreadyAppearsInRoster && <TeamCard member={rep} isLeader />}
           {members.map((member, index) => <TeamCard key={`${member.name}-${index}`} member={member} />)}
-          <SpotCard ctaUrl={ctaUrl} ctaText={ctaText} />
+          <SpotCard ctaUrl={ctaUrl} ctaText={ctaText} hasRecruitingLink={hasRecruitingLink} repName={rep.name} />
         </div>
+        {RUNTIME_CONTEXT.targeted && members.length === 0 ? (
+          <p className="jp-section-sub">No additional public team cards have been added yet. Contact {rep.name} for current team details.</p>
+        ) : null}
       </div>
     </section>
   );
@@ -802,12 +831,12 @@ const BENEFIT_ICONS = {
 };
 
 const BENEFITS = [
-  { key: "community", title: "Supportive Community", desc: "Real reps, group chats, weekly hangouts. Nobody figures this out alone and that's the whole point of a team." },
-  { key: "income", title: "Flexible Income", desc: "Sell on your own time, your own platform, your own terms. Earn from your shows and a cut of your team's, too." },
-  { key: "training", title: "Training & Mentorship", desc: "Step-by-step playbooks, live coaching, 1:1 onboarding. Whether you're brand new or scaling up, you've got a guide." },
-  { key: "product", title: "Amazing Products", desc: "Real jewelry from a real brand. Surprise reveals that customers come back for. The product practically sells itself." },
-  { key: "anywhere", title: "Work From Anywhere", desc: "Phone, ring light, a corner of your kitchen. That's the whole studio. Run your business from anywhere with WiFi." },
-  { key: "growth", title: "Growth Opportunities", desc: "Hit your stride and there's no ceiling. Build your team, mentor newcomers, and unlock bonuses as you go." },
+  { key: "community", title: "Meet the Team", desc: "Ask how this team communicates, celebrates wins, and handles everyday questions." },
+  { key: "income", title: "Review the Numbers", desc: "Income is not guaranteed. Read the current compensation information and Income Disclosure Statement before deciding." },
+  { key: "training", title: "Ask About Support", desc: "Training and mentoring differ by team. Ask the lead exactly what is available now." },
+  { key: "product", title: "Know the Product", desc: "Review the current official catalog, policies, and starter-pack details before enrolling." },
+  { key: "anywhere", title: "Plan Your Setup", desc: "Ask what equipment, internet, workspace, and show schedule are realistic for you." },
+  { key: "growth", title: "Understand the Path", desc: "Learn the official requirements and talk through your goals without promises or pressure." },
 ];
 
 function WhyJoin({ teamName, repName, locationLabel }) {
@@ -818,7 +847,7 @@ function WhyJoin({ teamName, repName, locationLabel }) {
         <div className="jp-section-head">
           <div className="jp-section-eyebrow">Why join</div>
           <h2 className="jp-section-title">Why Join {displayTeamName}?</h2>
-          <p className="jp-section-sub">Turn your passion into profit with support from {repName}{locationLabel ? ` in ${locationLabel}` : ""}. This isn't a side gig you grind through - it's a community that helps you grow at your pace, however far you want to take it.</p>
+          <p className="jp-section-sub">Review the official requirements and ask {repName}{locationLabel ? ` in ${locationLabel}` : ""} what this team currently offers before you decide.</p>
         </div>
         <div className="jp-benefits">
           {BENEFITS.map((benefit) => (
@@ -838,32 +867,32 @@ const FAQ_QUESTIONS = (teamName, repName) => ([
   {
     q: `What is ${teamName}?`,
     aSlot: "FAQ answer — what is the team",
-    a: FAQ_ANSWERS.whatIsTeam || `${teamName} is a tight-knit team of independent Bomb Party reps led by ${repName}. We're a group of women running our own businesses on our own terms, sharing what works, cheering each other on, and having a ridiculous amount of fun doing live jewelry reveals.`,
+    a: FAQ_ANSWERS.whatIsTeam || `${teamName} is a team of independent Bomb Party reps led by ${repName}. Ask the team lead how the group communicates and what support is currently available.`,
   },
   {
     q: "How much does it cost to join?",
     aSlot: "FAQ answer — cost",
-    a: FAQ_ANSWERS.cost || "Bomb Party starter packs typically run $169-$249 and include sample jewelry boxes plus business tools to get you started. The exact options change with current promotions, so tap the join button and you'll see the latest packs available.",
+    a: FAQ_ANSWERS.cost || "Starter-pack options, contents, and prices can change. Review the current official enrollment page before making a decision.",
   },
   {
     q: `Do I need experience to join ${teamName}?`,
     aSlot: "FAQ answer — experience",
-    a: FAQ_ANSWERS.experience || "Not at all. Most of us started with zero sales experience. If you can talk to your phone and have fun on camera, you can do this. We'll walk you through the rest.",
+    a: FAQ_ANSWERS.experience || "Review the current official requirements and ask the team lead what training or onboarding help is available for new reps.",
   },
   {
     q: "How much time do I need to commit?",
     aSlot: "FAQ answer — time commitment",
-    a: FAQ_ANSWERS.timeCommitment || "Totally up to you. Some reps go live a few times a month for fun money, others run multiple shows a week as their full-time gig. There's no minimum, just whatever fits your life.",
+    a: FAQ_ANSWERS.timeCommitment || "The time needed depends on your goals and how you run your independent business. Review the official policies and plan a schedule that is realistic for you.",
   },
   {
     q: "What kind of support will I receive?",
     aSlot: "FAQ answer — support",
-    a: FAQ_ANSWERS.support || "Personalized 1:1 onboarding, our private team chat for daily questions, weekly group coaching calls, plus all the Bomb Party corporate training and tools. You're never figuring this out alone.",
+    a: FAQ_ANSWERS.support || "Support differs by team and can change. Ask the team lead which onboarding, communication, and training resources are available now.",
   },
   {
     q: "Can I really make money doing this?",
     aSlot: "FAQ answer — income",
-    a: FAQ_ANSWERS.income || "Yes, and it varies a lot. Income depends on the shows you put in, the customers you build, and how you grow. We'll be honest with you about realistic expectations and show you how to set goals that fit your life.",
+    a: FAQ_ANSWERS.income || "Income is not guaranteed and results vary. Read the current Income Disclosure Statement and consider your costs, time, and goals before enrolling.",
   },
 ]);
 
@@ -905,7 +934,7 @@ function Faq({ teamName, repName, locationLabel }) {
   );
 }
 
-function FinalCta({ teamName, ctaUrl, ctaText, pitch, repName, locationLabel }) {
+function FinalCta({ teamName, ctaUrl, ctaText, pitch, repName, locationLabel, hasRecruitingLink }) {
   return (
     <section className="jp-final">
       <div className="jp-container">
@@ -918,14 +947,23 @@ function FinalCta({ teamName, ctaUrl, ctaText, pitch, repName, locationLabel }) 
           <h2 className="jp-final-title">Ready to Sparkle With {teamName}?</h2>
           <p className="jp-final-sub">{pitch}</p>
           <p className="jp-final-note">
-            Start with the official starter pack page{locationLabel ? `, then connect with ${repName} in ${locationLabel}` : ""}. Review the{" "}
+            {hasRecruitingLink
+              ? `Start with the official starter pack page${locationLabel ? `, then connect with ${repName} in ${locationLabel}` : ""}. `
+              : `Starter-pack details are not connected on this page yet. Ask ${repName} for the current official options. `}
+            Review the{" "}
             <a {...linkProps(BP_IDS_HREF)}>Income Disclosure Statement</a>{" "}
             before you enroll.
           </p>
-          <a {...linkProps(ctaUrl)} className="jp-final-btn slot" data-slot="CTA → BP referral page">
+          <RecruitingAction
+            enabled={hasRecruitingLink}
+            href={ctaUrl}
+            className="jp-final-btn slot"
+            data-slot="CTA → BP referral page"
+            unavailableText={`Ask ${repName} for current join details`}
+          >
             {ctaText}
             <span aria-hidden="true">→</span>
-          </a>
+          </RecruitingAction>
         </div>
       </div>
     </section>
@@ -990,6 +1028,7 @@ function App() {
   const [queueOpen, setQueueOpen] = useState(false);
   const locationLabel = getLocationLabel(t.repCity, t.repState);
   const repName = publicRepName(t.repName);
+  const hasRecruitingLink = t.hasRecruitingLink !== false && Boolean(runtimeText(t.bpReferralUrl));
 
   const visibleMembers = useMemo(() => {
     const count = Math.max(0, Math.min(t.teamMemberCount, TEAM_MEMBERS.length));
@@ -1027,7 +1066,9 @@ function App() {
 
   useEffect(() => {
     const locationSuffix = locationLabel ? ` | ${locationLabel}` : "";
-    const description = `Explore ${t.teamName}, Bomb Party starter pack details, and rep support from ${repName}${locationLabel ? ` in ${locationLabel}` : ""}. Review the Income Disclosure Statement before enrolling.`;
+    const description = hasRecruitingLink
+      ? `Explore ${t.teamName}, current official join details, and information from ${repName}${locationLabel ? ` in ${locationLabel}` : ""}. Review the Income Disclosure Statement before enrolling.`
+      : `Learn about ${t.teamName} and ask ${repName}${locationLabel ? ` in ${locationLabel}` : ""} for current official join details. Review the Income Disclosure Statement before enrolling.`;
     let meta = document.querySelector('meta[name="description"]');
 
     if (!meta) {
@@ -1046,7 +1087,7 @@ function App() {
     }
     meta.setAttribute("content", description);
     applyTargetedMetadata(document.title, description);
-  }, [locationLabel, repName, t.teamName]);
+  }, [hasRecruitingLink, locationLabel, repName, t.teamName]);
 
   useEffect(() => {
     const body = document.body;
@@ -1152,6 +1193,7 @@ function App() {
                 pitch={redactPublicRepText(t.heroPitch, t.repName)}
                 ctaText={t.heroCtaText}
                 ctaUrl={t.bpReferralUrl}
+                hasRecruitingLink={hasRecruitingLink}
                 showPromo={t.showPromo}
                 promoText={t.promoText}
                 repName={repName}
@@ -1165,6 +1207,7 @@ function App() {
                 members={visibleMembers}
                 ctaUrl={t.bpReferralUrl}
                 ctaText="Apply to the Team"
+                hasRecruitingLink={hasRecruitingLink}
               />
             ) : null}
 
@@ -1180,6 +1223,7 @@ function App() {
                 pitch={redactPublicRepText(t.finalPitch, t.repName)}
                 repName={repName}
                 locationLabel={locationLabel}
+                hasRecruitingLink={hasRecruitingLink}
               />
             ) : null}
 

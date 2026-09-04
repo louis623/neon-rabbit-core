@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { AuthError, getPaidNicNacContext } from '@/lib/nic-nac/auth'
 import { ServiceError } from '@/lib/services/errors'
+import { getTeamOnboardingAccess } from '@/lib/services/team-onboarding'
 import {
   getJoinTeamRoster,
   removeJoinTeamMember,
@@ -21,9 +22,35 @@ function serviceErrorResponse(error: ServiceError) {
   )
 }
 
+function addonRequiredResponse(
+  access: Awaited<ReturnType<typeof getTeamOnboardingAccess>>,
+) {
+  return NextResponse.json(
+    {
+      code: 'TEAM_MANAGEMENT_ADDON_REQUIRED',
+      error: 'Team Management is not enabled for this workspace.',
+      access,
+    },
+    { status: 403 },
+  )
+}
+
+function removeConfirmationRequiredResponse() {
+  return NextResponse.json(
+    {
+      code: 'JOIN_TEAM_MEMBER_REMOVE_CONFIRMATION_REQUIRED',
+      error: 'Confirm removal before deleting this public team card.',
+    },
+    { status: 409 },
+  )
+}
+
 export async function GET() {
   try {
     const { repId, supabase } = await getPaidNicNacContext()
+    const access = await getTeamOnboardingAccess(supabase, repId)
+    if (!access.enabled) return addonRequiredResponse(access)
+
     const members = await getJoinTeamRoster(supabase, repId, {
       visibleOnly: false,
     })
@@ -46,9 +73,14 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const { repId, supabase } = await getPaidNicNacContext()
+    const access = await getTeamOnboardingAccess(supabase, repId)
+    if (!access.enabled) return addonRequiredResponse(access)
+
     const action = typeof body?.action === 'string' ? body.action : 'upsert'
 
     if (action === 'remove') {
+      if (body?.confirmed !== true) return removeConfirmationRequiredResponse()
+
       const result = await removeJoinTeamMember(supabase, repId, body?.memberId)
       return NextResponse.json({ ok: true, ...result })
     }

@@ -13,8 +13,9 @@ function makeDeleteBuilder() {
   const eq = vi.fn().mockResolvedValue({ error: null })
   const inMock = vi.fn().mockResolvedValue({ error: null })
   const or = vi.fn().mockResolvedValue({ error: null })
-  const deleteMock = vi.fn(() => ({ eq, in: inMock, or }))
-  return { delete: deleteMock, eq, in: inMock, or }
+  const match = vi.fn().mockResolvedValue({ error: null })
+  const deleteMock = vi.fn(() => ({ eq, in: inMock, or, match }))
+  return { delete: deleteMock, eq, in: inMock, or, match }
 }
 
 function makeReviewerAdmin() {
@@ -39,6 +40,9 @@ function makeReviewerAdmin() {
   const fulfillmentDelete = makeDeleteBuilder()
   const swapDelete = makeDeleteBuilder()
   const conversationDelete = makeDeleteBuilder()
+  const workspaceConversationDelete = makeDeleteBuilder()
+  const onboardingParticipantDelete = makeDeleteBuilder()
+  const joinTeamMemberDelete = makeDeleteBuilder()
   const approvalDelete = makeDeleteBuilder()
   const runDelete = makeDeleteBuilder()
   const reminderPreferenceDelete = makeDeleteBuilder()
@@ -77,6 +81,9 @@ function makeReviewerAdmin() {
       if (table === 'trade_fulfillment') return fulfillmentDelete
       if (table === 'trade_swaps') return swapDelete
       if (table === 'nic_nac_conversations') return conversationDelete
+      if (table === 'workspace_conversations') return workspaceConversationDelete
+      if (table === 'team_onboarding_participants') return onboardingParticipantDelete
+      if (table === 'join_team_members') return joinTeamMemberDelete
       if (table === 'approval_events') return approvalDelete
       if (table === 'nic_nac_runs') return runDelete
       if (table === 'show_reminder_preferences') return reminderPreferenceDelete
@@ -96,6 +103,9 @@ function makeReviewerAdmin() {
     spies: {
       approvalDelete,
       conversationDelete,
+      workspaceConversationDelete,
+      onboardingParticipantDelete,
+      joinTeamMemberDelete,
       runDelete,
       setupUpsert,
       subscriptionUpsert,
@@ -142,6 +152,30 @@ describe('reviewer smoke session reset', () => {
     expect(spies.conversationDelete.eq).toHaveBeenCalledWith(
       'rep_id',
       'rep-reviewer',
+    )
+  })
+
+  it('clears synthetic Team Management data so the Alex smoke is repeatable', async () => {
+    const { admin, spies } = makeReviewerAdmin()
+
+    await resetReviewerSmokeSession('dashboard_unlocked', admin as never)
+
+    expect(spies.onboardingParticipantDelete.eq).toHaveBeenCalledWith(
+      'owner_rep_id',
+      'rep-reviewer',
+    )
+    expect(spies.joinTeamMemberDelete.eq).toHaveBeenCalledWith(
+      'rep_id',
+      'rep-reviewer',
+    )
+    expect(spies.workspaceConversationDelete.match).toHaveBeenCalledWith({
+      created_by_rep_id: 'rep-reviewer',
+      conversation_type: 'team_onboarding',
+    })
+    expect(
+      spies.workspaceConversationDelete.delete.mock.invocationCallOrder[0],
+    ).toBeLessThan(
+      spies.onboardingParticipantDelete.delete.mock.invocationCallOrder[0],
     )
   })
 
