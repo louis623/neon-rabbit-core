@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildCustomerSiteLlmsText,
   buildCustomerSiteSitemap,
+  renderCustomerSiteSitemapXml,
 } from '@/lib/seo/customer-site-crawl'
 
 const kim = {
@@ -29,6 +30,13 @@ describe('customer-site crawl content', () => {
         expect.objectContaining({ url: expect.stringContaining('in-the-pantry') }),
       ]),
     )
+  })
+
+  it('serializes a customer sitemap without platform or demo URLs', () => {
+    const xml = renderCustomerSiteSitemapXml('https://goforthebling.com', kim)
+    expect(xml).toContain('<loc>https://goforthebling.com/</loc>')
+    expect(xml).toContain('<loc>https://goforthebling.com/join</loc>')
+    expect(xml).not.toContain('yoursparklesuite.com/prelaunch')
   })
 
   it('renders actual customer identity rather than the demo llms fallback', () => {
