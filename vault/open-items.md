@@ -645,6 +645,18 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 
 ## Control Center accounting follow-up
 
+## Customer-site search visibility follow-up
+
+- [ ] Obtain verified owner access and Louis's exact authorization before
+  submitting a rep sitemap to Google Search Console or Bing Webmaster Tools.
+  Submit only after the live domain's canonical metadata, favicon/share card,
+  `robots.txt`, `sitemap.xml`, `llms.txt`, and structured data identify that
+  rep correctly.
+- [ ] If Louis asks to bring `milehighfizz.com` or `brittwithbling.com` onto
+  Sparkle Suite, treat it as a separate explicit domain migration. They remain
+  independently hosted legacy sites; do not move aliases, DNS, or content as
+  part of ordinary SEO work.
+
 - [ ] Have Lane complete one read-only visual sign-in and report only display
   issues for the Suite and Finder accounting views. Do not use the credential
   for customer, billing, provider, or operational work.

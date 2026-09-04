@@ -2,6 +2,29 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 3, 2026 - Customer-site search launch standard
+
+- Added the checkbox-only Control Center onboarding item **Make their site easy
+  to find**, and updated the `sparkle-suite-rep-welcome-site` onboarding skill
+  plus its package reference. It requires tenant-correct canonical metadata,
+  favicon/share card, `robots.txt`, `sitemap.xml`, `llms.txt`, and structured
+  data before any Google or Bing submission. No search-provider submission was
+  made.
+- Customer domains now receive request-aware crawl files from the app. Verified
+  `theblingkitchen.com` now publishes Heather/BlingKitchen in `llms.txt`, a
+  sitemap with `/`, `/trade`, `/join`, and `/in-the-pantry`, and `robots.txt`
+  pointing to that same domain sitemap.
+- A production audit found two stale Vercel project routing rules, **SEO
+  sitemap.xml** and **SEO robots.txt**, rewriting to the static
+  `sparkle-suite-seo-files.vercel.app`. Removed and published only those two
+  rules after the request-aware handlers were deployed; no other project routes
+  remain. Focused tests passed (18); production build passed. Final commit
+  `35b4c6ec` was pushed. Both Suite aliases and Heather's verified Bling
+  Kitchen aliases resolve to Ready deployment `dpl_GnUkogcsVaTSwQE86wuUNArAJGE4`.
+- Read-only audit confirmed `milehighfizz.com` and `brittwithbling.com` are
+  independently hosted legacy sites, not Sparkle Suite aliases. Do not migrate
+  or replace either domain without Louis's separate explicit authorization.
+
 ## September 3, 2026 - Lane actuals added to the Control Center home
 
 - Connected the Control Center home’s Actual revenue collected and Actual

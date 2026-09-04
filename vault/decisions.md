@@ -1,5 +1,17 @@
 # Decision Log
 
+## 2026-09-03 - Customer crawl files are tenant-aware app routes
+
+Decision: Serve customer-domain `sitemap.xml` and `robots.txt` from
+request-aware Sparkle Suite app routes, alongside the existing tenant-aware
+`llms.txt`. Never use a shared static external sitemap/robots deployment for
+customer domains. The sitemap contains only the rep's real public routes; the
+robots file names that same domain sitemap.
+
+Reason: A shared static SEO rewrite served Sparkle Suite prelaunch URLs and
+demo identity to customer domains. Tenant-aware files keep search and AI
+discovery aligned with the public customer site.
+
 ## September 2, 2026 - Production provenance uses direct hostname resolution
 
 For a held-domain manual Vercel release, verify each intended hostname with a
