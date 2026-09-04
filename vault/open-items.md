@@ -6,12 +6,18 @@ mentions a stable demo alias is historical evidence only and does not control
 future work.
 
 - [ ] **Provision approved lead-specific ChatGPT Sites for private onboarding**
-  — the application now fails closed unless an exact approved base and origin
-  are configured, and it will not emit the retired personal Britt host. The
-  provider provisioning hook remains manual. Before any real invite or release,
-  approve the Site source/host, configure the documented environment values,
-  and run the synthetic Alex checklist. Do not create a real invite during PR
-  review.
+  — the hardened application is released and fails closed unless an exact
+  approved base and origin are configured; it will not emit the retired
+  personal Britt host. The provider provisioning hook remains manual. Before
+  any real invite, approve the Site source/host, configure the documented
+  environment values, and run the synthetic Alex checklist. No real invite was
+  created during the release.
+
+- [ ] **Run the signed-in Team Management production reviewer click-through**
+  — release provenance, public Join, API boundaries, and landing stability are
+  verified on `www.yoursparklesuite.com`, but the clean browser session did not
+  have the protected reviewer token. Use the supported token-gated Britt Test
+  Rep reset; do not substitute Louis's personal account or a customer account.
 
 - [ ] **Locate the canonical Sparkle Suite email signature asset** - use the
   actual approved `S` seal/wordmark export, not a recreated approximation.

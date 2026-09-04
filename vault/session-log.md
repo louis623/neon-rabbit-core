@@ -22,6 +22,23 @@ Running log of significant work sessions. Most recent first.
   cannot form a meaningful PR from that branch into itself, while `main` is a
   quarantined legacy line (the compare view showed 1,159 commits and 1,754
   files). No misleading legacy-target PR or unallowlisted branch was created.
+- Louis then authorized commit, push, and deployment. Exact pushed tip
+  `d381674b` was manually built with domain movement disabled and released as
+  Ready Vercel deployment `dpl_41Jc3DrqWyni4EUtYuNnGp9LRYxt`. Direct raw
+  checks passed before only `www.yoursparklesuite.com` and
+  `yoursparklesuite.com` were assigned.
+- Both Suite aliases resolve to that deployment; the apex canonicalizes to
+  `www` and the landing page remained stable. Root, public Join, and Nic-Nac
+  health returned 200. Live browser QA confirmed the hardened Join copy and
+  Learn more anchor. Missing-invite onboarding returned 400 and unauthenticated
+  Team Management returned 401. Kim's `goforthebling.com` stayed on
+  `dpl_2NtndCcTJgt34cz8ioxj1DxLXG4D`.
+- Production reviewer variables exist, but the clean browser session did not
+  possess the protected token. Signed-in Team Management UI was therefore not
+  claimed as live-verified; no personal/customer account or extracted secret
+  was used. The pre-existing non-final signature route was already present in
+  the prior 12:09 deployment; this release did not edit Gmail or drafts and
+  does not make the signature work approved.
 
 ## September 4, 2026 - Gmail identity/signature attempt closed as incomplete
 

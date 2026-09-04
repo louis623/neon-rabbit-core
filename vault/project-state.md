@@ -1,10 +1,12 @@
 # Project State
 
-## September 4, 2026 - Team Management, private onboarding, and Join are hardened locally
+## September 4, 2026 - Team Management, private onboarding, and Join hardening is live
 
 - On allowlisted branch `codex/nic-nac-trade-hardening`, the approved Rocky plan
-  has been implemented for PR review only. No deployment, alias, DNS, account,
-  billing, customer, email, ChatGPT Site, or real invite change was made.
+  is released from exact pushed tip `d381674b` as Ready deployment
+  `dpl_41Jc3DrqWyni4EUtYuNnGp9LRYxt`. Only the two Suite aliases moved; no DNS,
+  account, billing, customer, email, ChatGPT Site, or real invite change was
+  made.
 - Team Management roster APIs/tools now require `manual_beta` or `active`; card
   removal is confirmed and permanent, while linked onboarding participants
   preserve their history. Nic-Nac removal remains approval-gated.
@@ -20,8 +22,15 @@
   before Team Management participants and cards so the documented Alex
   walkthrough is repeatable. Manual
   ChatGPT Sites provisioning remains the outstanding provider hook.
-- Verified commit `24af13be` is pushed on the allowlisted/default branch with no
-  deployment. A normal PR is structurally blocked because the head is already
+- Both Suite aliases resolve directly to the new deployment. Kim's
+  `goforthebling.com` remains on Ready deployment
+  `dpl_2NtndCcTJgt34cz8ioxj1DxLXG4D`. Root, public Join, and Nic-Nac health
+  returned 200; apex canonicalization and landing stability passed; public Join
+  rendered the hardened neutral copy and its Learn more interaction worked.
+  The production reviewer configuration exists, but its protected token was
+  not available to this clean browser session, so no signed-in Team Management
+  click-through was claimed and no personal/customer account was substituted.
+- A normal PR remains structurally blocked because the head is already
   GitHub's default branch and `main` is quarantined legacy history; do not open
   the enormous legacy comparison or create an unallowlisted branch without
   Louis approving the coordinated branch-status change.
