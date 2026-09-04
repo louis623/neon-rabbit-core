@@ -2,6 +2,24 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 4, 2026 - Email-draft handoff and signature-asset correction
+
+- Created two requested Sparkle Suite waitlist follow-up Gmail drafts only; both
+  remain unsent. The actual lead selection was read-only and consent-aware.
+  Recipient identities and draft contents are intentionally not recorded here.
+- Louis rejected the attempted signature graphic. It was an agent-made
+  approximation and did not match the familiar Sparkle Suite `S` seal. The
+  drafts must be handed to the designated mail owner for review/replacement;
+  do not send them.
+- Added a tentative email-signature route and `sparkle-suite-email` skill in
+  commit `6e5a553e`, after a successful local production build. The commit is
+  pushed but **not deployed**: Vercel CLI authorization failed and the connected
+  deploy action could not start. No production alias, customer domain, billing,
+  customer data, or outbound communication changed.
+- Do not deploy the tentative signature route. It needs replacement or removal
+  after the canonical Sparkle Suite email-logo export is located and visually
+  validated in a real Gmail draft.
+
 ## September 3, 2026 - Customer-site search launch standard
 
 - Added the checkbox-only Control Center onboarding item **Make their site easy

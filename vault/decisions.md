@@ -1,5 +1,17 @@
 # Decision Log
 
+## 2026-09-04 - Never approximate the Sparkle Suite email logo
+
+For Sparkle Suite email signatures, use the real approved exported logo asset
+or exact established source—not a newly drawn approximation of the `S` seal or
+wordmark. A successful image response or attachment upload is not visual
+approval. Validate the actual Gmail rendering before calling a signature ready.
+
+The provisional signature route in `6e5a553e` is intentionally not a release
+candidate because Louis rejected its visual result. Do not deploy it. The
+assigned mail owner should replace the draft signature only after the canonical
+asset is located and checked against the familiar mark.
+
 ## 2026-09-03 - Customer crawl files are tenant-aware app routes
 
 Decision: Serve customer-domain `sitemap.xml` and `robots.txt` from

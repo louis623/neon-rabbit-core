@@ -5,6 +5,13 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Locate the canonical Sparkle Suite email signature asset** - use the
+  actual approved `S` seal/wordmark export, not a recreated approximation.
+  Replace the two existing unsent draft signatures only after visual Gmail
+  proof. The tentative signature route in pushed commit `6e5a553e` is
+  unapproved and must not be deployed; either replace it with the canonical
+  asset or remove it in the same approved future change.
+
 - [ ] **Louis smoke-test the sole-agent Nic-Nac in the internal demo
   account** - production now has one Nic-Nac route and reports orchestrator
   `agent`. Use the existing non-live, dashboard-unlocked demo entitlement to
