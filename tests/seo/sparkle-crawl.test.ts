@@ -6,6 +6,7 @@ import {
   buildSparkleSitemap,
   normalizeSparkleOrigin,
   resolveSparkleRequestOrigin,
+  resolveSparkleRequestOriginFromHeaders,
 } from '@/lib/seo/sparkle-crawl'
 
 describe('Sparkle Suite crawl helpers', () => {
@@ -71,6 +72,16 @@ describe('Sparkle Suite crawl helpers', () => {
         new Request('http://localhost:3001/sitemap.xml'),
       ),
     ).toBe(SPARKLE_PUBLIC_ORIGIN)
+  })
+
+  it('prefers a customer Host over Vercel’s internal forwarded host', () => {
+    const headers = new Headers({
+      host: 'theblingkitchen.com',
+      'x-forwarded-host': 'www.yoursparklesuite.com',
+    })
+    expect(resolveSparkleRequestOriginFromHeaders(headers)).toBe(
+      'https://theblingkitchen.com',
+    )
   })
 
   it('rejects non-web origins before they can become crawl URLs', () => {

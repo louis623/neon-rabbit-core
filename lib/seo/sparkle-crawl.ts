@@ -105,7 +105,11 @@ export function resolveSparkleRequestOriginFromHeaders(
 ) {
   const requestUrlHost = requestUrl ? new URL(requestUrl).host : null
   const host = normalizeSparkleHost(
-    headers.get('x-forwarded-host') ?? headers.get('host') ?? requestUrlHost,
+    // Vercel preserves the customer domain in Host for metadata route
+    // handlers, while x-forwarded-host can be the internal platform host.
+    // Prefer the direct request Host so a tenant sitemap never adopts the
+    // Sparkle Suite platform origin.
+    headers.get('host') ?? headers.get('x-forwarded-host') ?? requestUrlHost,
   )
 
   if (DEFAULT_PUBLIC_HOSTS.has(host ?? '') || isLocalOrPreviewSparkleHost(host)) {
