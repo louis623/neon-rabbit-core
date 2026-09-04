@@ -18,6 +18,10 @@ Running log of significant work sessions. Most recent first.
 - This remains PR-only. No production deployment or external/customer mutation
   was performed. The manual approved ChatGPT Sites provision/configuration hook
   is documented for later owner-authorized release work.
+- Commit `24af13be` was pushed to the sole allowlisted/default branch. GitHub
+  cannot form a meaningful PR from that branch into itself, while `main` is a
+  quarantined legacy line (the compare view showed 1,159 commits and 1,754
+  files). No misleading legacy-target PR or unallowlisted branch was created.
 
 ## September 4, 2026 - Gmail identity/signature attempt closed as incomplete
 

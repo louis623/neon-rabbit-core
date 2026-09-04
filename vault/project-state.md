@@ -20,6 +20,11 @@
   before Team Management participants and cards so the documented Alex
   walkthrough is repeatable. Manual
   ChatGPT Sites provisioning remains the outstanding provider hook.
+- Verified commit `24af13be` is pushed on the allowlisted/default branch with no
+  deployment. A normal PR is structurally blocked because the head is already
+  GitHub's default branch and `main` is quarantined legacy history; do not open
+  the enormous legacy comparison or create an unallowlisted branch without
+  Louis approving the coordinated branch-status change.
 
 ## September 4, 2026 - Gmail brand signatures remain non-final
 
