@@ -1,5 +1,30 @@
 # Project State
 
+## September 4, 2026 - Live calendar descriptions are visible on customer cards
+
+- The shared Amethyst upcoming-show card now presents a non-empty calendar
+  description as a restrained, skin-aware note between the date/time and the
+  optional discounts. It uses semantic card-muted/accent colors across light
+  and dark skins, preserves line breaks, and suppresses duplicate output when
+  the description is already serving as the fallback show title.
+- Exact application commit `172156ca6928570eec1c95231d119fb1c59b569a`
+  is live as Ready deployment `dpl_gZvC4uneKHzk7CtmctUaz7MzTdYQ`. The release
+  used `--skip-domain`; only `www.yoursparklesuite.com` and
+  `yoursparklesuite.com` moved. `goforthebling.com` and
+  `theblingkitchen.com` remain on `dpl_2NtndCcTJgt34cz8ioxj1DxLXG4D`.
+- Verification passed: 105 focused calendar/customer-site tests, 233 standard
+  tests, 90 Amethyst QA tests plus local link checks, static JSX parsing, the
+  full local and Vercel production builds, desktop/mobile visual review, raw
+  deployment asset checks, live reviewer-card rendering, apex canonicalization,
+  Mile High Fizz HTTP 200, and Nic-Nac API/database health. The exploratory
+  all-test run retained 11 unrelated baseline failures among 3,281 tests, and
+  repository-wide `tsc` retained unrelated test-fixture errors.
+- No calendar data, customer domain, DNS, account, billing, message, or live
+  customer state was changed. Mile High Fizz currently has no upcoming event
+  rows, so live tenant-specific card rendering was unavailable; the shared
+  safe reviewer page and Alpine Opal contrast coverage supplied the release
+  proof.
+
 ## September 4, 2026 - Team Management, private onboarding, and Join hardening is live
 
 - On allowlisted branch `codex/nic-nac-trade-hardening`, the approved Rocky plan

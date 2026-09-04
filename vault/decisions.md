@@ -1,5 +1,16 @@
 # Decision Log
 
+## 2026-09-04 - Calendar descriptions are customer-facing show notes
+
+A non-empty `calendar_events.description` is part of the public upcoming-show
+card contract, not calendar-export-only metadata. Render it in the shared
+Amethyst card between schedule metadata and optional promotional sections, and
+use semantic card surface colors so every appearance preset remains readable.
+If the description supplied the title fallback because no explicit title was
+saved, show it once as the title rather than duplicating the same text as a
+note. Keep the behavior in the shared component so Mile High Fizz and every
+other Amethyst-based customer site inherit the same fix.
+
 ## 2026-09-04 - Team Management and Join hardening supersedes the August 31 link shape
 
 Rocky's approved hardening plan supersedes the August 31 decision that private

@@ -2,6 +2,35 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 4, 2026 - Customer show-card notes released
+
+- Traced the calendar description through Nic-Nac, `calendar_events`, the
+  homepage API/bootstrap, and the browser payload. The missing step was only
+  the shared customer-card renderer.
+- Added a polished semantic note inset to the shared Amethyst event card,
+  omitted empty descriptions, prevented fallback-title duplication, and
+  cache-busted both the homepage CSS and JSX. Added focused renderer coverage
+  and repaired the public-slug route test's stale mock for the already-existing
+  two-flag Join visibility check; no Join behavior changed.
+- Verification: 105 focused tests, 233 standard tests, 90 Amethyst QA tests and
+  local link checks, JSX parse, local and Vercel builds, desktop/mobile visual
+  review, raw deployment checks, and live public reviewer rendering passed.
+  The broader exploratory run passed 3,269 tests with one skip and retained 11
+  unrelated baseline failures; repository-wide `tsc` likewise retained
+  unrelated test-fixture errors.
+- Pushed application commit `172156ca6928570eec1c95231d119fb1c59b569a`
+  and released it with `--skip-domain` as Ready deployment
+  `dpl_gZvC4uneKHzk7CtmctUaz7MzTdYQ`. Assigned only the two Suite aliases;
+  direct hostname inspection confirmed Kim and Heather remain on
+  `dpl_2NtndCcTJgt34cz8ioxj1DxLXG4D`.
+- Live checks passed for root stability, apex 307 canonicalization, the
+  cache-busted homepage assets, safe reviewer show descriptions, Mile High
+  Fizz HTTP 200, and Nic-Nac API/database health. Lindsey currently has no
+  upcoming events, so no tenant-specific event card was available without
+  mutating production data. No account, calendar, customer-domain, DNS,
+  billing, email, or message mutation occurred. Matching Open Brain capture
+  succeeded.
+
 ## September 4, 2026 - Rocky Team Management and onboarding hardening implemented
 
 - Re-audited interrupted work with independent security and product reviewers,
