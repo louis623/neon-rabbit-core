@@ -1,5 +1,17 @@
 # Project State
 
+## September 5, 2026 - TikTok weekend creative delivered
+
+- Five 1080x1920 standalone JPG/PNG pairs in
+  marketing/tiktok/2026-09-05-building-now. First three centered/enlarged;
+  fourth preserved; fifth promotes owner-reported 19 founder spots and 33%
+  savings for first 12 paid months, with terms. Recheck count before posting.
+- Five verified JPG copies in Downloads/Sparkle Suite TikTok - September 5.
+- Latest hooks and approximately 30-second warm, use-case-led descriptions:
+  FINAL-POST-COPY.md in that marketing folder (supersedes shorter captions).
+- Offline media revisions pushed in 6edd1024; no new app deployment or posting.
+  Next session should open /control-center in Codex and await Louis's task.
+
 ## September 5, 2026 - Softer desktop and mobile landing hero
 
 - Louis rejected Black Diamond's contrast in the landing hero and requested a

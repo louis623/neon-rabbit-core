@@ -2,6 +2,34 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Landing/TikTok session closeout and handoff
+
+- Landing hero release evidence remains recorded below: Emerald Garden desktop
+  plus Rose Gold mobile, sticky founder strip, building-now positioning, brand
+  preserved. Last verified live app e2bc8238 / dpl_Ggubupez6DRvcZczVwXBWBXQEEG9;
+  later commits are offline marketing/docs, not new website deployments.
+- Five standalone TikTok JPG/PNG pairs completed; framing revision committed
+  and pushed as 6edd1024 (initial pack 275cbef9). Five JPGs copied to
+  C:/Users/louis/Downloads/Sparkle Suite TikTok - September 5 and each verified
+  by SHA256 against the marketing originals. No ZIP extraction needed.
+- Louis requested a catchy hook for each post, then expanded descriptions to
+  approximately 30-second reads: warm, inviting, concrete use case or show
+  benefit, not maximum-length filler. Latest exact copy is now saved in
+  marketing/tiktok/2026-09-05-building-now/FINAL-POST-COPY.md; older CAPTIONS.md
+  and packaged copy predate this refinement.
+- Lesson: correct 9:16 dimensions alone do not ensure good TikTok framing.
+  Center the composition and enlarge focal content while checking actual UI
+  preview. Real screenshots and exact branding must survive scaling intact.
+- Founder 19 is owner-supplied, time-sensitive, and must be checked before use.
+  33% is rounded savings on first 12 paid months only; retain renewal/setup/tax
+  and eligibility terms. Free queue enrollment does not reserve the discount.
+- No social posting, scheduling, music download, account mutation, or further
+  application deployment. Existing artifacts/ and test-results/ left untouched.
+- Next session: read current memory and provenance; open live /control-center
+  in Codex in-app browser and stand by. If sign-in is required, stop there;
+  do not repair auth, bypass access, or start unrelated open items. Existing
+  signed-in synthetic reviewer verification remains unresolved.
+
 ## September 5, 2026 - TikTok framing revision and fifth founder card
 
 - Centered and enlarged first three offline TikTok layouts; preserved fourth.

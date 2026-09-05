@@ -1,5 +1,18 @@
 # Decision Log
 
+## 2026-09-05 - TikTok composition and copy preferences
+
+Use full 1080x1920 framing with centered, prominent visuals; a correctly sized
+canvas with small left-heavy content is insufficient. Preserve approved brand
+and real screenshots. Deliver individual posting-ready files in marketing and,
+when requested, verified copies in Downloads rather than only a ZIP.
+
+Post titles should be hooks, not merely labels. Descriptions should be warm,
+inviting, roughly a 30-second read, and explain a real customer/show use case.
+Rotate angles: simple destination, brand personality, mobile, shopping clarity,
+founder offer. Time-sensitive remaining counts must be rechecked before posting;
+discount copy must disclose its duration and not imply queue entry reserves it.
+
 ## 2026-09-05 - Active build queue and honest founder availability
 
 Position Sparkle Suite as building sites now, with joining the build queue free
