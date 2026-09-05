@@ -36,6 +36,7 @@ function fixtureBootstrap(page: SkinPreviewPage) {
   }
   const common = {
     businessName: 'The Gnome Garden', repName: 'Sasha', footerLinks,
+    tickerTopText: 'Welcome to the garden | Live reveals & lovely surprises | Explore the Dance Floor',
     footerTagline: 'A little wonder. A little sparkle. A place to feel at home.',
     tradeBoardTickerItems: GNOME_PREVIEW_LISTINGS.map(({ name, type, collection }) => ({ name, type, collection })),
   }
@@ -145,7 +146,7 @@ export async function buildGnomeSkinPreviewDocument(page: SkinPreviewPage, origi
   document = document.replace(/<meta name="robots" content="index,follow" \/>/g, '')
   const bootstrap = fixtureBootstrap(page).replaceAll('Sparkle by Sasha', 'The Gnome Garden')
   document = document.replace('<div id="root"></div>', `<div id="root"></div><script>${inlineScript(SKIN_PREVIEW_GUARDS)}\n${inlineScript(bootstrap)}</script>`)
-  return document
+  return document.replaceAll('Sparkle by Sasha', 'The Gnome Garden')
 }
 
 export async function renderGnomeSkinPreview(page: SkinPreviewPage, origin: string) {
