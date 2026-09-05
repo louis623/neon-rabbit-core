@@ -1,11 +1,24 @@
 # Project State
 
+## September 5, 2026 - Britt queue rollback after alternate-code failure
+
+- Louis reported the alternate-code test stopped working and explicitly asked
+  to switch back. An exact guarded transaction restored Brittany's active rep
+  to the grandfathered Live Queue row and parked the unused migrated row again.
+- The grandfathered row retained 42 names and its legitimate last-update time.
+  A full heartbeat interval after rollback produced no newer timestamp, so the
+  remaining incident is the show-computer extension not publishing; it is not
+  a website propagation delay. No queue content or timestamp was forged.
+- A subsequent real heartbeat arrived without intervention and increased the
+  current show queue to 43 names. Louis explicitly confirmed this is the row to
+  keep. Production and the public Britt bootstrap both show it as live; do not
+  switch Brittany back to the unused migrated row.
+
 ## September 5, 2026 - Owner-directed Britt alternate queue-code test
 
-- Louis confirmed from the live-show side that the alternate migrated code is
-  the correct assignment and is working. Keep Brittany linked to that row;
-  do not restore the grandfathered linkage solely because it contains older
-  queue history.
+- Superseded: Louis initially believed the alternate migrated code was working,
+  but the show then stopped. The later rollback and fresh heartbeat proved the
+  grandfathered row is the active show assignment to retain.
 - After the grandfathered linkage visibly restored the live queue, Louis
   explicitly asked to test the other migrated Live Queue code because the two
   assignments might have been understood backwards. The exact production rows

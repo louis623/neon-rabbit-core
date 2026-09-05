@@ -2,13 +2,28 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Britt alternate-code rollback
+
+- After Louis reported that the alternate-code test stopped working, restored
+  Brittany's active Sparkle Suite rep to the previously verified grandfathered
+  row in one exact-guarded transaction. The unused migrated row returned to the
+  historical placeholder identity; both records and all queue data remain.
+- The restored row held 42 names, but its legitimate timestamp remained older
+  than the public site's three-minute freshness limit. One complete extension
+  heartbeat interval produced no new update. This rules out ordinary website
+  propagation delay and leaves the show-computer extension sync as the active
+  issue. No manual queue or timestamp update was made.
+- A real extension heartbeat then arrived and grew the queue to 43 names.
+  Production linkage and the public customer-site bootstrap both verified the
+  grandfathered row as live. Louis explicitly directed that Brittany remain on
+  this active show row; the alternate migrated code stays unused and parked.
+
 ## September 5, 2026 - Owner-directed Britt alternate queue-code switch
 
-- Louis confirmed the alternate migrated code works from Brittany's live-show
-  side and that the prior assumption was backwards. Final production linkage
-  remains on the alternate row. The row still had an empty/null snapshot when
-  checked server-side, so this confirmation records assignment correctness,
-  not a claim that customer names were present at that instant.
+- Superseded observation: Louis initially believed the alternate migrated code
+  worked from Brittany's live-show side. It remained empty/null server-side and
+  the show then stopped; the later rollback and fresh grandfathered heartbeat
+  establish the final assignment.
 - Louis explicitly confirmed switching Brittany away from the visibly working
   grandfathered Live Queue row to the other migrated code as a reversible test.
   Before acting, he was told the grandfathered row was actively syncing while
