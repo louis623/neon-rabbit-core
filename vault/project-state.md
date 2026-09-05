@@ -1,5 +1,27 @@
 # Project State
 
+## September 5, 2026 - Kim's Gnome Forest favicon and social card are live
+
+- `goforthebling.com` now has a Kim-only, durable **G** favicon in Gnome
+  Forest green, parchment, burgundy, and lantern gold. The mark is narrowly
+  mapped to Kim's validated custom domain and is stored as a deterministic PNG
+  so server image rendering does not depend on system fonts.
+- Its 1200x630 social-share image uses the approved existing forest, friendly
+  gnome, rounded lanterns, parchment treatment, business name, custom domain,
+  and both approved hero lines. Other customer-site skins and marks are
+  unchanged.
+- Exact pushed application tip
+  `249954e83b338344f4c5a6ea4ea72c9f7876ac7b` is live as Ready deployment
+  `dpl_7th6mvkpBbscanWHLbrxWYjZKJzJ`. Only `www.yoursparklesuite.com`,
+  `yoursparklesuite.com`, and `goforthebling.com` moved. Mile High Fizz, Bri's
+  Glowtique, and The Bling Kitchen remain on
+  `dpl_GVnxy1rm8MXCBKaaEwBL3mdeLkSB`.
+- Verification passed: 9 focused tests, 239 standard tests, full local and
+  Vercel production builds, request-aware local image renders, exact live
+  192x192/1200x630 PNG downloads, visual pixel inspection, metadata wiring,
+  alias inspection, root/trade/expected Join-404 checks, and health. Social
+  platforms may retain their own older cached previews until they recrawl.
+
 ## September 5, 2026 - Kim activated on Gnome Forest with editable hero copy
 
 - Louis explicitly approved activating Kim's customer site. `goforthebling.com`

@@ -5,6 +5,13 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [x] **Add Kim's Gnome Forest favicon and social-share card** — completed
+  September 5. The customer domain serves a deterministic `G` favicon and
+  1200x630 card using the approved artwork and hero copy. Final release is
+  `249954e8` / `dpl_7th6mvkpBbscanWHLbrxWYjZKJzJ`; protected customer domains
+  did not move. External social networks may need time or their own refresh
+  tools to replace cached previews.
+
 - [x] **Activate Kim's Gnome Forest skin and approved hero copy** — completed
   September 5 with Louis's explicit approval. `goforthebling.com` uses GG-01,
   the exact approved Hero title and Hero subtitle, and preserves all other Kim

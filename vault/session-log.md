@@ -2,6 +2,29 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Kim Gnome Forest favicon and social-share release
+
+- Added a Kim-only Gnome Forest `G` monogram favicon and a request-aware
+  1200x630 social card built from the already-approved forest, gnome, and
+  lantern artwork. The card includes `GofortheBling`, the custom domain, and
+  both approved hero lines without changing Kim's site content or settings.
+- Initial local render passed, but mandatory live pixel inspection caught that
+  Vercel did not render the SVG's system-font `G`. Preserved that deployment as
+  evidence, baked the approved mark into a deterministic PNG, rebuilt, and
+  visually confirmed the corrected live favicon and card before closeout.
+- Final verification: 9/9 focused tests, 239/239 standard tests, full local and
+  Vercel builds, local Host-header metadata/image checks, live 192x192 and
+  1200x630 PNG dimensions/content types, public root and Dance Floor 200,
+  expected disabled Join 404, Suite root/apex stability, and health 200.
+- Pushed final application tip `249954e83b338344f4c5a6ea4ea72c9f7876ac7b`
+  and released Ready `dpl_7th6mvkpBbscanWHLbrxWYjZKJzJ`. Used
+  `--skip-domain`, then moved only both Suite aliases and
+  `goforthebling.com`. Direct hostname inspection proves Mile High Fizz,
+  Bri's Glowtique, and The Bling Kitchen remain on
+  `dpl_GVnxy1rm8MXCBKaaEwBL3mdeLkSB`. No login, account, billing, DNS, message,
+  customer-content, or signed-in reviewer mutation occurred; untracked
+  `artifacts/` and `test-results/` were preserved.
+
 ## September 5, 2026 - Kim Gnome Forest activation and hero editor release
 
 - Applied Louis's explicit Kim-only content approval with exact identity and

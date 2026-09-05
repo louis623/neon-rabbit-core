@@ -1,5 +1,19 @@
 # Decision Log
 
+## 2026-09-05 - Customer share branding uses stable marks and skin-aware cards
+
+Use a narrowly mapped, stable rep/business monogram for a customer-domain
+favicon and let the 1200x630 share card carry the current appearance preset,
+business name, approved site copy, and custom domain. For Kim, the stable `G`
+mark uses Gnome Forest colors while the card reuses the approved forest,
+friendly gnome, lantern, and parchment assets. Do not substitute Sparkle Suite
+public branding on `goforthebling.com` or leak Kim's mark to another tenant.
+
+Rasterize any text-bearing runtime mark before release. Local system fonts can
+make SVG text appear correct while Vercel's image renderer omits the glyph;
+live pixel inspection of `/icon` and `/opengraph-image` is therefore a required
+release check, not an optional visual polish step.
+
 ## 2026-09-05 - Hero title and subtitle are separate rep-editable settings
 
 Use `hero_headline` for the large first heading and `hero_subtitle` for the
