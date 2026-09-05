@@ -5,6 +5,14 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Owner review and optional Kim Gnome Garden activation** — GG-01 is
+  released with a safe fixture preview at
+  `https://www.yoursparklesuite.com/skin-preview/gnome_garden/homepage`.
+  Kim's selection and domain deployment are unchanged. Obtain Louis's exact
+  activation/domain-advancement approval before applying it to her site.
+  Signed-in Settings/Nic-Nac replay uses only the protected synthetic reviewer
+  path; do not use personal/customer accounts or extract its secret.
+
 - [ ] **Provision approved lead-specific ChatGPT Sites for private onboarding**
   — the hardened application is released and fails closed unless an exact
   approved base and origin are configured; it will not emit the retired
@@ -23,8 +31,8 @@ future work.
   actual approved `S` seal/wordmark export, not a recreated approximation.
   Replace the two existing unsent draft signatures only after visual Gmail
   proof. The tentative signature route in pushed commit `6e5a553e` is
-  unapproved and must not be deployed; either replace it with the canonical
-  asset or remove it in the same approved future change.
+  unapproved. It was removed in the September5 Gnome Garden release (live404,
+  source recoverable in Git); this does not approve or finalize Gmail drafts.
 
 - [ ] **Rebuild and obtain visual approval for Louis's five Gmail signatures**
   — current Gmail signature work is an explicitly non-final interim state.

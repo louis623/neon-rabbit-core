@@ -2,6 +2,40 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Gnome Garden implementation, art correction, and release
+
+- Implemented GG-01 through preset registry, Site Settings/Nic-Nac aliases,
+  additive database constraint, shared customer runtime, skin browse card and
+  fixture-only preview. Independent runtime and release reviewers checked
+  behavior preservation, safety, contrast, compilation and tests.
+- Louis corrected art direction mid-review; replaced the mismatched character
+  with assets adapted from the approved second Kim flyer. Verified genuine
+  alpha, balanced desktop/mobile layouts, readable event notes and form fields,
+  explicit firefly indices, reduced-motion rules, and working Pause/Resume.
+- Checks: 237 standard tests, 90 Amethyst QA tests, 70 final safety/runtime
+  tests and 120 expanded runtime/template tests passed. Production build
+  passed locally and on Vercel. After restoring Stripe22.0.1 to the unchanged
+  lockfile, standalone tsc retains139 existing test-fixture diagnostics only.
+  Broader focused run retained one unchanged SEO wording expectation failure.
+- Committed/pushed `b8ba7192` and final preview consistency tip `91006159`.
+  First held build `dpl_CBNuQRJ53BFnfkojB4ug7DMwiJj7` was superseded before
+  Suite aliases moved. Final Ready `dpl_H8hrUjuRWuxctxaSc8YCHssapiGv` /
+  `sparkle-suite-9oy6nt8zr-louis-2849s-projects.vercel.app` serves both Suite
+  hostnames by direct inspection. Prior Suite build remains preserved.
+- Migration20260905090000 applied; history aligned. Kim and Heather domains
+  remain `dpl_2NtndCcTJgt34cz8ioxj1DxLXG4D`. No account, customer selection,
+  billing, DNS, email, message, provider or live inventory mutation occurred.
+- Live in-app fixture walkthrough verified all four pages, artwork and pause,
+  and synthetic submission denial. Health API/database true, recent error rate0,
+  no runtime errors in post-release scan; root stayed stable, apex307 to www,
+  Settings GET401 and public /start did not expose protected reviewer controls.
+  Signed-in Settings/Nic-Nac was not claimed without the protected token.
+- Removed the explicitly rejected non-final `/email-signature-image` route
+  per the existing vault release guard; live now404 and source recoverable in
+  Git. No Gmail signature or customer draft was edited. Preserved untracked
+  artifacts/ and test-results/. Actual Open Brain design/release captures
+  succeeded and were retrieved for verification.
+
 ## September 4, 2026 - Live Calendar / Nic-Nac video published
 
 - With Louis's explicit confirmation, published the Video resource **Live

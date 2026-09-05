@@ -138,3 +138,32 @@ are recorded below only once completed.
 - Repeated migration dry-run listed only the new additive constraint migration;
   `supabase db push --yes` successfully applied `20260905090000`. It did not
   change customer appearance selections or defaults.
+
+## Verified production release
+
+- Implementation `b8ba7192`; final application tip
+  `910061597fd941ccee3db7062d583d71937baaf3` corrects the preview's inherited
+  ticker/title copy. Its preview/runtime regression subset passed26 tests.
+- Both Vercel builds passed. Initial held candidate
+  `dpl_CBNuQRJ53BFnfkojB4ug7DMwiJj7` was never assigned either Suite hostname.
+  Final Ready deployment is `dpl_H8hrUjuRWuxctxaSc8YCHssapiGv` /
+  `sparkle-suite-9oy6nt8zr-louis-2849s-projects.vercel.app`.
+- Direct hostname inspection proves both `www.yoursparklesuite.com` and
+  `yoursparklesuite.com` resolve to that exact final tip. Kim's
+  `goforthebling.com` and Heather's `theblingkitchen.com` remain on
+  `dpl_2NtndCcTJgt34cz8ioxj1DxLXG4D`. No customer alias was moved.
+- All four live `/skin-preview/gnome_garden/` pages returned200 and were
+  visually inspected in the installed in-app browser. Live lantern pause
+  computed as paused; the synthetic Trade form displayed that nothing was
+  submitted or sent. Skin CSS/WebP returned200 with correct content types.
+- Root remained stable after hydration with its expected Sign in link.
+  Apex307 points to www. Health reported API/database reachable, error rate0;
+  the post-release runtime-error scan returned none. Unauthenticated Settings
+  GET returned401. Public /start went to prelaunch without reviewer controls.
+- Privileged Settings/Nic-Nac click-through remains unverified: the protected
+  reviewer token was not available; no secret extraction or personal/customer
+  account substitution occurred. This is a safe visual preview, not a claim
+  of authenticated reviewer coverage or actual Kim activation.
+- The rejected non-final signature route was removed per existing vault
+  instructions and returns404. Source remains recoverable in Git; no Gmail
+  draft/signature state was edited. Both Open Brain captures were verified.

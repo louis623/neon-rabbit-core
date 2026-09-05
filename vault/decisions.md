@@ -1,5 +1,21 @@
 # Decision Log
 
+## 2026-09-05 - Gnome skin follows Kim's approved second flyer, not a new art style
+
+Use `artifacts/social/kim-goforthebling-flyers/storybook-background-v2.png`
+and its second-flyer composition as visual authority. Louis explicitly rejected
+an ornate/different gnome style. Match the friendly red-hatted gnome, warm brass
+lanterns, olive forest, red mushrooms and parchment. Website assets are
+flyer-referenced adaptations, not pixel-identical crops. The flyer is static;
+website motion is subtle sway/glow/fireflies with manual pause and reduced
+motion, never moving text or intrusive animation.
+
+Keep this a visual preset of Amethyst (`gnome_garden`, GG-01), not a template
+fork or behavior rewrite. Browse it through an isolated fixture preview rather
+than changing a customer's saved appearance. Do not activate Kim's skin or
+advance `goforthebling.com` to a newer deployment without Louis's separate
+approval. Finder's separate database/selection list remains unchanged.
+
 ## 2026-09-04 - Use the approved Nic-Nac calendar thumbnail as the media baseline
 
 Future Sparkle Suite YouTube thumbnails and related Shorts/TikTok artwork use

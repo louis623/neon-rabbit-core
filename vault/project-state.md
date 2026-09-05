@@ -1,5 +1,31 @@
 # Project State
 
+## September 5, 2026 - Flyer-matched Gnome Garden skin released for safe review
+
+- `gnome_garden` / **Enchanted Gnome Garden (GG-01)** adds the approved Kim
+  flyer-style woodland, friendly gnome, rounded brass lanterns, parchment,
+  subtle fireflies, Pause/Resume, and reduced-motion styling to the existing
+  Amethyst customer template. Morganite remains the Suite default; no customer
+  selection was changed. Finder keeps its separate existing preset list.
+- Application `b8ba7192`, final preview copy tip
+  `910061597fd941ccee3db7062d583d71937baaf3`, is live as Ready
+  `dpl_H8hrUjuRWuxctxaSc8YCHssapiGv`. Both Suite hostnames resolve directly to
+  it. Kim and Heather domains remain `dpl_2NtndCcTJgt34cz8ioxj1DxLXG4D`.
+- Safe review: `https://www.yoursparklesuite.com/skin-preview/gnome_garden/homepage`.
+  Its Home/Dance Floor/Join/Preferences navigation uses fixture-only sandboxed
+  shared components; mutations, uploads and provider navigation are blocked.
+  Reload resets sample state. Live browser confirmed art, animation pause,
+  page rendering and a blocked synthetic Trade submission.
+- Additive migration `20260905090000` applied and remote history verified.
+  Builds and focused checks passed; existing standalone test-fixture typing
+  errors and an unrelated SEO wording expectation remain documented. Signed-in
+  Settings/Nic-Nac smoke still requires the protected synthetic reviewer token.
+- Kim activation and any advancement of her domain deployment require separate
+  owner approval. Detailed art direction and verification are in
+  `docs/sparkle-suite/brand/2026-09-05-gnome-garden-skin.md` and
+  `docs/sparkle-suite/testing/2026-09-05-gnome-garden-verification.md`.
+  Matching design and release records were captured and verified in Open Brain.
+
 ## September 4, 2026 - Live Calendar / Nic-Nac demo is in the Resource Library
 
 - The live Sparkle Suite Resource Library now includes **Live Calendar Demo:
