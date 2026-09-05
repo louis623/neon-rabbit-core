@@ -1,5 +1,29 @@
 # Project State
 
+## September 5, 2026 - Session creative, communication, and domain handoff state
+
+- The approved Sparkle Suite media system now covers both the Live Calendar /
+  Nic-Nac demo and the phone-operated Dance Floor demo. The selected Dance
+  Floor deliverable is the 3840x2160 upload-ready JPG at
+  `artifacts/youtube/sparkle-suite-add-dancers-by-phone-youtube-thumbnail-3840x2160.jpg`;
+  the three exploration options remain preserved under `artifacts/youtube/`.
+- Kim's final storybook Gnome Forest TikTok flyer is
+  `artifacts/social/kim-goforthebling-flyers/kim-goforthebling-flyer-02-v3.png`.
+  Its separate enlarged QR code was machine-validated for
+  `https://goforthebling.com`, and the balanced preview is `preview-02-v3.jpg`.
+  This exact visual lineage became the authority for the Gnome Forest skin,
+  Kim's favicon, and Kim's social-share card.
+- Two professional Gmail messages were prepared as drafts only: the branded
+  Live Calendar/Nic-Nac demo note for current reps, with clickable thumbnail
+  and video links, and Kim's surprise note about her redesigned TikTok flyer
+  and website path. Both require Louis's proof and explicit send instruction;
+  neither was sent during this session.
+- CheapNames reported the `milehighfizz.com` registrar transfer complete on
+  September 4. That did not migrate Lindsey's live domain: it remains on its
+  independent legacy host while Readdy's DNS/service inventory and cutover
+  coordination remain unresolved. No DNS or nameserver change occurred in
+  this session.
+
 ## September 5, 2026 - Kim's Gnome Forest favicon and social card are live
 
 - `goforthebling.com` now has a Kim-only, durable **G** favicon in Gnome

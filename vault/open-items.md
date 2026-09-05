@@ -5,6 +5,13 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Louis proof and separately approve the two September 5 Gmail drafts**
+  — review the current-rep Live Calendar/Nic-Nac demo message and Kim's surprise
+  Gnome Forest flyer note in actual Gmail Compose. Confirm branding, clickable
+  thumbnail/text destinations, mobile layout, recipient scope, and final copy.
+  Neither draft has been sent; do not send either without Louis's explicit
+  instruction for that exact draft.
+
 - [x] **Add Kim's Gnome Forest favicon and social-share card** — completed
   September 5. The customer domain serves a deterministic `G` favicon and
   1200x630 card using the approved artwork and hero copy. Final release is
@@ -422,14 +429,20 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [x] **Create reusable existing-site migration skill** - completed June 18. New skill: `C:\Users\louis\sparkle-suite\.agents\skills\sparkle-suite-existing-site-migration\SKILL.md`. It captures the Mile High Fizz lesson that exact migrations require source code/project exports, asks Louis one question at a time, and preserves Sparkle Suite automation behavior while migrating a rep's original public-site brand.
 - [x] **Fix customer Trade Board request confirmation after screenshot submit** - completed June 18 in `1635ce1 fix: keep trade request confirmation visible`. Root cause was a customer UI effect clearing request success/error state after the post-submit board refresh changed available listings. Verification passed focused tests, `qa:amethyst`, local build, local screenshot multipart smoke, 6-request pressure smoke, Vercel build, stable alias check, deployed screenshot API smoke, and deployed rendered customer confirmation smoke. Stable demo now points to `https://sparkle-suite-pyfv4xpp7-louis-2849s-projects.vercel.app`.
 - [ ] **Use existing-site migration skill for the next two rep websites** - Louis said two more websites need the same treatment as Lindsey/Mile High Fizz. For each one, start with `sparkle-suite-existing-site-migration`, ask for the source code/project export first, then build a migration brief before implementation.
-- [ ] **Mile High Fizz final acceptance and eventual domain cutover** - verify
-  Homepage, Trade Board, and Join on the current exact production deployment at
+- [ ] **Mile High Fizz final acceptance and domain cutover** - CheapNames
+  reported the registrar transfer complete on September 4, and Louis authorized
+  proceeding with the migration in this session. This is not proof of a DNS or
+  hosting cutover. Obtain Readdy's authoritative current DNS/service inventory,
+  preserve mail and every required record, and coordinate the exact external
+  DNS change before moving the domain. Until then, verify Homepage, Trade Board,
+  and Join on the current exact production deployment at
   `https://www.yoursparklesuite.com/milehighfizz`. The earlier bespoke-hybrid
   framing is superseded: Mile High Fizz uses the standard switchable Amethyst
   public-site model with Alpine Opal (`alpine_opal`, `AO-01`) selected by
   default/persisted Site Settings. The Trade Board should be empty until Lindsey
-  adds real pieces. Keep `milehighfizz.com` on the current live host until Louis
-  explicitly approves domain cutover.
+  adds real pieces. Keep `milehighfizz.com` on its current independent live host
+  until the cutover inputs are complete and the exact change can be safely
+  executed and verified.
 - [ ] **Fill verified phone numbers for active customer records** - Control Center now has phone fields, but repo-local Open Brain/HQ search did not find reliable paying-client phone numbers. Add them only from an authorized source or direct Louis input.
 
 ---

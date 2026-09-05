@@ -1,5 +1,24 @@
 # Decision Log
 
+## 2026-09-05 - The approved Kim flyer is the Gnome Forest visual authority
+
+The selected and refined second GofortheBling flyer is the source of truth for
+Gnome Forest's friendly red-hatted gnome, rounded brass lanterns, olive forest,
+red mushrooms, parchment, burgundy, and warm gold. Reuse or adapt that approved
+artwork across Kim's flyer, customer-site skin, favicon, and social-share card;
+do not replace it with a stylistically different fantasy gnome or redraw the
+identity casually. Keep public text balanced and unobstructed, keep the QR code
+large and separate, and mechanically verify its decoded destination.
+
+## 2026-09-05 - Promotional email drafts remain proof-before-send
+
+Sparkle Suite demo emails may use the approved thumbnail as a clickable visual
+CTA, but the thumbnail and supporting text link must both resolve to the exact
+video. Gmail's actual Compose rendering is the approval surface. Creating or
+refining a draft does not authorize sending; the current-rep Live Calendar note
+and Kim's surprise flyer note remain unsent until Louis proofs and explicitly
+authorizes each send.
+
 ## 2026-09-05 - Customer share branding uses stable marks and skin-aware cards
 
 Use a narrowly mapped, stable rep/business monogram for a customer-domain

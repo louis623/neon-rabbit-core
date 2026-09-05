@@ -2,6 +2,50 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Full September 4-5 session memory reconciliation
+
+- Reconciled the full working session against the repository vault and actual
+  Open Brain, including implementation releases, live publications, creative
+  deliverables, communications, decisions, lessons, and remaining work. The
+  detailed release entries below remain the source for exact test counts,
+  commits, deployments, and domain proof.
+- Diagnosed and released customer-facing Live Calendar show notes in the shared
+  card; published Louis's Live Calendar/Nic-Nac YouTube demo to the Resource
+  Library and its receive-only Message Center announcement; created the
+  reusable Sparkle Suite media-creative skill and two approved 16:9 thumbnail
+  packages. The selected Dance Floor phone-demo JPG is preserved at
+  `artifacts/youtube/sparkle-suite-add-dancers-by-phone-youtube-thumbnail-3840x2160.jpg`.
+- Prepared two branded Gmail drafts without sending: a current-rep Live
+  Calendar demo message with clickable thumbnail/video destinations, and a
+  surprise note to Kim about her redesigned TikTok flyer and website path.
+  Both remain owner-proof/send gated.
+- Created three GofortheBling flyer directions, refined Louis's selected second
+  direction through margin, ornament, QR-size, and balance corrections, and
+  preserved the final at
+  `artifacts/social/kim-goforthebling-flyers/kim-goforthebling-flyer-02-v3.png`.
+  Its QR code was machine-validated to `https://goforthebling.com`. The final
+  flyer art became the approved visual authority for the released Gnome Forest
+  skin, Kim's hero experience, favicon, and social-share image.
+- Built and released the flyer-matched Gnome Forest preset, then—under Kim-only
+  approval—activated it, applied the exact approved hero title/subtitle, added
+  separately editable Hero title and Hero subtitle controls, and renamed the
+  visible skin while retaining the stable `gnome_garden` / GG-01 ID. The final
+  branding release added Kim's durable favicon and 1200x630 social card.
+- Registrar status is distinct from website cutover: CheapNames reported the
+  `milehighfizz.com` transfer complete, but Lindsey's domain remains on its
+  independent legacy host. Readdy's DNS/service inventory and coordinated
+  cutover remain pending; no DNS or nameserver change occurred.
+- Key lessons consolidated: use the exact owner-approved artwork across related
+  media; keep product screens capture-only; validate QR payloads mechanically;
+  proof clickable links and final email layout in Gmail; preserve stable skin
+  IDs when changing public labels; use exact tenant guards for customer data;
+  and visually inspect live generated image pixels because Vercel may render
+  SVG text differently from local development.
+- Final application tip is `249954e83b338344f4c5a6ea4ea72c9f7876ac7b`
+  on Ready deployment `dpl_7th6mvkpBbscanWHLbrxWYjZKJzJ`. This reconciliation
+  is documentation-only and does not require another deployment. Untracked
+  `artifacts/` and `test-results/` remain preserved.
+
 ## September 5, 2026 - Kim Gnome Forest favicon and social-share release
 
 - Added a Kim-only Gnome Forest `G` monogram favicon and a request-aware
