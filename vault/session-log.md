@@ -2,6 +2,28 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Sticky founder banner live
+
+- Owner-selected founder strip moved from below hero to immediately below header.
+  Static blush banner sticks to viewport top while scrolling; boxed pink real
+  count with Only, first-year discount copy, and pricing anchor. No fake timer.
+- Exact pushed app tip `c8c6cf2abe9deb341e4f96e56475297ab83a508e` deployed Ready
+  as `dpl_7dQhYPMXCKDckeR5qhsE1hZVEPnC`, provenance URL
+  `https://sparkle-suite-6dg1ftetr-louis-2849s-projects.vercel.app`.
+  Both Suite domains verified on that ID. Nine customer aliases remain on
+  `dpl_7ZWsWPJJX5483Vvf3Nce9FFxxtGh`. Prior Suite deployment preserved.
+- Build/lint, 33 focused tests, 239 standard tests pass. Local and exact live
+  domain Playwright checks at 320/390/768/1440: one banner, below header,
+  76px phone / 90px larger height, sticky across scroll directions, no horizontal
+  overflow, pricing anchor clear, no console/runtime errors. Full existing
+  theme/tool/tour/FAQ/build-queue interaction regression also passes at all four.
+- In-app live page refreshed and offer clicked: banner top 0, pricing top 119.7px.
+  Existing explicitly authorized demo workspace reload retained Louis identity
+  and /nic-nac destination, no checkout. No account/database/provider writes.
+  No fresh OAuth exchange or live checkout was performed for this CSS/copy edit.
+- Screenshots and verification scripts stored outside repo in the session's
+  Codex visualizations directory; untracked artifacts/test-results preserved.
+
 ## September 5, 2026 - Britt live-show queue linkage incident
 
 - Compared Brittany's active rep and both production Live Queue rows against
