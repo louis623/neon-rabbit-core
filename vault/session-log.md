@@ -2,6 +2,21 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Shared customer-site mobile explainer layout
+
+- Changed the shared Amethyst homepage's three-step Order / Watch Live /
+  Receive explainer from a squeezed three-column phone layout to compact,
+  single-column icon-and-copy rows at `720px` and below. Desktop keeps the
+  existing visual row.
+- Commit `832f16e5` was pushed and manually released as Ready deployment
+  `dpl_DgnnzsNrqsyF61PEzW4K5zamiop5`. Focused tests (52), the Amethyst suite
+  (91), the production build, and a 390px live GofortheBling visual check
+  passed. The cache marker is `20260905-mobile-steps`.
+- Louis clarified that Mile High Fizz and The Bling Kitchen are not yet
+  migrated to Sparkle Suite's current customer-site surface. They remain
+  separate temporary Vercel sites; this release must not be understood as an
+  authorized migration, alias, DNS, mail, or content change for either site.
+
 ## September 5, 2026 - Full September 4-5 session memory reconciliation
 
 - Reconciled the full working session against the repository vault and actual

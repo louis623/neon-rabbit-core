@@ -1,5 +1,16 @@
 # Project State
 
+## September 5, 2026 - Customer-site migration boundary clarified
+
+- Mile High Fizz and The Bling Kitchen have **not** migrated to the current
+  Sparkle Suite customer-site surface. They remain separate temporary Vercel
+  sites. Do not treat a shared Amethyst template release, a Vercel project
+  alias listing, or an HTTP response as authorization to migrate their content,
+  move aliases, alter DNS, or change their mail configuration.
+- The compact mobile three-step explainer released in `832f16e5` applies to
+  customer sites that already render the shared Amethyst homepage. Kim's
+  GofortheBling page was the live phone-width verification target.
+
 ## September 5, 2026 - Session creative, communication, and domain handoff state
 
 - The approved Sparkle Suite media system now covers both the Live Calendar /
