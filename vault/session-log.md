@@ -2,6 +2,25 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 4, 2026 - Reusable Sparkle Suite media skill created
+
+- Generated three Sparkle Suite YouTube thumbnail directions for Louis's live
+  calendar/Nic-Nac demo. Louis selected the light `NIC-NAC + LIVE CALENDAR`
+  direction and approved the refined version with the full pink S seal and
+  pink outline.
+- Exported an exact 3840x2160 PNG and a 3840x2160 JPG. The JPG is 797,799 bytes,
+  keeping it below YouTube's stricter 2 MB mobile upload limit while preserving
+  the recommended 16:9 delivery size.
+- Created `.agents/skills/sparkle-suite-media-creative/` for future YouTube
+  thumbnails, TikTok/YouTube Shorts covers and first frames, poster frames,
+  title/end cards, overlays, and supporting video artwork. Bundled the approved
+  thumbnail, YouTube avatar, canonical SVG seal, visual-system reference, and
+  a reusable exact-size export helper.
+- A real helper export test produced a 1280x720 JPG, and the official skill
+  validator returned `Skill is valid!`. No media was uploaded or published,
+  and no application code, customer data, account, domain, or production state
+  changed.
+
 ## September 4, 2026 - Customer show-card notes released
 
 - Traced the calendar description through Nic-Nac, `calendar_events`, the

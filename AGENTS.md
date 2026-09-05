@@ -40,6 +40,7 @@ Project skills live in this repo at `.agents\skills`. Use them when their
 trigger rules apply, especially:
 
 - `sparkle-suite-existing-site-migration`
+- `sparkle-suite-media-creative`
 - `sparkle-suite-production-smoke`
 - `sparkle-nic-nac-agent-architecture`
 - `sparkle-live-queue`

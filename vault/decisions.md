@@ -1,5 +1,21 @@
 # Decision Log
 
+## 2026-09-04 - Use the approved Nic-Nac calendar thumbnail as the media baseline
+
+Future Sparkle Suite YouTube thumbnails and related Shorts/TikTok artwork use
+the approved light `NIC-NAC + LIVE CALENDAR` thumbnail as a family-resemblance
+anchor, not a template that must be cloned. Preserve its warm blush/white
+field, large plum serif hierarchy, restrained accent pink, one clear visual
+story, generous space, and complete pink S seal with its outline.
+
+Use the repo-local `sparkle-suite-media-creative` skill for this work. Composite
+the bundled canonical seal or approved channel avatar rather than asking an
+image model to redraw the mark. Any recognizable Sparkle Suite product screen
+must come from a real screenshot, recording, or approved demo; generative art
+may supply only truthful conceptual or surrounding visuals. Verify current
+platform specifications and report final pixel dimensions and file size before
+handoff.
+
 ## 2026-09-04 - Calendar descriptions are customer-facing show notes
 
 A non-empty `calendar_events.description` is part of the public upcoming-show

@@ -1,5 +1,23 @@
 # Project State
 
+## September 4, 2026 - Sparkle Suite media creative system is reusable
+
+- Louis approved the light `NIC-NAC + LIVE CALENDAR` thumbnail as the visual
+  basis for future Sparkle Suite YouTube thumbnails and related Shorts/TikTok
+  media. The approved treatment uses warm blush and white, large plum serif
+  type, restrained accent pink, one conceptual feature story, and the complete
+  pink S seal with its outline.
+- Repo skill `.agents/skills/sparkle-suite-media-creative/` now contains the
+  approved 3840x2160 JPG reference, the reusable YouTube avatar, a canonical
+  SVG seal derived from the production `SparkleSeal`, platform-mode guidance,
+  and an exact-dimension export helper.
+- The helper passed a real 1280x720 JPG export test and the skill passed the
+  official `quick_validate.py` validator. The selected deliverable was also
+  verified at 3840x2160; its upload-ready JPG is 797,799 bytes.
+- Product screens remain capture-only: future media must use real screenshots,
+  recordings, or approved demos rather than generated Sparkle Suite UI. No
+  upload, publishing, customer state, or production deployment occurred.
+
 ## September 4, 2026 - Live calendar descriptions are visible on customer cards
 
 - The shared Amethyst upcoming-show card now presents a non-empty calendar

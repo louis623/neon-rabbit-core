@@ -17,6 +17,18 @@ The approved image-first QR flyer asset is:
 
 This is the current approved public-facing flyer asset for Sparkle Suite QR promotion work.
 
+## Approved YouTube thumbnail system
+
+Louis approved the Nic-Nac + Live Calendar thumbnail direction on September 4, 2026 as the basis for future Sparkle Suite YouTube thumbnails and related short-form media.
+
+Reusable source:
+
+- Skill: `.agents/skills/sparkle-suite-media-creative/`
+- Approved visual anchor: `.agents/skills/sparkle-suite-media-creative/assets/approved-nic-nac-live-calendar-thumbnail.jpg`
+- Canonical S seal: `.agents/skills/sparkle-suite-media-creative/assets/sparkle-suite-s-seal.svg`
+
+Use the visual grammar rather than cloning every layout: warm blush or warm white, large plum serif headline, restrained accent pink, one clear feature or benefit story, generous spacing, and the complete pink S seal. Product screens must still come from real captures or approved demos.
+
 ## Reference-only code experiments
 
 These files may still be useful as editable working references, but they are not the approved final asset:

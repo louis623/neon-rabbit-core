@@ -1,0 +1,7 @@
+interface:
+  display_name: "Sparkle Suite Media Creative"
+  short_description: "Create branded thumbnails and short-form media"
+  icon_small: "./assets/sparkle-suite-youtube-avatar.png"
+  icon_large: "./assets/sparkle-suite-s-seal.svg"
+  brand_color: "#EE2C9B"
+  default_prompt: "Use $sparkle-suite-media-creative to create a Sparkle Suite YouTube thumbnail or short-form media asset."
