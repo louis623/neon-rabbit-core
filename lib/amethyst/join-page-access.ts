@@ -23,7 +23,11 @@ export async function canServeTargetedAmethystJoinPage(
     const admin = (dependencies.createAdminClient ?? createAdminClient)()
     const rep = await (dependencies.resolveAmethystPreviewRep ??
       resolveAmethystPreviewRep)(admin, {
-      publicSiteSlug: target.publicSiteSlug,
+      // An explicit rep/domain target must win over a path-derived slug. On a
+      // rewritten custom-domain `/join` request, the visible path can be
+      // interpreted as the slug `join`, even though `c` already carries the
+      // verified tenant domain.
+      publicSiteSlug: target.repId ? null : target.publicSiteSlug,
       repId: target.repId ?? target.customDomain,
       select: 'id, email',
       strict: true,

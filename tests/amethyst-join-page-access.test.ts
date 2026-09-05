@@ -75,4 +75,38 @@ describe('Amethyst Join page access', () => {
     ).resolves.toBe(false)
     expect(loadSettings).not.toHaveBeenCalled()
   })
+
+  it('keeps an explicit custom-domain tenant ahead of a rewritten /join slug', async () => {
+    const resolveRep = vi.fn(async () => ({
+      id: 'rep-britt',
+      email: 'rep@example.com',
+    }))
+    const loadSettings = vi.fn(async () => ({
+      joinTeamAccessEnabled: true,
+      showJoinPage: true,
+    }))
+    const rewrittenCustomDomain: AmethystRequestTarget = {
+      repId: 'brittwithbling.com',
+      publicSiteSlug: 'join',
+      customDomain: null,
+      source: 'query-rep-id',
+      targeted: true,
+    }
+
+    await expect(
+      canServeTargetedAmethystJoinPage(rewrittenCustomDomain, {
+        createAdminClient: vi.fn(() => ({ marker: 'admin' }) as never),
+        resolveAmethystPreviewRep: resolveRep as never,
+        getTargetedJoinPageAccessFlags: loadSettings as never,
+      }),
+    ).resolves.toBe(true)
+    expect(resolveRep).toHaveBeenCalledWith(
+      { marker: 'admin' },
+      expect.objectContaining({
+        repId: 'brittwithbling.com',
+        publicSiteSlug: null,
+        strict: true,
+      }),
+    )
+  })
 })
