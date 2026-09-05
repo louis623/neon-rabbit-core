@@ -39,10 +39,10 @@ describe('customer-site brand assets', () => {
 
   it('maps the approved Gnome Forest mark only to Kim\'s customer domain', () => {
     expect(getCustomerSiteMarkAssetPath('goforthebling.com')).toBe(
-      '/customer-site-assets/goforthebling-gnome-forest-monogram-g.svg',
+      '/customer-site-assets/goforthebling-gnome-forest-monogram-g.png',
     )
     expect(getCustomerSiteMarkAssetPath('www.goforthebling.com')).toBe(
-      '/customer-site-assets/goforthebling-gnome-forest-monogram-g.svg',
+      '/customer-site-assets/goforthebling-gnome-forest-monogram-g.png',
     )
     expect(getCustomerSiteMarkAssetPath('yoursparklesuite.com')).toBeNull()
     expect(getCustomerSiteMarkAssetPath('example.com')).toBeNull()

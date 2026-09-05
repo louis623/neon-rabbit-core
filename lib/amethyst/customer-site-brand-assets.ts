@@ -87,7 +87,7 @@ export function getCustomerSiteMark(
 
 export function getCustomerSiteMarkAssetPath(customDomain: string) {
   if (KIM_CUSTOM_DOMAINS.has(customDomain)) {
-    return '/customer-site-assets/goforthebling-gnome-forest-monogram-g.svg'
+    return '/customer-site-assets/goforthebling-gnome-forest-monogram-g.png'
   }
 
   return BRI_CUSTOM_DOMAINS.has(customDomain)
