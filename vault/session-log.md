@@ -2,6 +2,24 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Coordinated Britt domain release completed before landing
+
+- The owning task completed BrittWithBling's cutover and narrow custom-domain
+  Join precedence fix in `7bcd21637fe0fbce0e92e194a4a9923d5932b480`, deployed as
+  `dpl_7ZWsWPJJX5483Vvf3Nce9FFxxtGh` / `sparkle-suite-4v9qp70e9-louis-2849s-projects.vercel.app`.
+  It reports HTTPS200 for apex/www, trade, join, privacy, robots and sitemap;
+  Chrome visual home/Dance Floor/Join verification passed. Its exact tenant
+  domain mapping is `brittwithbling.com`; GoDaddy nameservers/non-web records
+  were preserved. This paragraph records that task's completed work, not an
+  additional DNS or customer change by the landing task.
+- This landing task independently confirmed the settled Vercel alias map:
+  both Suite hostnames and every existing customer alias, including both Britt
+  aliases, target that exact Ready deployment. Preserve this deployment and
+  all customer aliases when publishing the following landing revision.
+- The owning task explicitly released the deployment handoff. Landing app
+  commit is `cd457107116307d7f2f59a6a6b5921bcaf0528bd`, pushed and verified;
+  the release will use the exact current tip after this memory checkpoint.
+
 ## September 5, 2026 - Real demo product captures and mobile messaging verified locally
 
 - Louis explicitly authorized using his existing admin/demo as the image source.
