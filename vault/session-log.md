@@ -2,6 +2,24 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Sparkle Suite public landing audit
+
+- Audited the live homepage at desktop 1440px and phone 390px, plus a narrow
+  320px reflow check; followed intake and signed-out login, and verified public
+  Nic-Nac open/minimize/reopen/close without sending questions or forms.
+- Recorded the detailed evidence-based report and design direction in
+  `docs/sparkle-suite/landing-page/landing-audit-2026-09-05.md`; preserved fresh
+  screenshots in `artifacts/landing-audit-2026-09-05/`. Restored browser size.
+- Louis's constraints: no functionality loss, retain brand/colors, improve
+  copy and motion. Active build-queue framing replaces dormant waitlist copy.
+  Preferred scarcity copy is **19 founder spots remaining**, not a fraction;
+  Kim/one claimed is Louis's supplied count, not an audited payment count.
+- Identified differing founder-price messaging between homepage and prelaunch,
+  placeholder footer destinations, and a non-persisting assistant contact
+  handoff in source. No production data or application behavior was changed.
+- Next step is a high-fidelity visual direction before coding, followed by
+  verified founder allocation/count integration and full preservation checks.
+
 ## September 5, 2026 - Shared customer-site mobile explainer layout
 
 - Changed the shared Amethyst homepage's three-step Order / Watch Live /

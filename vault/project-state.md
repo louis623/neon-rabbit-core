@@ -1,5 +1,26 @@
 # Project State
 
+## September 5, 2026 - Public landing-page audit and approved direction
+
+- Louis requested a deep visual/conversion audit of `www.yoursparklesuite.com`.
+  Preserve all functionality and the current brand palette/identity; stronger
+  copy, different color placement, and purposeful animation are welcome.
+- Replace dormant waitlist/coming-soon positioning with sites being built now
+  and joining the build queue. Louis prefers **19 founder spots remaining**,
+  not **19 of 20**; he reports Kim is the one founder so far. This count is
+  owner-supplied, not independently verified against production payments.
+- Audit and proposed copy/motion/preservation plan:
+  `docs/sparkle-suite/landing-page/landing-audit-2026-09-05.md`. Fresh production
+  screenshots are in `artifacts/landing-audit-2026-09-05/`.
+- Findings include oversized/narrow headings, hard-to-read product captures,
+  homepage/prelaunch founder-price inconsistency, three placeholder footer
+  links, small pink text contrast, heavy PNGs, and a source-confirmed Nic-Nac
+  contact handoff that only changes local success state rather than persisting.
+- Audit only: no application change or production release. Next: high-fidelity
+  visual approval, then scoped implementation. Founder availability must use
+  the existing qualifying allocation/reservation policy, exclude test/demo
+  records, and distinguish queue membership from securing a paid founder rate.
+
 ## September 5, 2026 - Customer-site migration boundary clarified
 
 - Mile High Fizz and The Bling Kitchen have **not** migrated to the current
