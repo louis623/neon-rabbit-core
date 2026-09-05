@@ -2,6 +2,20 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Additional landing accessibility verification
+
+- Completed live390px reduced-motion and JavaScript-disabled checks with bundled
+  Playwright and isolated headless Chromium because the in-app browser lacks
+  these emulation capabilities. No personal profile, dependency installation,
+  form submission or account mutation. Reduced motion had zero CSS animations,
+  working Violet selection/FAQ, decoded previews and no console/page errors.
+- No-JavaScript mode retained readable server-rendered content, native FAQ and
+  explicit unconfirmed founder/standard pricing fallback; JS-dependent features
+  were not claimed functional. Evidence and limitations appended to the landing
+  verification ledger. No application edit or new deployment was needed.
+- Read-only `/start` still redirected to `/prelaunch` without protected reviewer
+  controls. Same signed-in access blocker; no repeated password attempt.
+
 ## September 5, 2026 - Landing implementation and production verification
 
 - Implemented the approved detailed plan with founder, copy and inquiry-handoff

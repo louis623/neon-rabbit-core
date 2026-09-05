@@ -65,3 +65,29 @@ Louis explicitly authorized synthetic reviewer testing/restoration. No account r
 Read-only exact synthetic identity inspection found Britt Test Rep classified demo, inactive, setup dashboard_unlocked, active smoke-tier subscription, Stripe non-live and no founder allocation. Its stored smoke amount is99, not a real charge or Louis's separate zero-dollar admin entitlement; do not silently rewrite that contract. The production-smoke skill requires this limitation to remain explicit. Resume the supported token-gated reviewer flow when protected access is available, verify `/nic-nac` workspace identity/post-auth routing without checkout, then restore any temporary reviewer state. Full signed-in regression confidence remains open.
 
 Official Suite YouTube/TikTok URLs still await owner confirmation; homepage/intake suppress placeholders. Existing login/footer behavior outside the scoped redesign remains unchanged. Real conversion lift and field performance require subsequent traffic measurement.
+
+## Additional completion audit: reduced motion and no-JavaScript rendering
+
+The next goal turn made verification progress rather than retrying credentials.
+The in-app browser exposes viewport/visibility only, so these emulation cases
+used bundled Playwright in an isolated headless Chromium with no personal
+profile. The bundle's expected browser version was absent; an already installed
+headless executable was used after sandbox launch permission, without installing
+dependencies. No submissions or account actions were made.
+
+- Exact live root,390x844, `prefers-reduced-motion: reduce`: correct heading,
+  content and CTA, no overflow, zero computed CSS animations before and after
+  Violet selection, founder49.99 offer, native FAQ expansion. All three current
+  product images decoded after scrolling into view. Console warnings/errors and
+  uncaught page errors: none. Final screenshot captured only after image decode.
+- Exact live root with JavaScript disabled: main server-rendered content and
+  CTA present, no overflow, native FAQ expansion works. Explicit unconfirmed
+  founder availability with standard74.99/124.98 pricing fallback is rendered.
+  This proves static readability, not JavaScript-dependent signup, assistant,
+  style selection or account functionality.
+- Screenshots outside the repo:
+  `C:/Users/louis/.codex/visualizations/2026/09/05/01a071fc-84b8-74b2-b556-8dfdf5a4fe20/reduced-motion.png`
+  and the adjacent `no-javascript.png` (static-content evidence only).
+- Read-only `/start` recheck still redirected to `/prelaunch` and did not expose
+  reviewer controls. Signed-in verification remains blocked by the same missing
+  protected access. No further credential attempt was made.
