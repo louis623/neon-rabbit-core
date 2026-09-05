@@ -10,6 +10,27 @@ const SHOP_HREF = CONTENT.streamLinks?.shop || "https://bombparty.com";
 const HOME_HREF = FOOTER_LINKS.home || "/amethyst/Homepage.html";
 const TRADE_BOARD_HREF = FOOTER_LINKS.tradeBoard || "/amethyst/Trade.html";
 
+function applyUnsubscribeAppearance() {
+  if (window.HOMEPAGE_TWEAK_DEFAULTS?.preset !== "gnome_garden") return;
+
+  document.body.classList.add("bg-gnome-garden", "surface-storybook-parchment", "shape-soft", "gg-utility");
+  const tokens = {
+    "--hp-primary": "#842421",
+    "--hp-accent": "#F4C45E",
+    "--primary": "#842421",
+    "--accent": "#F4C45E",
+    "--hp-bg": "#173126",
+    "--hp-bg-elevated": "#FFF3D6",
+    "--bg-deep": "#102319",
+    "--hp-display-font": '"Playfair Display", Georgia, serif',
+    "--hp-body-font": '"DM Sans", "Inter", system-ui, sans-serif',
+    "--hp-heading-weight": "600",
+  };
+  Object.entries(tokens).forEach(([name, value]) => document.documentElement.style.setProperty(name, value));
+}
+
+applyUnsubscribeAppearance();
+
 function ComingSoonNavItem({ label = "Join Team" }) {
   return (
     <span

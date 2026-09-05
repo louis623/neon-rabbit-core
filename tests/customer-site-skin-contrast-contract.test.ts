@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { AMETHYST_APPEARANCE_PRESETS } from '@/lib/amethyst/appearance-presets'
+import { AMETHYST_APPEARANCE_PRESETS, AMETHYST_APPEARANCE_PRESET_IDS } from '@/lib/amethyst/appearance-presets'
 
 const readCustomerSiteCss = (file: string) =>
   readFileSync(resolve(process.cwd(), 'public', 'amethyst', file), 'utf8')
@@ -27,7 +27,7 @@ describe('customer-site skin contrast contract', () => {
   const presets = Object.values(AMETHYST_APPEARANCE_PRESETS)
 
   it('gives every selectable skin a semantic foreground contract for its card surface', () => {
-    expect(presets).toHaveLength(11)
+    expect(presets.map(({ id }) => id)).toEqual([...AMETHYST_APPEARANCE_PRESET_IDS])
 
     for (const preset of presets) {
       const selector = `body.${cardSurfaceClass(preset.values.cardSurface)}`

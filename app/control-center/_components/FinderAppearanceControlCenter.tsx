@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { ControlCenterProductSwitcher } from './ControlCenterProductSwitcher'
 import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
+import { SPARKLE_FINDER_APPEARANCE_PRESET_IDS } from '@/lib/sparkle-finder/appearance-presets'
 import type { SparkleFinderAppearance } from '@/lib/sparkle-finder/appearance'
 
 export function FinderAppearanceControlCenter({ initialAppearance }: { initialAppearance: SparkleFinderAppearance }) {
@@ -62,7 +63,7 @@ export function FinderAppearanceControlCenter({ initialAppearance }: { initialAp
 
           <fieldset className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <legend className="sr-only">Sparkle Finder appearance preset</legend>
-            {AMETHYST_SKIN_CARDS.map((card) => {
+            {AMETHYST_SKIN_CARDS.filter((card) => (SPARKLE_FINDER_APPEARANCE_PRESET_IDS as readonly string[]).includes(card.id)).map((card) => {
               const isSelected = selected === card.id
               const isLive = saved === card.id
               return (

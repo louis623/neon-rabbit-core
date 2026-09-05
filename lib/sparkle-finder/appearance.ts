@@ -1,9 +1,9 @@
 import {
-  AMETHYST_APPEARANCE_PRESET_IDS,
   AMETHYST_APPEARANCE_PRESETS,
   type AmethystAppearancePresetId,
 } from '@/lib/amethyst/appearance-presets'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { SPARKLE_FINDER_APPEARANCE_PRESET_IDS } from './appearance-presets'
 
 type AdminClient = ReturnType<typeof createAdminClient>
 
@@ -73,6 +73,12 @@ const FINDER_THEME_TOKENS: Record<AmethystAppearancePresetId, SparkleFinderAppea
     accent: '#E5D3B3', border: 'rgba(6, 78, 59, 0.16)', borderStrong: 'rgba(229, 211, 179, 0.58)',
     panel: '#064E3B', panelText: '#FFFDF7', headingFont: 'playfair', bodyFont: 'dmSans',
   },
+  gnome_garden: {
+    background: '#F5EDDA', backgroundSoft: '#E5E7D7', surface: '#FFF3D6', surfaceSoft: '#FFF9EC',
+    foreground: '#2E251D', foregroundMuted: '#655A46', primary: '#842421', primaryStrong: '#78221F',
+    accent: '#F4C45E', border: '#D4C49F', borderStrong: '#CFB77C',
+    panel: '#173126', panelText: '#FFF3D6', headingFont: 'playfair', bodyFont: 'dmSans',
+  },
   rose_gold: {
     background: '#FFF5F6', backgroundSoft: '#FFF0F3', surface: '#FFFFFF', surfaceSoft: '#FFF8F3',
     foreground: '#4A2530', foregroundMuted: '#7B5B63', primary: '#E04F73', primaryStrong: '#B72C52',
@@ -106,7 +112,7 @@ const FINDER_THEME_TOKENS: Record<AmethystAppearancePresetId, SparkleFinderAppea
 }
 
 export function isSparkleFinderAppearancePreset(value: unknown): value is AmethystAppearancePresetId {
-  return typeof value === 'string' && (AMETHYST_APPEARANCE_PRESET_IDS as readonly string[]).includes(value)
+  return typeof value === 'string' && (SPARKLE_FINDER_APPEARANCE_PRESET_IDS as readonly string[]).includes(value)
 }
 
 export function resolveSparkleFinderAppearance(value: unknown): SparkleFinderAppearance {

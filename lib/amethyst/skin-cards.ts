@@ -14,6 +14,8 @@ export interface AmethystSkinCard {
   code: string
   label: string
   description: string
+  aliases?: readonly string[]
+  previewHref?: string
   headingFont: string
   bodyFont: string
   surfaceNote: string
@@ -119,6 +121,28 @@ export const AMETHYST_SKIN_CARDS: AmethystSkinCard[] = [
       { label: 'Emerald', value: '#059669' },
       { label: 'Champagne', value: '#E5D3B3' },
       { label: 'Gardenia', value: '#F8F7F0' },
+    ],
+  },
+  {
+    id: 'gnome_garden',
+    code: 'GG-01',
+    label: 'Enchanted Gnome Garden',
+    aliases: ['Gnome Garden'],
+    previewHref: '/skin-preview/gnome_garden/homepage',
+    description:
+      'A welcoming woodland with warm lanterns, parchment cards, and friendly gnome details.',
+    headingFont: 'Playfair Display',
+    bodyFont: 'DM Sans',
+    surfaceNote: 'Rounded parchment cards with forest ink and warm gold edges',
+    motionNote: 'Slow lantern sway, soft fireflies, and gentle hover lift; still with reduced motion',
+    swatches: [
+      { label: 'Parchment', value: '#FFF3D6' },
+      { label: 'Forest', value: '#173126' },
+      { label: 'Lantern gold', value: '#F4C45E' },
+      { label: 'Moss', value: '#55713B' },
+      { label: 'Mushroom', value: '#C84A32' },
+      { label: 'Burgundy', value: '#842421' },
+      { label: 'Ink', value: '#2E251D' },
     ],
   },
   {
@@ -235,7 +259,9 @@ export function normalizeAmethystSkinSelection(
   const card =
     getAmethystSkinCardByCode(rawValue) ??
     AMETHYST_SKIN_CARDS.find(
-      (candidate) => candidate.label.toLowerCase() === rawValue.toLowerCase(),
+      (candidate) =>
+        candidate.label.toLowerCase() === rawValue.toLowerCase() ||
+        candidate.aliases?.some((alias) => alias.toLowerCase() === rawValue.toLowerCase()),
     )
 
   return card?.id ?? normalizeAmethystAppearancePreset(rawValue)

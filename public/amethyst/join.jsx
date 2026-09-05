@@ -211,6 +211,15 @@ const PRESETS = {
     bgTone: "emeraldGarden", primaryColor: "#059669", accentColor: "#E5D3B3",
     headingFont: "greatVibes", bodyFont: "lato", headingWeight: 400,
   },
+  gnome_garden: {
+    primaryColor: "#842421", accentColor: "#F4C45E", bgTone: "gnomeGarden",
+    headingFont: "playfair", bodyFont: "dmSans", headingWeight: 600,
+    shapeRadius: "soft", density: "regular", saturation: 100,
+    heroMotion: "soft_glow", sparkleLevel: "subtle",
+    bgTreatment: "gnome-garden", cardSurface: "storybook-parchment",
+    textureOverlay: "fireflies", buttonEnergy: "lantern-lift", ctaEmphasis: "standard",
+    tradeFlair: "mushroom-glow", cursorEffect: "default", tickerSpeed: 1,
+  },
   rose_gold: {
     sparkleLevel: "subtle", bgTreatment: "rose-gold-paper", cardSurface: "pearl-rose",
     textureOverlay: "none", buttonEnergy: "rose-gold-lift", ctaEmphasis: "standard",
@@ -260,6 +269,7 @@ const TONES = {
   moonstone: { bg: "#15121d", elevated: "#211b2c", deep: "#0d0b13" },
   alpineOpal: { bg: "#fdf2f8", elevated: "#f0f9ff", deep: "#1e1b4b" },
   emeraldGarden: { bg: "#f8f7f0", elevated: "#ffffff", deep: "#dfe9dd" },
+  gnomeGarden: { bg: "#173126", elevated: "#FFF3D6", deep: "#102319" },
   roseGold: { bg: "#fff5f6", elevated: "#fffafa", deep: "#ffe8ec" },
   garnet: { bg: "#FFE5DD", elevated: "#fff8f5", deep: "#ffd0c4" },
   amber: { bg: "#FAFAFA", elevated: "#fffaf5", deep: "#ffe4cf" },
@@ -656,9 +666,39 @@ function LiveQueueModal({ open, onClose }) {
   );
 }
 
-function Hero({ teamName, title, pitch, ctaText, ctaUrl, hasRecruitingLink, showPromo, promoText, repName, locationLabel }) {
+function GnomeGardenDecoration() {
+  const [paused, setPaused] = useState(false);
+  return (
+    <div className="gg-decoration" data-paused={paused}>
+      <GnomeGardenScene />
+      <button type="button" className="gg-motion-control" aria-pressed={paused} onClick={() => setPaused((current) => !current)}>
+        {paused ? "Resume animation" : "Pause animation"}
+      </button>
+    </div>
+  );
+}
+
+function GnomeGardenScene() {
+  return (
+    <div className="gg-scene" aria-hidden="true" style={{ pointerEvents: "none" }}>
+      <span className="gg-lantern gg-lantern-left">
+        <img src="/amethyst/skins/gnome-garden/lantern.webp" alt="" width="157" height="400" decoding="async" />
+      </span>
+      <span className="gg-lantern gg-lantern-right">
+        <img src="/amethyst/skins/gnome-garden/lantern.webp" alt="" width="157" height="400" decoding="async" />
+      </span>
+      {Array.from({ length: 8 }, (_, index) => (
+        <span className="gg-firefly" data-firefly-index={index + 1} key={index} />
+      ))}
+      <img className="gg-gnome" src="/amethyst/skins/gnome-garden/gnome.webp" alt="" width="347" height="640" decoding="async" />
+    </div>
+  );
+}
+
+function Hero({ teamName, title, pitch, ctaText, ctaUrl, hasRecruitingLink, showPromo, promoText, repName, locationLabel, gnomeGarden }) {
   return (
     <section className="jp-hero">
+      {gnomeGarden && <GnomeGardenDecoration />}
       <div className="jp-hero-media slot" data-slot="hero photo" />
       <div className="jp-hero-inner">
         <div className="jp-hero-card">
@@ -1104,6 +1144,7 @@ function App() {
     if (t.bgTreatment === "moonstone-charcoal") body.classList.add("bg-moonstone-charcoal");
     if (t.bgTreatment === "alpine-opal") body.classList.add("bg-alpine-opal");
     if (t.bgTreatment === "emerald-garden") body.classList.add("bg-emerald-garden");
+    if (t.bgTreatment === "gnome-garden") body.classList.add("bg-gnome-garden");
     if (t.bgTreatment === "rose-gold-paper") body.classList.add("bg-rose-gold-paper");
     if (t.bgTreatment === "garnet-shell") body.classList.add("bg-garnet-shell");
     if (t.bgTreatment === "amber-paper") body.classList.add("bg-amber-paper");
@@ -1116,6 +1157,7 @@ function App() {
     if (t.cardSurface === "silver-pearl") body.classList.add("surface-silver-pearl");
     if (t.cardSurface === "frosted-opal") body.classList.add("surface-frosted-opal");
     if (t.cardSurface === "spa-ivory") body.classList.add("surface-spa-ivory");
+    if (t.cardSurface === "storybook-parchment") body.classList.add("surface-storybook-parchment");
     if (t.cardSurface === "pearl-rose") body.classList.add("surface-pearl-rose");
     if (t.cardSurface === "blush-shell") body.classList.add("surface-blush-shell");
     if (t.cardSurface === "sunlit-pearl") body.classList.add("surface-sunlit-pearl");
@@ -1123,6 +1165,7 @@ function App() {
     if (t.cardSurface === "pink-quartz") body.classList.add("surface-pink-quartz");
     if (t.textureOverlay === "grain") body.classList.add("tex-grain");
     if (t.textureOverlay === "sparkle") body.classList.add("tex-sparkle");
+    if (t.textureOverlay === "fireflies") body.classList.add("tex-fireflies");
     if (t.buttonEnergy === "bouncy") body.classList.add("btn-bouncy");
     if (t.buttonEnergy === "wiggle") body.classList.add("btn-wiggle");
     if (t.buttonEnergy === "suite-lift") body.classList.add("btn-suite-lift");
@@ -1130,6 +1173,7 @@ function App() {
     if (t.buttonEnergy === "moonstone-lift") body.classList.add("btn-moonstone-lift");
     if (t.buttonEnergy === "alpine-pop") body.classList.add("btn-alpine-pop");
     if (t.buttonEnergy === "garden-lift") body.classList.add("btn-garden-lift");
+    if (t.buttonEnergy === "lantern-lift") body.classList.add("btn-lantern-lift");
     if (t.buttonEnergy === "rose-gold-lift") body.classList.add("btn-rose-gold-lift");
     if (t.buttonEnergy === "garnet-lift") body.classList.add("btn-garnet-lift");
     if (t.buttonEnergy === "amber-pop") body.classList.add("btn-amber-pop");
@@ -1142,6 +1186,7 @@ function App() {
     if (t.tradeFlair === "silver-violet") body.classList.add("silver-violet");
     if (t.tradeFlair === "opal-summit") body.classList.add("opal-summit");
     if (t.tradeFlair === "champagne-botanical") body.classList.add("champagne-botanical");
+    if (t.tradeFlair === "mushroom-glow") body.classList.add("mushroom-glow");
     if (t.tradeFlair === "champagne-rose") body.classList.add("champagne-rose");
     if (t.tradeFlair === "ruby-polish") body.classList.add("ruby-polish");
     if (t.tradeFlair === "citrine-glow") body.classList.add("citrine-glow");
@@ -1188,6 +1233,7 @@ function App() {
           <div className={isMileHighFizzHybrid ? "mhf-join-content" : isBrittWithBlingHybrid ? "bwb-join-content" : isBlingKitchenHybrid ? "bk-join-content" : ""}>
             {t.showHero ? (
               <Hero
+                gnomeGarden={t.preset === "gnome_garden"}
                 teamName={t.teamName}
                 title={t.heroTitle || CONTENT.heroTitle}
                 pitch={redactPublicRepText(t.heroPitch, t.repName)}
@@ -1269,6 +1315,7 @@ function App() {
               { value: "moonstone", label: "Moonstone" },
               { value: "alpine_opal", label: "Alpine Opal" },
               { value: "emerald_garden", label: "Emerald Garden" },
+              { value: "gnome_garden", label: "Enchanted Gnome Garden" },
               { value: "rose_gold", label: "Rose Gold" },
               { value: "garnet", label: "Garnet" },
               { value: "amber", label: "Amber" },

@@ -592,6 +592,7 @@ export type SiteAppearancePreset =
   | 'moonstone'
   | 'alpine_opal'
   | 'emerald_garden'
+  | 'gnome_garden'
   | 'rose_gold'
   | 'garnet'
   | 'amber'

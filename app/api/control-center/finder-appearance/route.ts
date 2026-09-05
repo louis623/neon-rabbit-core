@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
-import { AMETHYST_APPEARANCE_PRESET_IDS } from '@/lib/amethyst/appearance-presets'
+import { SPARKLE_FINDER_APPEARANCE_PRESET_IDS } from '@/lib/sparkle-finder/appearance-presets'
 import { saveSparkleFinderAppearanceSetting } from '@/lib/sparkle-finder/appearance'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { AuthError, getControlCenterAccess, OperatorAuthError } from '@/lib/supabase/operator-auth'
@@ -10,7 +10,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const updateSchema = z.object({
-  appearancePreset: z.enum(AMETHYST_APPEARANCE_PRESET_IDS),
+  appearancePreset: z.enum(SPARKLE_FINDER_APPEARANCE_PRESET_IDS),
 }).strict()
 
 export async function PATCH(request: Request) {

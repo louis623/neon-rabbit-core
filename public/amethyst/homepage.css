@@ -140,6 +140,28 @@ body.surface-spa-ivory {
   --hp-final-icon-fg: #ffffff;
 }
 
+body.surface-storybook-parchment {
+  --hp-card-fg: #2e251d;
+  --hp-card-muted: #655a46;
+  --hp-card-accent: #842421;
+  --hp-final-fg: #173126;
+  --hp-final-muted: #655a46;
+  --hp-final-icon-fg: #fff3d6;
+  --hp-form-panel-bg: #fff9ec;
+  --hp-form-panel-fg: #2e251d;
+  --hp-field-bg: #fffdf7;
+  --hp-field-fg: #2e251d;
+  --hp-media-card-bg: #fff3d6;
+  --hp-media-card-header-bg: linear-gradient(125deg, #173126, #35543b);
+  --hp-media-card-footer-bg: #f8ecd2;
+  --hp-media-card-border: #cfb77c;
+  --hp-media-card-accent-contrast: #fff3d6;
+  --hp-media-icon-fg: #fff3d6;
+  --hp-media-cta-fg: #fff3d6;
+}
+
+body.btn-lantern-lift { --hp-action-fg: #fff3d6; }
+
 body.surface-pearl-rose {
   --hp-card-fg: #2b1717;
   --hp-card-muted: #7e5457;

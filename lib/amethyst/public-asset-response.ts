@@ -28,6 +28,8 @@ interface RenderAmethystPublicAssetResponseOptions {
 }
 
 const CONTENT_TYPES: Record<string, string> = {
+  '.webp': 'image/webp',
+  '.svg': 'image/svg+xml',
   '.css': 'text/css; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -36,6 +38,12 @@ const CONTENT_TYPES: Record<string, string> = {
 }
 
 const AMETHYST_ASSETS = new Set([
+  'gnome-garden.css',
+  'skins/gnome-garden/forest.webp',
+  'skins/gnome-garden/forest-mobile.webp',
+  'skins/gnome-garden/gnome.webp',
+  'skins/gnome-garden/lantern.webp',
+  'skins/gnome-garden/storybook-original.webp',
   'Amethyst Design System.html',
   'components.css',
   'homepage.css',

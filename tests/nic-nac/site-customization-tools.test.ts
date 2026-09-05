@@ -309,6 +309,10 @@ describe('site customization tools', () => {
     ['MS-01', 'moonstone'],
     ['AO-01', 'alpine_opal'],
     ['EG-01', 'emerald_garden'],
+    ['gnome_garden', 'gnome_garden'],
+    ['GG-01', 'gnome_garden'],
+    ['Enchanted Gnome Garden', 'gnome_garden'],
+    ['Gnome Garden', 'gnome_garden'],
     ['VE-01', 'velvet'],
     ['RQ-01', 'rose_quartz'],
   ])('update_site_setting saves %s as the supported customer-facing skin code', async (code, expectedPreset) => {
@@ -340,6 +344,9 @@ describe('site customization tools', () => {
     expect(siteSettingsChain.spies.update).toHaveBeenCalledWith({
       appearance_preset: expectedPreset,
     })
+    expect(siteSettingsChain.spies.update).toHaveBeenCalledTimes(1)
+    expect(siteSettingsChain.spies.eq).toHaveBeenCalledWith('rep_id', 'rep-1')
+    expect(from).toHaveBeenCalledWith('site_settings')
     expect(result).toEqual({
       updatedFields: ['appearancePreset'],
       updated: {

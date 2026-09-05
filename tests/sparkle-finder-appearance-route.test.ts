@@ -71,13 +71,13 @@ describe('Sparkle Finder appearance routes', () => {
     expect(unauthorized.status).toBe(401)
   })
 
-  it('rejects unknown preset IDs', async () => {
+  it.each(['not-a-skin', 'gnome_garden'])('rejects unsupported Finder preset %s', async (appearancePreset) => {
     const response = await PATCH(new Request(
       'http://localhost/api/control-center/finder-appearance',
       {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ appearancePreset: 'not-a-skin' }),
+        body: JSON.stringify({ appearancePreset }),
       },
     ))
 

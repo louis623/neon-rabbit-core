@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
 import styles from './RequiredSetupLookPicker.module.css'
 
@@ -70,6 +71,18 @@ export function RequiredSetupLookPicker({
                   />
                 ))}
               </div>
+              {skin.previewHref ? (
+                <Link
+                  href={skin.previewHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  prefetch={false}
+                  className={styles.styleName}
+                  aria-label={`Preview ${skin.label} (opens in a new tab)`}
+                >
+                  Preview this skin ↗
+                </Link>
+              ) : null}
               <button
                 type="button"
                 className={styles.choose}

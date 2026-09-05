@@ -9,6 +9,41 @@ vi.mock('@/lib/amethyst/join-page-access', () => ({
 import { GET } from '@/app/amethyst/[...asset]/route'
 
 describe('Amethyst static asset route', () => {
+  it.each([
+    ['gnome-garden.css', 'text/css'],
+    ['skins/gnome-garden/forest.webp', 'image/webp'],
+    ['skins/gnome-garden/forest-mobile.webp', 'image/webp'],
+    ['skins/gnome-garden/gnome.webp', 'image/webp'],
+    ['skins/gnome-garden/lantern.webp', 'image/webp'],
+    ['skins/gnome-garden/storybook-original.webp', 'image/webp'],
+  ])('serves the approved nested skin asset %s with its correct media type', async (asset, contentType) => {
+    const response = await GET(new Request(`https://www.yoursparklesuite.com/amethyst/${asset}`), {
+      params: Promise.resolve({ asset: asset.split('/') }),
+    })
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toContain(contentType)
+    const content = Buffer.from(await response.arrayBuffer())
+    expect(content.length).toBeGreaterThan(100)
+    if (contentType === 'image/webp') {
+      expect(content.toString('ascii', 0, 4)).toBe('RIFF')
+      expect(content.toString('ascii', 8, 12)).toBe('WEBP')
+    } else {
+      expect(content.toString('utf8')).toContain('body.bg-gnome-garden')
+    }
+  })
+
+  it.each([
+    ['skins', 'gnome-garden', '..', '..', '..', 'package.json'],
+    ['skins', 'gnome-garden', '%2e%2e', 'homepage.jsx'],
+    ['skins', 'gnome-garden', 'unapproved.webp'],
+    ['skins', 'gnome-garden', 'forest.webp', '..', 'homepage.jsx'],
+  ])('rejects non-allowlisted nested skin path %j', async (...asset) => {
+    const response = await GET(new Request('https://www.yoursparklesuite.com/amethyst/invalid'), {
+      params: Promise.resolve({ asset }),
+    })
+    expect(response.status).toBe(404)
+  })
+
   it('serves locked public Amethyst exports under the app/amethyst namespace', async () => {
     const response = await GET(
       new Request('http://localhost:3001/amethyst/Homepage.html'),
@@ -18,7 +53,7 @@ describe('Amethyst static asset route', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toContain('text/html')
     await expect(response.text()).resolves.toContain(
-      'homepage.jsx?v=20260904-event-notes',
+      'homepage.jsx?v=20260905-gnome1',
     )
   })
 
@@ -102,7 +137,7 @@ describe('Amethyst static asset route', () => {
 
       expect(html).toContain('src="/amethyst/template-loader.js"')
       if (assetName === 'Join.html') {
-        expect(html).toContain('src="/amethyst/join-runtime.js?v=20260904-team-management-hardening"')
+        expect(html).toContain('src="/amethyst/join-runtime.js?v=20260905-gnome1"')
         expect(html).not.toContain('tweaks-panel.jsx')
       } else {
         expect(html).toContain('src="/amethyst/tweaks-panel.jsx?v=20260725-emerald-garden"')
