@@ -2626,6 +2626,31 @@ body.bg-quartz-paper .hp-step-num {
   color: var(--hp-card-muted);
   line-height: 1.5;
 }
+/* The three-step explainer remains a visual row on larger screens. On phones,
+   each step needs enough measure for its label and supporting copy, so use a
+   compact, stacked sequence rather than three squeezed columns. */
+@media (max-width: 720px) {
+  .hp-steps {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .hp-step {
+    grid-template-columns: 42px minmax(0, 1fr);
+    column-gap: 14px;
+    row-gap: 3px;
+    align-items: start;
+  }
+
+  .hp-step-num {
+    grid-row: span 2;
+  }
+
+  .hp-step-label,
+  .hp-step-desc {
+    min-width: 0;
+  }
+}
 .hp-wibp-video {
   width: min(100%, 340px);
   justify-self: center;

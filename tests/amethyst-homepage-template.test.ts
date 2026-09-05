@@ -12,6 +12,23 @@ import { AMETHYST_APPEARANCE_PRESETS } from '@/lib/amethyst/appearance-presets'
 
 describe('Amethyst homepage template data wiring', () => {
 
+  it('stacks the customer-facing reveal explainer into compact readable rows on phones', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'public/amethyst/homepage.css'),
+      'utf8',
+    )
+
+    expect(css).toMatch(
+      /@media \(max-width: 720px\) \{[\s\S]*?\.hp-steps\s*\{[\s\S]*?grid-template-columns:\s*1fr;/,
+    )
+    expect(css).toMatch(
+      /@media \(max-width: 720px\) \{[\s\S]*?\.hp-step\s*\{[\s\S]*?grid-template-columns:\s*42px minmax\(0, 1fr\);/,
+    )
+    expect(css).toMatch(
+      /@media \(max-width: 720px\) \{[\s\S]*?\.hp-step-num\s*\{[\s\S]*?grid-row:\s*span 2;/,
+    )
+  })
+
   it('keeps the customer-facing Nic-Nac launcher out of public Amethyst exports', () => {
     const homepage = readFileSync(
       resolve(process.cwd(), 'public/amethyst/homepage.jsx'),
