@@ -1,5 +1,17 @@
 # Project State
 
+## September 5, 2026 - Owner-directed Britt alternate queue-code test
+
+- After the grandfathered linkage visibly restored the live queue, Louis
+  explicitly asked to test the other migrated Live Queue code because the two
+  assignments might have been understood backwards. The exact production rows
+  were transactionally swapped again.
+- Brittany's active Sparkle Suite rep now resolves to the alternate migrated
+  row. That row is empty and has never synchronized; the public site therefore
+  reports an empty ready queue. The actively updated grandfathered row and all
+  queue contents remain intact on the historical placeholder identity for an
+  exact rollback.
+
 ## September 5, 2026 - Britt with Bling Live Queue identity repair
 
 - During Brittany's live show, the migrated Sparkle Suite rep was linked to a

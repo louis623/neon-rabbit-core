@@ -2,6 +2,22 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Owner-directed Britt alternate queue-code switch
+
+- Louis explicitly confirmed switching Brittany away from the visibly working
+  grandfathered Live Queue row to the other migrated code as a reversible test.
+  Before acting, he was told the grandfathered row was actively syncing while
+  the alternate row was empty and had never synchronized.
+- Applied an exact-guarded transaction that linked Brittany's active rep to the
+  alternate row and returned the grandfathered row to its historical
+  placeholder identity. The grandfathered row, its current timestamp, and all
+  queue names were preserved for rollback.
+- Post-switch production verification confirms Brittany's rep resolves to the
+  alternate row. The public Britt bootstrap reports an empty queue with zero
+  entries, matching that row's stored state. No extension, queue contents,
+  timestamp, Web Store setting, deployment, DNS, account, or billing state was
+  changed.
+
 ## September 5, 2026 - Sticky founder banner live
 
 - Owner-selected founder strip moved from below hero to immediately below header.
