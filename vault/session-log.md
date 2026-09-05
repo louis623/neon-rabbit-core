@@ -2,6 +2,18 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - TikTok framing revision and fifth founder card
+
+- Centered and enlarged first three offline TikTok layouts; preserved fourth.
+  Desktop screens 640 to 830px; mobile 250 to 290px; centered headings and CTAs.
+- Added fifth 19-spots/33%-off card using Louis's supplied count; first 12 paid
+  months, $49.99 then $74.99, non-refundable $49.99 setup fee plus tax and
+  checkout eligibility disclosed. Count must be rechecked before posting.
+- Ten 1080x1920 JPG/PNG files, updated captions, manifest, preview and ZIP in
+  marketing/tiktok/2026-09-05-building-now. Native editable layouts preserve
+  real captures/logo; full-size/reduced QA and text bounds pass. No publishing
+  or live app change; no Vercel release for this offline media pack.
+
 ## September 5, 2026 - TikTok weekend still-image pack
 
 - Created four standalone 1080x1920 JPG/PNG posts based on the approved landing

@@ -1,6 +1,6 @@
 # Sparkle Suite — weekend stills
 
-Four standalone posts, each 1080 × 1920 (9:16). Use the JPGs for posting;
+Five standalone posts, each 1080 × 1920 (9:16). Use the JPGs for posting;
 lossless PNGs are included as masters. No music or posting is included.
 
 ## 1. Your site. Your turn.
@@ -44,9 +44,23 @@ eligibility and availability are confirmed at checkout.
 
 Music mood: warm acoustic, soft piano-pop, or an optimistic instrumental.
 
+## 5. Start strong. Save 33%.
+
+Only 19 founder spots remaining ✨ We're building Sparkle Suite sites now.
+Eligible founders get 33% off their first 12 paid service months:
+$49.99/month instead of $74.99, then $74.99/month. A one-time,
+non-refundable $49.99 setup fee applies at checkout, plus applicable tax.
+Join the build queue at yoursparklesuite.com. Joining is free and does not
+reserve the discount; availability and eligibility are confirmed at checkout.
+
+#SparkleSuite #FoundingOffer #BombPartyRep #SmallBusinessWebsite
+
+Music mood: confident, bright pop instrumental with a clean lift.
+Recheck the live remaining count before posting this time-sensitive card.
+
 ## Posting notes
 
-- These are separate posts; they also work as a four-image photo set.
+- These are separate posts; they also work as a five-image photo set.
 - Review TikTok's final crop/caption preview before posting. Safe zones vary
   with interface, caption length, and posting format. Keep added text away
   from the bottom and right controls.
@@ -55,6 +69,7 @@ Music mood: warm acoustic, soft piano-pop, or an optimistic instrumental.
   https://support.tiktok.com/en/business-and-creator/creator-and-business-accounts/commercial-use-of-music-on-tiktok
 - Enable the applicable promotional-content disclosure when posting your own
   brand: https://ads-useast2a.tiktok.com/resources/help/article/how-to-turn-on-the-commercial-content-disclosure-setting-in-tiktok?lang=en
-- No fixed founder count or price is baked in, so the stills do not become
-  inaccurate as spots change. Link viewers to the live offer for current terms.
+- Cards 1–4 have no fixed founder count or price. Card 5 uses Louis's supplied
+  count of 19 on September 5; recheck before posting and retire it if the count
+  changes. Link viewers to the live offer for current terms.
 - Sparkle Suite is independent and is not affiliated with or endorsed by Bomb Party.

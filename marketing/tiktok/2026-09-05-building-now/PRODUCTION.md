@@ -1,5 +1,20 @@
 # Production and provenance
 
+## Revision: centered framing + founder discount
+
+Owner-requested update: first three compositions centered and enlarged in the
+same 1080x1920 frame. Desktop captures increased from 640px to 830px wide;
+phone increased from 250px to 290px. Fourth image unchanged byte-for-byte.
+Native editable HTML/CSS source recomposited without regenerating product
+captures or the official logo. Fifth card uses owner-provided count 19 and
+33% rounded savings ($49.99 vs $74.99), first 12 paid months only, with setup,
+renewal, tax and eligibility terms from landing-experience.tsx.
+Recheck availability before posting. No account, public site or posting changes.
+All ten exports 1080x1920, full-size and reduced preview inspected. Measured
+text inside x70–990/y160–1680; at least 240px bottom space for this fuller framing.
+Actual TikTok caption/interface preview remains necessary. Current sizes are
+in manifest.json. Historical initial-production notes follow.
+
 Approved direction: September 5 Sparkle Suite landing-page revision, based on
 app commit e2bc8238. Standalone offline marketing exports; no website change,
 posting, account mutation, or production deployment is involved.
