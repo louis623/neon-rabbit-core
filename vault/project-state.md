@@ -15,9 +15,15 @@
   captures. Dance Floor leads the tour; the clipped queue preview is removed
   without removing Live Queue functionality. Phone/tablet/desktop support is
   explicit in the hero caption and customer-site introduction.
-- Local build, lint, 282 selected tests and four-width browser verification
-  passed. Release is being coordinated behind the concurrent Britt domain/Join
-  fix (`7bcd2163`); move only the two Suite domains for this landing revision.
+- Released exact tip `736e0d27094cad3b14e82337301312328a96ca86` (app `cd457107`)
+  as Ready `dpl_GC16FXboorHVsH427ArLfAxTtYrp`. Both Suite domains resolve to it;
+  all nine customer aliases remain on Britt's verified `dpl_7ZWsWPJJX5483Vvf3Nce9FFxxtGh`.
+- Build, lint, 306 selected tests and local/live320/390/768/1440 browser checks
+  passed. Live founder count remains19. Existing authorized Chrome demo session
+  reloads to `/nic-nac`, keeps correct workspace identity and six Dance Floor
+  listings; no checkout. No fresh OAuth, signup, payment or outbound message
+  was exercised. Synthetic reviewer provisioning remains a separate limitation,
+  not a claim about the existing demo session that was actually verified.
 
 ## September 5, 2026 - Public landing redesign released; reviewer check open
 

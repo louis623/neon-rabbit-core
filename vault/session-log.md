@@ -2,6 +2,34 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Varied product proofs and mobile message are live
+
+- Released exact pushed tip `736e0d27094cad3b14e82337301312328a96ca86` (landing
+  app `cd457107`) as Ready `dpl_GC16FXboorHVsH427ArLfAxTtYrp`, source URL
+  `sparkle-suite-pz6kilbqe-louis-2849s-projects.vercel.app`. A CLI connection
+  dropped after deployment creation; inspected the existing Ready deployment
+  rather than creating a duplicate. REST metadata confirmed both Git SHA fields
+  before assigning only www/apex Suite aliases. Both exact destinations were
+  confirmed. All nine customer aliases remain on `dpl_7ZWsWPJJX5483Vvf3Nce9FFxxtGh`.
+- 306 selected tests pass (43 landing/founder,239 standard,24 inherited Join),
+  ESLint and full local/Vercel builds pass. Live isolated Chromium at320,390,
+  768 and1440 checks all styles, all three tool previews, image decoding,
+  play/pause, FAQ and `/prelaunch#waitlist` navigation, zero overflow and no
+  page/console errors. Rendered desktop hero and phone styles/Dance Floor were
+  pixel-reviewed; no product card corners are clipped. Live screenshot evidence
+  is in the session visualization directory as `live-*-hero/styles/dance-floor.png`.
+- Refreshed Louis's existing in-app landing tab; it had retained an older page.
+  It now visibly shows Black Diamond, the phone/tablet/desktop promise and19
+  founder spots. Live founder API, login, Nic-Nac health, public demo Trade and
+  apex canonicalization return200. The explicitly authorized Chrome admin/demo
+  session reloads to `/nic-nac` with correct workspace identity and six dancers.
+  No synthetic session, fresh OAuth, signup, charge or outbound message was used.
+- Source changes are presentation-only; original Rose Gold demo appearance was
+  restored. Four authorized demo jewelry additions remain available for future
+  demos. Two removed bad catalog records/listings remain recoverable from the
+  private snapshot. No storage deletion. This closes the imagery/mobile request;
+  conversion lift is not measured and must not be claimed from visual QA alone.
+
 ## September 5, 2026 - Coordinated Britt domain release completed before landing
 
 - The owning task completed BrittWithBling's cutover and narrow custom-domain
