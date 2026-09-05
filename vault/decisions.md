@@ -1,5 +1,16 @@
 # Decision Log
 
+## 2026-09-05 - Brittany's welcome guide uses her Black Diamond identity
+
+The existing beta welcome Site is Brittany's Sparkle Suite Workspace reading
+guide, not a new team rep's private onboarding page. Use her charcoal/gold Black
+Diamond identity and plain-English, task-based instructions. Recognize the
+familiar customer site and already-configured Live Queue; do not imply she had
+the Workspace before or needs new queue setup. Clearly distinguish live in-app
+messages from Coming-soon customer campaigns, and beta controls from completed
+team-specific Site provisioning. Keep account credentials and meeting links in
+private correspondence only. Drafting an email never authorizes sending it.
+
 ## 2026-09-05 - TikTok composition and copy preferences
 
 Use full 1080x1920 framing with centered, prominent visuals; a correctly sized

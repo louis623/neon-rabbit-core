@@ -1,5 +1,23 @@
 # Project State
 
+## September 5, 2026 - Brittany Workspace welcome guide refreshed
+
+- Published version 2 of the existing public welcome Site at
+  https://brittwithbling-beta-welcome.louis526569.chatgpt.site/ using her Black
+  Diamond charcoal/gold palette, readable type, and 12 plain-English chapters.
+- Recognizes Brittany as the first rep and an existing grandfathered customer;
+  distinguishes her familiar customer site/Live Queue from the new Workspace.
+  Her Live Queue is already configured; no installation or sync-code changes.
+- Current terminology includes Dance Floor, Tools, and the available in-app
+  Message Center. Customer email/SMS remain Coming soon. Team-specific private
+  onboarding Site provisioning must finish before real team invites go out.
+- Rewritten welcome email saved, unsent, in Louis's Gmail with subject
+  "Brittany, your Sparkle Suite Workspace walkthrough". User-provided login and
+  meeting details exist only in that private draft, not the public guide/memory.
+- This was an independent Sites publication and Gmail draft, not a Sparkle
+  Suite application release. Main app deployment and unrelated artifacts remain
+  unchanged. No customer login, account, billing, or queue mutation was made.
+
 ## September 5, 2026 - TikTok weekend creative delivered
 
 - Five 1080x1920 standalone JPG/PNG pairs in

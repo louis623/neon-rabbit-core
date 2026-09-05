@@ -2,6 +2,42 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Brittany Black Diamond welcome guide and private email
+
+- Read current memory, handoff and applicable welcome/email/brand/Sites skills;
+  verified louis623/sparkle-suite, allowlisted codex/nic-nac-trade-hardening,
+  starting HEAD fb02bebd08393ae4e9cd73b55b41e668890eb483. Consulted Open Brain.
+- Reused welcome Site project appgprj_6a790bc7e62c8191aeb5b4658dab5989, preserving
+  its public audience and URL. Isolated source checkout:
+  C:/Users/louis/.codex/visualizations/2026/09/05/01a073a7-aef8-7330-8ca2-a24e9899f56a/brittwithbling-beta-welcome.
+- Site source commit 6355711f18b1187609e28e08d8d008766b55c8a8 pushed to the
+  existing Sites source branch. Saved version 2:
+  appgprj_6a790bc7e62c8191aeb5b4658dab5989~appgver_d6fda1fbb4a08191b93694b0f3499913.
+  Deployment appgdep_6a9ca0e446cc819194dd6b2621bb6f97 succeeded. Verified the
+  published guide visibly at its existing URL and left it open in Codex.
+- Content: first-rep gratitude, existing $39/month/no-build-fee terms supplied
+  by Louis, public/private distinction, sign-in/password instructions, current
+  navigation map, Nic-Nac, Calendar, Dance Floor, site editing/autosave, Customer
+  List imports, Message Center/Support, Team Management beta, billing location,
+  honest future-feature labels, small first-session checklist and FAQs.
+- Verification: production build, lint, 3 rendered HTML/navigation/privacy
+  checks passed. Desktop and 390px phone preview checked; anchor navigation and
+  help disclosure worked without horizontal overflow. No live-page console
+  errors observed. Font fallbacks corrected after visual inspection. No signed-in
+  customer/reviewer walkthrough was performed; existing reviewer blocker remains.
+- Read-only account check found active existing rep with billing provider links;
+  stored monthly amount is zero. Local Stripe credentials could not resolve the
+  linked subscription (404), so this is NOT a fresh provider price verification.
+  The $39 contract is owner-confirmed and previously documented. No repair made.
+- Gmail connector verified Louis's mailbox; no prior matching draft was returned.
+  Created and read back the new draft "Brittany, your Sparkle Suite Workspace
+  walkthrough". DRAFT label, intended recipient, exact body, welcome/meeting
+  links and privately supplied login details verified. Nothing sent. No secrets
+  were added to source, guide, Git, vault, or Open Brain.
+- Main application code/deployment, customer accounts, Stripe objects, Live Queue,
+  extension files, artifacts/ and test-results/ were not changed. Guide-only Sites
+  publication is separate from the main Vercel release process.
+
 ## September 5, 2026 - Landing/TikTok session closeout and handoff
 
 - Landing hero release evidence remains recorded below: Emerald Garden desktop
