@@ -16,6 +16,16 @@ function renderOffer(availability: FounderAvailability, compact = false) {
 const checkedAt = '2026-09-05T15:47:10.792Z'
 
 describe('customer-visible founder offer states', () => {
+  it.each([19, 1])('shows a prominent real %i count in the sticky banner', remaining => {
+    const html = renderToStaticMarkup(<FounderAvailabilityProvider initialAvailability={{ status: 'available', remaining, checkedAt }}><FounderStrip /></FounderAvailabilityProvider>)
+    expect(html).toContain('aria-label="Founder availability"')
+    expect(html).toContain(`<strong>${remaining}</strong>`)
+    expect(html).toContain('>Only</span>')
+    expect(html).toContain('Secure your first-year discount.')
+    expect(html).toContain('href="#pricing"')
+    expect(html).not.toMatch(/timer|of 20/)
+  })
+
   it.each([19, 1])('renders an honest %i-slot offer with checkout terms and singular/plural grammar', remaining => {
     const html = renderOffer({ status: 'available', remaining, checkedAt })
     expect(html).toContain(`${remaining} founder ${remaining === 1 ? 'spot' : 'spots'} remaining.`)

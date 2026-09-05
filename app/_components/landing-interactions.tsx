@@ -51,12 +51,21 @@ export function FounderSpotLabel({ large = false }: { large?: boolean }) {
 
 export function FounderStrip() {
   const availability = useContext(AvailabilityContext)
-  return <div className={styles.founderStrip}>
-    <Sparkles size={21} aria-hidden="true" />
-    <FounderSpotLabel />
-    <span>{availability.status === 'available' ? 'Get in at the start. Secure your founding rate before the spots are gone.' : 'Join the build queue. Let’s talk about your next steps.'}</span>
-    <a href="#pricing" className={styles.textLink}>See the offer <ArrowRight size={16} aria-hidden="true" /></a>
-  </div>
+  const available = availability.status === 'available'
+  return <aside className={styles.founderStrip} aria-label="Founder availability">
+    <div className={styles.founderStripInner}>
+      <div className={styles.founderCount} aria-hidden="true">
+        {available ? <><span>Only</span><strong>{availability.remaining}</strong></> : <Sparkles size={26} />}
+      </div>
+      <div className={styles.founderCopy}>
+        <p className={styles.founderHeadline} aria-live="polite" aria-atomic="true">
+          {available ? <><span className={styles.visuallyHidden}>Only {availability.remaining} </span>founder {availability.remaining === 1 ? 'spot' : 'spots'} remaining.</> : availability.status === 'full' ? 'Founder spots are filled.' : 'Now building Sparkle Suite sites.'}
+        </p>
+        <p className={styles.founderSupporting}>{available ? 'Get in at the start. Secure your first-year discount.' : 'Join the build queue. Let’s talk about your next steps.'}</p>
+      </div>
+      <a href="#pricing" className={styles.founderCta}>See the offer <ArrowRight size={16} aria-hidden="true" /></a>
+    </div>
+  </aside>
 }
 
 export function FounderOffer({ compact = false }: { compact?: boolean }) {

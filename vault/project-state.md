@@ -1,5 +1,15 @@
 # Project State
 
+## September 5, 2026 - Sticky founder banner revision
+
+- Owner requested the founder strip directly below the landing header, sticky
+  throughout scrolling, with a prominent pink count and “Only” wording.
+- Reuses real founder availability; no artificial timer or reservation promise.
+  Full/unconfirmed states do not show a fabricated remaining count.
+- Local build, lint, 33 focused tests and 320/390/768/1440px browser checks pass.
+  Banner is 76px on phones / 90px on larger screens; pricing anchor stays clear.
+  Release verification will be recorded in the session log.
+
 ## September 5, 2026 - Landing imagery revision and catalog cleanup
 
 - Removed the two owner-approved bad label-photo catalog entries ER11309 and

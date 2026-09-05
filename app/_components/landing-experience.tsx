@@ -39,6 +39,7 @@ export function LandingExperience() {
   return <FounderAvailabilityProvider><main className={styles.page}>
     <a className={styles.skipLink} href="#main-content">Skip to content</a>
     <div id="top"><MarketingHeader /></div>
+    <FounderStrip />
     <section className={styles.hero} id="main-content" aria-labelledby="landing-title">
       <div className={styles.heroCopy}>
         <p className={styles.eyebrow}>Now building Sparkle Suite sites</p>
@@ -52,7 +53,6 @@ export function LandingExperience() {
         <figcaption>Your look. Beautiful on phones, tablets, and desktop.</figcaption>
       </figure>
     </section>
-    <FounderStrip />
     <section className={styles.siteSection} id="customer-site-proof" aria-labelledby="site-title"><h2 id="site-title">A site that feels like <em>you.</em></h2><p className={styles.sectionSubtitle}>Your colors. Your personality. A polished customer experience on phones, tablets, and desktop.</p><SiteStyleShowcase /></section>
     <section className={styles.toolsSection} id="workspace-proof" aria-label="Your live-show tools"><ShowToolsTour /></section>
     <section className={styles.pricingSection} id="pricing" aria-labelledby="pricing-title">
