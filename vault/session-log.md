@@ -2,6 +2,26 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Britt live-show queue linkage incident
+
+- Compared Brittany's active rep and both production Live Queue rows against
+  the grandfathered migration seed. The installed extension was publishing to
+  the grandfathered row, which held 44 names, while the migrated rep resolved
+  to a different empty row whose `last_updated` had always been null.
+- Applied one exact-guarded transaction: the never-synced generated row was
+  parked on the historical placeholder identity and the grandfathered row was
+  linked to Brittany's active Britt with Bling rep. Post-write verification
+  confirmed one Live Queue row for the active rep and preserved both records.
+- The public Britt site resolves the repaired row, but its deliberate
+  three-minute freshness guard continues to hide the 44-name snapshot because
+  the extension has not published since 2:24 p.m. ET. The old timestamp was not
+  advanced manually because that could expose an inaccurate reveal order.
+  Louis was asked to have Brittany verify On / Connected, the existing
+  grandfathered code, and the current party selection on her show computer.
+- No extension source/package, Web Store setting, Bomb Party page, queue names,
+  DNS, deployment, customer account, billing state, or outbound message was
+  changed.
+
 ## September 5, 2026 - Varied product proofs and mobile message are live
 
 - Released exact pushed tip `736e0d27094cad3b14e82337301312328a96ca86` (landing

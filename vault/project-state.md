@@ -1,5 +1,21 @@
 # Project State
 
+## September 5, 2026 - Britt with Bling Live Queue identity repair
+
+- During Brittany's live show, the migrated Sparkle Suite rep was linked to a
+  newly generated, never-synced Live Queue row while her installed extension
+  continued using the grandfathered row. The grandfathered row contained the
+  real show queue; the migrated row was empty and had never updated.
+- An exact, transactional production repair moved the grandfathered row onto
+  Brittany's active rep identity and parked the unused generated row on the
+  historical placeholder identity. No queue names were edited, no timestamp
+  was forged, and no extension, Chrome Web Store, DNS, billing, or account
+  configuration was changed.
+- The public site now resolves the correct row. A fresh extension heartbeat is
+  still required before the customer page displays names: the last legitimate
+  snapshot was approximately 36 minutes old at final verification, so the site
+  correctly withheld it instead of presenting stale show order as current.
+
 ## September 5, 2026 - Sticky founder banner revision
 
 - Owner requested the founder strip directly below the landing header, sticky
