@@ -11,10 +11,10 @@
   historical placeholder identity. No queue names were edited, no timestamp
   was forged, and no extension, Chrome Web Store, DNS, billing, or account
   configuration was changed.
-- The public site now resolves the correct row. A fresh extension heartbeat is
-  still required before the customer page displays names: the last legitimate
-  snapshot was approximately 36 minutes old at final verification, so the site
-  correctly withheld it instead of presenting stale show order as current.
+- The public site now resolves the correct row. The extension subsequently
+  resumed fresh updates, and final live browser verification showed the active
+  full queue on `brittwithbling.com`. No manual timestamp or queue edit was
+  needed.
 
 ## September 5, 2026 - Sticky founder banner revision
 

@@ -43,6 +43,10 @@ Running log of significant work sessions. Most recent first.
 - No extension source/package, Web Store setting, Bomb Party page, queue names,
   DNS, deployment, customer account, billing state, or outbound message was
   changed.
+- Follow-up verification confirmed the extension resumed publishing to the
+  grandfathered row. The database showed a fresh changing queue, the public
+  bootstrap reported `live`, and Chrome displayed the full current queue on
+  `brittwithbling.com`. The customer-facing queue is operational again.
 
 ## September 5, 2026 - Varied product proofs and mobile message are live
 
