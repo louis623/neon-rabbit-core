@@ -1,10 +1,9 @@
 import { ImageResponse } from 'next/og'
 import { headers } from 'next/headers'
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
 
 import { getCustomerSiteBrandAssetContext } from '@/lib/amethyst/customer-site-brand-assets'
 import { getCustomerSiteBrandImageFonts } from '@/lib/amethyst/customer-site-brand-fonts'
+import { loadCustomerSiteBrandImageDataUri } from '@/lib/amethyst/customer-site-brand-image-assets'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -24,11 +23,113 @@ export default async function Image() {
   const fonts = await getCustomerSiteBrandImageFonts(brand)
   if (brand) {
     const markSrc = brand.markAssetPath
-      ? `data:image/png;base64,${await readFile(
-          join(process.cwd(), 'public', brand.markAssetPath),
-          'base64',
-        )}`
+      ? await loadCustomerSiteBrandImageDataUri(brand.markAssetPath)
       : null
+
+    if (brand.preset === 'gnome_garden') {
+      const [forestSrc, gnomeSrc, lanternSrc] = await Promise.all([
+        loadCustomerSiteBrandImageDataUri(
+          '/customer-site-assets/goforthebling-gnome-forest-share-forest.jpg',
+        ),
+        loadCustomerSiteBrandImageDataUri(
+          '/customer-site-assets/goforthebling-gnome-forest-share-gnome.png',
+        ),
+        loadCustomerSiteBrandImageDataUri(
+          '/customer-site-assets/goforthebling-gnome-forest-share-lantern.png',
+        ),
+      ])
+
+      return new ImageResponse(
+        (
+          <div
+            style={{
+              background: brand.palette.background,
+              color: '#422b20',
+              display: 'flex',
+              height: '100%',
+              overflow: 'hidden',
+              position: 'relative',
+              width: '100%',
+            }}
+          >
+            <img
+              alt=""
+              height={800}
+              src={forestSrc}
+              style={{
+                height: '100%',
+                left: 0,
+                objectFit: 'cover',
+                position: 'absolute',
+                top: 0,
+                width: '100%',
+              }}
+              width={1200}
+            />
+            <div
+              style={{
+                background: 'linear-gradient(90deg, rgba(18,48,33,.18), rgba(8,29,20,.56))',
+                bottom: 0,
+                display: 'flex',
+                left: 0,
+                position: 'absolute',
+                right: 0,
+                top: 0,
+              }}
+            />
+            <img alt="" height={300} src={lanternSrc} style={{ left: 26, position: 'absolute', top: -55 }} width={118} />
+            <img alt="" height={300} src={lanternSrc} style={{ position: 'absolute', right: 22, top: -62, transform: 'scaleX(-1)' }} width={118} />
+            <div
+              style={{
+                background: 'rgba(255, 246, 211, .96)',
+                border: '5px solid #d99b27',
+                borderRadius: 38,
+                boxShadow: '0 24px 70px rgba(17, 32, 20, .38)',
+                display: 'flex',
+                flexDirection: 'column',
+                height: 506,
+                justifyContent: 'space-between',
+                left: 72,
+                padding: '42px 48px',
+                position: 'absolute',
+                top: 62,
+                width: 760,
+              }}
+            >
+              <div style={{ alignItems: 'center', color: '#842421', display: 'flex', fontFamily: 'Arial, sans-serif', fontSize: 18, fontWeight: 700, letterSpacing: 4, textTransform: 'uppercase' }}>
+                <span style={{ background: '#d99b27', borderRadius: 99, display: 'flex', height: 10, marginRight: 14, width: 10 }} />
+                Gnome Forest
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ color: '#4d2b22', display: 'flex', fontFamily: 'Playfair Display', fontSize: 66, fontWeight: 800, letterSpacing: -2, lineHeight: .98 }}>
+                  {brand.businessName}
+                </div>
+                <div style={{ color: '#842421', display: 'flex', fontFamily: 'Playfair Display', fontSize: 33, fontWeight: 800, lineHeight: 1.08, maxWidth: 630 }}>
+                  {brand.heroTitle || 'A little wonder, a lot of sparkle.'}
+                </div>
+                <div style={{ color: '#65483b', display: 'flex', fontFamily: 'Arial, sans-serif', fontSize: 23, lineHeight: 1.28, maxWidth: 640 }}>
+                  {brand.heroSubtitle || brand.tagline || 'Follow along for live reveals, friendly faces, and a little everyday wonder.'}
+                </div>
+              </div>
+              <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ background: '#842421', borderRadius: 999, color: '#fff7dc', display: 'flex', fontFamily: 'Arial, sans-serif', fontSize: 20, fontWeight: 700, padding: '13px 22px' }}>
+                  {brand.customDomain}
+                </div>
+                {markSrc ? <img alt={`${brand.businessName} monogram`} height={76} src={markSrc} width={76} /> : null}
+              </div>
+            </div>
+            <img
+              alt=""
+              height={510}
+              src={gnomeSrc}
+              style={{ bottom: -28, position: 'absolute', right: 82 }}
+              width={277}
+            />
+          </div>
+        ),
+        { ...size, fonts },
+      )
+    }
 
     return new ImageResponse(
       (

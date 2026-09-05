@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Go for the Bling G monogram</title>
+  <desc id="description">A burgundy G on warm parchment, framed by Gnome Forest green and lantern gold.</desc>
+  <rect width="512" height="512" rx="112" fill="#173a28"/>
+  <circle cx="256" cy="256" r="208" fill="#f8e8ba" stroke="#d99b27" stroke-width="22"/>
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#842421" stroke-width="7" opacity=".38"/>
+  <text x="256" y="357" fill="#842421" font-family="Georgia, 'Times New Roman', serif" font-size="298" font-weight="700" text-anchor="middle">G</text>
+  <path d="M350 95c20 4 42 22 52 43-26-5-49 2-67 20-8-24-3-47 15-63Z" fill="#842421"/>
+  <circle cx="391" cy="145" r="10" fill="#f4c45e"/>
+</svg>

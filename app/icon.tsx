@@ -1,10 +1,9 @@
 import { ImageResponse } from 'next/og'
 import { headers } from 'next/headers'
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
 
 import { getCustomerSiteBrandAssetContext } from '@/lib/amethyst/customer-site-brand-assets'
 import { getCustomerSiteBrandImageFonts } from '@/lib/amethyst/customer-site-brand-fonts'
+import { loadCustomerSiteBrandImageDataUri } from '@/lib/amethyst/customer-site-brand-image-assets'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -20,11 +19,7 @@ export default async function Icon() {
   const brand = await getCustomerSiteBrandAssetContext(await headers())
   const fonts = await getCustomerSiteBrandImageFonts(brand)
   if (brand?.markAssetPath) {
-    const markData = await readFile(
-      join(process.cwd(), 'public', brand.markAssetPath),
-      'base64',
-    )
-    const markSrc = `data:image/png;base64,${markData}`
+    const markSrc = await loadCustomerSiteBrandImageDataUri(brand.markAssetPath)
 
     return new ImageResponse(
       <div

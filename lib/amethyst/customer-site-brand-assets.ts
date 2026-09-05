@@ -15,6 +15,8 @@ export interface CustomerSiteSharePalette {
 export interface CustomerSiteBrandAssetContext {
   businessName: string
   customDomain: string
+  heroSubtitle: string
+  heroTitle: string
   mark: string
   markAssetPath: string | null
   markFontFamily: string
@@ -24,6 +26,7 @@ export interface CustomerSiteBrandAssetContext {
 }
 
 const BRI_CUSTOM_DOMAINS = new Set(['brisglowtique.com', 'www.brisglowtique.com'])
+const KIM_CUSTOM_DOMAINS = new Set(['goforthebling.com', 'www.goforthebling.com'])
 
 const SHARE_BACKGROUNDS: Partial<Record<AmethystAppearancePresetId, string>> = {
   amethyst: '#2b155c',
@@ -31,6 +34,7 @@ const SHARE_BACKGROUNDS: Partial<Record<AmethystAppearancePresetId, string>> = {
   black_diamond: '#161313',
   moonstone: '#272938',
   emerald_garden: '#123c35',
+  gnome_garden: '#173a28',
   rose_gold: '#54202f',
   garnet: '#4a1218',
   velvet: '#321142',
@@ -55,6 +59,15 @@ export function getCustomerSiteSharePalette(
   const appearance = getAmethystAppearancePreset(preset)
   const background = SHARE_BACKGROUNDS[preset] ?? '#21191d'
 
+  if (preset === 'gnome_garden') {
+    return {
+      background,
+      foreground: '#fff7dc',
+      secondary: '#f4dfb4',
+      accent: appearance.values.primaryColor,
+    }
+  }
+
   return {
     background,
     foreground: '#fffdfb',
@@ -72,7 +85,11 @@ export function getCustomerSiteMark(
   return letter?.toLocaleUpperCase() ?? 'S'
 }
 
-function getCustomerSiteMarkAssetPath(customDomain: string) {
+export function getCustomerSiteMarkAssetPath(customDomain: string) {
+  if (KIM_CUSTOM_DOMAINS.has(customDomain)) {
+    return '/customer-site-assets/goforthebling-gnome-forest-monogram-g.svg'
+  }
+
   return BRI_CUSTOM_DOMAINS.has(customDomain)
     ? '/customer-site-assets/bris-glowtique-monogram-b.png'
     : null
@@ -102,11 +119,17 @@ export async function getCustomerSiteBrandAssetContext(
   const templateData = await loadAmethystPreviewTemplateData({ repId: customDomain })
   const businessName = cleanText(templateData.homepage.businessName)
   const tagline = getCustomerSiteShareTagline(templateData.homepage.tagline)
+  const heroTitle = cleanText(
+    templateData.homepage.heroHeadlineOverride || templateData.homepage.heroHeadline,
+  )
+  const heroSubtitle = cleanText(templateData.homepage.heroSub)
   const preset = templateData.appearancePreset
 
   return {
     businessName: businessName || 'Customer site',
     customDomain,
+    heroSubtitle,
+    heroTitle,
     mark: getCustomerSiteMark(businessName, templateData.homepage.repName),
     markAssetPath: getCustomerSiteMarkAssetPath(customDomain),
     markFontFamily: getCustomerSiteMarkFontFamily(customDomain),
