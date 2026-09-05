@@ -126,8 +126,8 @@ export const AMETHYST_SKIN_CARDS: AmethystSkinCard[] = [
   {
     id: 'gnome_garden',
     code: 'GG-01',
-    label: 'Enchanted Gnome Garden',
-    aliases: ['Gnome Garden'],
+    label: 'Gnome Forest',
+    aliases: ['Enchanted Gnome Forest', 'Gnome Garden', 'Enchanted Gnome Garden'],
     previewHref: '/skin-preview/gnome_garden/homepage',
     description:
       'A welcoming woodland with warm lanterns, parchment cards, and friendly gnome details.',

@@ -1,4 +1,4 @@
-# Enchanted Gnome Garden (GG-01)
+# Gnome Forest (GG-01)
 
 ## Visual authority
 
@@ -71,7 +71,7 @@ resizes, and encodes WebP; it does not generate illustrations or redraw text.
 - Home, Dance Floor, Join, and customer preferences retain their existing
   content, routing, eligibility, validation, and provider boundaries.
 - GG-01 is browsable through the existing look picker. Nic-Nac accepts the
-  code, canonical ID, full label, and Gnome Garden alias through its existing
+  code, canonical ID, current label, and legacy Gnome Garden aliases through its existing
   appearance-only setting tool. No agent routing or model changes.
 - Finder retains its separate existing selectable preset list and database.
 - Applying this skin to Kim is a separate owner approval. Do not move

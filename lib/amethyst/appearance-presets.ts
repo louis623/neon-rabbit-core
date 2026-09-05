@@ -216,7 +216,7 @@ export const AMETHYST_APPEARANCE_PRESETS: Record<
   },
   gnome_garden: {
     id: 'gnome_garden',
-    label: 'Enchanted Gnome Garden',
+    label: 'Gnome Forest',
     description:
       'A welcoming woodland with warm lanterns, parchment cards, and friendly gnome details.',
     values: {

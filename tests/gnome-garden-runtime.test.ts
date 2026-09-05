@@ -9,7 +9,7 @@ import { AMETHYST_APPEARANCE_PRESETS } from '@/lib/amethyst/appearance-presets'
 
 const pages = ['homepage', 'trade', 'join'] as const
 
-describe('Gnome Garden shipped customer runtimes', () => {
+describe('Gnome Forest shipped customer runtimes', () => {
   for (const page of pages) {
     const source = readFileSync(resolve(process.cwd(), `public/amethyst/${page}.jsx`), 'utf8')
 
@@ -18,7 +18,7 @@ describe('Gnome Garden shipped customer runtimes', () => {
       expect(declaration).not.toBeNull()
       const presets = runInNewContext(`(${declaration![1]})`)
       expect(presets.gnome_garden).toEqual(AMETHYST_APPEARANCE_PRESETS.gnome_garden.values)
-      expect(source).toContain('{ value: "gnome_garden", label: "Enchanted Gnome Garden" }')
+      expect(source).toContain('{ value: "gnome_garden", label: "Gnome Forest" }')
       expect(source).toContain('gnomeGarden: { bg: "#173126", elevated: "#FFF3D6", deep: "#102319" }')
       for (const className of ['bg-gnome-garden', 'surface-storybook-parchment', 'btn-lantern-lift', 'mushroom-glow', 'tex-fireflies']) {
         expect(source).toContain(`body.classList.add("${className}")`)
@@ -75,7 +75,7 @@ describe('Gnome Garden shipped customer runtimes', () => {
     })
   }
 
-  it('adds the scene only when Gnome Garden is selected, including existing homepage variants', () => {
+  it('adds the scene only when Gnome Forest is selected, including existing homepage variants', () => {
     const homepage = readFileSync(resolve(process.cwd(), 'public/amethyst/homepage.jsx'), 'utf8')
     expect(homepage.match(/t\.preset === "gnome_garden" && <GnomeGardenDecoration \/>/g)).toHaveLength(4)
     for (const page of ['trade', 'join']) {

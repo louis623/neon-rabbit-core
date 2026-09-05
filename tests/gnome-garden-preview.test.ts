@@ -3,7 +3,7 @@ import { runInNewContext } from 'node:vm'
 import { GET } from '@/app/skin-preview/[skin]/[page]/route'
 import { buildGnomeSkinPreviewDocument, SKIN_PREVIEW_GUARDS, SKIN_PREVIEW_PAGES } from '@/lib/amethyst/skin-preview'
 
-describe('read-only Gnome Garden skin preview', () => {
+describe('read-only Gnome Forest skin preview', () => {
   it.each(SKIN_PREVIEW_PAGES)('serves shared %s components with isolated sample content', async (page) => {
     const response = await GET(new Request(`https://www.yoursparklesuite.com/skin-preview/gnome_garden/${page}?c=real-customer&review=ignored`), { params: Promise.resolve({ skin: 'gnome_garden', page }) })
     expect(response.status).toBe(200)
@@ -18,7 +18,7 @@ describe('read-only Gnome Garden skin preview', () => {
     expect(html).not.toContain('real-customer')
     expect(html).not.toContain('review=ignored')
     const inner = await buildGnomeSkinPreviewDocument(page, 'https://www.yoursparklesuite.com')
-    expect(inner).toContain('The Gnome Garden')
+    expect(inner).toContain('The Gnome Forest')
     expect(inner).toContain('gnome_garden')
     expect(inner).toContain("connect-src 'none'")
     expect(inner).toContain("form-action 'none'")
@@ -101,8 +101,8 @@ describe('read-only Gnome Garden skin preview', () => {
     const data = JSON.parse(inner.match(/window\.AMETHYST_HOMEPAGE_TEMPLATE_DATA = (.*);/)![1])
     expect(data.tradeBoardTickerItems.map((item: { name: string }) => item.name)).toEqual(['Woodland Wishes', 'Lantern Light', 'Moonlit Garden'])
     expect(data.footerLinks.tradeBoard).toBe('/skin-preview/gnome_garden/trade')
-    expect(data.legalDisclaimer).toContain('The Gnome Garden')
-    expect(data.signupConsent).toContain('The Gnome Garden')
+    expect(data.legalDisclaimer).toContain('The Gnome Forest')
+    expect(data.signupConsent).toContain('The Gnome Forest')
     expect(JSON.stringify(data)).not.toContain('Sparkle by Sasha')
   })
 })

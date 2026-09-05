@@ -15,6 +15,8 @@ const inputSchema = z.object({
   tickerText: z.string().optional(),
   tickerVisible: z.boolean().optional(),
   tagline: z.string().optional(),
+  heroTitle: z.string().max(180).optional(),
+  heroSubtitle: z.string().max(240).optional(),
   heroAnimationType: z.enum(['still', 'sparkle_rise', 'soft_glow']).optional(),
   teamName: z.string().optional(),
   showJoinPage: z.boolean().optional(),
@@ -32,6 +34,8 @@ type SiteSettingsRow = {
   ticker_text: string | null
   ticker_visible: boolean | null
   tagline: string | null
+  hero_headline: string | null
+  hero_subtitle: string | null
   hero_image_url: string | null
   hero_animation_type: string | null
   team_name: string | null
@@ -63,7 +67,7 @@ export function makeUpdateSiteSettingTool(ctx: {
   return tool({
     description:
       "Update one or more site customization settings for the authenticated rep. " +
-      'This can patch banner, ticker, tagline, the About section heading, subtitle, and narrative, controlled hero motion, team name, join-page visibility, the customer-facing Amethyst site appearance preset, and social handles. customerSiteTemplate is always normalized back to Amethyst. Custom hero images are not supported.',
+      'This can patch banner, ticker, site tagline, hero title, hero subtitle, the About section heading, subtitle, and narrative, controlled hero motion, team name, join-page visibility, the customer-facing Amethyst site appearance preset, and social handles. customerSiteTemplate is always normalized back to Amethyst. Custom hero images are not supported.',
     inputSchema,
     execute: async ({
       bannerText,
@@ -71,6 +75,8 @@ export function makeUpdateSiteSettingTool(ctx: {
       tickerText,
       tickerVisible,
       tagline,
+      heroTitle,
+      heroSubtitle,
       heroAnimationType,
       teamName,
       showJoinPage,
@@ -87,6 +93,8 @@ export function makeUpdateSiteSettingTool(ctx: {
         tickerText !== undefined ||
         tickerVisible !== undefined ||
         tagline !== undefined ||
+        heroTitle !== undefined ||
+        heroSubtitle !== undefined ||
         heroAnimationType !== undefined ||
         teamName !== undefined ||
         showJoinPage !== undefined ||
@@ -111,6 +119,12 @@ export function makeUpdateSiteSettingTool(ctx: {
       if (tickerText !== undefined) siteSettingsPatch.ticker_text = tickerText
       if (tickerVisible !== undefined) siteSettingsPatch.ticker_visible = tickerVisible
       if (tagline !== undefined) siteSettingsPatch.tagline = tagline
+      if (heroTitle !== undefined) {
+        siteSettingsPatch.hero_headline = heroTitle.trim() || null
+      }
+      if (heroSubtitle !== undefined) {
+        siteSettingsPatch.hero_subtitle = heroSubtitle.trim() || null
+      }
       if (heroAnimationType !== undefined) {
         siteSettingsPatch.hero_animation_type = heroAnimationType
       }
@@ -143,7 +157,7 @@ export function makeUpdateSiteSettingTool(ctx: {
           .update(siteSettingsPatch)
           .eq('rep_id', ctx.repId)
           .select(
-            'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, about_heading, about_subheading, about_narrative',
+            'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_headline, hero_subtitle, hero_image_url, hero_animation_type, team_name, show_join_page, customer_site_template, appearance_preset, about_heading, about_subheading, about_narrative',
           )
           .single()
 
@@ -174,6 +188,14 @@ export function makeUpdateSiteSettingTool(ctx: {
         if (tagline !== undefined) {
           updatedFields.push('tagline')
           updated.tagline = row.tagline
+        }
+        if (heroTitle !== undefined) {
+          updatedFields.push('heroTitle')
+          updated.heroTitle = row.hero_headline
+        }
+        if (heroSubtitle !== undefined) {
+          updatedFields.push('heroSubtitle')
+          updated.heroSubtitle = row.hero_subtitle
         }
         if (heroAnimationType !== undefined) {
           updatedFields.push('heroAnimationType')

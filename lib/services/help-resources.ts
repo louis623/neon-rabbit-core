@@ -103,7 +103,7 @@ const WORKFLOW_RESOURCES: HelpResource[] = [
     beforeYouStart: ['The exact copy, link, handle, or setting you want to change.'],
     steps: [
       'Open Site Settings.',
-      'Update display name, business name, ticker, tagline, or social links.',
+      'Update display name, business name, ticker, site tagline, hero title, hero subtitle, or social links.',
       'Confirm the Shop Now link points to the right customer destination.',
       'Set Join Team visibility for launch expectations.',
       'Confirm the auto-save indicator shows the change was saved.',

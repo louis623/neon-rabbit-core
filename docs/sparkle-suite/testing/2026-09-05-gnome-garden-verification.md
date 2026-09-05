@@ -1,4 +1,4 @@
-# Enchanted Gnome Garden verification — September 5, 2026
+# Gnome Forest verification — September 5, 2026
 
 This records completed local checks of the working changes on
 `codex/nic-nac-trade-hardening` in `C:\Users\louis\sparkle-suite-repo`, based on
@@ -13,7 +13,7 @@ release, customer activation, or completed browser visual acceptance.
 - The combined registry, appearance, semantic contrast, Settings, Nic-Nac, and
   rendered look-picker tests passed **68/68 across 6 files**.
 - Settings saves canonical `gnome_garden`; Nic-Nac accepts `gnome_garden`,
-  `GG-01`, `Enchanted Gnome Garden`, and `Gnome Garden`. Tests assert a single
+  `GG-01`, `Gnome Forest`, `Enchanted Gnome Forest`, and the legacy Gnome Garden aliases. Tests assert a single
   appearance-only update scoped to the requesting `rep_id`.
 - The separate preview link opens a new tab with `noopener noreferrer` and
   no prefetch. It stays available when the Apply action is disabled.

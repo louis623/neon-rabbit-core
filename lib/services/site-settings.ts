@@ -19,6 +19,7 @@ type SiteSettingsRow = {
   ticker_visible: boolean | null
   tagline: string | null
   hero_headline: string | null
+  hero_subtitle: string | null
   hero_image_url: string | null
   hero_animation_type: string | null
   team_name: string | null
@@ -43,7 +44,7 @@ type RepProfileRow = {
 }
 
 const SITE_SETTINGS_SELECT =
-  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_headline, hero_image_url, hero_animation_type, team_name, member_team_name, join_team_access_enabled, show_join_page, customer_site_template, appearance_preset, about_heading, about_subheading, about_narrative, homepage_media_slots'
+  'banner_text, banner_visible, ticker_text, ticker_visible, tagline, hero_headline, hero_subtitle, hero_image_url, hero_animation_type, team_name, member_team_name, join_team_access_enabled, show_join_page, customer_site_template, appearance_preset, about_heading, about_subheading, about_narrative, homepage_media_slots'
 const REP_PROFILE_SELECT =
   'display_name, business_name, email, phone, shop_link, social_handles'
 
@@ -290,6 +291,7 @@ function buildDashboardResult(args: {
     tickerVisible: args.siteSettings?.ticker_visible ?? false,
     tagline: normalizeText(args.siteSettings?.tagline),
     heroHeadline: normalizeText(args.siteSettings?.hero_headline),
+    heroSubtitle: normalizeText(args.siteSettings?.hero_subtitle),
     heroImageUrl: normalizeText(args.siteSettings?.hero_image_url),
     heroAnimationType: normalizeHeroAnimationType(
       args.siteSettings?.hero_animation_type,
@@ -453,6 +455,9 @@ export async function updateSiteSettingsDashboard(
   }
   if (input.heroHeadline !== undefined) {
     siteSettingsPatch.hero_headline = normalizeNullableText(input.heroHeadline.slice(0, 180))
+  }
+  if (input.heroSubtitle !== undefined) {
+    siteSettingsPatch.hero_subtitle = normalizeNullableText(input.heroSubtitle.slice(0, 240))
   }
   if (input.appearancePreset !== undefined) {
     siteSettingsPatch.appearance_preset = normalizeAmethystAppearancePreset(

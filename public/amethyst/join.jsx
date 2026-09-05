@@ -1315,7 +1315,7 @@ function App() {
               { value: "moonstone", label: "Moonstone" },
               { value: "alpine_opal", label: "Alpine Opal" },
               { value: "emerald_garden", label: "Emerald Garden" },
-              { value: "gnome_garden", label: "Enchanted Gnome Garden" },
+              { value: "gnome_garden", label: "Gnome Forest" },
               { value: "rose_gold", label: "Rose Gold" },
               { value: "garnet", label: "Garnet" },
               { value: "amber", label: "Amber" },

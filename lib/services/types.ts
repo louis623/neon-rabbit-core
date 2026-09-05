@@ -612,6 +612,7 @@ export interface SiteSettingsDashboardResult {
   tickerVisible: boolean
   tagline: string
   heroHeadline?: string
+  heroSubtitle?: string
   heroImageUrl: string
   heroAnimationType: HeroAnimationType
   /** The team this rep manages. This remains the public Join Team identity. */
@@ -642,6 +643,7 @@ export interface UpdateSiteSettingsDashboardInput {
   tickerVisible?: boolean
   tagline?: string
   heroHeadline?: string
+  heroSubtitle?: string
   heroImageUrl?: string
   heroAnimationType?: HeroAnimationType
   teamName?: string

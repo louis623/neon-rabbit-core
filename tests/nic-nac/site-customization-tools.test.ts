@@ -141,6 +141,8 @@ describe('site customization tools', () => {
         ticker_text: null,
         ticker_visible: false,
         tagline: 'Fresh drops daily',
+        hero_headline: 'A little wonder, a lot of sparkle.',
+        hero_subtitle: 'Settle in for live reveals and friendly faces.',
         hero_image_url: null,
         hero_animation_type: 'soft_glow',
         team_name: null,
@@ -172,6 +174,8 @@ describe('site customization tools', () => {
 
     const result = await tool.execute({
       tagline: 'Fresh drops daily',
+      heroTitle: 'A little wonder, a lot of sparkle.',
+      heroSubtitle: 'Settle in for live reveals and friendly faces.',
       heroAnimationType: 'soft_glow',
       showJoinPage: false,
       customerSiteTemplate: 'not-a-real-template',
@@ -186,6 +190,8 @@ describe('site customization tools', () => {
 
     expect(siteSettingsChain.spies.update).toHaveBeenCalledWith({
       tagline: 'Fresh drops daily',
+      hero_headline: 'A little wonder, a lot of sparkle.',
+      hero_subtitle: 'Settle in for live reveals and friendly faces.',
       hero_animation_type: 'soft_glow',
       show_join_page: false,
       customer_site_template: 'amethyst',
@@ -204,6 +210,8 @@ describe('site customization tools', () => {
     expect(result).toEqual({
       updatedFields: [
         'tagline',
+        'heroTitle',
+        'heroSubtitle',
         'heroAnimationType',
         'showJoinPage',
         'customerSiteTemplate',
@@ -215,6 +223,8 @@ describe('site customization tools', () => {
       ],
       updated: {
         tagline: 'Fresh drops daily',
+        heroTitle: 'A little wonder, a lot of sparkle.',
+        heroSubtitle: 'Settle in for live reveals and friendly faces.',
         heroAnimationType: 'soft_glow',
         showJoinPage: false,
         customerSiteTemplate: 'amethyst',
@@ -311,6 +321,8 @@ describe('site customization tools', () => {
     ['EG-01', 'emerald_garden'],
     ['gnome_garden', 'gnome_garden'],
     ['GG-01', 'gnome_garden'],
+    ['Gnome Forest', 'gnome_garden'],
+    ['Enchanted Gnome Forest', 'gnome_garden'],
     ['Enchanted Gnome Garden', 'gnome_garden'],
     ['Gnome Garden', 'gnome_garden'],
     ['VE-01', 'velvet'],

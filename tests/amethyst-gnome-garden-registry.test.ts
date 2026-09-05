@@ -17,7 +17,7 @@ import { buildAmethystHomepageTweakDefaults, defaultAmethystHomepageTemplateData
 import { buildAmethystTradeTweakDefaults, defaultAmethystTradeTemplateData } from '@/lib/amethyst/trade-template-data'
 import { buildAmethystJoinTweakDefaults, defaultAmethystJoinTemplateData } from '@/lib/amethyst/join-template-data'
 
-describe('Enchanted Gnome Garden registry and data contract', () => {
+describe('Gnome Forest registry and data contract', () => {
   it('recognizes the approved preset while preserving the template and Morganite fallback', () => {
     expect(normalizeAmethystAppearancePreset('gnome_garden')).toBe('gnome_garden')
     expect(normalizeCustomerSiteTemplate('gnome_garden')).toBe('amethyst')
@@ -28,11 +28,11 @@ describe('Enchanted Gnome Garden registry and data contract', () => {
   })
 
   it('resolves its browse code, complete name, and natural short name to the same saved preset', () => {
-    for (const value of ['gnome_garden', 'GG-01', ' gg-01 ', 'Enchanted Gnome Garden', 'enchanted gnome garden', 'Gnome Garden']) {
+    for (const value of ['gnome_garden', 'GG-01', ' gg-01 ', 'Gnome Forest', 'Enchanted Gnome Forest', 'Enchanted Gnome Garden', 'Gnome Garden']) {
       expect(normalizeAmethystSkinSelection(value)).toBe('gnome_garden')
     }
     const card = getAmethystSkinCard('gnome_garden')
-    expect(card).toMatchObject({ id: 'gnome_garden', code: 'GG-01', label: 'Enchanted Gnome Garden', headingFont: 'Playfair Display', bodyFont: 'DM Sans' })
+    expect(card).toMatchObject({ id: 'gnome_garden', code: 'GG-01', label: 'Gnome Forest', headingFont: 'Playfair Display', bodyFont: 'DM Sans' })
     expect(card.swatches.map(({ value }) => value)).toEqual(expect.arrayContaining(['#173126', '#FFF3D6', '#F4C45E', '#842421']))
     expect(new Set(AMETHYST_SKIN_CARDS.map(({ code }) => code)).size).toBe(AMETHYST_SKIN_CARDS.length)
   })

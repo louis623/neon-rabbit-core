@@ -35,7 +35,7 @@ function fixtureBootstrap(page: SkinPreviewPage) {
     unsubscribe: previewPath('unsubscribe'), catalog: '#preview-action', preOrders: '#preview-action',
   }
   const common = {
-    businessName: 'The Gnome Garden', repName: 'Sasha', footerLinks,
+    businessName: 'The Gnome Forest', repName: 'Sasha', footerLinks,
     tickerTopText: 'Welcome to the garden | Live reveals & lovely surprises | Explore the Dance Floor',
     footerTagline: 'A little wonder. A little sparkle. A place to feel at home.',
     tradeBoardTickerItems: GNOME_PREVIEW_LISTINGS.map(({ name, type, collection }) => ({ name, type, collection })),
@@ -49,7 +49,7 @@ function fixtureBootstrap(page: SkinPreviewPage) {
       ...defaultAmethystJoinTemplateData, ...common, teamName: 'The Garden Circle', heroTitle: 'Find your place in the garden.',
       shopUrl: '#preview-action', bpReferralUrl: '', hasRecruitingLink: false,
       teamMembers: [
-        { name: 'Sasha', business: 'The Gnome Garden', state: 'Virginia', initials: 'S', socialLinks: {} },
+        { name: 'Sasha', business: 'The Gnome Forest', state: 'Virginia', initials: 'S', socialLinks: {} },
         { name: 'Alex', business: 'Moonlit Sparkle', state: 'North Carolina', initials: 'A', socialLinks: {} },
         { name: 'Jamie', business: 'Little Lantern Reveals', state: 'Georgia', initials: 'J', socialLinks: {} },
       ],
@@ -144,18 +144,18 @@ export async function buildGnomeSkinPreviewDocument(page: SkinPreviewPage, origi
   const csp = `default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'unsafe-inline' ${origin} https://fonts.googleapis.com https://api.fontshare.com; font-src ${origin} https://fonts.gstatic.com https://cdn.fontshare.com https://api.fontshare.com data:; img-src ${origin} https: data: blob:; connect-src 'none'; form-action 'none'; frame-src 'none'; base-uri ${origin}; object-src 'none'`
   document = document.replace('<head>', `<head><meta http-equiv="Content-Security-Policy" content="${escapeAttribute(csp)}"><base href="${escapeAttribute(origin)}/amethyst/"><meta name="robots" content="noindex,nofollow">`)
   document = document.replace(/<meta name="robots" content="index,follow" \/>/g, '')
-  const bootstrap = fixtureBootstrap(page).replaceAll('Sparkle by Sasha', 'The Gnome Garden')
+  const bootstrap = fixtureBootstrap(page).replaceAll('Sparkle by Sasha', 'The Gnome Forest')
   document = document.replace('<div id="root"></div>', `<div id="root"></div><script>${inlineScript(SKIN_PREVIEW_GUARDS)}\n${inlineScript(bootstrap)}</script>`)
-  return document.replaceAll('Sparkle by Sasha', 'The Gnome Garden')
+  return document.replaceAll('Sparkle by Sasha', 'The Gnome Forest')
 }
 
 export async function renderGnomeSkinPreview(page: SkinPreviewPage, origin: string) {
   const document = await buildGnomeSkinPreviewDocument(page, origin)
   const navigation = SKIN_PREVIEW_PAGES.map((item) => `<a href="${previewPath(item)}"${item === page ? ' aria-current="page"' : ''}>${LABELS[item]}</a>`).join('')
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Gnome Garden · Skin preview</title><style>
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Gnome Forest · Skin preview</title><style>
   *{box-sizing:border-box}body{margin:0;background:#173126;color:#fff3d6;font:14px/1.4 system-ui,sans-serif}header{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 24px;border-bottom:1px solid #f4c45e44}header strong{font-size:14px}header small{display:block;color:#dfd4ba;font-size:12px}nav{display:flex;gap:5px;flex-wrap:wrap}nav a{color:inherit;text-decoration:none;border-radius:20px;padding:8px 12px}nav a:hover,nav a[aria-current]{background:#fff3d6;color:#173126}a:focus-visible{outline:3px solid #f4c45e;outline-offset:3px}iframe{display:block;width:100%;height:calc(100dvh - 65px);border:0;background:#173126}@media(max-width:600px){header{padding:10px 12px;flex-direction:column;align-items:flex-start;gap:7px}header small{display:inline;margin-left:6px}nav{width:100%;justify-content:space-between}nav a{padding:7px 9px}iframe{height:calc(100dvh - 100px)}}
   html,body{height:100%;overflow:hidden}body{height:100dvh;display:flex;flex-direction:column}header{flex:0 0 auto}iframe{flex:1 1 0;min-height:0;height:auto}
-  </style></head><body><header><div><strong>Skin preview · Sample content</strong><small>Enchanted Gnome Garden</small></div><nav aria-label="Preview pages">${navigation}</nav></header><iframe id="skin-preview" title="${LABELS[page]} — sample Gnome Garden site" sandbox="allow-scripts" referrerpolicy="no-referrer" srcdoc="${escapeAttribute(document)}"></iframe><script>
+  </style></head><body><header><div><strong>Skin preview · Sample content</strong><small>Gnome Forest</small></div><nav aria-label="Preview pages">${navigation}</nav></header><iframe id="skin-preview" title="${LABELS[page]} — sample Gnome Forest site" sandbox="allow-scripts" referrerpolicy="no-referrer" srcdoc="${escapeAttribute(document)}"></iframe><script>
   window.addEventListener('message',function(event){var frame=document.getElementById('skin-preview');if(event.source!==frame.contentWindow||event.data?.type!=='sparkle-skin-preview-page')return;var page=event.data.page;if(['homepage','trade','join','unsubscribe'].includes(page))window.location.assign('/skin-preview/gnome_garden/'+page);});
   </script></body></html>`
 }

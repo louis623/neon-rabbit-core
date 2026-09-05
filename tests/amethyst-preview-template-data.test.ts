@@ -179,6 +179,19 @@ describe('Amethyst preview template data', () => {
     expect(data.legalDisclaimer).toContain('Sparkle Suite Demo Boutique')
   })
 
+  it('uses the saved hero subtitle as supporting hero copy for Gnome Forest sites', () => {
+    const data = mapPreviewSettingsToHomepageTemplateData({
+      ...demoSettings,
+      appearancePreset: 'gnome_garden',
+      heroSubtitle:
+        'Settle in for live reveals, friendly faces, and the joy of discovering something you love.',
+    })
+
+    expect(data.heroSub).toBe(
+      'Settle in for live reveals, friendly faces, and the joy of discovering something you love.',
+    )
+  })
+
   it('maps connected demo settings into trade and join data', () => {
     const trade = mapPreviewSettingsToTradeTemplateData(
       demoSettings,

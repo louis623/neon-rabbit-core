@@ -97,7 +97,7 @@ describe('Amethyst appearance presets', () => {
       'Moonstone',
       'Alpine Opal',
       'Emerald Garden',
-      'Enchanted Gnome Garden',
+      'Gnome Forest',
       'Rose Gold',
       'Garnet',
       'Amber',

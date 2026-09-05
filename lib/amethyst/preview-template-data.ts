@@ -538,6 +538,7 @@ export function mapPreviewSettingsToHomepageTemplateData(
   )
   const tagline = firstText(settings.tagline, defaultAmethystHomepageTemplateData.tagline)
   const heroHeadlineOverride = settings.heroHeadline?.trim() || ''
+  const heroSubtitleOverride = settings.heroSubtitle?.trim() || ''
   const streamLinks = resolveStreamingLinks(settings, extras)
   const showJoinPage =
     settings.joinTeamAccessEnabled === true && settings.showJoinPage !== false
@@ -610,13 +611,17 @@ export function mapPreviewSettingsToHomepageTemplateData(
     },
   }
 
-  return isMileHighFizzSettings(settings)
+  const variantHomepage = isMileHighFizzSettings(settings)
     ? applyMileHighFizzHomepage(homepage)
     : isBrittWithBlingSettings(settings, extras.publicSiteSlug)
       ? applyBrittWithBlingHomepage(homepage)
       : isBlingKitchenSettings(settings)
         ? applyBlingKitchenPantryAccess(homepage)
         : homepage
+
+  return heroSubtitleOverride
+    ? { ...variantHomepage, heroSub: heroSubtitleOverride }
+    : variantHomepage
 }
 
 export function mapPreviewSettingsToTradeTemplateData(

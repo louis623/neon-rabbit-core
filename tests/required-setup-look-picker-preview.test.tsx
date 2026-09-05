@@ -5,7 +5,7 @@ import { RequiredSetupLookPicker } from '@/app/nic-nac/components/RequiredSetupL
 import { AMETHYST_SKIN_CARDS } from '@/lib/amethyst/skin-cards'
 
 describe('skin browsing preview', () => {
-  it('offers a separate new-tab Gnome Garden preview without applying any skin', () => {
+  it('offers a separate new-tab Gnome Forest preview without applying any skin', () => {
     const onChoose = vi.fn()
     const html = renderToStaticMarkup(createElement(RequiredSetupLookPicker, { onChoose }))
     const card = html.split('<article').find((markup) => markup.includes('GG-01'))!
@@ -13,7 +13,7 @@ describe('skin browsing preview', () => {
     expect(card).toContain('href="/skin-preview/gnome_garden/homepage"')
     expect(card).toContain('target="_blank"')
     expect(card).toContain('rel="noopener noreferrer"')
-    expect(card).toContain('aria-label="Preview Enchanted Gnome Garden (opens in a new tab)"')
+    expect(card).toContain('aria-label="Preview Gnome Forest (opens in a new tab)"')
     expect(card).toContain('Preview this skin')
     expect(card).toMatch(/<button[^>]*type="button"[^>]*>Choose this customer-site Look<\/button>/)
     expect(html.match(/Preview this skin/g)).toHaveLength(1)

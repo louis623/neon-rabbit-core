@@ -8646,7 +8646,7 @@ export function SiteSettingsCard({
             />
           </label>
           <label className={styles.searchField}>
-            <span className={styles.searchLabel}>Tagline</span>
+            <span className={styles.searchLabel}>Site tagline</span>
             <input
               className={styles.searchInput}
               value={draft.tagline}
@@ -8656,9 +8656,14 @@ export function SiteSettingsCard({
             />
           </label>
           <label className={styles.sortFieldWide}>
-            <span className={styles.searchLabel}>Homepage title</span>
+            <span className={styles.searchLabel}>Hero title</span>
             <input className={styles.searchInput} value={draft.heroHeadline ?? ''} maxLength={180} onChange={(event) => onDraftChange?.({ heroHeadline: event.target.value })} />
             <span className={styles.siteSettingsPreviewNote}>This is the large heading customers see first on your homepage.</span>
+          </label>
+          <label className={styles.sortFieldWide}>
+            <span className={styles.searchLabel}>Hero subtitle</span>
+            <input className={styles.searchInput} value={draft.heroSubtitle ?? ''} maxLength={240} onChange={(event) => onDraftChange?.({ heroSubtitle: event.target.value })} />
+            <span className={styles.siteSettingsPreviewNote}>This supporting sentence appears directly beneath the hero title.</span>
           </label>
           <label className={styles.sortField}>
             <span className={styles.sortLabel}>Hero motion</span>
