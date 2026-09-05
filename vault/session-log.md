@@ -2,6 +2,34 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Emerald desktop and Rose Gold mobile hero live
+
+- Replaced owner-rejected Black Diamond hero with Emerald Garden desktop plus
+  Rose Gold mobile. Canonical renderer captures use the explicitly authorized
+  demo's public content; browser-only preset overrides did not change saved
+  demo settings. No invented UI, account mutation, or private session capture.
+- Versioned WebPs: hero-emerald-desktop-v3 (1265x961, 64832 bytes) and
+  hero-rose-mobile-v3 (390x1020, 30970 bytes). Layered screens share perspective;
+  phones stack the previews, with full image aspect ratios and no caption overlap.
+- Exact pushed app commit `e2bc8238b3a19cca238768530862a4f70f670d5d` deployed
+  Ready `dpl_Ggubupez6DRvcZczVwXBWBXQEEG9`, provenance URL
+  `https://sparkle-suite-qeqrozn71-louis-2849s-projects.vercel.app`.
+  Both Suite domains inspected on this ID. Nine customer aliases remain on
+  `dpl_7ZWsWPJJX5483Vvf3Nce9FFxxtGh`; prior Suite deployment preserved.
+- Build/lint, 33 focused tests and 239 standard tests passed. Local + exact live
+  320/390/768/935/1440/1600px browser checks pass: loaded images, no overflow,
+  no caption collision, all theme/tool switches, tour pause, FAQ and build queue.
+  Zero runtime/console errors in these checks. Screenshots inspected outside repo.
+- In-app 935px live view refreshed: both images decoded, mobile bottom 1258px
+  before caption 1311px, no overflow. Sticky offer click retained banner top 0.
+  Left exact live /#top open. Isolated Playwright used for responsive sizes
+  (Browser skill absent); in-app CUA used for actual user-viewport proof.
+- Signed-in smoke not repeated: existing demo session was signed out and
+  /nic-nac correctly showed login. No password/Google-auth recovery, checkout,
+  account/database/provider writes, or saved customer-theme changes attempted.
+- Local build tooling was temporarily slow but completed successfully; Vercel
+  production build also passed. Untracked artifacts/test-results preserved.
+
 ## September 5, 2026 - Britt alternate-code rollback
 
 - After Louis reported that the alternate-code test stopped working, restored
