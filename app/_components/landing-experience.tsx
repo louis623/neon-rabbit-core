@@ -49,7 +49,15 @@ export function LandingExperience() {
         <p className={styles.heroNote}>Sign up for your spot in line. No payment to join.</p>
       </div>
       <figure className={styles.heroFigure}>
-        <div className={styles.heroWindow}><div className={styles.browserBar} aria-hidden="true"><span /><span /><span /><em>Your customer site · Black Diamond</em></div><Image src="/sparkle-suite/landing/site-black-diamond-v2.webp" alt="Black Diamond customer-site theme on the authorized Sparkle Suite demo site, with a dark background and gold accents" width={1265} height={961} sizes="(max-width: 850px) 94vw, 720px" preload /></div>
+        <div className={styles.heroScene}>
+          <div className={styles.heroStage}>
+            <div className={styles.heroWindow}><div className={styles.browserBar} aria-hidden="true"><span /><span /><span /><em>Desktop · Emerald Garden</em></div><Image src="/sparkle-suite/landing/hero-emerald-desktop-v3.webp" alt="Emerald Garden desktop theme preview of the Sparkle Suite demo customer site, with soft green gradients and ivory lettering" width={1265} height={961} sizes="(max-width: 600px) 90vw, (max-width: 1050px) 560px, 44vw" preload /></div>
+            <div className={styles.heroPhone}>
+              <div className={styles.phoneLabel}>Mobile · Rose Gold</div>
+              <div className={styles.phoneScreen}><Image src="/sparkle-suite/landing/hero-rose-mobile-v3.webp" alt="Rose Gold mobile theme preview of the same demo customer site, showing phone navigation, the complete hero and shop buttons" width={390} height={1020} sizes="(max-width: 600px) 210px, (max-width: 1050px) 185px, 16vw" /></div>
+            </div>
+          </div>
+        </div>
         <figcaption>Your look. Beautiful on phones, tablets, and desktop.</figcaption>
       </figure>
     </section>

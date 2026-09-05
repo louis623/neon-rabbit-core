@@ -21,6 +21,16 @@
 @media(max-width:600px){.page .styleChoices{flex-wrap:wrap;border-radius:20px}.page .styleChoices button{flex:1 1 100px;padding:12px 8px;gap:6px;font-size:12px}.page .toolImage{aspect-ratio:1.15}}
 
 /* Keep the founder offer visible without a moving ticker or artificial timer. */
+.heroScene{perspective:1200px;perspective-origin:58% 36%;padding:12px 0 28px}
+.heroStage{position:relative;transform-style:preserve-3d;padding:0 18% 100px 0}
+.page .heroWindow{transform:rotateY(-5deg) rotateZ(-1deg);transform-origin:center;box-shadow:0 24px 48px #4029241c}
+.heroPhone{position:absolute;right:0;top:8%;width:27%;transform:translateZ(35px) rotateY(-4deg) rotateZ(2deg);background:#fffafc;border:1px solid #d8c1cb;border-radius:22px;padding:6px;box-shadow:0 20px 38px #40292428}
+.phoneLabel{font-size:10px;line-height:1.4;text-align:center;color:var(--muted);padding:7px 0 9px;white-space:nowrap}
+.phoneScreen{overflow:hidden;border-radius:15px;background:#f9ecef}.phoneScreen img{display:block;width:100%;height:auto}
+@media(min-width:601px) and (max-width:1050px){.page .hero{grid-template-columns:1fr}.page .heroFigure{max-width:680px;width:100%;margin:auto!important}.page .heroStage{padding-bottom:76px}}
+@media(max-width:600px){.heroScene{padding:0;perspective:none}.heroStage{display:grid;gap:24px;justify-items:center;padding:0;transform-style:flat}.page .heroWindow{width:100%;transform:none}.heroPhone{position:relative;top:auto;right:auto;width:min(210px,75%);transform:none}.phoneLabel{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.page .heroWindow,.heroPhone{transform:none}}
+
 .page .founderStrip{position:sticky;top:0;z-index:30;display:block;padding:0;background:#fff6fa;border-block:1px solid #b91a7026;box-shadow:0 4px 16px #40292408}
 .founderStripInner{max-width:1240px;margin:auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:18px;padding:12px 5%}
 .founderCount{width:68px;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #b91a7040;border-radius:12px;background:white;color:var(--accent)}

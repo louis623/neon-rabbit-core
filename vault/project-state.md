@@ -1,5 +1,20 @@
 # Project State
 
+## September 5, 2026 - Softer desktop and mobile landing hero
+
+- Louis rejected Black Diamond's contrast in the landing hero and requested a
+  different desktop theme plus a real mobile view in another skin.
+- Hero now pairs Emerald Garden desktop and Rose Gold phone captures, labeled
+  by device/theme. Mobile layout stacks the two previews; main branding, copy,
+  sticky founder banner and product interactions remain intact.
+- Captured the canonical customer-site renderer using the authorized demo's
+  public content. Browser-only bootstrap overrides applied canonical preset
+  values; no saved theme/account/database change. Demo Chrome was signed out,
+  so no authentication recovery or personal-account login was attempted.
+- Versioned WebPs retain their native 1265x961 and 390x1020 dimensions; combined
+  size about 96 KB. Capture scripts/evidence live outside the repository.
+  Release verification is recorded in the session log when complete.
+
 ## September 5, 2026 - Britt queue rollback after alternate-code failure
 
 - Louis reported the alternate-code test stopped working and explicitly asked
