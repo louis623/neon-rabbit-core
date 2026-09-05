@@ -2,6 +2,10 @@
 
 ## September 5, 2026 - Owner-directed Britt alternate queue-code test
 
+- Louis confirmed from the live-show side that the alternate migrated code is
+  the correct assignment and is working. Keep Brittany linked to that row;
+  do not restore the grandfathered linkage solely because it contains older
+  queue history.
 - After the grandfathered linkage visibly restored the live queue, Louis
   explicitly asked to test the other migrated Live Queue code because the two
   assignments might have been understood backwards. The exact production rows

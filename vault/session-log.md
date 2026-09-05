@@ -4,6 +4,11 @@ Running log of significant work sessions. Most recent first.
 
 ## September 5, 2026 - Owner-directed Britt alternate queue-code switch
 
+- Louis confirmed the alternate migrated code works from Brittany's live-show
+  side and that the prior assumption was backwards. Final production linkage
+  remains on the alternate row. The row still had an empty/null snapshot when
+  checked server-side, so this confirmation records assignment correctness,
+  not a claim that customer names were present at that instant.
 - Louis explicitly confirmed switching Brittany away from the visibly working
   grandfathered Live Queue row to the other migrated code as a reversible test.
   Before acting, he was told the grandfathered row was actively syncing while
