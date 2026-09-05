@@ -1,0 +1,227 @@
+{
+  "created": "2026-09-05",
+  "format": "TikTok organic stills, 9:16",
+  "notes": "Exact brand fonts/logo and real renderer captures; native ImageGen ribbon backdrop only. No posting, account changes, price/count promises or music included.",
+  "assets": [
+    {
+      "id": "01-building-now",
+      "angle": "Now building / low-friction invitation",
+      "width": 1080,
+      "height": 1920,
+      "pngBytes": 614011,
+      "jpgBytes": 258741,
+      "textBoxes": [
+        {
+          "text": "\n  Sparkle Suite S seal\n  \n  S\n\nSparkle Suite",
+          "rect": {
+            "x": 90,
+            "y": 190,
+            "right": 453.53125,
+            "bottom": 266
+          }
+        },
+        {
+          "text": "NOW BUILDING SITES",
+          "rect": {
+            "x": 96,
+            "y": 325,
+            "right": 407.4375,
+            "bottom": 358
+          }
+        },
+        {
+          "text": "Your site.Your turn.",
+          "rect": {
+            "x": 90,
+            "y": 395,
+            "right": 564.171875,
+            "bottom": 627.9375
+          }
+        },
+        {
+          "text": "Sign up for your spot in line. No payment to join.",
+          "rect": {
+            "x": 96,
+            "y": 1300,
+            "right": 648.203125,
+            "bottom": 1333
+          }
+        },
+        {
+          "text": "Join the build queue↗yoursparklesuite.com",
+          "rect": {
+            "x": 96,
+            "y": 1350,
+            "right": 746,
+            "bottom": 1514
+          }
+        }
+      ]
+    },
+    {
+      "id": "02-your-brand",
+      "angle": "Individuality / theme variety",
+      "width": 1080,
+      "height": 1920,
+      "pngBytes": 283581,
+      "jpgBytes": 278578,
+      "textBoxes": [
+        {
+          "text": "\n  Sparkle Suite S seal\n  \n  S\n\nSparkle Suite",
+          "rect": {
+            "x": 90,
+            "y": 190,
+            "right": 453.53125,
+            "bottom": 266
+          }
+        },
+        {
+          "text": "YOUR COLORS. YOUR PERSONALITY.",
+          "rect": {
+            "x": 96,
+            "y": 325,
+            "right": 618.234375,
+            "bottom": 358
+          }
+        },
+        {
+          "text": "Same tools.Different you.",
+          "rect": {
+            "x": 90,
+            "y": 395,
+            "right": 728.40625,
+            "bottom": 627.9375
+          }
+        },
+        {
+          "text": "Now building sites that feel like your business.",
+          "rect": {
+            "x": 96,
+            "y": 1300,
+            "right": 624.453125,
+            "bottom": 1333
+          }
+        },
+        {
+          "text": "Find your spot in line↗yoursparklesuite.com",
+          "rect": {
+            "x": 96,
+            "y": 1350,
+            "right": 746,
+            "bottom": 1514
+          }
+        }
+      ]
+    },
+    {
+      "id": "03-mobile-ready",
+      "angle": "Mobile customer experience",
+      "width": 1080,
+      "height": 1920,
+      "pngBytes": 536616,
+      "jpgBytes": 244659,
+      "textBoxes": [
+        {
+          "text": "\n  Sparkle Suite S seal\n  \n  S\n\nSparkle Suite",
+          "rect": {
+            "x": 90,
+            "y": 190,
+            "right": 453.53125,
+            "bottom": 266
+          }
+        },
+        {
+          "text": "BEAUTIFUL ON EVERY SCREEN",
+          "rect": {
+            "x": 96,
+            "y": 325,
+            "right": 533.140625,
+            "bottom": 358
+          }
+        },
+        {
+          "text": "Big sparkle.Small screen.",
+          "rect": {
+            "x": 90,
+            "y": 395,
+            "right": 671.375,
+            "bottom": 613.375
+          }
+        },
+        {
+          "text": "Your site.Their phone.A greatfirst hello.Made for phones,tablets & desktop.",
+          "rect": {
+            "x": 96,
+            "y": 760,
+            "right": 380.59375,
+            "bottom": 1153
+          }
+        },
+        {
+          "text": "Join the build queue↗yoursparklesuite.com",
+          "rect": {
+            "x": 96,
+            "y": 1350,
+            "right": 746,
+            "bottom": 1511
+          }
+        }
+      ]
+    },
+    {
+      "id": "04-founding-invitation",
+      "angle": "Founding offer / early adopter",
+      "width": 1080,
+      "height": 1920,
+      "pngBytes": 1760537,
+      "jpgBytes": 444555,
+      "textBoxes": [
+        {
+          "text": "\n  Sparkle Suite S seal\n  \n  S\n\nSparkle Suite",
+          "rect": {
+            "x": 90,
+            "y": 190,
+            "right": 453.53125,
+            "bottom": 266
+          }
+        },
+        {
+          "text": "NOW BUILDING SPARKLE SUITE SITES",
+          "rect": {
+            "x": 96,
+            "y": 360,
+            "right": 561.390625,
+            "bottom": 389
+          }
+        },
+        {
+          "text": "Get inat the start.",
+          "rect": {
+            "x": 90,
+            "y": 475,
+            "right": 634.921875,
+            "bottom": 716.25
+          }
+        },
+        {
+          "text": "Join the build queue↗yoursparklesuite.com",
+          "rect": {
+            "x": 96,
+            "y": 1230,
+            "right": 726,
+            "bottom": 1392
+          }
+        },
+        {
+          "text": "No payment to join. Founder eligibility andavailability are confirmed at checkout.",
+          "rect": {
+            "x": 96,
+            "y": 1445,
+            "right": 583.625,
+            "bottom": 1517.5
+          }
+        }
+      ]
+    }
+  ]
+}

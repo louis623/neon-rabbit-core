@@ -2,6 +2,24 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - TikTok weekend still-image pack
+
+- Created four standalone 1080x1920 JPG/PNG posts based on the approved landing
+  work: Your site/Your turn (building now), Same tools/Different you (themes),
+  Big sparkle/Small screen (mobile), and Get in at the start (founding offer).
+- Durable outputs: marketing/tiktok/2026-09-05-building-now, including ZIP,
+  captions/music moods, preview, manifest, production notes and renderer.
+- Official S seal, exact Playfair Display/DM Sans, and unchanged real Emerald,
+  Amethyst and Rose Gold captures are composited deterministically. One native
+  ImageGen decorative ribbon background; no generated logos or product UI.
+- Avoided fixed count/price claims that could go stale over the weekend.
+  Founding eligibility/availability remains subject to checkout; joining is free.
+- Full-size and reduced previews inspected; essential text bounds verified with
+  400px bottom space. JPGs 245–445KB; PNGs 284KB–1.76MB. ZIP contains eight
+  upload/master images plus CAPTIONS.md. TikTok official guidance consulted.
+- No posting, scheduling, music download, account change, or live-site code
+  change. This is an offline creative delivery, not a production website release.
+
 ## September 5, 2026 - Emerald desktop and Rose Gold mobile hero live
 
 - Replaced owner-rejected Black Diamond hero with Emerald Garden desktop plus
