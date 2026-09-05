@@ -1,5 +1,24 @@
 # Project State
 
+## September 5, 2026 - Landing imagery revision and catalog cleanup
+
+- Removed the two owner-approved bad label-photo catalog entries ER11309 and
+  ER90783 plus their associated available listings. Zero linked trade activity;
+  recovery snapshot retained privately and storage images left intact.
+- Louis explicitly authorized his existing admin/demo workspace as a source
+  for screenshots and demo theme/item changes. This limited exception does
+  not authorize checkout testing or changes to account/billing state. Its live
+  workspace loaded correctly. Four demo jewelry items were added and all six
+  demo listings are populated; original Rose Gold appearance was restored.
+- Landing revision replaces similar-colored product proofs with actual Black
+  Diamond, Gnome Forest, Alpine Opal, Amethyst, Garnet and Emerald Garden
+  captures. Dance Floor leads the tour; the clipped queue preview is removed
+  without removing Live Queue functionality. Phone/tablet/desktop support is
+  explicit in the hero caption and customer-site introduction.
+- Local build, lint, 282 selected tests and four-width browser verification
+  passed. Release is being coordinated behind the concurrent Britt domain/Join
+  fix (`7bcd2163`); move only the two Suite domains for this landing revision.
+
 ## September 5, 2026 - Public landing redesign released; reviewer check open
 
 - The on-brand landing and build-queue intake redesign is live on both Suite

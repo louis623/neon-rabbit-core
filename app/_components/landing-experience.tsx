@@ -48,12 +48,12 @@ export function LandingExperience() {
         <p className={styles.heroNote}>Sign up for your spot in line. No payment to join.</p>
       </div>
       <figure className={styles.heroFigure}>
-        <div className={styles.heroWindow}><div className={styles.browserBar} aria-hidden="true"><span /><span /><span /><em>Your customer site</em></div><Image src="/sparkle-suite/landing/site-blush.webp" alt="A blush Sparkle Suite customer site with fictional sample show details and live-show tools" width={1265} height={988} sizes="(max-width: 850px) 94vw, 720px" preload /></div>
-        <figcaption>A customer site made to feel like you.</figcaption>
+        <div className={styles.heroWindow}><div className={styles.browserBar} aria-hidden="true"><span /><span /><span /><em>Your customer site · Black Diamond</em></div><Image src="/sparkle-suite/landing/site-black-diamond-v2.webp" alt="Black Diamond customer-site theme on the authorized Sparkle Suite demo site, with a dark background and gold accents" width={1265} height={961} sizes="(max-width: 850px) 94vw, 720px" preload /></div>
+        <figcaption>Your look. Beautiful on phones, tablets, and desktop.</figcaption>
       </figure>
     </section>
     <FounderStrip />
-    <section className={styles.siteSection} id="customer-site-proof" aria-labelledby="site-title"><h2 id="site-title">A site that feels like <em>you.</em></h2><p className={styles.sectionSubtitle}>Your brand deserves more than another link in a bio.</p><SiteStyleShowcase /></section>
+    <section className={styles.siteSection} id="customer-site-proof" aria-labelledby="site-title"><h2 id="site-title">A site that feels like <em>you.</em></h2><p className={styles.sectionSubtitle}>Your colors. Your personality. A polished customer experience on phones, tablets, and desktop.</p><SiteStyleShowcase /></section>
     <section className={styles.toolsSection} id="workspace-proof" aria-label="Your live-show tools"><ShowToolsTour /></section>
     <section className={styles.pricingSection} id="pricing" aria-labelledby="pricing-title">
       <div className={styles.pricingCopy}><h2 id="pricing-title">Get in at the start.</h2><FounderSpotLabel large /><p>Give your business a home that looks like you—and a setup that makes showtime easier.</p><IncludedFeatures /><p className={styles.finePrint}>Customer email and SMS updates are coming soon.</p></div><FounderOffer />

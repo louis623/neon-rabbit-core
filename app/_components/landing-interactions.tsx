@@ -79,9 +79,9 @@ export function FounderOffer({ compact = false }: { compact?: boolean }) {
 }
 
 const looks = [
-  { id: 'blush', name: 'Blush', description: 'Soft, warm, and unmistakably yours.', src: '/sparkle-suite/landing/site-blush.webp', width: 1265, height: 988 },
-  { id: 'violet', name: 'Violet', description: 'A little bold. A lot of personality.', src: '/sparkle-suite/landing/site-violet.webp', width: 1265, height: 988 },
-  { id: 'night', name: 'Midnight', description: 'A rich, dramatic stage for your sparkle.', src: '/sparkle-suite/landing/site-night.webp', width: 1265, height: 988 },
+  { id: 'gnome', name: 'Gnome Forest', description: 'Woodland wonder, warm lanterns, and a little personality.', src: '/sparkle-suite/landing/site-gnome-forest-v2.webp', width: 1265, height: 864 },
+  { id: 'alpine', name: 'Alpine Opal', description: 'Icy blue, bright pink, and a sky full of sparkle.', src: '/sparkle-suite/landing/site-alpine-opal-v2.webp', width: 1265, height: 961 },
+  { id: 'amethyst', name: 'Amethyst', description: 'Vibrant violet for a show that feels unmistakably yours.', src: '/sparkle-suite/landing/site-amethyst-v2.webp', width: 1265, height: 961 },
 ] as const
 
 export function SiteStyleShowcase() {
@@ -100,9 +100,8 @@ export function SiteStyleShowcase() {
 }
 
 const tools = [
-  { label: 'Live queue', title: 'A line customers can follow.', body: 'Make it easy to see who is up now and who is coming next, without stopping the show to repeat the list.', src: '/sparkle-suite/landing/live-queue.webp', alt: 'Sample Live queue showing the current unboxing and next three customers', width: 700, height: 550 },
-  { label: 'Dance Floor', title: 'Trade pieces, not endless messages.', body: 'Give customers a clear place to browse available pieces and send a trade request. Keep the details together on your side.', src: '/sparkle-suite/landing/trade-board-desktop-proof.webp', alt: 'Real Sparkle Suite customer Dance Floor with jewelry listings', width: 1283, height: 942 },
-  { label: 'Live calendar', title: 'Your next live, easy to find.', body: 'Put upcoming shows, featured collections, and show details where customers can find them before you go live.', src: '/sparkle-suite/landing/live-calendar.webp', alt: 'Sample show calendar with dates, featured collections, watch links and add-to-calendar controls', width: 925, height: 440 },
+  { label: 'Dance Floor', title: 'Trade pieces, not endless messages.', body: 'Give customers a clear place to browse available pieces and send a trade request. Keep the details together on your side.', src: '/sparkle-suite/landing/dance-floor-garnet-v2.webp', alt: 'Garnet-themed demo Dance Floor showing three complete jewelry cards with real earring photos and search controls', width: 1002, height: 728 },
+  { label: 'Live calendar', title: 'Your next live, easy to find.', body: 'Put upcoming shows, featured collections, and show details where customers can find them before you go live.', src: '/sparkle-suite/landing/calendar-emerald-garden-v2.webp', alt: 'Emerald Garden demo calendar card with the show date, example discounts, a featured collection and add-to-calendar controls', width: 429, height: 469 },
   { label: 'Nic-Nac', title: 'A helping hand behind the scenes.', body: 'Get built-in support for your site, show calendar, and Dance Floor while you stay focused on your customers.', src: '/sparkle-suite/landing/nic-nac-workspace-proof.webp', alt: 'Real Nic-Nac workspace helping prepare a jewelry listing', width: 1440, height: 701 },
 ] as const
 
@@ -126,7 +125,7 @@ export function ShowToolsTour() {
   return <div className={styles.toolsLayout}>
     <div className={styles.toolsCopy}>
       <h2>Less scramble.<br /><em>More showtime.</em></h2>
-      <p>Help customers find the next live, follow the line, and browse the Dance Floor. You keep the show moving.</p>
+      <p>Let customers discover the jewelry, find your next live, and browse the Dance Floor—even from their phone. You keep the show moving.</p>
       <div className={styles.toolChoices} role="group" aria-label="Explore Sparkle Suite show tools">
         {tools.map((item, index) => <button type="button" key={item.label} aria-pressed={selected === index} aria-controls="show-tool-preview" onClick={() => { setPlaying(false); setSelected(index) }}>{item.label}</button>)}
       </div>

@@ -2,6 +2,78 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Real demo product captures and mobile messaging verified locally
+
+- Louis explicitly authorized using his existing admin/demo as the image source.
+  Its Chrome session opened the live `/nic-nac` workspace, not checkout. The
+  refreshed Jewelry Library no longer displayed the two removed bad items.
+- Captured real public demo heroes in Black Diamond, Gnome Forest, Alpine Opal
+  and Amethyst. Captured Garnet Dance Floor and an Emerald Garden featured
+  event. Four verified-photo pieces (ER82687, ER99190, ER39527, ER39356) were
+  added through Quick add to the demo only; all four success states were
+  confirmed, bringing its count from two to six. No trade requests were sent.
+  Original Rose Gold theme was restored and the save visibly confirmed.
+- Replaced the landing hero/style images with six versioned WebPs, led the
+  three-stop tour with real jewelry/Dance Floor, removed its clipped queue
+  preview, and retained the actual Live Queue feature and included-feature copy.
+  Existing Nic-Nac proof is retained. New source captures are not recolored or
+  synthesized. Temporary synthetic fixture HTML was removed; its generator
+  is unchanged and can regenerate historical samples.
+- Louis requested explicit phone/tablet positioning. Hero caption and style
+  section now say phones, tablets, and desktop; the tool introduction mentions
+  browsing from a phone. Longer theme controls wrap safely; full product
+  screenshots use contain instead of cropping their contents.
+- Local checks: full Next production build, lint, 43 focused landing/founder
+  tests and 239 standard tests passed. Isolated Chromium at320/390/768/1440
+  verified all three styles, all three tools, image decoding, tour play/pause,
+  FAQ and build-queue navigation, zero overflow and zero console/page errors.
+  Pixel-inspected new source images and desktop/phone Dance Floor rendering.
+  QA evidence is in the session visualization directory (local-*-*.png).
+- A separate Join-page routing edit appeared in `lib/amethyst/join-page-access.ts`
+  and its test during this work; it is not part of this landing patch. An initial
+  local check met missing shared `.next` output, then passed after output was
+  available. Do not deploy a mixed working tree. Coordinate release ownership
+  before publishing; live landing remains `163bffc9` / `dpl_7Wu2WVCP24JqE65f6WGhG8p9pxZq`.
+
+## September 5, 2026 - Approved bad-photo removal completed
+
+- Louis explicitly approved removing Pearl Parade ER11309 and The Power Edit
+  ER90783 plus their two associated available Dance Floor listings. Exact-ID,
+  identity and updated-at guards passed; no linked requests, fulfillment or
+  swaps existed. Both catalog records and both listings were removed and the
+  post-write query verified zero remaining targets.
+- A private, gitignored recovery snapshot and operation receipt are retained
+  in `.local/catalog-removal-2026-09-05-{recovery,receipt}.json`. Two cascading
+  catalog audit rows were backed up; no storage objects were deleted. No
+  billing, account, provider or customer messaging action occurred.
+- Louis subsequently authorized using his existing `louis@neonrabbit.net`
+  admin/demo workspace as a screenshot source, including demo theme/item
+  changes. This is a scoped exception for product imagery, not authorization
+  for signup/checkout tests or changes to real customer accounts. Preserve the
+  active, dashboard-unlocked, non-live internal-demo entitlement invariant.
+- Product imagery work remains pending; the earlier landing deployment is
+  unchanged. Replace similar-colored captures and the clipped queue image,
+  leading with real jewelry/Dance Floor and visibly different actual themes.
+
+## September 5, 2026 - Product-proof revision paused for catalog photo cleanup
+
+- Louis likes the landing layout but rejected similar-colored product images
+  and the visibly cut-off queue source image. Inspection confirmed the source
+  capture itself was badly framed; loaded-image checks had missed composition.
+  Requested direction: varied real themes including Black Diamond and Gnome
+  Forest, and lead with jewelry/Dance Floor rather than the lesser queue feature.
+- Before new captures, Louis requested correction or removal of two bad catalog
+  items: Pearl Parade ER11309 and The Power Edit ER90783. Duplicate pasted
+  Pearl Parade text was a copy/paste mistake, not duplicate catalog records.
+- Read-only49-design contact sheet confirmed both images are labels; ER90783's
+  image is labeled ER80341. Each has one available Dance Floor listing using
+  the same bad photo as its listing override. No enhanced replacement, staged
+  file or alternate historical catalog photo was found in targeted inspection.
+- No catalog, inventory, account or storage mutation has been made. Removing
+  catalog rows also implicates active listings; obtain direction for that
+  additional inventory effect before deleting. Landing capture generator edits
+  are unfinished/local only; no new release. Resume imagery after this cleanup.
+
 ## September 5, 2026 - Additional landing accessibility verification
 
 - Completed live390px reduced-motion and JavaScript-disabled checks with bundled

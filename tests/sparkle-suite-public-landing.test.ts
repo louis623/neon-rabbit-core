@@ -102,6 +102,37 @@ describe('Sparkle Suite public landing page', () => {
     expect(serializedContent).not.toContain('louis@')
   })
 
+  it('leads with distinct real themes and jewelry while explaining mobile support', () => {
+    const html = renderLanding()
+    expect(html).toContain('site-black-diamond-v2.webp')
+    expect(html).toContain('site-gnome-forest-v2.webp')
+    expect(html).toContain('dance-floor-garnet-v2.webp')
+    expect(html).toContain('Gnome Forest')
+    expect(html).toContain('Alpine Opal')
+    expect(html).toContain('Amethyst')
+    expect(html).toContain('phones, tablets, and desktop')
+    expect(html).not.toContain('/landing/live-queue.webp')
+    expect(html).toContain('Live queue &amp; Dance Floor')
+    expect(html).toContain('Preview 1 of 3')
+    const moduleCss = readFileSync(join(process.cwd(), 'app/_components/landing-experience.module.css'), 'utf8')
+    expect(moduleCss).toContain('.page .styleMedia img{object-fit:contain}')
+    expect(moduleCss).toContain('.page .styleChoices{flex-wrap:wrap')
+  })
+
+  it('ships every new capture at its declared dimensions', async () => {
+    const sharp = (await import('sharp')).default
+    const assets = [
+      ['site-black-diamond', 1265, 961], ['site-gnome-forest', 1265, 864],
+      ['site-alpine-opal', 1265, 961], ['site-amethyst', 1265, 961],
+      ['dance-floor-garnet', 1002, 728], ['calendar-emerald-garden', 429, 469],
+    ] as const
+    for (const [name, width, height] of assets) {
+      const metadata = await sharp(publicAssetPath(`/sparkle-suite/landing/${name}-v2.webp`)).metadata()
+      expect([metadata.width, metadata.height]).toEqual([width, height])
+      expect(metadata.format).toBe('webp')
+    }
+  })
+
   it('keeps public Nic-Nac answers scoped to approved landing-page topics', () => {
     const pricingAnswer = answerPublicNicNacQuestion('What is the first checkout price?')
     const setupAnswer = answerPublicNicNacQuestion('Can you help with setup and customization?')
