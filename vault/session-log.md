@@ -2,6 +2,35 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Kim Gnome Forest activation and hero editor release
+
+- Applied Louis's explicit Kim-only content approval with exact identity and
+  optimistic-value guards. The initial activation changed only
+  `appearance_preset`, `hero_headline`, and `tagline`; after adding the new
+  column, a second guarded write changed only `hero_subtitle`. Final readback
+  matched all four approved values exactly.
+- Added the rep-editable Hero title/Hero subtitle contract to the Site Settings
+  form, service/API payload, public homepage mapping, and Nic-Nac
+  `update_site_setting` tool. Kept the broader Site tagline separate. Renamed
+  the skin's visible label to Gnome Forest while retaining `gnome_garden`,
+  GG-01, and legacy aliases.
+- Verification passed: focused 248/248, standard 239/239, Amethyst 90/90,
+  localhost customer-link checks, production TypeScript/build, and Vercel
+  production build. Live IAB checks confirmed Kim's exact hero copy on desktop
+  and 390px mobile, preserved About/media/links/signup content, working
+  `/trade`, and the existing `/join` 404. No form was submitted.
+- Pushed `a4e4b196524f2b9c6379e66a1e3e37f6891ee0d2`, applied additive migration
+  `20260905110000`, and released Ready
+  `dpl_GVnxy1rm8MXCBKaaEwBL3mdeLkSB`. Direct hostname inspection confirmed the
+  two Suite domains, Kim's domain, and all other currently configured project
+  aliases resolve to that exact production deployment.
+- The protected reviewer token was absent from local configuration. Signed-in
+  Site Settings smoke stopped without extracting secrets or using Louis's or a
+  customer's account. Rendered component, route/service, Nic-Nac tool, public
+  site, and production checks are complete; authenticated click-through remains
+  a separate token-gated review item. Preserved untracked `artifacts/` and
+  `test-results/`.
+
 ## September 5, 2026 - Gnome Garden implementation, art correction, and release
 
 - Implemented GG-01 through preset registry, Site Settings/Nic-Nac aliases,

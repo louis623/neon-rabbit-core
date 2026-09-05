@@ -1,5 +1,26 @@
 # Decision Log
 
+## 2026-09-05 - Hero title and subtitle are separate rep-editable settings
+
+Use `hero_headline` for the large first heading and `hero_subtitle` for the
+supporting sentence directly beneath it. Label them **Hero title** and **Hero
+subtitle** in Site Settings and expose the same names to Nic-Nac. Keep
+`tagline` as a separate broader site/footer line; do not overload it as the
+only way to change hero supporting copy. An explicit hero subtitle wins over
+legacy tenant-specific fallback copy without changing other page content.
+
+## 2026-09-05 - Rename the visible skin to Gnome Forest without changing its ID
+
+The customer-facing and rep-facing name is **Gnome Forest**. Retain
+`gnome_garden` and `GG-01` as stable internal identifiers, and accept former
+Gnome Garden labels as compatibility aliases. This prevents existing saved
+selections and preview links from breaking during the rename.
+
+Louis separately approved activating the preset and approved hero copy for
+Kim's exact `goforthebling.com` tenant. That approval did not authorize edits
+to her About narrative, media, social/shop destinations, Dance Floor, signup
+content, Join access, or other customer data.
+
 ## 2026-09-05 - Gnome skin follows Kim's approved second flyer, not a new art style
 
 Use `artifacts/social/kim-goforthebling-flyers/storybook-background-v2.png`

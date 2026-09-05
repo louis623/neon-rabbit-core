@@ -167,3 +167,26 @@ are recorded below only once completed.
 - The rejected non-final signature route was removed per existing vault
   instructions and returns404. Source remains recoverable in Git; no Gmail
   draft/signature state was edited. Both Open Brain captures were verified.
+
+## Superseding activation and hero-editor release
+
+- Louis subsequently approved Kim's live activation and requested explicit
+  rep-editable Hero title and Hero subtitle fields plus the visible skin rename
+  to **Gnome Forest**. The stable preset remains `gnome_garden` / GG-01.
+- Added and applied migration `20260905110000_add_site_hero_subtitle.sql`.
+  Kim's guarded update changed only `hero_subtitle` after the earlier exact
+  skin/headline/tagline activation; final readback matched all approved values.
+- Local proof: 239 standard tests, 248 focused editor/skin tests, 90 Amethyst
+  tests, localhost link checks, and a full production build passed.
+- Exact pushed commit `a4e4b196524f2b9c6379e66a1e3e37f6891ee0d2`
+  is Ready production deployment `dpl_GVnxy1rm8MXCBKaaEwBL3mdeLkSB` /
+  `sparkle-suite-aq19knyjo-louis-2849s-projects.vercel.app`.
+- Direct inspection showed both Suite domains, `goforthebling.com`, and every
+  other domain currently attached to the Vercel project resolve to that exact
+  deployment. Root, Kim root/trade, and Nic-Nac health returned 200; Kim Join
+  retained its expected 404.
+- Live in-app browser proof confirmed the exact Kim hero pair, Gnome Forest
+  preview label, preserved Kim page content, and balanced 390px mobile hero.
+  No form was submitted. The protected reviewer token was absent locally, so
+  the signed-in workspace editor was not opened and no personal/customer
+  account or extracted secret was used.

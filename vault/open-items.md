@@ -5,13 +5,16 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
-- [ ] **Owner review and optional Kim Gnome Garden activation** — GG-01 is
-  released with a safe fixture preview at
-  `https://www.yoursparklesuite.com/skin-preview/gnome_garden/homepage`.
-  Kim's selection and domain deployment are unchanged. Obtain Louis's exact
-  activation/domain-advancement approval before applying it to her site.
-  Signed-in Settings/Nic-Nac replay uses only the protected synthetic reviewer
-  path; do not use personal/customer accounts or extract its secret.
+- [x] **Activate Kim's Gnome Forest skin and approved hero copy** — completed
+  September 5 with Louis's explicit approval. `goforthebling.com` uses GG-01,
+  the exact approved Hero title and Hero subtitle, and preserves all other Kim
+  content. Released in `a4e4b196` / `dpl_GVnxy1rm8MXCBKaaEwBL3mdeLkSB`.
+
+- [ ] **Run the signed-in Hero title/subtitle editor reviewer click-through** —
+  source/rendered-component, API/service, Nic-Nac tool, public Kim site, and
+  production verification passed. The protected reviewer token was not
+  available locally. Use only the token-gated Britt Test Rep workspace path;
+  do not extract secrets or substitute Louis's or a customer's account.
 
 - [ ] **Provision approved lead-specific ChatGPT Sites for private onboarding**
   — the hardened application is released and fails closed unless an exact

@@ -1,5 +1,32 @@
 # Project State
 
+## September 5, 2026 - Kim activated on Gnome Forest with editable hero copy
+
+- Louis explicitly approved activating Kim's customer site. `goforthebling.com`
+  now serves the flyer-matched `gnome_garden` preset under its new public name,
+  **Gnome Forest (GG-01)**. The internal preset ID stays stable for backward
+  compatibility.
+- Kim's live hero title is **A little wonder, a lot of sparkle.** and the live
+  hero subtitle is **Settle in for live reveals, friendly faces, and the joy of
+  discovering something you love.** Her About copy, media, shop/social links,
+  announcement, Dance Floor state, signup content, and disabled Join page were
+  preserved and rechecked.
+- Site Settings now labels and stores distinct **Hero title** and **Hero
+  subtitle** fields; **Site tagline** remains separate. Nic-Nac's
+  `update_site_setting` tool has the same explicit title/subtitle contract.
+  Additive migration `20260905110000` is applied.
+- Exact pushed application commit
+  `a4e4b196524f2b9c6379e66a1e3e37f6891ee0d2` is live as Ready deployment
+  `dpl_GVnxy1rm8MXCBKaaEwBL3mdeLkSB`. Direct inspection showed all domains
+  currently attached to the `sparkle-suite` Vercel production target advanced
+  together, including both Suite domains and the configured customer domains.
+- Verification passed: 239 standard tests, 248 focused editor/skin tests, 90
+  Amethyst tests, local link checks, full local and Vercel builds, exact alias
+  inspection, live HTTP/health checks, and live desktop/mobile Kim walkthroughs.
+  The protected signed-in reviewer token was not present locally, so no
+  authenticated workspace click-through is claimed and no personal/customer
+  account was substituted.
+
 ## September 5, 2026 - Flyer-matched Gnome Garden skin released for safe review
 
 - `gnome_garden` / **Enchanted Gnome Garden (GG-01)** adds the approved Kim
