@@ -1,6 +1,6 @@
 # Sparkle Suite conversion-focused landing implementation
 
-Status: in progress. Owner approved the audit direction and implementation on September 5, 2026. This plan preserves the full objective; passing a build alone is not completion.
+Status: application implemented and released September 5, 2026; public live checks passed. Signed-in synthetic reviewer verification remains blocked by protected reviewer access. The original checklist below is the planning baseline; the completion ledger and verification report are the authoritative execution status. Passing a build alone is not completion.
 
 ## Outcome and non-negotiables
 
@@ -72,4 +72,10 @@ Preserve existing analytics and consent policy. Inspect current instrumentation 
 
 ## Completion evidence ledger
 
-Populate with exact commands/results, tested browser paths/viewports, screenshots, allocation semantics, reviewed commit/deployment IDs, alias proof, and any blocker. Anything unverified remains open; it is not silently removed from scope.
+Execution evidence is in `verification-2026-09-05.md`.
+
+- Completed: four coordinated concept references and documented intentional differences; brand-scoped landing/intake; real optimized product captures; style selector and controlled tour; authoritative founder count; truthful queue and pricing copy; append-only inquiry handoff; accessibility/responsive fixes; source review, selected530 tests, lint and local/Vercel production builds.
+- Completed: exact-tip manual deployment and Suite-only alias moves, live homepage/intake/sign-in entry/assistant controls/availability/production review guard checks, phone390/narrow320/desktop1440 evidence, unchanged Kim customer page and protected aliases.
+- Open: signed-in synthetic reviewer workspace click-through. Louis authorized it, but protected access is unavailable and one documented synthetic login attempt failed. No account mutation occurred. Do not call full workflow verification complete.
+- Limitations: no real inquiry/signup write or outbound provider action in smoke testing; simulations and mocked tests are explicitly identified. No runtime no-JS/reduced-motion emulation or invented performance/conversion score is claimed. Official social destinations await confirmation.
+- Release app commit: `163bffc9d82155905a366acf4286b7fda0ef44ae`; deployment: `dpl_7Wu2WVCP24JqE65f6WGhG8p9pxZq`. Vault/Open Brain closeout records the remaining blocker, not a silently shortened goal.

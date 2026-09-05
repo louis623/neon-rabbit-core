@@ -5,6 +5,14 @@ Current release authority: Sparkle Suite live and demo are one surface at
 mentions a stable demo alias is historical evidence only and does not control
 future work.
 
+- [ ] **Finish landing release signed-in synthetic reviewer verification** —
+  app `163bffc9` is live with public checks passing. Louis authorized synthetic
+  testing/restoration, but protected reviewer access is unavailable and the
+  documented synthetic login failed once. No account was mutated. Resume the
+  supported token-gated Britt Test Rep workspace flow when access is available;
+  no personal account, live checkout, token disclosure or bypass. See landing
+  verification report for exact evidence and remaining limitations.
+
 - [ ] **Louis proof and separately approve the two September 5 Gmail drafts**
   — review the current-rep Live Calendar/Nic-Nac demo message and Kim's surprise
   Gnome Forest flyer note in actual Gmail Compose. Confirm branding, clickable

@@ -1,5 +1,24 @@
 # Project State
 
+## September 5, 2026 - Public landing redesign released; reviewer check open
+
+- The on-brand landing and build-queue intake redesign is live on both Suite
+  domains: app `163bffc9d82155905a366acf4286b7fda0ef44ae`, Ready deployment
+  `dpl_7Wu2WVCP24JqE65f6WGhG8p9pxZq`. Protected customer aliases did not move.
+- Current source-backed public founder aggregate and live UI confirm **19
+  founder spots remaining.** Queue enrollment does not reserve a founder rate.
+- Real optimized product previews, deliberate style/tool interactions, stronger
+  copy, scoped responsive styling and persistent inquiry-only Nic-Nac handoff
+  replace the audit's weaknesses. Existing signup and pricing contracts remain.
+- Selected530 tests, lint, local/Vercel builds and public live checks passed.
+  Detailed evidence: `docs/sparkle-suite/landing-page/verification-2026-09-05.md`.
+- Louis authorized synthetic reviewer testing, but protected reviewer controls
+  and local token were unavailable; the documented synthetic login failed once.
+  No account state was changed. Signed-in `/nic-nac` smoke remains open until
+  protected reviewer access is available. Never use Louis's personal account.
+- Official Suite YouTube/TikTok destinations are still unconfirmed; scoped
+  marketing footer suppresses placeholders. Conversion lift needs real traffic.
+
 ## September 5, 2026 - Public landing-page audit and approved direction
 
 - Louis requested a deep visual/conversion audit of `www.yoursparklesuite.com`.

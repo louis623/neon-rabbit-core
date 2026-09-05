@@ -1,5 +1,22 @@
 # Decision Log
 
+## 2026-09-05 - Active build queue and honest founder availability
+
+Position Sparkle Suite as building sites now, with joining the build queue free
+of payment. Show only the remaining founder count, never a denominator or fake
+timer. Count durable qualifying founder allocations through a read-only aggregate;
+queue membership must not allocate or promise the discount. Unknown availability
+uses standard pricing. Preserve first12 paid-month discount and setup disclosures.
+
+Public Nic-Nac human questions are append-only inquiries with question-specific
+reply consent, not marketing opt-in or queue enrollment. Keep them excluded from
+queue-only matching and contact batches; show success only after a saved receipt.
+
+Landing design stays within the canonical brand, uses real product captures and
+reduced-motion CSS, and scopes visual changes away from protected application
+surfaces. Manual releases must explicitly preserve customer aliases when only
+the Suite marketing domains are in scope.
+
 ## 2026-09-05 - The approved Kim flyer is the Gnome Forest visual authority
 
 The selected and refined second GofortheBling flyer is the source of truth for

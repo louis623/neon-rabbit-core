@@ -2,6 +2,27 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Landing implementation and production verification
+
+- Implemented the approved detailed plan with founder, copy and inquiry-handoff
+  subagents. Preserved canonical branding and existing workflow contracts.
+- Pushed app `163bffc9` and manually deployed with skip-domain; explicitly moved
+  only www/apex Suite aliases to `dpl_7Wu2WVCP24JqE65f6WGhG8p9pxZq` and verified
+  both mappings. GofortheBling, Mile High Fizz and The Bling Kitchen stayed put.
+- Selected530 tests passed; local/Vercel production builds passed. Live desktop
+  and mobile previews, count19, CTA/intake, signed-out login, FAQ, assistant
+  keyboard behavior and production-disabled review fixture/flag verified.
+- No real intake/inquiry saved, emails/SMS sent, checkout opened, provider
+  object changed, customer migrated or account mutated. Database schema read
+  supports inquiry fields; production insert success is not claimed.
+- Owner authorized synthetic reviewer restoration/testing. Exact read-only
+  Britt Test Rep inspection found inactive demo with unlocked setup and non-live
+  smoke entitlement. Protected controls/token unavailable; one documented
+  synthetic login attempt rejected. Stopped signed-in testing per smoke skill;
+  protected reviewer access is the remaining blocker.
+- Plan and detailed verification ledger updated. Preserve untracked artifacts
+  and test-results. Application is live; full signed-in verification is pending.
+
 ## September 5, 2026 - Sparkle Suite public landing audit
 
 - Audited the live homepage at desktop 1440px and phone 390px, plus a narrow
