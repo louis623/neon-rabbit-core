@@ -66,10 +66,10 @@ describe('sendPrelaunchWaitlistWelcomeEmail', () => {
     expect(JSON.parse(String(options?.body))).toMatchObject({
       from: 'updates@neonrabbit.net',
       to: ['jamie@example.com'],
-      subject: 'Welcome to the Sparkle Suite waitlist',
+      subject: "You're in the Sparkle Suite build queue",
     })
     expect(JSON.parse(String(options?.body)).text).toContain(
-      'Thanks for joining the Sparkle Suite waitlist.',
+      'Thanks for joining the Sparkle Suite build queue.',
     )
     expect(JSON.parse(String(options?.body)).text).toContain(
       'Reply to this email any time if you want to unsubscribe or ask a question.',

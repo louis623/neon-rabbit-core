@@ -14,17 +14,17 @@ export const sparkleSuitePublicLandingContent = {
     { id: 'pricing', label: 'Pricing' },
   ],
   hero: {
-    eyebrow: 'Sparkle Suite for reps',
-    headline: 'A better customer experience starts with a better rep setup.',
+    eyebrow: 'Now building Sparkle Suite sites',
+    headline: 'Your brand. Your show. A setup that shines.',
     body:
       'Sparkle Suite gives reps a polished customer site, standout live-show tools, and built-in support that helps customers feel the difference.',
-    primaryCta: { label: 'Join the waitlist', href: '/prelaunch#waitlist' },
+    primaryCta: { label: 'Join the build queue', href: '/prelaunch#waitlist' },
   },
   workspaceProof: {
     eyebrow: 'Rep workspace',
     heading: 'Run the show with less scramble behind the scenes.',
     body:
-      'Instead of chasing show details across scattered tools, reps get one workspace for Live queue, Dance Floor, Live event calendar, email and SMS updates, customer-site customizations, and Nic-Nac, the built-in assistant for live-show support.',
+      'Help customers find the next live, follow the line, and browse the Dance Floor. Your workspace brings your site, Live queue, Live event calendar, and Nic-Nac together. Customer email and SMS updates are coming soon.',
   },
   customerSiteProof: {
     eyebrow: 'Customer-facing site',
@@ -80,8 +80,8 @@ export const sparkleSuitePublicLandingContent = {
       'SMS updates',
       'Nic-Nac',
     ],
-    primaryCta: { label: 'Join the waitlist', href: '/prelaunch#waitlist' },
-    sectionCta: { label: 'Join the waitlist', href: '/prelaunch#waitlist' },
+    primaryCta: { label: 'Join the build queue', href: '/prelaunch#waitlist' },
+    sectionCta: { label: 'Join the build queue', href: '/prelaunch#waitlist' },
   },
   publicNicNacAssistant: {
     teaser: 'Still have questions? Ask Nic-Nac.',
@@ -90,7 +90,7 @@ export const sparkleSuitePublicLandingContent = {
     buttonLabel: 'Ask Nic-Nac',
     panelTitle: 'Ask Nic-Nac',
     panelIntro:
-      'Nic-Nac can answer public Sparkle Suite questions before you join the waitlist.',
+      'Nic-Nac can answer public Sparkle Suite questions before you join the build queue.',
     starterQuestions: [
       "What's included?",
       'How does setup work?',
@@ -103,9 +103,9 @@ export const sparkleSuitePublicLandingContent = {
       name: 'Name',
       email: 'Email',
       question: 'Question for Louis',
-      submit: 'Save question here',
+      submit: 'Save question for Louis',
       saved:
-        'Saved here for Louis to review. No email, text, calendar, payment, or provider action was triggered.',
+        'Your question is saved for Louis to review. No marketing signup, payment, email, or text was triggered.',
     },
   },
   footer: {
@@ -114,7 +114,7 @@ export const sparkleSuitePublicLandingContent = {
       { label: 'Terms and Conditions', href: '/terms-and-conditions' },
     ],
     socialLinks: [
-      { label: 'Sparkle Finder', href: '#' },
+      { label: 'Sparkle Finder', href: 'https://yoursparklefinder.com' },
       { label: 'YouTube', href: '#' },
       { label: 'TikTok', href: '#' },
     ],

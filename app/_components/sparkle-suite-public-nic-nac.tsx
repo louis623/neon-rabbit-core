@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import {
   FormEvent,
   KeyboardEvent,
@@ -25,9 +26,13 @@ type AskNicNacOptions = {
 
 export function SparkleSuitePublicNicNac({
   variant = 'teaser',
+  reviewMode = false,
 }: {
   variant?: 'teaser' | 'compact'
+  reviewMode?: boolean
 }) {
+  const isReview = process.env.NODE_ENV === 'development' && reviewMode
+  const [reviewScenario, setReviewScenario] = useState<'failure' | 'success'>('failure')
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [question, setQuestion] = useState('')
@@ -35,9 +40,13 @@ export function SparkleSuitePublicNicNac({
   const [showHandoff, setShowHandoff] = useState(false)
   const [handoffQuestion, setHandoffQuestion] = useState('')
   const [handoffSaved, setHandoffSaved] = useState(false)
+  const [handoffSaving, setHandoffSaving] = useState(false)
+  const [handoffError, setHandoffError] = useState('')
+  const [handoffReceipt, setHandoffReceipt] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const threadEndRef = useRef<HTMLDivElement | null>(null)
   const openerRef = useRef<HTMLButtonElement | null>(null)
+  const reopenRef = useRef<HTMLButtonElement | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const hasOpenedRef = useRef(false)
   const { publicNicNacAssistant } = sparkleSuitePublicLandingContent
@@ -51,7 +60,10 @@ export function SparkleSuitePublicNicNac({
       return
     }
 
-    threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    threadEndRef.current?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+      block: 'end',
+    })
   }, [isOpen, isMinimized, messages.length, isLoading, showHandoff])
 
   useEffect(() => {
@@ -70,6 +82,10 @@ export function SparkleSuitePublicNicNac({
 
     openerRef.current?.focus()
   }, [isOpen])
+
+  useEffect(() => {
+    if (isOpen && isMinimized) reopenRef.current?.focus()
+  }, [isOpen, isMinimized])
 
   function closeNicNac() {
     setIsOpen(false)
@@ -105,7 +121,7 @@ export function SparkleSuitePublicNicNac({
   ) {
     const trimmedQuestion = nextQuestion.trim()
 
-    if (!trimmedQuestion || isLoading) {
+    if (!trimmedQuestion || isLoading || handoffSaving) {
       return
     }
 
@@ -119,6 +135,8 @@ export function SparkleSuitePublicNicNac({
     ])
     setQuestion('')
     setHandoffSaved(false)
+    setHandoffError('')
+    setHandoffReceipt('')
     setShowHandoff(false)
     setIsLoading(true)
 
@@ -159,13 +177,60 @@ export function SparkleSuitePublicNicNac({
     void askNicNac(question)
   }
 
-  function handleHandoffSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleHandoffSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setHandoffSaved(true)
+    if (handoffSaving || handoffSaved) return
+    const values = new FormData(event.currentTarget)
+    setHandoffSaving(true)
+    setHandoffError('')
+    try {
+      const response = await fetch('/api/public/nic-nac/handoff', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name: values.get('name'),
+          email: values.get('email'),
+          question: handoffQuestion,
+          contactConsent: values.get('contactConsent') === 'on',
+          website: values.get('website') ?? '',
+          ...(isReview ? { reviewScenario } : {}),
+        }),
+      })
+      const result = await response.json() as { ok?: boolean; receipt?: string; error?: string }
+      if (!response.ok || result.ok !== true || typeof result.receipt !== 'string' || !result.receipt) {
+        throw new Error(result.error || 'Your question could not be saved. Please try again.')
+      }
+      setHandoffReceipt(result.receipt)
+      setHandoffSaved(true)
+    } catch (error) {
+      setHandoffError(error instanceof Error ? error.message : 'Your question could not be saved. Please try again.')
+    } finally {
+      setHandoffSaving(false)
+    }
   }
 
   return (
     <aside className="sl2-nic-nac" aria-label="Public Nic-Nac assistant">
+      {isReview ? (
+        <section aria-label="Review controls">
+          <p><strong>Review mode — no questions are saved or sent.</strong></p>
+          <label>Simulated result{' '}
+            <select value={reviewScenario} onChange={(event) => setReviewScenario(event.target.value as 'failure' | 'success')}>
+              <option value="failure">Save failure</option>
+              <option value="success">Saved receipt</option>
+            </select>
+          </label>{' '}
+          <button type="button" onClick={() => {
+            setHandoffSaved(false)
+            setHandoffError('')
+            setHandoffReceipt('')
+            setHandoffQuestion('How does the setup conversation work?')
+            setShowHandoff(true)
+            setIsOpen(true)
+            setIsMinimized(false)
+          }}>Review contact form</button>
+        </section>
+      ) : null}
       <div
         className={
           variant === 'compact'
@@ -193,6 +258,7 @@ export function SparkleSuitePublicNicNac({
 
       {isOpen && isMinimized ? (
         <button
+          ref={reopenRef}
           aria-controls="sparkle-public-nic-nac-panel"
           aria-label="Open Nic-Nac"
           className="sl2-nic-nac-reopen"
@@ -243,7 +309,7 @@ export function SparkleSuitePublicNicNac({
             <div className="sl2-nic-nac-starters" aria-label="Starter questions">
               {publicNicNacAssistant.starterQuestions.map((starterQuestion) => (
                 <button
-                  disabled={isLoading}
+                  disabled={isLoading || handoffSaving}
                   key={starterQuestion}
                   onClick={() =>
                     void askNicNac(starterQuestion, {
@@ -293,21 +359,21 @@ export function SparkleSuitePublicNicNac({
                 </div>
               ) : null}
               {showHandoff ? (
-                <form className="sl2-nic-nac-handoff" onSubmit={handleHandoffSubmit}>
+                <form className="sl2-nic-nac-handoff" onSubmit={handleHandoffSubmit} aria-busy={handoffSaving}>
                   <div className="sl2-nic-nac-handoff__head">
                     <strong>Leave this for Louis</strong>
                     <p>
-                      Nic-Nac will keep this scoped to your question; nothing sends from
-                      this page yet.
+                      Save your question for Louis to review. This does not join the
+                      build queue or reserve a founder spot.
                     </p>
                   </div>
                   <label>
                     {publicNicNacAssistant.handoffLabels.name}
-                    <input autoComplete="name" name="name" type="text" />
+                    <input autoComplete="name" name="name" type="text" required maxLength={100} disabled={handoffSaving || handoffSaved} />
                   </label>
                   <label>
                     {publicNicNacAssistant.handoffLabels.email}
-                    <input autoComplete="email" name="email" type="email" />
+                    <input autoComplete="email" name="email" type="email" required maxLength={254} disabled={handoffSaving || handoffSaved} />
                   </label>
                   <label>
                     {publicNicNacAssistant.handoffLabels.question}
@@ -316,11 +382,29 @@ export function SparkleSuitePublicNicNac({
                       onChange={(event) => setHandoffQuestion(event.target.value)}
                       rows={3}
                       value={handoffQuestion}
+                      required
+                      minLength={3}
+                      maxLength={2000}
+                      disabled={handoffSaving || handoffSaved}
                     />
                   </label>
-                  <button type="submit">{publicNicNacAssistant.handoffLabels.submit}</button>
+                  <label>
+                    <input name="contactConsent" type="checkbox" required disabled={handoffSaving || handoffSaved} />
+                    Louis may email me about this question. No marketing updates.
+                  </label>
+                  <div hidden aria-hidden="true">
+                    <label>Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
+                  </div>
+                  <p>Read our <Link href="/privacy-policy">Privacy Policy</Link>. Please do not include passwords or payment details.</p>
+                  <button type="submit" disabled={handoffSaving || handoffSaved}>
+                    {handoffSaving ? 'Saving your question…' : publicNicNacAssistant.handoffLabels.submit}
+                  </button>
+                  {handoffError ? <p role="alert">{handoffError}</p> : null}
                   {handoffSaved ? (
-                    <p role="status">{publicNicNacAssistant.handoffLabels.saved}</p>
+                    <p role="status">
+                      {isReview ? 'Review mode: simulated receipt. No question was saved.' : publicNicNacAssistant.handoffLabels.saved}
+                      {' '}Reference: {handoffReceipt}
+                    </p>
                   ) : null}
                 </form>
               ) : null}
@@ -334,14 +418,15 @@ export function SparkleSuitePublicNicNac({
               <div>
                 <input
                   ref={inputRef}
-                  disabled={isLoading}
+                  disabled={isLoading || handoffSaving}
                   id="sparkle-public-nic-nac-question"
                   onChange={(event) => setQuestion(event.target.value)}
                   placeholder={publicNicNacAssistant.inputPlaceholder}
                   type="text"
                   value={question}
+                  maxLength={600}
                 />
-                <button disabled={isLoading} type="submit">
+                <button disabled={isLoading || handoffSaving} type="submit">
                   {publicNicNacAssistant.submitLabel}
                 </button>
               </div>

@@ -10,7 +10,7 @@ export type PublicNicNacReply = {
 }
 
 const fallbackMessage =
-  'That is outside what I can answer on the public Sparkle Suite page. I can collect your name, email, and question for Louis to review. Nothing is sent from this page yet.'
+  'That is outside what I can answer on the public Sparkle Suite page. Submit the contact form to save your name, email, and question for Louis to review. This does not join the build queue or reserve a founder spot.'
 
 function includesAny(question: string, terms: string[]) {
   return terms.some((term) => question.includes(term))
@@ -41,7 +41,9 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
       'private data',
       'roadmap',
       'exception',
-      'discount',
+      'give me a discount',
+      'get a discount',
+      'extra discount',
       'promise',
       'guarantee',
     ])
@@ -53,6 +55,13 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
     return {
       kind: 'answer',
       message: sparkleSuitePublicLandingSafety.disclaimer,
+    }
+  }
+
+  if (includesAny(question, ['founder', 'founding', 'discount'])) {
+    return {
+      kind: 'answer',
+      message: `${PUBLIC_NIC_NAC_KNOWLEDGE.pricing.founder} Joining the build queue does not reserve this rate. Check the current availability shown on the page; eligibility is confirmed through checkout.`,
     }
   }
 
@@ -73,6 +82,7 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
       'pay on this page',
       'account',
       'waitlist',
+      'build queue',
       'sign up',
       'signup',
       'start page',
@@ -88,7 +98,7 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
       return {
         kind: 'answer',
         message:
-          'No card is needed to join the waitlist. Joining does not create an account or charge you. If Louis approves your onboarding, you receive a five-day trial account and can complete billing from the workspace before the trial expires.',
+          'No card is needed to join the build queue. Joining does not create an account, charge you, or reserve founder pricing. If Louis approves your onboarding, you receive a five-day trial account and can complete billing from the workspace before the trial expires.',
       }
     }
 
@@ -104,14 +114,14 @@ export function answerPublicNicNacQuestion(rawQuestion: string): PublicNicNacRep
       return {
         kind: 'answer',
         message:
-          'After you join the waitlist, Louis reviews your interest, reaches out, and schedules coaching one person at a time. Approved reps receive a five-day trial account, explore the full workspace during coaching, and complete billing from the workspace before the trial expires.',
+          'After you join the build queue, Louis reviews your interest, reaches out, and schedules coaching one person at a time. Approved reps receive a five-day trial account, explore the full workspace during coaching, and complete billing from the workspace before the trial expires.',
       }
     }
 
     return {
       kind: 'answer',
       message:
-        'This is the Sparkle Suite waitlist. It collects contact and rep-context details for Louis to review; it does not create an account, workspace, trial, or checkout.',
+        'Sparkle Suite is building sites now. This form joins the build queue with your name and email; extra rep-context details are optional. It does not create an account, workspace, trial, or checkout, or reserve founder pricing.',
     }
   }
 

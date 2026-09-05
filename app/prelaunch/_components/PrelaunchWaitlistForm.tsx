@@ -168,11 +168,8 @@ export function PrelaunchWaitlistForm() {
                 />
                 <div className="ss-field">
                   <label htmlFor="waitlist-setup-pain">
-                    {prelaunchContent.waitlistFields.setupPain.label.replace(
-                      ' - optional',
-                      '',
-                    )}
-                    <span className="ss-field__opt">- optional</span>
+                    {prelaunchContent.waitlistFields.setupPain.label}
+                    <span className="ss-field__opt"> — Optional</span>
                   </label>
                   <textarea
                     id="waitlist-setup-pain"
@@ -212,7 +209,7 @@ export function PrelaunchWaitlistForm() {
                   />
                 </div>
               </fieldset>
-              {errorMessage ? <p className="ss-error">{errorMessage}</p> : null}
+              {errorMessage ? <p className="ss-error" role="alert">{errorMessage}</p> : null}
               <div className="ss-form__submit">
                 <p className="ss-micro">{prelaunchContent.waitlistConsentNote}</p>
                 <button
@@ -272,7 +269,10 @@ function FormField({
 }: FormFieldProps) {
   return (
     <div className="ss-field">
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id}>
+        {label}
+        {!required ? <span className="ss-field__opt"> — Optional</span> : null}
+      </label>
       <input
         autoComplete={autoComplete}
         id={id}

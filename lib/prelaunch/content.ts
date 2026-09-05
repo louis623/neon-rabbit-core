@@ -1,11 +1,11 @@
 export const prelaunchContent = {
   officialVersionName: 'Sparkle Suite V1 Preview Public Site',
   brand: 'Sparkle Suite',
-  eyebrow: 'Coming Soon',
+  eyebrow: 'Now building Sparkle Suite sites',
   headline: 'A better customer experience starts with a better rep setup.',
   body:
     'Sparkle Suite gives reps a more polished website, standout live show tools, and built-in support that helps customers feel the difference.',
-  primaryCtaLabel: 'Join the Waitlist',
+  primaryCtaLabel: 'Join the build queue',
   secondaryCtaLabel: 'What Is Sparkle Suite?',
   heroFeatures: [
     {
@@ -22,11 +22,11 @@ export const prelaunchContent = {
     },
     {
       title: 'Email updates',
-      body: 'that make follow-ups and launch notes easier to send.',
+      body: 'coming soon, for customer follow-ups and show reminders.',
     },
     {
       title: 'SMS updates',
-      body: 'for quick reminders when a live is close or plans change.',
+      body: 'coming soon, for quick reminders when timing matters.',
     },
     {
       title: 'Nic-Nac',
@@ -53,12 +53,12 @@ export const prelaunchContent = {
     {
       number: '04',
       title: 'Email updates',
-      body: 'Send follow-ups, launch notes, and customer reminders from one cleaner home base.',
+      body: 'Coming soon: customer follow-ups and show reminders from your workspace.',
     },
     {
       number: '05',
       title: 'SMS updates',
-      body: 'Send quick show-day reminders when timing matters and social posts are not enough.',
+      body: 'Coming soon: quick show-day reminders for customers who opt in.',
     },
   ],
   previewPlus:
@@ -66,7 +66,7 @@ export const prelaunchContent = {
   valueHeading: 'Why it stands out',
   valueSubheading: 'The edge customers can actually feel.',
   valueBody:
-    "Sparkle Suite is built for reps who want more than a link page and a handful of workarounds. Your site, dance floor, live queue, event calendar, customer updates, and Nic-Nac all work together in one setup that feels more polished to customers and easier to run on your side. That means a better experience up front, smoother flow while you're live, and fewer details to keep chasing by hand.",
+    "Sparkle Suite is built for reps who want more than a link page and a handful of workarounds. Your site, Dance Floor, live queue, event calendar, and Nic-Nac work together in one setup that feels more polished to customers and easier to run on your side. Email and SMS updates are coming soon. That means a better experience up front, smoother flow while you're live, and fewer details to keep chasing by hand.",
   valueCards: [
     {
       title: 'Dance Floor people actually want to use',
@@ -82,11 +82,11 @@ export const prelaunchContent = {
     },
     {
       title: 'Email updates from one home base',
-      body: 'Send cleaner follow-ups, reminders, and launch notes without piecing it together by hand.',
+      body: 'Coming soon: customer follow-ups and show reminders without piecing everything together by hand.',
     },
     {
       title: 'SMS reminders when timing matters',
-      body: 'Reach customers fast when a live is close or something changes at the last minute.',
+      body: 'Coming soon: text reminders for customers who choose to hear from you.',
     },
     {
       title: 'Nic-Nac behind the scenes',
@@ -116,12 +116,12 @@ export const prelaunchContent = {
     {
       number: '04',
       title: 'Email updates',
-      body: 'Send follow-ups, launch notes, and customer reminders from the same place you manage the rest of your site.',
+      body: 'Coming soon: customer follow-ups and show reminders from the same place you manage your site.',
     },
     {
       number: '05',
       title: 'SMS updates',
-      body: 'Send quick text reminders before a live or when plans change so customers are not relying on social posts alone.',
+      body: 'Coming soon: quick text reminders for opted-in customers before a live or when plans change.',
     },
     {
       number: '06',
@@ -152,7 +152,7 @@ export const prelaunchContent = {
   ],
   pricing: {
     eyebrow: 'Founder pricing',
-    heading: 'Join the waitlist while founder pricing is still in reach.',
+    heading: 'Get in at the start. Secure your founding rate.',
     body:
       'The first 20 paid reps get the same Sparkle Suite package at the founding monthly rate before standard pricing begins.',
     buildFee: {
@@ -178,20 +178,20 @@ export const prelaunchContent = {
     included: [
       'Customer-facing site',
       'Live queue',
-      'Dance Floor / dance floor',
+      'Dance Floor',
       'Live event calendar',
-      'Email and SMS updates',
+      'Email and SMS updates — coming soon',
       'Nic-Nac live-show AI assistant',
     ],
-    cta: { label: 'Join the waitlist', href: '#waitlist' },
+    cta: { label: 'Join the build queue', href: '#waitlist' },
     note:
-      'No free trials, no $1 first month, and no hidden setup fee. Founder pricing is limited to the first 20 paid reps.',
+      'Founder pricing is limited to the first 20 paid reps. Joining the build queue does not reserve a founder rate. No payment is taken on this form.',
   },
-  waitlistEyebrow: 'Join the Waitlist',
-  waitlistHeading: 'Be first in line when Sparkle Suite opens.',
+  waitlistEyebrow: 'Now building Sparkle Suite sites',
+  waitlistHeading: 'Sign up to get your spot in line.',
   waitlistBody:
-    "Join the waitlist and we'll reach out when Sparkle Suite is ready to help you stand out, wow customers, and run your business with less manual work.",
-  waitlistNote: "Takes about 60 seconds. We'll save your spot.",
+    "Ready for a site that feels like you? Join the build queue and we'll email you about your setup and next steps.",
+  waitlistNote: 'Name and email are all you need to start. No payment today. Joining the queue does not reserve founder pricing.',
   waitlistFields: {
     name: {
       label: 'Name',
@@ -214,7 +214,7 @@ export const prelaunchContent = {
       placeholder: 'Who are you under?',
     },
     setupPain: {
-      label: 'What part of your current setup feels the most patchwork? - optional',
+      label: 'What would you love to make easier?',
       placeholder: 'Tell us what feels scattered, manual, or harder than it should.',
     },
   },
@@ -224,18 +224,18 @@ export const prelaunchContent = {
     "Email me updates. Send me practical updates when there's something worth knowing.",
   waitlistConsentNote:
     "We'll send practical updates by email, and by text only if you choose SMS.",
-  waitlistSubmitLabel: 'Join the Waitlist',
-  waitlistSubmittingLabel: 'Saving your spot...',
+  waitlistSubmitLabel: 'Join the build queue',
+  waitlistSubmittingLabel: 'Saving your place...',
   waitlistErrorFallback:
-    'Something went wrong while joining the waitlist. Please try again.',
-  waitlistSuccessEyebrow: "You're on the list",
+    'Something went wrong while joining the build queue. Please try again.',
+  waitlistSuccessEyebrow: "You're in the build queue",
   waitlistSuccessTitle: "Thank you, friend. We've got you.",
   waitlistSuccessBody:
-    "We'll reach out by email and text when Sparkle Suite is ready. Until then, your spot is saved.",
+    "Your details are saved. We'll email you about your setup and next steps, and text only if you chose SMS updates. No payment has been taken, and founder pricing is confirmed separately.",
   footerEyebrow: 'A note from the team',
   footerHeading: "We're building this carefully.",
   footerBody:
-    'The polished edge is on the way. Join the waitlist and be first to know when Sparkle Suite is ready.',
+    'We are building Sparkle Suite sites now, with care for the details that help you stand out. Join the build queue to start the conversation about yours.',
   footerTagline:
     'For reps who want smoother live shows and a more polished customer experience.',
 } as const

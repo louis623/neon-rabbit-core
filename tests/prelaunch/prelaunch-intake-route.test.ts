@@ -6,7 +6,8 @@ const intakeWriteSelectMock = vi.fn(() => ({ single: intakeWriteSingleMock }))
 const waitlistMaybeSingleMock = vi.fn()
 const waitlistLimitMock = vi.fn(() => ({ maybeSingle: waitlistMaybeSingleMock }))
 const waitlistOrderMock = vi.fn(() => ({ limit: waitlistLimitMock }))
-const waitlistEqMock = vi.fn(() => ({ order: waitlistOrderMock }))
+const waitlistSourceMock = vi.fn(() => ({ order: waitlistOrderMock }))
+const waitlistEqMock = vi.fn(() => ({ neq: waitlistSourceMock }))
 const waitlistSelectMock = vi.fn(() => ({ eq: waitlistEqMock }))
 const waitlistUpdateEqMock = vi.fn()
 const waitlistUpdateMock = vi.fn(() => ({ eq: waitlistUpdateEqMock }))
@@ -52,6 +53,7 @@ describe('POST /api/prelaunch/intake', () => {
     waitlistLimitMock.mockClear()
     waitlistOrderMock.mockClear()
     waitlistEqMock.mockClear()
+    waitlistSourceMock.mockClear()
     waitlistSelectMock.mockClear()
     waitlistUpdateEqMock.mockReset()
     waitlistUpdateMock.mockClear()
@@ -113,6 +115,7 @@ describe('POST /api/prelaunch/intake', () => {
     )
 
     expect(fromMock).toHaveBeenCalledWith('sparkle_suite_intake_submissions')
+    expect(waitlistSourceMock).toHaveBeenCalledWith('source', 'public_nic_nac')
     expect(insertMock).toHaveBeenCalledWith({
       full_name: 'Jamie Hart',
       email: 'jamie@example.com',

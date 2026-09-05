@@ -24,201 +24,70 @@ function publicAssetPath(src: string) {
   return join(process.cwd(), 'public', ...src.split('/').filter(Boolean))
 }
 
-function cssBlock(css: string, selector: string) {
-  const start = css.indexOf(selector)
-  const openBrace = css.indexOf('{', start)
-  const closeBrace = css.indexOf('}', openBrace)
-
-  return start > -1 && openBrace > -1 && closeBrace > -1
-    ? css.slice(openBrace + 1, closeBrace)
-    : ''
-}
-
 describe('Sparkle Suite public landing page', () => {
-  it('defines the short V2 product-grounded content model', () => {
-    expect(sparkleSuitePublicLandingContent.hero).toMatchObject({
-      eyebrow: 'Sparkle Suite for reps',
-      headline: 'A better customer experience starts with a better rep setup.',
-      body:
-        'Sparkle Suite gives reps a polished customer site, standout live-show tools, and built-in support that helps customers feel the difference.',
-      primaryCta: {
-        label: 'Join the waitlist',
-        href: '/prelaunch#waitlist',
-      },
-    })
-
-    expect(sparkleSuitePublicLandingContent.workspaceProof).toMatchObject({
-      eyebrow: 'Rep workspace',
-      heading: 'Run the show with less scramble behind the scenes.',
-      body:
-        'Instead of chasing show details across scattered tools, reps get one workspace for Live queue, Dance Floor, Live event calendar, email and SMS updates, customer-site customizations, and Nic-Nac, the built-in assistant for live-show support.',
-    })
-
-    expect(sparkleSuitePublicLandingContent.customerSiteProof).toMatchObject({
-      eyebrow: 'Customer-facing site',
-      heading: 'Make the customer side feel like you.',
-    })
-
-    expect(sparkleSuitePublicLandingContent.sections.map((section) => section.id)).toEqual([
-      'hero',
-      'customer-site-proof',
-      'workspace-proof',
-      'pricing',
-    ])
-
-    expect(sparkleSuitePublicLandingContent.assets).toEqual({
-      tradeBoardDesktopProof: {
-        src: '/sparkle-suite/landing/trade-board-desktop-proof.png',
-        alt: 'Sparkle Suite customer Dance Floor preview on desktop.',
-      },
-      nicNacWorkspaceProof: {
-        src: '/sparkle-suite/landing/nic-nac-workspace-proof.png',
-        alt: 'Sparkle Suite Nic-Nac workspace preview on desktop.',
-      },
-      customerSiteVioletProof: {
-        src: '/sparkle-suite/landing/customer-site-violet-proof.png',
-        alt: 'Violet customer-facing Sparkle Suite site preview.',
-      },
-      customerSiteNightProof: {
-        src: '/sparkle-suite/landing/customer-site-night-proof.png',
-        alt: 'Dark customer-facing Sparkle Suite site preview.',
-      },
-      customerSiteBlushProof: {
-        src: '/sparkle-suite/landing/customer-site-blush-proof.png',
-        alt: 'Blush customer-facing Sparkle Suite site preview.',
-      },
-    })
-
-    expect(sparkleSuitePublicLandingContent.pricing).toMatchObject({
-      heading: 'Time to level up.',
-      body:
-        'If you have been waiting for a sign to stop piecing it together, this is it.',
-      buildFee: {
-        label: 'Sparkle Suite setup fee',
-        price: '$49.99',
-        body: 'One-time and non-refundable, itemized separately at checkout.',
-      },
-      standard: {
-        label: 'Standard monthly',
-        badge: 'Current monthly rate',
-        price: '$74.99/month',
-        term: 'Monthly subscription from the start.',
-        firstCheckout: '$124.98 first checkout. Tax is not included in this price.',
-      },
-      primaryCta: {
-        label: 'Join the waitlist',
-        href: '/prelaunch#waitlist',
-      },
-      sectionCta: {
-        label: 'Join the waitlist',
-        href: '/prelaunch#waitlist',
-      },
-    })
-
-    expect(sparkleSuitePublicLandingContent.publicNicNacAssistant).toMatchObject({
-      teaser: 'Still have questions? Ask Nic-Nac.',
-      body:
-        "Get quick answers about setup, pricing, what's included, and whether Sparkle Suite fits your live-show workflow.",
-      buttonLabel: 'Ask Nic-Nac',
-      starterQuestions: [
-        "What's included?",
-        'How does setup work?',
-        'Is Sparkle Suite affiliated with Bomb Party?',
-      ],
-    })
+  it('keeps build-queue terminology and truthful product availability in shared content', () => {
+    expect(sparkleSuitePublicLandingContent.hero.primaryCta).toEqual({ label: 'Join the build queue', href: '/prelaunch#waitlist' })
+    expect(sparkleSuitePublicLandingContent.hero.eyebrow).toBe('Now building Sparkle Suite sites')
+    expect(sparkleSuitePublicLandingContent.workspaceProof.body).toContain('Customer email and SMS updates are coming soon')
+    expect(sparkleSuitePublicLandingContent.pricing.buildFee.price).toBe('$49.99')
+    expect(sparkleSuitePublicLandingContent.pricing.standard.price).toBe('$74.99/month')
+    expect(sparkleSuitePublicLandingContent.publicNicNacAssistant.buttonLabel).toBe('Ask Nic-Nac')
   })
 
-  it('renders the approved short page in the expected order', () => {
+  it('renders product proof before the offer with a working build-queue path', () => {
     const html = renderLanding()
-    const heroIndex = html.indexOf('Sparkle Suite for reps')
-    const workspaceIndex = html.indexOf('Rep workspace')
-    const pricingIndex = html.indexOf('Time to level up.')
-    const footerIndex = html.indexOf('Sparkle Finder')
-    const headerHtml = html.slice(0, html.indexOf('class="sl2-hero"'))
-
-    expect(html).toContain('class="sparkle-landing sparkle-landing-v2"')
-    expect(html).toContain('class="sl2-shell"')
-    expect(headerHtml).toContain('Sparkle Suite account')
-    expect(headerHtml).not.toContain('Start Sparkle Suite')
-    expect(headerHtml).not.toContain('Level up your live stream')
-    expect(heroIndex).toBeGreaterThan(-1)
-    expect(workspaceIndex).toBeGreaterThan(heroIndex)
-    expect(pricingIndex).toBeGreaterThan(workspaceIndex)
-    expect(footerIndex).toBeGreaterThan(pricingIndex)
-    expect(html).toContain('A better customer experience starts with a better rep setup.')
-    expect(html).toContain('standout live-show tools')
-    expect(html).toContain('Run the show with less scramble behind the scenes.')
-    expect(html).toContain('Instead of chasing show details across scattered tools')
-    expect(html).toContain('customer-site customizations')
-    expect(html).toContain('Nic-Nac, the built-in assistant for live-show support')
-    expect(html).toContain('Time to level up.')
-    expect(html).toContain(
-      'If you have been waiting for a sign to stop piecing it together, this is it.',
-    )
-    expect(html).toContain('class="sl2-pricing-offer"')
-    expect(html).toContain('class="sl2-pricing-total"')
-    expect(html).toContain('class="sl2-pricing-breakdown"')
-    expect(html.indexOf('class="sl2-pricing-breakdown"')).toBeLessThan(
-      html.indexOf('class="sl2-pricing-total"'),
-    )
-    expect(html).toContain('Sparkle Suite Standard')
-    expect(html).not.toContain('aria-label="Included in Sparkle Suite"')
-    expect(html).toContain('Real Sparkle Suite Dance Floor preview')
-    expect(html).toContain('Real Sparkle Suite Nic-Nac workspace preview')
-    expect(html).toContain('$49.99')
-    expect(html).toContain('$74.99/month')
-    expect(html).toContain('$124.98')
-    expect(html).toContain('first checkout')
-    expect(html).toContain('Tax is not included in this price.')
-    expect(html).not.toContain('Stripe-calculated extras')
-    expect(html).toContain('One-time setup fee')
-    expect(html).toContain('Monthly subscription')
-    expect(html).toContain(
-      'Setup fee is one-time and non-refundable. Monthly subscription starts from checkout.',
-    )
-    expect(html).not.toContain('class="sl2-build-fee"')
-    expect(html).not.toContain('class="sl2-pricing-card sl2-pricing-card--standard"')
-    expect(html).toContain('href="/prelaunch#waitlist"')
-    expect(html).not.toContain('href="/start"')
-    expect(html).toContain('Join the waitlist')
-    expect(html.indexOf('Join the waitlist')).toBeLessThan(
-      html.indexOf('Still have questions? Ask Nic-Nac.'),
-    )
-    expect(html).toContain('Still have questions? Ask Nic-Nac.')
-    expect(html).toContain(
-      'Get quick answers about setup, pricing, what&#x27;s included, and whether Sparkle Suite fits your live-show workflow.',
-    )
-    expect(html).toContain('aria-expanded="false"')
-    expect(html).toContain('Ask Nic-Nac')
-    expect(html).not.toContain('class="sl2-nic-nac-panel"')
-    expect(html).not.toContain("What's included?")
-    expect(html).not.toContain('How does setup work?')
-    expect(html).not.toContain('sl2-btn__arrow')
-    expect(html).not.toContain('-&gt;')
-    expect(html).not.toContain('Give customers the setup they can feel.')
-    expect(html).not.toContain('Start your Sparkle Suite account and open the workspace')
-    expect(html).not.toContain('id="get-started"')
-    expect(html).not.toContain('class="sl2-final-cta"')
-    expect(html).not.toContain('>Help<')
-    expect(html).toContain('Privacy Policy')
-    expect(html).toContain('Terms and Conditions')
-    expect(html).toContain('Sparkle Finder')
-    expect(html).toContain('YouTube')
-    expect(html).toContain('TikTok')
-  })
-
-  it('uses local product screenshot assets for Dance Floor and workspace proof', () => {
-    const html = renderLanding()
-    const assets = Object.values(sparkleSuitePublicLandingContent.assets)
-
-    for (const asset of assets) {
-      expect(asset.src).toMatch(/^\/sparkle-suite\/landing\/.+\.png$/)
-      expect(asset.alt).not.toContain('Louis')
-      expect(asset.alt).not.toContain('Chapman')
-      expect(html).toContain(`src="${asset.src}"`)
-      expect(html).toContain(`alt="${asset.alt.replace(/'/g, '&#x27;')}"`)
-      expect(existsSync(publicAssetPath(asset.src))).toBe(true)
+    const sections = ['id="main-content"', 'id="customer-site-proof"', 'id="workspace-proof"', 'id="pricing"', 'id="questions"']
+    let previous = -1
+    for (const section of sections) {
+      const index = html.indexOf(section)
+      expect(index).toBeGreaterThan(previous)
+      previous = index
     }
+    expect(html).toContain('Your brand.')
+    expect(html).toContain('Your show.')
+    expect(html).toContain('Now building Sparkle Suite sites')
+    expect(html).toContain('for Bomb Party reps')
+    expect(html).toContain('href="/prelaunch#waitlist"')
+    expect(html).toContain('Join the build queue')
+    expect(html).not.toContain('href="/start"')
+    expect(html).toContain('No payment to join.')
+    expect(html).toContain('Sparkle Suite account')
+    expect(html).toContain('href="#main-content"')
+    expect(html).toContain('aria-label="Explore Sparkle Suite"')
+    expect(html).toContain('aria-label="Account links"')
+    expect(html).toContain('aria-label="Included in Sparkle Suite"')
+    expect(html).toContain('Customer email and SMS updates are coming soon.')
+    expect(html).toContain('Founder availability is temporarily unconfirmed.')
+    expect(html).not.toContain('19 founder spots remaining')
+    expect(html).toContain('Joining the queue does not reserve a founder rate.')
+    expect(html).toContain('$124.98')
+    expect(html).toContain('applicable tax')
+    expect(html).toContain('Setup is non-refundable.')
+    expect(html).toContain('href="/privacy-policy"')
+    expect(html).toContain('href="/terms-and-conditions"')
+    expect(html).toContain('href="https://yoursparklefinder.com"')
+    expect(html).not.toContain('href="#"')
+    expect(html.match(/<details>/g)).toHaveLength(6)
+    expect(html).toContain('Ask Nic-Nac')
+    expect(html).toContain('aria-expanded="false"')
+  })
+
+  it('renders real local proof with alternative text and user-controlled previews', () => {
+    const html = renderLanding()
+    for (const asset of Object.values(sparkleSuitePublicLandingContent.assets)) {
+      expect(asset.src).toMatch(/^\/sparkle-suite\/landing\/.+\.(png|webp)$/)
+      expect(existsSync(publicAssetPath(asset.src))).toBe(true)
+      expect(asset.alt).not.toMatch(/Louis|Chapman/)
+    }
+    expect(html).toContain('aria-label="Choose a customer-site style"')
+    expect(html).toContain('aria-controls="site-style-preview"')
+    expect(html).toContain('aria-label="Explore Sparkle Suite show tools"')
+    expect(html).toContain('aria-controls="show-tool-preview"')
+    expect(html).toContain('aria-pressed="true"')
+    expect(html).toContain('Play the quick tour')
+    expect(html).not.toContain('Pause tour')
+    expect(html).toContain('Product previews. No live customer activity.')
+    expect(html).toMatch(/<img[^>]+alt="[^"]+"/)
   })
 
   it('keeps the product-grounded landing free of Louis personal identifiers', () => {
@@ -252,8 +121,8 @@ describe('Sparkle Suite public landing page', () => {
     expect(affiliationAnswer.kind).toBe('answer')
     expect(affiliationAnswer.message).toContain(sparkleSuitePublicLandingSafety.disclaimer)
     expect(outOfScopeAnswer.kind).toBe('handoff')
-    expect(outOfScopeAnswer.message).toContain('I can collect your name, email, and question')
-    expect(outOfScopeAnswer.message).toContain('Nothing is sent from this page yet')
+    expect(outOfScopeAnswer.message).toContain('Submit the contact form to save your name, email, and question')
+    expect(outOfScopeAnswer.message).toContain('does not join the build queue or reserve a founder spot')
 
     for (const answer of [
       pricingAnswer,
@@ -295,7 +164,7 @@ describe('Sparkle Suite public landing page', () => {
     expect(shippingAnswer.message).toContain('does not handle shipping')
   })
 
-  it('answers public waitlist form and next-step questions', () => {
+  it('answers public build-queue form and next-step questions', () => {
     const formAnswer = answerPublicNicNacQuestion('What is this form for?')
     const cardAnswer = answerPublicNicNacQuestion('Do I need a card here?')
     const nextAnswer = answerPublicNicNacQuestion(
@@ -303,10 +172,10 @@ describe('Sparkle Suite public landing page', () => {
     )
 
     expect(formAnswer.kind).toBe('answer')
-    expect(formAnswer.message).toContain('Sparkle Suite waitlist')
+    expect(formAnswer.message).toContain('joins the build queue')
     expect(formAnswer.message).toContain('does not create an account')
     expect(cardAnswer.kind).toBe('answer')
-    expect(cardAnswer.message).toContain('No card is needed to join the waitlist')
+    expect(cardAnswer.message).toContain('No card is needed to join the build queue')
     expect(cardAnswer.message).toContain('five-day trial account')
     expect(nextAnswer.kind).toBe('answer')
     expect(nextAnswer.message).toContain('Louis reviews your interest')
@@ -335,7 +204,8 @@ describe('Sparkle Suite public landing page', () => {
 
     expect(source).toContain('threadEndRef')
     expect(source).toContain('scrollIntoView')
-    expect(source).toContain('behavior: \'smooth\'')
+    expect(source).toContain('prefers-reduced-motion: reduce')
+    expect(source).toContain("? 'instant' : 'smooth'")
   })
 
   it('uses the shared Nic-Nac pink N mark in the public chat shell', () => {
@@ -434,112 +304,38 @@ describe('Sparkle Suite public landing page', () => {
     expect(css).toContain('background: #fff6fa')
   })
 
-  it('does not render old long-page sections or rejected hero machinery', () => {
+  it('avoids dormant or internal-facing copy and fake scarcity', () => {
     const html = renderLanding()
-
-    expect(html).not.toContain('Inside the suite.')
-    expect(html).not.toContain('Customers can feel the difference.')
-    expect(html).not.toContain('Less patchwork behind the scenes.')
-    expect(html).not.toContain('The edge customers can actually feel.')
-    expect(html).not.toContain('What happens after checkout')
-    expect(html).not.toContain('sl-product-scene')
-    expect(html).not.toContain('sl-product-stage')
-    expect(html).not.toContain('sl-depth-object')
-    expect(html).not.toContain('sl-customer-card')
-    expect(html).not.toContain('sl-feature-grid')
-    expect(html).not.toContain('sl-product-card')
-    expect(html).not.toContain('CSS 3D')
-    expect(html).not.toContain('AI-powered platform')
+    expect(html).not.toContain('Join the waitlist')
     expect(html).not.toContain('Coming Soon')
-    expect(html).toContain('Join the waitlist')
-    expect(html).not.toContain('Founder pricing')
-    expect(html).not.toContain('first 20 paid reps')
-    expect(html).toContain('/prelaunch#waitlist')
-    expect(html).not.toContain('post-launch')
+    expect(html).not.toContain('19 of 20')
+    expect(html).not.toContain('One easier home for your Bomb Party business')
+    expect(html).not.toContain('AI-powered platform')
+    expect(html).not.toContain('>SS<')
+    expect(html).not.toContain('backend')
     expect(html).not.toContain('pipeline')
     expect(html).not.toContain('modules')
-    expect(html).not.toContain('backend')
-    expect(html).not.toContain('fake testimonial')
-    expect(html).not.toContain('ring photo')
-    expect(html).not.toContain('gemstone')
-    expect(html).not.toContain('>SS<')
   })
 
-  it('adds isolated mobile-first V2 landing CSS', () => {
-    const css = readGlobalCss()
-    const teaserCss = cssBlock(css, '.sparkle-landing-v2 .sl2-nic-nac__teaser')
-    const visitorMessageCss = cssBlock(
-      css,
-      '.sparkle-landing-v2 .sl2-nic-nac-message--visitor',
-    )
-
-    expect(css).toContain('.sparkle-landing-v2 {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-hero {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-header {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-header__inner {')
-    expect(css).toContain('padding: 18px 44px;')
-    expect(css).toContain('padding: 32px 0 52px;')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-hero h1 {')
-    expect(css).toContain('font-size: clamp(3.4rem, 18vw, 5.2rem);')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-product-stack {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-shot--trade-board-proof {')
-    expect(css).not.toContain('.sparkle-landing-v2 .sl2-shot--nic-nac-workspace-proof {')
-    expect(css).toContain('@media (min-width: 980px)')
-    expect(css).toContain('grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);')
-    expect(css).toContain('background: linear-gradient(145deg, #402924 0%, #36221d 100%);')
-    expect(css).toContain('color: #f6e7da;')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-pricing .sl2-eyebrow {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-pricing__intro h2 {')
-    expect(css).toContain('color: #f6e7da;')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-pricing__intro p {')
-    expect(css).toContain('color: rgba(246, 231, 218, 0.78);')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-pricing-offer {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-pricing-total {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-pricing-breakdown {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-pricing-line {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-pricing-line + .sl2-pricing-line::before {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-nic-nac {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-nic-nac-popover {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-nic-nac-panel {')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-nic-nac-message--assistant {')
-    expect(css).toContain('position: fixed;')
-    expect(teaserCss).not.toContain('background:')
-    expect(teaserCss).not.toContain('border:')
-    expect(teaserCss).not.toContain('border-radius:')
-    expect(teaserCss).not.toContain('box-shadow:')
-    expect(visitorMessageCss).not.toContain('background: #402924;')
-    expect(visitorMessageCss).toContain('color: #402924;')
-    expect(css).toContain('content: "+";')
-    expect(css).toContain('font-family: inherit;')
-    expect(css).toContain('font-size: clamp(2rem, 8vw, 2.55rem);')
-    expect(css).toContain('font-variant-numeric: lining-nums tabular-nums;')
-    expect(css).toContain('font-size: clamp(2.15rem, 2.6vw, 2.65rem);')
-    expect(css).toContain('margin-top: clamp(2.25rem, 7vw, 4.75rem);')
-    expect(css).toContain('margin-left: calc(50% - 50vw);')
-    expect(css).toContain('margin-right: calc(50% - 50vw);')
-    expect(css).toContain('.sparkle-landing-v2 .sl2-footer__inner {')
-    expect(css).toContain('padding: 34px 44px 44px;')
-    expect(css).toContain('color: rgba(246, 231, 218, 0.72);')
-    expect(css).toContain('justify-self: start;')
-    expect(css).toContain('margin-top: 6px;')
-    expect(css).toContain('text-align: left;')
+  it('isolates the refreshed palette and motion with mobile and reduced-motion handling', () => {
+    const css = readFileSync(join(process.cwd(), 'app/_components/landing-experience.module.css'), 'utf8')
+    const oldCss = readGlobalCss()
+    expect(css).toContain('.page')
+    expect(css).toContain('#402924')
+    expect(css).toContain('#fcf8f6')
+    expect(css).toContain('max-width:600px')
+    expect(css).toContain('prefers-reduced-motion:reduce')
+    expect(css).toContain('animation:none!important')
+    expect(css).toContain('transition:none!important')
+    expect(css).toContain('grid-template-columns:1fr')
+    expect(oldCss).toContain('.sparkle-landing-v2 .sl2-nic-nac-panel')
+    expect(oldCss).toContain('overflow-y: auto')
   })
 
-  it('keeps the trademark guardrail visible without putting third-party wording in the hero', () => {
-    const html = renderLanding()
-    const workspaceStart = html.indexOf('class="sl2-workspace-proof"')
-    const heroHtml = workspaceStart > -1 ? html.slice(0, workspaceStart) : html
-
-    expect(sparkleSuitePublicLandingSafety.disclaimer).toBe(
-      'Sparkle Suite is an independent tool for reps. We are not affiliated with, endorsed by, sponsored by, or officially connected to Bomb Party.',
-    )
-    expect(html).toContain(sparkleSuitePublicLandingSafety.disclaimer)
-    expect(heroHtml).not.toContain('Bomb Party')
-    expect(heroHtml).not.toContain('BP reps')
-    expect(heroHtml).not.toContain('BB business')
-    expect(heroHtml).not.toContain('launch flow')
-    expect(heroHtml).not.toContain('backend')
-    expect(heroHtml).not.toContain('modules')
+  it('keeps the independent-brand disclaimer visible alongside the rep audience', () => {
+    expect(renderLanding()).toContain(sparkleSuitePublicLandingSafety.disclaimer)
+    expect(sparkleSuitePublicLandingSafety.disclaimer).toContain('not affiliated with')
+    expect(metadata.title).toEqual({ absolute: 'Sparkle Suite' })
   })
 
   it('keeps the root landing public-safe without redirecting signed-in reps', () => {
@@ -564,11 +360,11 @@ describe('Sparkle Suite public landing page', () => {
     expect(accountActionSource).toContain('Log out')
   })
 
-  it('exports public landing metadata without third-party brand-led framing', () => {
+  it('exports brand-led metadata with the audience and active build-queue next step', () => {
     expect(metadata.title).toEqual({ absolute: 'Sparkle Suite' })
-    expect(metadata.description).toBe(
-      'A better customer experience starts with a better rep setup.',
-    )
-    expect(JSON.stringify(metadata)).not.toContain('Bomb Party')
+    expect(metadata.description).toContain('website and live-show tools for Bomb Party reps')
+    expect(metadata.description).toContain('Now building Sparkle Suite sites')
+    expect(metadata.description).toContain('join the build queue')
+    expect(metadata.alternates?.canonical).toBe('/')
   })
 })

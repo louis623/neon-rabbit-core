@@ -44,7 +44,9 @@ const privateTerms = [
 ]
 
 const customExceptionTerms = [
-  'discount',
+  'give me a discount',
+  'get a discount',
+  'extra discount',
   'exception',
   'special price',
   'different price',
@@ -88,7 +90,7 @@ export function publicNicNacBlockedMessage() {
 }
 
 export function publicNicNacHandoffMessage() {
-  return 'That sounds like something Louis should review directly. I can collect your name, email, and question here, but nothing is sent from this page yet.'
+  return 'That sounds like something Louis should review directly. Submit the form below to save your name, email, and question for Louis to review. This does not join the build queue or reserve a founder spot.'
 }
 
 function publicNicNacTradeBoardCorrectionMessage() {

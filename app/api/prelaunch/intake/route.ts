@@ -17,6 +17,7 @@ async function findMatchingWaitlistId(
     .from('sparkle_suite_waitlist')
     .select('id')
     .eq('email', email)
+    .neq('source', 'public_nic_nac')
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()

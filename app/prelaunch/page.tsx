@@ -1,16 +1,14 @@
 import type { Metadata } from 'next'
 
-import { PrelaunchAudience } from './_components/PrelaunchAudience'
-import { PrelaunchBenefits } from './_components/PrelaunchBenefits'
-import { PrelaunchFooter } from './_components/PrelaunchFooter'
-import { PrelaunchHero } from './_components/PrelaunchHero'
-import { PrelaunchPricing } from './_components/PrelaunchPricing'
+import { MarketingHeader, MarketingFooter } from '../_components/landing-experience'
+import { FounderAvailabilityProvider, FounderOffer, FounderSpotLabel, IncludedFeatures } from '../_components/landing-interactions'
+import styles from '../_components/landing-experience.module.css'
 import { PrelaunchWaitlistForm } from './_components/PrelaunchWaitlistForm'
 import { prelaunchContent } from '@/lib/prelaunch/content'
 
 export const metadata: Metadata = {
   title: {
-    absolute: 'Sparkle Suite | Coming Soon',
+    absolute: 'Join the build queue | Sparkle Suite',
   },
   description: prelaunchContent.body,
   alternates: {
@@ -21,7 +19,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   openGraph: {
-    title: 'Sparkle Suite | Coming Soon',
+    title: 'Join the build queue | Sparkle Suite',
     description: prelaunchContent.body,
     url: '/prelaunch',
     siteName: 'Sparkle Suite',
@@ -31,18 +29,18 @@ export const metadata: Metadata = {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Sparkle Suite coming soon: a better customer experience starts with a better rep setup.',
+        alt: 'Sparkle Suite: now building sites for Bomb Party reps.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Sparkle Suite | Coming Soon',
+    title: 'Join the build queue | Sparkle Suite',
     description: prelaunchContent.body,
     images: [
       {
         url: '/opengraph-image',
-        alt: 'Sparkle Suite coming soon: a better customer experience starts with a better rep setup.',
+        alt: 'Sparkle Suite: now building sites for Bomb Party reps.',
       },
     ],
   },
@@ -73,7 +71,7 @@ const prelaunchJsonLd = {
       },
       offers: {
         '@type': 'Offer',
-        availability: 'https://schema.org/PreOrder',
+        availability: 'https://schema.org/InStock',
         url: 'https://www.yoursparklesuite.com/prelaunch#waitlist',
       },
       areaServed: {
@@ -102,19 +100,26 @@ const prelaunchJsonLd = {
 
 export default function PrelaunchPage() {
   return (
-    <main className="prelaunch-shell">
+    <FounderAvailabilityProvider><main className={`prelaunch-shell ${styles.page}`}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(prelaunchJsonLd).replace(/</g, '\\u003c'),
         }}
       />
-      <PrelaunchHero />
-      <PrelaunchBenefits />
-      <PrelaunchAudience />
-      <PrelaunchPricing />
-      <PrelaunchWaitlistForm />
-      <PrelaunchFooter />
-    </main>
+      <a className={styles.skipLink} href="#waitlist">Skip to signup</a>
+      <MarketingHeader intake />
+      <section className={styles.intakeIntro}>
+        <p className={styles.eyebrow}>Now building Sparkle Suite sites</p>
+        <h1>Your spot in line starts here.</h1>
+        <p>Tell us a little about your business. We’ll follow up about your site and the next steps. No payment to join.</p>
+        <FounderSpotLabel />
+      </section>
+      <div className={styles.intakeLayout}>
+        <div className={styles.intakeForm}><PrelaunchWaitlistForm /></div>
+        <aside className={styles.intakeAside}><h2>A more polished place for your business.</h2><p>Your brand, your customers, and the tools that help showtime run more smoothly.</p><IncludedFeatures /><FounderOffer compact /></aside>
+      </div>
+      <MarketingFooter />
+    </main></FounderAvailabilityProvider>
   )
 }

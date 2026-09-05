@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const getAuthenticatedOperatorMock = vi.fn()
 const updateMock = vi.fn()
 const eqIdMock = vi.fn()
+const neqSourceMock = vi.fn()
 const inWelcomeMock = vi.fn()
 const eqHandoffMock = vi.fn()
 const eqLeadStatusMock = vi.fn()
@@ -39,6 +40,7 @@ describe('POST /api/control-center/intake/waitlist-contact-batch', () => {
     fromMock.mockClear()
     updateMock.mockReset()
     eqIdMock.mockReset()
+    neqSourceMock.mockReset()
     inWelcomeMock.mockReset()
     eqHandoffMock.mockReset()
     eqLeadStatusMock.mockReset()
@@ -47,7 +49,8 @@ describe('POST /api/control-center/intake/waitlist-contact-batch', () => {
     singleMock.mockReset()
 
     updateMock.mockReturnValue({ eq: eqIdMock })
-    eqIdMock.mockReturnValue({ in: inWelcomeMock })
+    eqIdMock.mockReturnValue({ neq: neqSourceMock })
+    neqSourceMock.mockReturnValue({ in: inWelcomeMock })
     inWelcomeMock.mockReturnValue({ eq: eqHandoffMock })
     eqHandoffMock.mockReturnValue({ is: isIntakeMock })
     isIntakeMock.mockReturnValue({ eq: eqLeadStatusMock })
@@ -82,6 +85,7 @@ describe('POST /api/control-center/intake/waitlist-contact-batch', () => {
       updated_at: expect.any(String),
     })
     expect(eqIdMock).toHaveBeenCalledWith('id', 'waitlist-1')
+    expect(neqSourceMock).toHaveBeenCalledWith('source', 'public_nic_nac')
     expect(inWelcomeMock).toHaveBeenCalledWith('welcome_email_status', [
       'sent',
       'skipped',

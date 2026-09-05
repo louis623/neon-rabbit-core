@@ -10,13 +10,17 @@ describe('prelaunch email content', () => {
   it('builds a short welcome email with unsubscribe language', () => {
     const email = buildPrelaunchWaitlistWelcomeEmailContent('Jamie Hart')
 
-    expect(email.subject).toBe('Welcome to the Sparkle Suite waitlist')
+    expect(email.subject).toBe("You're in the Sparkle Suite build queue")
     expect(email.text).toContain('Hi Jamie Hart,')
     expect(email.text).toContain(
       'better customer experience with less patchwork behind the scenes',
     )
     expect(email.text).toContain('Reply to this email any time')
     expect(email.text).toContain('unsubscribe')
+    expect(email.text).toContain('Your details are saved.')
+    expect(email.text).toContain('Joining the build queue does not reserve a founder rate.')
+    expect(email.text).not.toContain('Stripe test-mode')
+    expect(email.text).not.toContain('waitlist')
   })
 
   it('builds a text-first prelaunch newsletter issue draft', () => {

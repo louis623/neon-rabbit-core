@@ -14,6 +14,7 @@ function formatDate(value: string) {
 }
 
 function sourceLabel(source: CustomerWaitlistLead['source']) {
+  if (source === 'public_nic_nac') return 'Nic-Nac question (not a queue signup)'
   return source === 'manual' ? 'Manual entry' : 'Landing page'
 }
 

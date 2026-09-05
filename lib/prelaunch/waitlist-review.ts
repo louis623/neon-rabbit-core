@@ -93,6 +93,7 @@ export async function loadPrelaunchWaitlistReviewLeads(
   const { data, error } = await admin
     .from('sparkle_suite_waitlist')
     .select(PRELAUNCH_WAITLIST_REVIEW_SELECT)
+    .neq('source', 'public_nic_nac')
     .limit(limit)
     .order('created_at', { ascending: false })
 

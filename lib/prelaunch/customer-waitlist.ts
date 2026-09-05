@@ -19,7 +19,7 @@ export interface CustomerWaitlistLead {
   name: string
   email: string
   phone: string | null
-  source: 'landing_page' | 'manual'
+  source: 'landing_page' | 'manual' | 'public_nic_nac'
   leadStatus: string
   notes: string
   accountActivatedAt: string | null
@@ -46,7 +46,9 @@ export function normalizeCustomerWaitlistRow(
     name: row.name,
     email: row.email,
     phone: row.phone,
-    source: row.source === 'operator_manual' ? 'manual' : 'landing_page',
+    source: row.source === 'public_nic_nac'
+      ? 'public_nic_nac'
+      : row.source === 'operator_manual' ? 'manual' : 'landing_page',
     leadStatus: row.lead_status,
     notes: row.operator_notes?.trim() ?? '',
     accountActivatedAt: row.account_activated_at,

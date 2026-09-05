@@ -19,15 +19,16 @@ export function buildPrelaunchWaitlistWelcomeEmailContent(
   const consultUrl = process.env.SPARKLE_PRELAUNCH_CONSULT_URL?.trim()
 
   return {
-    subject: 'Welcome to the Sparkle Suite waitlist',
+    subject: "You're in the Sparkle Suite build queue",
     text: buildPlainTextEmail([
       `Hi ${recipientName},`,
-      'Thanks for joining the Sparkle Suite waitlist.',
-      'We are building Sparkle Suite to help reps create a better customer experience with less patchwork behind the scenes.',
-      'Here is the path from here: we confirm your waitlist spot, review your fit, schedule the first consult, build your setup profile, send the agreement and Stripe test-mode checkout when you are ready, then move the account into the build checklist before launch.',
+      'Thanks for joining the Sparkle Suite build queue. Your details are saved.',
+      'We are building Sparkle Suite sites now to help reps create a better customer experience with less patchwork behind the scenes.',
+      'Next, we will be in touch about your site, your current setup, and the steps to get started. We will confirm pricing and payment details with you before any paid setup begins.',
+      'Joining the build queue does not reserve a founder rate. Founder pricing is confirmed separately for qualifying paid signups.',
       consultUrl
         ? `If you are ready to book the first consult, use this link: ${consultUrl}`
-        : 'When we are ready to schedule the first consult, we will email you with the next step. You can also reply here any time.',
+        : 'We will email you with the next step. You can also reply here any time.',
       'Reply to this email any time if you want to unsubscribe or ask a question.',
       'Thanks for being early.\n\nSparkle Suite',
     ]),

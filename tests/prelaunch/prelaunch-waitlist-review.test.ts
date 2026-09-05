@@ -78,7 +78,8 @@ describe('prelaunch waitlist review helpers', () => {
       error: null,
     })
     const limitMock = vi.fn(() => ({ order: orderMock }))
-    const selectMock = vi.fn(() => ({ limit: limitMock }))
+    const sourceMock = vi.fn(() => ({ limit: limitMock }))
+    const selectMock = vi.fn(() => ({ neq: sourceMock }))
     const fromMock = vi.fn(() => ({ select: selectMock }))
 
     const leads = await loadPrelaunchWaitlistReviewLeads(
@@ -91,6 +92,7 @@ describe('prelaunch waitlist review helpers', () => {
       'id, name, email, phone, tiktok_handle, team_rep_name, setup_pain, sms_consent, email_consent, lead_status, welcome_email_status, welcome_email_sent_at, welcome_email_error, handoff_status, warmup_status, intake_submission_id, created_at',
     )
     expect(limitMock).toHaveBeenCalledWith(25)
+    expect(sourceMock).toHaveBeenCalledWith('source', 'public_nic_nac')
     expect(leads[0]).toEqual(
       expect.objectContaining({
         name: 'Kim Hart',

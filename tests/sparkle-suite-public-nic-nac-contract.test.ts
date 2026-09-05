@@ -160,6 +160,7 @@ describe('public Nic-Nac knowledge pack', () => {
   })
 
   it('contains public email and SMS consent boundaries', () => {
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.toolDetails.updates).toContain('coming soon')
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.updateConsentRules).toContain(
       'opted-in',
     )
@@ -181,13 +182,18 @@ describe('public Nic-Nac knowledge pack', () => {
   })
 
   it('contains public waitlist form and next-step guidance', () => {
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.pricing.founder).toContain('12 paid service months')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.pricing.founder).toContain('$99.98')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.pricing.founderEligibility).toContain('never invent a remaining count')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.handoff).toContain('Only a successful form submission saves it')
+    expect(classifyPublicNicNacQuestion('How does the founder discount work?')).toEqual({ kind: 'public_safe' })
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.purpose).toContain(
       'does not create a rep account',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.purpose).toContain(
-      'waitlist',
+      'build queue',
     )
-    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('contact')
+    expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('name and email')
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain('rep-context')
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.fields).toContain(
       'coaching session',
@@ -199,7 +205,7 @@ describe('public Nic-Nac knowledge pack', () => {
       'charge the rep',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.nextSteps).toContain(
-      'reviews the waitlist',
+      'reviews the build queue',
     )
     expect(PUBLIC_NIC_NAC_KNOWLEDGE.signupPage.nextSteps).toContain(
       'five-day trial account',
@@ -303,13 +309,13 @@ describe('public Nic-Nac prompt', () => {
     expect(prompt).toContain('Use only the approved public facts below')
     expect(prompt).toContain('potential Bomb Party representatives')
     expect(prompt).toContain('Answer normal public Dance Floor mechanics questions directly')
-    expect(prompt).toContain('Answer waitlist questions directly')
+    expect(prompt).toContain('Answer build-queue questions directly')
     expect(prompt).toContain('does not create an account, trial, checkout, or require a payment card')
-    expect(prompt).toContain('what happens after joining the waitlist')
+    expect(prompt).toContain('what happens after joining the build queue')
     expect(prompt).toContain('Dance Floor is the feature')
     expect(prompt).toContain('dancers are the rep-listed trade-eligible jewelry')
     expect(prompt).toContain('never say customers add dancers to the dance floor')
-    expect(prompt).toContain('Do not promise discounts, exceptions, outcomes, or future roadmap')
+    expect(prompt).toContain('Do not promise additional discounts, exceptions, outcomes, or future roadmap')
     expect(prompt).toContain('Do not use Markdown formatting')
     expect(prompt).toContain('Keep answers short enough for a small pop-up')
   })
