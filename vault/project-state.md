@@ -19,10 +19,11 @@
   and website path. Both require Louis's proof and explicit send instruction;
   neither was sent during this session.
 - CheapNames reported the `milehighfizz.com` registrar transfer complete on
-  September 4. That did not migrate Lindsey's live domain: it remains on its
-  independent legacy host while Readdy's DNS/service inventory and cutover
-  coordination remain unresolved. No DNS or nameserver change occurred in
-  this session.
+  September 4. Final closeout inspection confirmed both Mile High Fizz
+  hostnames resolve through Vercel to Ready Sparkle Suite deployment
+  `dpl_GVnxy1rm8MXCBKaaEwBL3mdeLkSB`, and the apex returns HTTP 200. No DNS,
+  nameserver, or alias change was performed during this closeout; retain the
+  authoritative DNS/service inventory for future registrar or mail work.
 
 ## September 5, 2026 - Kim's Gnome Forest favicon and social card are live
 

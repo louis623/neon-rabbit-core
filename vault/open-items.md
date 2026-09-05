@@ -429,20 +429,21 @@ Everything deferred, undecided, or waiting — tasks, planning sessions, and ope
 - [x] **Create reusable existing-site migration skill** - completed June 18. New skill: `C:\Users\louis\sparkle-suite\.agents\skills\sparkle-suite-existing-site-migration\SKILL.md`. It captures the Mile High Fizz lesson that exact migrations require source code/project exports, asks Louis one question at a time, and preserves Sparkle Suite automation behavior while migrating a rep's original public-site brand.
 - [x] **Fix customer Trade Board request confirmation after screenshot submit** - completed June 18 in `1635ce1 fix: keep trade request confirmation visible`. Root cause was a customer UI effect clearing request success/error state after the post-submit board refresh changed available listings. Verification passed focused tests, `qa:amethyst`, local build, local screenshot multipart smoke, 6-request pressure smoke, Vercel build, stable alias check, deployed screenshot API smoke, and deployed rendered customer confirmation smoke. Stable demo now points to `https://sparkle-suite-pyfv4xpp7-louis-2849s-projects.vercel.app`.
 - [ ] **Use existing-site migration skill for the next two rep websites** - Louis said two more websites need the same treatment as Lindsey/Mile High Fizz. For each one, start with `sparkle-suite-existing-site-migration`, ask for the source code/project export first, then build a migration brief before implementation.
-- [ ] **Mile High Fizz final acceptance and domain cutover** - CheapNames
-  reported the registrar transfer complete on September 4, and Louis authorized
-  proceeding with the migration in this session. This is not proof of a DNS or
-  hosting cutover. Obtain Readdy's authoritative current DNS/service inventory,
-  preserve mail and every required record, and coordinate the exact external
-  DNS change before moving the domain. Until then, verify Homepage, Trade Board,
-  and Join on the current exact production deployment at
+- [ ] **Mile High Fizz final acceptance and registrar/DNS documentation** -
+  CheapNames reported the registrar transfer complete on September 4. Read-only
+  closeout inspection confirms `milehighfizz.com` and `www.milehighfizz.com`
+  resolve through Vercel to Ready Sparkle Suite deployment
+  `dpl_GVnxy1rm8MXCBKaaEwBL3mdeLkSB`; the apex returns HTTP 200. No routing
+  change is needed merely to reflect the registrar transfer. Preserve Readdy's
+  authoritative DNS/service inventory, especially mail-related records, for
+  future registrar or DNS work. Complete the visual acceptance of Homepage,
+  Trade Board, and Join on the canonical Suite path at
   `https://www.yoursparklesuite.com/milehighfizz`. The earlier bespoke-hybrid
   framing is superseded: Mile High Fizz uses the standard switchable Amethyst
   public-site model with Alpine Opal (`alpine_opal`, `AO-01`) selected by
   default/persisted Site Settings. The Trade Board should be empty until Lindsey
-  adds real pieces. Keep `milehighfizz.com` on its current independent live host
-  until the cutover inputs are complete and the exact change can be safely
-  executed and verified.
+  adds real pieces. Do not change Mile High Fizz DNS, nameservers, aliases, or
+  mail records without a new exact, evidence-backed instruction.
 - [ ] **Fill verified phone numbers for active customer records** - Control Center now has phone fields, but repo-local Open Brain/HQ search did not find reliable paying-client phone numbers. Add them only from an authorized source or direct Louis input.
 
 ---

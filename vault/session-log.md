@@ -31,10 +31,12 @@ Running log of significant work sessions. Most recent first.
   separately editable Hero title and Hero subtitle controls, and renamed the
   visible skin while retaining the stable `gnome_garden` / GG-01 ID. The final
   branding release added Kim's durable favicon and 1200x630 social card.
-- Registrar status is distinct from website cutover: CheapNames reported the
-  `milehighfizz.com` transfer complete, but Lindsey's domain remains on its
-  independent legacy host. Readdy's DNS/service inventory and coordinated
-  cutover remain pending; no DNS or nameserver change occurred.
+- CheapNames reported the `milehighfizz.com` registrar transfer complete.
+  Final read-only Vercel inspection corrected an earlier stale hosting
+  assumption: both Mile High Fizz hostnames resolve to Ready Sparkle Suite
+  deployment `dpl_GVnxy1rm8MXCBKaaEwBL3mdeLkSB`, and the apex returns HTTP
+  200. No DNS, nameserver, or alias change was made during closeout; preserve
+  the authoritative DNS/service inventory for future registrar or mail work.
 - Key lessons consolidated: use the exact owner-approved artwork across related
   media; keep product screens capture-only; validate QR payloads mechanically;
   proof clickable links and final email layout in Gmail; preserve stable skin
