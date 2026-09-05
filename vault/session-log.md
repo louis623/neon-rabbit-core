@@ -2,6 +2,18 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 4, 2026 - Live Calendar / Nic-Nac video published
+
+- With Louis's explicit confirmation, published the Video resource **Live
+  Calendar Demo: Nic-Nac in Action** to the live Sparkle Suite Resource
+  Library. It links to `https://youtu.be/Zz6SD0Ydc64` and uses Louis's
+  approved, plain-language overview of the Live Event Calendar and Nic-Nac.
+- The live Control Center publisher visibly confirmed: “Published to the
+  Resource Library and notified reps in Message Center,” and the durable
+  published-resource list shows the new Video as Version 1. This was a
+  content publication only: no application code, deployment, domain, account,
+  billing, or customer data changed.
+
 ## September 4, 2026 - Reusable Sparkle Suite media skill created
 
 - Generated three Sparkle Suite YouTube thumbnail directions for Louis's live

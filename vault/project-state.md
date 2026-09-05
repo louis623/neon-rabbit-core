@@ -1,5 +1,17 @@
 # Project State
 
+## September 4, 2026 - Live Calendar / Nic-Nac demo is in the Resource Library
+
+- The live Sparkle Suite Resource Library now includes **Live Calendar Demo:
+  Nic-Nac in Action** (Video, Version 1), linked to
+  `https://youtu.be/Zz6SD0Ydc64`. The description accurately explains that
+  reps organize upcoming shows in the Live Event Calendar and that Nic-Nac
+  helps them add details and updates through conversation.
+- Louis explicitly approved publishing. The existing owner Control Center
+  session confirmed the resource was added and that the receive-only rep
+  announcement was created in Message Center. This is a live content change;
+  it required no application release or deployment.
+
 ## September 4, 2026 - Sparkle Suite media creative system is reusable
 
 - Louis approved the light `NIC-NAC + LIVE CALENDAR` thumbnail as the visual
