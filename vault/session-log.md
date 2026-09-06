@@ -2,6 +2,18 @@
 
 Running log of significant work sessions. Most recent first.
 
+## September 5, 2026 - Brittany email apology and promised credit
+
+- At Louis's request, updated the existing unsent Workspace-walkthrough draft
+  with an opening apology for the poorly timed domain migration during her big
+  show. Takes responsibility for not checking/communicating beforehand and says
+  the migration would have been postponed had the show timing been known.
+- Includes Louis's promise of a one-month Sparkle Suite subscription credit.
+  This is draft wording only: no credit was applied and no billing action was
+  authorized or performed. Sender, recipient, complete replacement body and
+  DRAFT label verified. Existing private login and meeting details preserved;
+  email remains unsent. Welcome Site unchanged.
+
 ## September 5, 2026 - Brittany Black Diamond welcome guide and private email
 
 - Read current memory, handoff and applicable welcome/email/brand/Sites skills;
