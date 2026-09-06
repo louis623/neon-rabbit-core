@@ -221,7 +221,7 @@ describe('Amethyst homepage template data wiring', () => {
       expect(jsx).not.toContain('Math.max(12, distance / pixelsPerSecond)')
       expect(jsx).toContain('const EMPTY_TRADE_TICKER_ITEM = {')
       expect(jsx).toContain(
-        'const tradeTickerSource = trades.length > 0 ? trades : [EMPTY_TRADE_TICKER_ITEM];',
+        'const tradeTickerSource = isBrittWithBlingHybrid ? [{ name: "Digital Dance Floor coming soon", isEmpty: true }] : trades.length > 0 ? trades : [EMPTY_TRADE_TICKER_ITEM];',
       )
       expect(jsx).toContain(
         'const tickerTrades = buildTickerLoopItems(tradeTickerSource, 15);',
@@ -669,7 +669,11 @@ describe('Amethyst homepage template data wiring', () => {
 
     for (const source of [homepage, trade, join]) {
       for (const label of footerLabels) {
-        expect(source).toContain(`>${label}</a>`)
+        if (label === 'Dance Floor' && source.includes('isBrittWithBlingHybrid')) {
+          expect(source).toContain('isBrittWithBlingHybrid ? "Dance Floor · Coming soon" : "Dance Floor"')
+        } else {
+          expect(source).toContain(`>${label}</a>`)
+        }
       }
       expect(source).toContain('FAQ · Coming soon')
       expect(source).not.toContain('>Contact</a>')
@@ -1026,7 +1030,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(brittHero).toContain('className="bwb-hero-cta-primary-row"')
     expect(brittHero).toContain('bwb-cta-dance-floor')
     expect(brittHero.indexOf('heroWatchLinks.map((link) =>')).toBeLessThan(
-      brittHero.indexOf('Browse the Dance Floor'),
+      brittHero.indexOf('Dance Floor · Coming soon'),
     )
     expect(blingKitchenHero).toContain('className="bk-home-hero-cta-stack"')
     expect(blingKitchenHero).toContain('className="bk-home-hero-cta-primary-row"')
