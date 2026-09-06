@@ -1,5 +1,10 @@
 # Open Items
 
+## September 5, 2026 - Live Lineup mitigation and Brittany-only cleanup
+
+See [current closeout](2026-09-05-live-lineup-closeout.md): application 9e96887d / dpl_FZQJFd561g9dtBEv93gjxHb4PgJ9; automatic Live Lineup, clean numbered names, Brittany cards hidden and Dance Floor coming soon. Permanent repair remains in live Control Center Task List e453d5cc-0ac8-4d46-9dab-182a6aa723d7 for a no-live-shows window. Mile High Fizz apex/www release is blocked by existing domain configuration; no DNS changes made. Preserve saved data; do not automatically pursue deferred work.
+
+
 Current release authority: Sparkle Suite live and demo are one surface at
 `https://www.yoursparklesuite.com`. Any older completed-item wording below that
 mentions a stable demo alias is historical evidence only and does not control
