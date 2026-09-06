@@ -706,7 +706,7 @@ function Header({ businessName }) {
         </div>
         <nav className="hp-header-nav" aria-label="Primary">
           <a {...linkProps(HOME_HREF)} className="hp-header-link">Home</a>
-          <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link" aria-current="page">Dance Floor</a>
+          <a {...linkProps(TRADE_BOARD_HREF)} className="hp-header-link" aria-current="page">{isBrittWithBlingHybrid ? "Dance Floor · Coming soon" : "Dance Floor"}</a>
           {PANTRY_HREF ? <a {...linkProps(PANTRY_HREF)} className="hp-header-link">In the Pantry</a> : null}
           {JOIN_TEAM_HREF && (
             isBrittWithBlingHybrid || isBlingKitchenHybrid ? (
@@ -853,7 +853,7 @@ function Ticker({ topText }) {
       : RUNTIME_CONTEXT.targeted ? [] : fallbackTrades;
   const announcementTickerItems = buildTickerLoopItems(items, 6);
   const announcementSegmentLength = announcementTickerItems.length / 2;
-  const tradeTickerSource = trades.length > 0 ? trades : [EMPTY_TRADE_TICKER_ITEM];
+  const tradeTickerSource = isBrittWithBlingHybrid ? [{ name: "Digital Dance Floor coming soon", isEmpty: true }] : trades.length > 0 ? trades : [EMPTY_TRADE_TICKER_ITEM];
   const tickerTrades = buildTickerLoopItems(tradeTickerSource, 15);
   const tradeSegmentLength = tickerTrades.length / 2;
 
@@ -864,7 +864,7 @@ function Ticker({ topText }) {
         {items.flatMap((item) => item.parts.filter((part) => part.href)).map((part, index) => (
           <a key={`${part.href}-${index}`} {...linkProps(part.href)}>{part.text}</a>
         ))}
-        <a {...linkProps(TRADE_BOARD_HREF)}>Browse current dance floor highlights</a>
+        <a {...linkProps(TRADE_BOARD_HREF)}>{isBrittWithBlingHybrid ? "Digital Dance Floor coming soon" : "Browse current dance floor highlights"}</a>
       </div>
       <div className="hp-ticker-row">
         <span className="hp-ticker-label">Announcements</span>
@@ -1531,7 +1531,7 @@ function EmptyState({ repName }) {
   return (
     <div className="tp-empty">
       <div className="tp-empty-glyph">?</div>
-      <h3 className="tp-empty-title">Dance Floor is empty right now.</h3>
+      <h3 className="tp-empty-title">{isBrittWithBlingHybrid ? "Digital Dance Floor coming soon" : "Dance Floor is empty right now."}</h3>
       <p className="tp-empty-sub">
           <strong>{repName}</strong> adds dancers after live reveals. Check back after the next show for fresh one-for-one trade options.
       </p>
@@ -1585,7 +1585,7 @@ function Footer({ businessName }) {
         <div className="hp-footer-col">
           <ul>
             <li><a {...linkProps(HOME_HREF)}>Home</a></li>
-            <li><a {...linkProps(TRADE_BOARD_HREF)}>Dance Floor</a></li>
+            <li><a {...linkProps(TRADE_BOARD_HREF)}>{isBrittWithBlingHybrid ? "Dance Floor · Coming soon" : "Dance Floor"}</a></li>
             {PANTRY_HREF && <li><a {...linkProps(PANTRY_HREF)}>In the Pantry</a></li>}
             {JOIN_TEAM_HREF && <li><a {...linkProps(JOIN_TEAM_HREF)}>Join Team</a></li>}
           </ul>
@@ -1860,8 +1860,8 @@ function App() {
             <TradeHero
               gnomeGarden={t.preset === "gnome_garden"}
               tweakRepName={repName}
-              tweakHeroTitle={t.tradeHeroTitle}
-              tweakHeroSub={redactPublicRepText(t.tradeHeroSub, t.repName)}
+              tweakHeroTitle={isBrittWithBlingHybrid ? "Digital Dance Floor coming soon" : t.tradeHeroTitle}
+              tweakHeroSub={isBrittWithBlingHybrid ? "This feature is not in use for this show. Check back for updates." : redactPublicRepText(t.tradeHeroSub, t.repName)}
             />
           )}
 

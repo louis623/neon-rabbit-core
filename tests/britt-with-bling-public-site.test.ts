@@ -504,6 +504,11 @@ describe('Britt With Bling hybrid public site contract', () => {
     )
 
     expect(homepageJsx).toContain('function BrittWithBlingHomepage')
+    const brittPage = homepageJsx.split('function BrittWithBlingHomepage')[1].split('function BlingKitchenHomepage')[0]
+    expect(brittPage).not.toContain('<AboutSection')
+    expect(brittPage).toContain('<BrittWithBlingRevealExplainer />')
+    expect(brittPage).toContain('<Signup repName={repName} businessName={businessName} />')
+    expect(homepageJsx.match(/<AboutSection repName=\{repName\} \/>/g)).toHaveLength(3)
     expect(homepageJsx).toContain('function BrittWithBlingFeaturedReveal')
     expect(homepageJsx).toContain('function BrittWithBlingRevealExplainer')
     expect(homepageJsx).toContain('<iframe')

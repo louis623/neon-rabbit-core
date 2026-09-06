@@ -1218,7 +1218,7 @@ function Ticker({ topText }) {
   const trades = contentTrades.length > 0 || RUNTIME_CONTEXT.targeted ? contentTrades : fallbackTrades;
   const announcementTickerItems = buildTickerLoopItems(items, 6);
   const announcementSegmentLength = announcementTickerItems.length / 2;
-  const tradeTickerSource = trades.length > 0 ? trades : [EMPTY_TRADE_TICKER_ITEM];
+  const tradeTickerSource = isBrittWithBlingHybrid ? [{ name: "Digital Dance Floor coming soon", isEmpty: true }] : trades.length > 0 ? trades : [EMPTY_TRADE_TICKER_ITEM];
   const tickerTrades = buildTickerLoopItems(tradeTickerSource, 15);
   const tradeSegmentLength = tickerTrades.length / 2;
   return (
@@ -1229,7 +1229,7 @@ function Ticker({ topText }) {
           <a key={`${part.href}-${index}`} {...linkProps(part.href)}>{part.text}</a>
         ))}
         <p>{lineup?.liveQueueSummary || getLiveQueueSummary("Live Lineup opens when the show starts.")}</p>
-        <a {...linkProps(getTradeBoardHref())}>Browse current dance floor highlights</a>
+        <a {...linkProps(getTradeBoardHref())}>{isBrittWithBlingHybrid ? "Digital Dance Floor coming soon" : "Browse current dance floor highlights"}</a>
       </div>
       <div className="hp-ticker-row">
         <span className="hp-ticker-label">Announcements</span>
@@ -2109,7 +2109,7 @@ function Footer({ businessName }) {
         <div className="hp-footer-col">
           <ul>
             <li><a {...linkProps(CONTENT.footerLinks?.home || withCurrentSearch("/amethyst/Homepage.html"))}>Home</a></li>
-            <li><a {...linkProps(getTradeBoardHref())}>Dance Floor</a></li>
+            <li><a {...linkProps(getTradeBoardHref())}>{isBrittWithBlingHybrid ? "Dance Floor · Coming soon" : "Dance Floor"}</a></li>
             {CONTENT.pantryPageUrl && <li><a {...linkProps(CONTENT.pantryPageUrl)}>In the Pantry</a></li>}
             {joinTeamHref && <li><a {...linkProps(joinTeamHref)}>Join Team</a></li>}
           </ul>
@@ -2190,7 +2190,7 @@ function SparkleSuiteHeaderStack({ t, scheduleIsLive, effectiveLrqState, onOpenQ
           </div>
           <nav className="hp-header-nav" aria-label="Primary">
             <a href="#top" className="hp-header-link" aria-current="page">Home</a>
-            <a {...linkProps(getTradeBoardHref())} className="hp-header-link">Dance Floor</a>
+            <a {...linkProps(getTradeBoardHref())} className="hp-header-link">{isBrittWithBlingHybrid ? "Dance Floor · Coming soon" : "Dance Floor"}</a>
             {CONTENT.pantryPageUrl ? (
               <a {...linkProps(CONTENT.pantryPageUrl)} className="hp-header-link">In the Pantry</a>
             ) : null}
@@ -2363,7 +2363,7 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
                   </a>
                 ))}
               </div>
-              <a {...linkProps(getTradeBoardHref())} className="bwb-cta bwb-cta-dance-floor">Browse the Dance Floor</a>
+              <a {...linkProps(getTradeBoardHref())} className="bwb-cta bwb-cta-dance-floor">Dance Floor · Coming soon</a>
             </div>
           </div>
         </div>
@@ -2374,7 +2374,7 @@ function BrittWithBlingHomepage({ t, repName, businessName, isLive, liveShow, qu
         <div className="bwb-automation-panel">
           {t.showEvents && <Events count={t.eventCount} />}
           {t.showWibp && <BrittWithBlingRevealExplainer />}
-          {t.showAbout && <AboutSection repName={repName} />}
+          {/* Brittany-only: unused About/media cards hidden during her show; saved content preserved. */}
           {t.showSignup && <Signup repName={repName} businessName={businessName} />}
           {t.showFooter && <Footer businessName={businessName} />}
         </div>

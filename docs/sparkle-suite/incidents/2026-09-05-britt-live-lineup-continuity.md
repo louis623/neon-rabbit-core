@@ -83,3 +83,45 @@ www.milehighfizz.com; brisglowtique.com, www.brisglowtique.com;
 goforthebling.com; theblingkitchen.com, www.theblingkitchen.com.
 No Finder or unrelated project aliases move. Final release evidence is recorded
 in the vault session log after deployment and live verification.
+
+## Owner-requested presentation cleanup
+
+The initial mitigation was released as `a2e4847a` /
+`dpl_2bg6hTm89G3umTVuSsgkqyWkAezF`. Brittany's exact live domain displayed
+fresh data at 9:50 PM ET. Louis then rejected repetitive per-person status
+captions. Follow-up `5111a546` removes captions from shared Home/Trade/Join
+strips and full lists, including the fallback component: **number and name
+only**. One lineup-level freshness notice remains. Polling and data handling
+are unchanged. Assets use `20260905-lineup2`.
+
+The follow-up production build and TypeScript check passed locally. Direct
+markup assertions passed for Home/Join/Trade. Browser verification confirmed
+zero row captions and the full list still opens. The initial 121 regression
+tests passed; rerunning Vitest after this markup-only change was blocked by
+two automatic approval-review timeouts, followed by sandbox spawn EPERM.
+Do not describe the new 122-test suite as having run successfully.
+
+Mile High Fizz apex and www alias updates were rejected by Vercel's certificate
+step; read-only inspection reports the existing third-party DNS configuration
+is not correct for Vercel. Both remain on the earlier deployment. No DNS or
+certificate-setting repair was attempted. Other nine custom/main aliases
+accepted the initial mitigation. This is a separate release blocker for the
+all-customer terminology request, not a Brittany queue failure.
+
+Before the cleanup deployment was promoted, Louis added two Brittany-only
+requests: hide the unused About/media cards and mark Dance Floor coming soon.
+The combined release preserves all saved data, omits only the AboutSection
+render inside BrittWithBlingHomepage, and leaves other variants unchanged.
+Her explainer is immediately followed by Never Miss a Show. Home/Join/Trade
+navigation and footer labels say Coming soon; Brittany's ticker says exactly
+Digital Dance Floor coming soon. Her Trade heading/empty state also carries
+the notice. Links and underlying trade functionality/data are unchanged.
+
+Combined local build and TypeScript passed. Browser checks verified the exact
+section order, zero unused cards, the ticker text, preserved Live Lineup,
+number/name-only rows, and no 390px horizontal overflow. Direct Node assertions
+verified Brittany-only scope and all three other AboutSection render sites
+remain. The latest focused Vitest invocation also hit an approval-review
+timeout; do not claim the added tests executed. The separate label-only build
+`dpl_J94ugaiPahgd1guNRAvdDZ7eJ1Ts` is READY but was not put on customer domains;
+it is superseded by the combined release rather than redeployed or rolled back.
