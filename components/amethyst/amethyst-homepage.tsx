@@ -59,9 +59,6 @@ function LiveQueueSection({ content }: { content: AmethystSiteContent }) {
                 {entry.position}
               </span>
               <div className="leading-tight">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--amethyst-fg-muted)]">
-                  {entry.label}
-                </div>
                 <div className="text-sm font-semibold text-[var(--amethyst-fg)]">
                   {entry.customerName}
                 </div>

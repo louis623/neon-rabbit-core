@@ -938,7 +938,6 @@ function LiveQueueStrip({ live, onOpen }) {
             <button key={entry.position} type="button" onClick={onOpen} className="hp-trade-preview-pill">
               <span className="pos">{entry.position}</span>
               <span className="meta">
-                <span className="label">{entry.label}</span>
                 <span className="name">{entry.name}</span>
               </span>
             </button>
@@ -973,7 +972,6 @@ function LiveQueueModal({ open, onClose, live }) {
               <div key={entry.position} className={`hp-queue-modal-row ${entry.highlight ? "now" : ""}`}>
                 <span className="pos">{entry.position}</span>
                 <div className="meta">
-                  <span className="label">{entry.label}</span>
                   <span className="name">{entry.name}</span>
                 </div>
               </div>

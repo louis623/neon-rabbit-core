@@ -100,7 +100,7 @@ describe('Amethyst homepage template data wiring', () => {
       resolve(process.cwd(), 'public/amethyst/Homepage.html'),
       'utf8',
     )
-    expect(homepage).toContain('homepage.jsx?v=20260905-lineup1')
+    expect(homepage).toContain('homepage.jsx?v=20260905-lineup2')
 
     const join = readFileSync(
       resolve(process.cwd(), 'public/amethyst/Join.html'),

@@ -18,6 +18,13 @@ function runtime(fetch = vi.fn()) {
 }
 afterEach(() => vi.useRealTimers())
 describe('public lineup refresh without reloading or writing', () => {
+  it('shows customer numbers and names without repetitive per-person status labels', () => {
+    for (const file of ['homepage.jsx', 'join.jsx', 'trade.jsx']) {
+      const page = readFileSync(`public/amethyst/${file}`, 'utf8')
+      expect(page).not.toContain('<span className="label">{entry.label}</span>')
+      expect(page).toContain('<span className="name">{entry.name}</span>')
+    }
+  })
   it('accepts fresh empty snapshots, rejects malformed and older responses', () => {
     const { api } = runtime()
     const current = payload()
