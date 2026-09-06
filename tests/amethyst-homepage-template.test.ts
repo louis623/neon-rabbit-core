@@ -100,7 +100,7 @@ describe('Amethyst homepage template data wiring', () => {
       resolve(process.cwd(), 'public/amethyst/Homepage.html'),
       'utf8',
     )
-    expect(homepage).toContain('homepage.jsx?v=20260905-gnome1')
+    expect(homepage).toContain('homepage.jsx?v=20260905-lineup1')
 
     const join = readFileSync(
       resolve(process.cwd(), 'public/amethyst/Join.html'),
@@ -719,10 +719,10 @@ describe('Amethyst homepage template data wiring', () => {
 
     expect(jsx).toContain('function LiveQueueStrip')
     expect(jsx).toContain('className="hp-trade-preview"')
-    expect(jsx).toContain('Live Reveal Queue')
-    expect(jsx).toContain('View full queue')
+    expect(jsx).toContain('Live Lineup')
+    expect(jsx).toContain('View full lineup')
     expect(jsx).toContain('function LiveQueueModal')
-    expect(jsx).toContain('LIVE_QUEUE_ENTRIES.slice(0, 4)')
+    expect(jsx).toContain('entries.slice(0, 4)')
     expect(jsx).not.toContain('Next to reveal')
     expect(jsx).not.toContain('Open dance floor')
     expect(jsx).not.toContain('<LiveQueueSection />')
@@ -736,7 +736,7 @@ describe('Amethyst homepage template data wiring', () => {
     expect(css).not.toContain('top: 144px;')
   })
 
-  it('enriches targeted homepage data with workspace Dance Floor and Live Queue state', () => {
+  it('enriches targeted homepage data with workspace Dance Floor and Live Lineup state', () => {
     const data = enrichAmethystHomepageFeatureData(
       {
         ...defaultAmethystHomepageTemplateData,
@@ -799,7 +799,7 @@ describe('Amethyst homepage template data wiring', () => {
     ])
   })
 
-  it('uses reassuring public copy when a Live Queue has not opened or needs an update', () => {
+  it('uses reassuring public copy when a Live Lineup has not opened or needs an update', () => {
     const noQueueYet = enrichAmethystHomepageFeatureData(
       defaultAmethystHomepageTemplateData,
     )
@@ -821,10 +821,10 @@ describe('Amethyst homepage template data wiring', () => {
     )
 
     expect(noQueueYet.liveQueueSummary).toBe(
-      'Live Queue will open closer to the next show.',
+      'Live Lineup will open closer to the next show.',
     )
     expect(waitingForUpdate.liveQueueSummary).toBe(
-      'Live Queue is waiting for an update.',
+      'Live Lineup is waiting for an update.',
     )
     expect(waitingForUpdate.liveQueueSummary).not.toContain('stale')
   })
@@ -891,13 +891,13 @@ describe('Amethyst homepage template data wiring', () => {
     expect(jsx).toContain('function isScheduledShowLive')
     expect(jsx).toContain('function getActiveLiveShow')
     expect(jsx).toContain('const scheduleIsLive = Boolean(activeLiveShow)')
-    expect(jsx).toContain('const contentLiveQueueState = getContentLiveQueueState()')
+    expect(jsx).toContain('const contentLiveQueueState = lineup?.liveQueueState || getContentLiveQueueState()')
     expect(jsx).toContain('const effectiveLrqState = contentLiveQueueState || (scheduleIsLive ? t.lrqState : "offline")')
     expect(jsx).toContain('{scheduleIsLive && <span className="hp-live-dot"')
     expect(jsx).toContain('{scheduleIsLive ? "Live now" : "Jewelry reveals"}')
     expect(jsx).toContain('getWatchCtaLabel(isLive)')
     expect(jsx).toContain('Watch on TikTok')
-    expect(jsx).toContain('Queue opens when the next scheduled show starts.')
+    expect(jsx).toContain('Lineup opens when the next scheduled show starts.')
     expect(jsx).toContain('<LiveQueueStrip state={effectiveLrqState}')
     expect(jsx).toContain('state={effectiveLrqState}')
   })

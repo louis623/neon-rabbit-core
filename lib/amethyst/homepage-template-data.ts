@@ -9,6 +9,7 @@ import {
 import { getPublicRepName, redactPublicRepFullName } from './public-rep-name'
 import type { AmethystTradeBoardListing } from './trade-board-listings'
 import type { LiveQueueSnapshot } from '@/lib/services/types'
+import { buildPublicLiveLineup } from './public-live-lineup'
 
 export interface AmethystHomepageMediaSlot {
   typeLabel: string
@@ -68,6 +69,7 @@ export type AmethystHomepageLiveQueueState =
   | 'offline'
   | 'loading'
   | 'empty'
+  | 'delayed'
 
 export interface AmethystHomepageLiveQueueEntry {
   position: number
@@ -104,6 +106,7 @@ export interface AmethystHomepageTemplateData {
   pantryPageUrl?: string
   liveQueueState?: AmethystHomepageLiveQueueState
   liveQueueSummary?: string
+  liveQueueLastUpdated?: string | null
   liveQueueEntries?: AmethystHomepageLiveQueueEntry[]
   tradeBoardSummary?: string
   tradeBoardTickerItems?: AmethystHomepageTradeBoardTickerItem[]
@@ -308,7 +311,7 @@ function mapLiveQueueEntries(
           ? 'On Deck'
           : index === 2
             ? 'Up Next'
-            : 'In Queue',
+            : 'In Lineup',
     name,
     highlight: index === 0,
   }))
@@ -325,12 +328,12 @@ function liveQueueStateFromSnapshot(
 function liveQueueSummaryFromSnapshot(
   snapshot: LiveQueueSnapshot | null | undefined,
 ) {
-  if (!snapshot) return 'Live Queue will open closer to the next show.'
-  if (!snapshot.isFresh) return 'Live Queue is waiting for an update.'
+  if (!snapshot) return 'Live Lineup will open closer to the next show.'
+  if (!snapshot.isFresh) return 'Live Lineup is waiting for an update.'
   if (snapshot.currentCustomer) {
-    return `Live Queue: ${snapshot.currentCustomer} is currently unboxing`
+    return `Live Lineup: ${snapshot.currentCustomer} is currently unboxing`
   }
-  return 'Live Queue connected and ready'
+  return 'Live Lineup connected and ready'
 }
 
 function tradeBoardSummaryFromListings(listings: AmethystTradeBoardListing[]) {
@@ -339,7 +342,7 @@ function tradeBoardSummaryFromListings(listings: AmethystTradeBoardListing[]) {
 }
 
 const CUSTOMER_READY_LIVE_QUEUE_SUMMARY =
-  'Live Queue is ready. Customer names appear here when a live show is connected.'
+  'Live Lineup is ready. Customer names appear here when a live show is connected.'
 
 export function enrichAmethystHomepageFeatureData(
   homepage: AmethystHomepageTemplateData,
@@ -372,6 +375,8 @@ export function enrichAmethystHomepageFeatureData(
     liveQueueEntries: scrubStaleBrittQueue
       ? []
       : mapLiveQueueEntries(liveQueueSnapshot),
+    ...(homepage.publicSiteVariant === 'britt_with_bling_hybrid'
+      ? buildPublicLiveLineup(liveQueueSnapshot) : {}),
   }
 }
 

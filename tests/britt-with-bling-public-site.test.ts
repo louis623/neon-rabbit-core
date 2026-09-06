@@ -287,9 +287,9 @@ describe('Britt With Bling hybrid public site contract', () => {
       tradeBoardListings: [],
     })
 
-    expect(enriched.liveQueueState).toBe('empty')
+    expect(enriched.liveQueueState).toBe('delayed')
     expect(enriched.liveQueueSummary).toBe(
-      'Live Queue is ready. Customer names appear here when a live show is connected.',
+      'Showing the last received lineup. Positions may have changed; checking for updates.',
     )
     expect(enriched.tickerTopText).not.toContain('stale')
   })

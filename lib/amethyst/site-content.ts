@@ -142,7 +142,7 @@ export const defaultAmethystSiteContent: AmethystSiteContent = {
     },
   ],
   liveQueueState: 'live',
-  liveQueueLabel: 'Live Reveal Queue',
+  liveQueueLabel: 'Live Lineup',
   liveQueueSummary: 'A reveal is in progress right now. Watch live and keep an eye on the next names in line.',
   liveQueueEntries: [
     { position: '1', label: 'Unboxing Now', customerName: 'Customer A.' },

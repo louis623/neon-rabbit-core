@@ -487,7 +487,7 @@ describe('Amethyst trade page template wiring', () => {
 
     expect(jsx).toContain('function LiveQueueStrip')
     expect(jsx).toContain('function LiveQueueModal')
-    expect(jsx).toContain('View full queue')
+    expect(jsx).toContain('View full lineup')
     expect(jsx).toContain('LIVE_QUEUE_ENTRIES.slice(0, 4)')
     expect(jsx).toContain('const LIVE_QUEUE_NAMES = [')
     expect(jsx).toContain('"Nicole V."')

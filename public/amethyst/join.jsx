@@ -598,12 +598,12 @@ function LiveQueueStrip({ onOpen }) {
         <div className="hp-trade-preview-inner">
           <div className="hp-trade-preview-head">
             <span className="live-dot" />
-            <span>Live Reveal Queue</span>
+            <span>Live Lineup</span>
           </div>
           <div className="hp-trade-preview-items">
-            Live Queue is ready. Customer names appear here when a live show is connected.
+            Live Lineup is ready. Customer names appear here when a live show is connected.
           </div>
-          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue</button>
+          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full lineup</button>
         </div>
       </section>
     );
@@ -614,7 +614,7 @@ function LiveQueueStrip({ onOpen }) {
       <div className="hp-trade-preview-inner">
         <div className="hp-trade-preview-head">
           <span className="live-dot" />
-          <span>Live Reveal Queue</span>
+          <span>Live Lineup</span>
         </div>
         <div className="hp-trade-preview-items">
           {LIVE_QUEUE_ENTRIES.slice(0, 4).map((entry) => (
@@ -627,7 +627,7 @@ function LiveQueueStrip({ onOpen }) {
             </button>
           ))}
         </div>
-        <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue</button>
+        <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full lineup</button>
       </div>
     </section>
   );
@@ -641,10 +641,10 @@ function LiveQueueModal({ open, onClose }) {
       <div className="hp-queue-modal" onClick={(event) => event.stopPropagation()}>
         <div className="hp-queue-modal-head">
           <div>
-            <div className="hp-queue-modal-eyebrow">Live Reveal Queue</div>
-            <h2 className="hp-queue-modal-title">Full queue</h2>
+            <div className="hp-queue-modal-eyebrow">Live Lineup</div>
+            <h2 className="hp-queue-modal-title">Full lineup</h2>
           </div>
-          <button type="button" className="hp-queue-modal-close" onClick={onClose} aria-label="Close live reveal queue">x</button>
+          <button type="button" className="hp-queue-modal-close" onClick={onClose} aria-label="Close Live Lineup">x</button>
         </div>
         {LIVE_QUEUE_ENTRIES.length > 0 ? (
           <div className="hp-queue-modal-list">
@@ -659,7 +659,7 @@ function LiveQueueModal({ open, onClose }) {
             ))}
           </div>
         ) : (
-          <div className="hp-queue-modal-empty">Live Queue is ready. Customer names appear here when a live show is connected.</div>
+          <div className="hp-queue-modal-empty">Live Lineup is ready. Customer names appear here when a live show is connected.</div>
         )}
       </div>
     </div>

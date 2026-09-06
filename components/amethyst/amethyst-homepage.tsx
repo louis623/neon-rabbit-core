@@ -28,7 +28,7 @@ function LiveQueueSection({ content }: { content: AmethystSiteContent }) {
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--amethyst-fg-muted)]">
             <span className="h-2 w-2 rounded-full bg-[var(--amethyst-fg-muted)]" />
-            Live Reveal Queue
+            Live Lineup
           </div>
           <p className="text-[13px] text-[var(--amethyst-fg-muted)]">
             Show ended - see you next Tuesday at 8pm CST.
@@ -43,7 +43,7 @@ function LiveQueueSection({ content }: { content: AmethystSiteContent }) {
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--amethyst-fg)]">
           <span className="amethyst-live-dot h-2 w-2 rounded-full bg-[#ff3366]" />
-          Live Reveal Queue
+          Live Lineup
         </div>
         <div className="flex flex-wrap gap-3">
           {content.liveQueueEntries.slice(0, 2).map((entry) => (

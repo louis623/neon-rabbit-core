@@ -344,7 +344,7 @@ const CONTENT_LIVE_QUEUE_ENTRIES = Array.isArray(CONTENT.liveQueueEntries)
   ? CONTENT.liveQueueEntries
       .map((entry, index) => ({
         position: Number(entry.position) || index + 1,
-        label: runtimeText(entry.label) || (index === 0 ? "Currently Unboxing" : index === 1 ? "On Deck" : "In Queue"),
+        label: runtimeText(entry.label) || (index === 0 ? "Currently Unboxing" : index === 1 ? "On Deck" : "In Lineup"),
         name: runtimeText(entry.name),
         highlight: Boolean(entry.highlight),
       }))
@@ -360,7 +360,18 @@ function getLiveQueueSummary(fallback) {
 
 function getContentLiveQueueState() {
   const state = runtimeText(CONTENT.liveQueueState);
-  return ["live", "offline", "loading", "empty"].includes(state) ? state : null;
+  return ["live", "offline", "loading", "empty", "delayed"].includes(state) ? state : null;
+}
+
+const LiveLineupContext = React.createContext(null);
+function LiveLineupStatus() {
+  const lineup = React.useContext(LiveLineupContext);
+  if (!lineup) return null;
+  const updated = Date.parse(lineup.liveQueueLastUpdated);
+  return <p role="status" style={{ margin: '12px auto', padding: '0 20px', maxWidth: 1200, fontSize: 14, color: 'var(--fg)' }}>
+    {lineup.liveQueueSummary}{' '}
+    {Number.isFinite(updated) && <>Last received: {new Date(updated).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.</>}
+  </p>;
 }
 
 // ============================================================
@@ -520,9 +531,9 @@ function LRQRail({ state }) {
         <div className="hp-lrq-inner">
           <div className="hp-lrq-title" style={{ color: "var(--fg-muted)" }}>
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--fg-muted)" }} />
-            Live Reveal Queue
+            Live Lineup
           </div>
-          <div style={{ fontSize: 13, color: "var(--fg-muted)" }}>Queue opens when the next scheduled show starts.</div>
+          <div style={{ fontSize: 13, color: "var(--fg-muted)" }}>Lineup opens when the next scheduled show starts.</div>
         </div>
       </div>
     );
@@ -533,9 +544,9 @@ function LRQRail({ state }) {
         <div className="hp-lrq-inner">
           <div className="hp-lrq-title">
             <span className="live-dot" />
-            Live Reveal Queue
+            Live Lineup
           </div>
-          <div style={{ fontSize: 13, color: "var(--fg-muted)" }}>Loading queue…</div>
+          <div style={{ fontSize: 13, color: "var(--fg-muted)" }}>Loading lineup…</div>
         </div>
       </div>
     );
@@ -546,7 +557,7 @@ function LRQRail({ state }) {
         <div className="hp-lrq-inner">
           <div className="hp-lrq-title">
             <span className="live-dot" />
-            Live Reveal Queue
+            Live Lineup
           </div>
           <div style={{ fontSize: 13, color: "var(--fg)", fontWeight: 600 }}>✦ Ready to Reveal! ✦</div>
         </div>
@@ -558,7 +569,7 @@ function LRQRail({ state }) {
       <div className="hp-lrq-inner">
         <div className="hp-lrq-title">
           <span className="live-dot" />
-          Live Reveal Queue
+          Live Lineup
         </div>
         <div className="hp-lrq-items">
           <div className="hp-lrq-item">
@@ -1185,6 +1196,7 @@ function parseAnnouncementTickerItems(topText) {
 }
 
 function Ticker({ topText }) {
+  const lineup = React.useContext(LiveLineupContext);
   useDynamicTickerMotion();
   const items = parseAnnouncementTickerItems(topText);
   const contentTrades = Array.isArray(CONTENT.tradeBoardTickerItems)
@@ -1216,7 +1228,7 @@ function Ticker({ topText }) {
         {items.flatMap((item) => item.parts.filter((part) => part.href)).map((part, index) => (
           <a key={`${part.href}-${index}`} {...linkProps(part.href)}>{part.text}</a>
         ))}
-        <p>{getLiveQueueSummary("Live Queue opens when the show starts.")}</p>
+        <p>{lineup?.liveQueueSummary || getLiveQueueSummary("Live Lineup opens when the show starts.")}</p>
         <a {...linkProps(getTradeBoardHref())}>Browse current dance floor highlights</a>
       </div>
       <div className="hp-ticker-row">
@@ -1262,17 +1274,19 @@ function Ticker({ topText }) {
 }
 
 function LiveQueueStrip({ state, onOpen }) {
+  const lineup = React.useContext(LiveLineupContext);
+  const entries = lineup?.liveQueueEntries ?? LIVE_QUEUE_ENTRIES;
   if (state === "offline") {
     return (
       <section className="hp-trade-preview">
         <div className="hp-trade-preview-inner">
           <div className="hp-trade-preview-head">
-            <span>Reveal Queue</span>
+            <span>Live Lineup</span>
           </div>
           <div className="hp-trade-preview-items" style={{ color: "var(--fg-muted)" }}>
-            {getLiveQueueSummary("Queue opens when the next scheduled show starts.")}
+            {lineup?.liveQueueSummary || getLiveQueueSummary("Lineup opens when the next scheduled show starts.")}
           </div>
-          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View queue</button>
+          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View lineup</button>
         </div>
       </section>
     );
@@ -1284,12 +1298,12 @@ function LiveQueueStrip({ state, onOpen }) {
         <div className="hp-trade-preview-inner">
           <div className="hp-trade-preview-head">
             <span className="live-dot" />
-            <span>Live Reveal Queue</span>
+            <span>Live Lineup</span>
           </div>
           <div className="hp-trade-preview-items">
-            Loading queue...
+            Loading lineup...
           </div>
-          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue</button>
+          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full lineup</button>
         </div>
       </section>
     );
@@ -1301,12 +1315,12 @@ function LiveQueueStrip({ state, onOpen }) {
         <div className="hp-trade-preview-inner">
           <div className="hp-trade-preview-head">
             <span className="live-dot" />
-            <span>Live Reveal Queue</span>
+            <span>Live Lineup</span>
           </div>
           <div className="hp-trade-preview-items">
-            {getLiveQueueSummary("Live Queue is ready. Customer names appear here when a live show is connected.")}
+            {lineup?.liveQueueSummary || getLiveQueueSummary("Live Lineup is ready. Customer names appear here when a live show is connected.")}
           </div>
-          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue</button>
+          <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full lineup</button>
         </div>
       </section>
     );
@@ -1316,11 +1330,11 @@ function LiveQueueStrip({ state, onOpen }) {
     <section className="hp-trade-preview">
       <div className="hp-trade-preview-inner">
         <div className="hp-trade-preview-head">
-          <span className="live-dot" />
-          <span>Live Reveal Queue</span>
+          <span className="live-dot" style={state === "delayed" ? { background: "var(--fg-muted)", animation: "none" } : undefined} />
+          <span>Live Lineup</span>
         </div>
         <div className="hp-trade-preview-items">
-          {LIVE_QUEUE_ENTRIES.slice(0, 4).map((entry) => (
+          {entries.slice(0, 4).map((entry) => (
             <button key={entry.position} type="button" onClick={onOpen} className="hp-trade-preview-pill">
               <span className="pos">{entry.position}</span>
               <span className="meta">
@@ -1330,39 +1344,42 @@ function LiveQueueStrip({ state, onOpen }) {
             </button>
           ))}
         </div>
-        <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full queue</button>
+        <button type="button" className="hp-trade-preview-link" onClick={onOpen}>View full lineup</button>
       </div>
     </section>
   );
 }
 
 function LiveQueueModal({ open, onClose, state }) {
+  const lineup = React.useContext(LiveLineupContext);
+  const entries = lineup?.liveQueueEntries ?? LIVE_QUEUE_ENTRIES;
   if (!open) return null;
 
-  const live = state !== "offline" && state !== "loading" && state !== "empty" && LIVE_QUEUE_ENTRIES.length > 0;
+  const live = state !== "offline" && state !== "loading" && state !== "empty" && entries.length > 0;
 
   return (
     <div className="hp-queue-modal-mask" onClick={onClose}>
       <div className="hp-queue-modal" onClick={(event) => event.stopPropagation()}>
         <div className="hp-queue-modal-head">
           <div>
-            <div className="hp-queue-modal-eyebrow">Live Reveal Queue</div>
+            <div className="hp-queue-modal-eyebrow">Live Lineup</div>
             <h2 className="hp-queue-modal-title">
-              {live ? "Full queue" : state === "loading" ? "Loading queue" : state === "empty" ? "Queue ready" : "No live queue right now"}
+              {live ? "Full lineup" : state === "loading" ? "Loading lineup" : state === "empty" ? "Lineup ready" : "No Live Lineup right now"}
             </h2>
           </div>
-          <button type="button" className="hp-queue-modal-close" onClick={onClose} aria-label="Close live reveal queue">×</button>
+          <button type="button" className="hp-queue-modal-close" onClick={onClose} aria-label="Close Live Lineup">×</button>
         </div>
 
+        <LiveLineupStatus />
         {state === "offline" ? (
-          <div className="hp-queue-modal-empty">{getLiveQueueSummary("No show is running right now. Check the calendar for the next scheduled reveal.")}</div>
+          <div className="hp-queue-modal-empty">{lineup?.liveQueueSummary || getLiveQueueSummary("No show is running right now. Check the calendar for the next scheduled reveal.")}</div>
         ) : state === "loading" ? (
-          <div className="hp-queue-modal-empty">Loading queue…</div>
-        ) : state === "empty" || LIVE_QUEUE_ENTRIES.length === 0 ? (
-          <div className="hp-queue-modal-empty">{getLiveQueueSummary("Live Queue is ready. Customer names appear here when a live show is connected.")}</div>
+          <div className="hp-queue-modal-empty">Loading lineup…</div>
+        ) : state === "empty" || entries.length === 0 ? (
+          <div className="hp-queue-modal-empty">{lineup?.liveQueueSummary || getLiveQueueSummary("Live Lineup is ready. Customer names appear here when a live show is connected.")}</div>
         ) : (
           <div className="hp-queue-modal-list">
-            {LIVE_QUEUE_ENTRIES.map((entry) => (
+            {entries.map((entry) => (
               <div key={entry.position} className={`hp-queue-modal-row ${entry.highlight ? "now" : ""}`}>
                 <span className="pos">{entry.position}</span>
                 <div className="meta">
@@ -2191,6 +2208,7 @@ function SparkleSuiteHeaderStack({ t, scheduleIsLive, effectiveLrqState, onOpenQ
       {t.showTicker && <Ticker topText={t.tickerTopText} />}
 
       {t.showLrq && <LiveQueueStrip state={effectiveLrqState} onOpen={onOpenQueue} />}
+      {t.showLrq && <LiveLineupStatus />}
     </div>
   );
 }
@@ -2425,13 +2443,18 @@ function BlingKitchenHomepage({ t, repName, businessName, isLive, liveShow, queu
 // Main App
 // ============================================================
 function App() {
+  const [lineup, setLineup] = useState(() => isBrittWithBlingHybrid ? CONTENT : null);
+  useEffect(() => {
+    if (!isBrittWithBlingHybrid || !window.SparkleLiveLineup) return;
+    return window.SparkleLiveLineup.start({ url: withCurrentSearch('/api/amethyst/live-lineup'), initial: CONTENT, onUpdate: setLineup });
+  }, []);
   const [t, setTweak] = useTweaks(DEFAULTS);
   const [queueOpen, setQueueOpen] = useState(false);
   const repName = publicRepName(t.repName);
   const [now, setNow] = useState(() => Date.now());
   const activeLiveShow = useMemo(() => getActiveLiveShow(now), [now]);
   const scheduleIsLive = Boolean(activeLiveShow);
-  const contentLiveQueueState = getContentLiveQueueState();
+  const contentLiveQueueState = lineup?.liveQueueState || getContentLiveQueueState();
   const effectiveLrqState = contentLiveQueueState || (scheduleIsLive ? t.lrqState : "offline");
 
   useEffect(() => {
@@ -2568,7 +2591,7 @@ function App() {
   };
 
   return (
-    <>
+    <LiveLineupContext.Provider value={lineup}>
       {isBrittWithBlingHybrid ? (
         <BrittWithBlingHomepage
           t={t}
@@ -2851,7 +2874,7 @@ function App() {
 
         <TweakSection title="Section visibility">
           <TweakToggle label="Ticker" value={t.showTicker} onChange={(v) => setTweak("showTicker", v)} />
-          <TweakToggle label="Live Reveal Queue" value={t.showLrq} onChange={(v) => setTweak("showLrq", v)} />
+          <TweakToggle label="Live Lineup" value={t.showLrq} onChange={(v) => setTweak("showLrq", v)} />
           <TweakToggle label="Hero" value={t.showHero} onChange={(v) => setTweak("showHero", v)} />
           <TweakToggle label="Events" value={t.showEvents} onChange={(v) => setTweak("showEvents", v)} />
           <TweakToggle label="Bomb Party explainer" value={t.showWibp} onChange={(v) => setTweak("showWibp", v)} />
@@ -2872,7 +2895,7 @@ function App() {
           <TweakToggle label="Show edit slots overlay" value={t.showSlots} onChange={(v) => setTweak("showSlots", v)} />
         </TweakSection>
       </TweaksPanel>
-    </>
+    </LiveLineupContext.Provider>
   );
 }
 
